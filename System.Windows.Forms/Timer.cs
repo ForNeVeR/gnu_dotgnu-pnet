@@ -36,7 +36,9 @@ public class Timer
 	private bool enabled;
 	private int interval;
 	private Object timerCookie;
-
+	private EventHandler onTimer;
+	
+	static private EventHandler EvExpire = new EventHandler(Expire);
 	// Constructors.
 	public Timer()
 			{
@@ -66,25 +68,9 @@ public class Timer
 				}
 				set
 				{
-					lock(this)
-					{
-						if(enabled != value)
-						{
-							enabled = value;
-							if(value)
-							{
-								timerCookie = ToolkitManager.Toolkit
-									.RegisterTimer
-										(this, interval,
-										 new EventHandler(Expire));
-							}
-							else
-							{
-								ToolkitManager.Toolkit.UnregisterTimer
-									(timerCookie);
-								timerCookie = null;
-							}
-						}
+					if(enabled != value) {
+						enabled = value;
+						this.CheckTimer();
 					}
 				}
 			}
@@ -115,6 +101,27 @@ public class Timer
 					}
 				}
 			}
+			
+	void CheckTimer() {
+		lock(this)
+		{
+			if( enabled && null != onTimer ) {
+				if( null == timerCookie ) {
+					timerCookie = ToolkitManager.Toolkit
+							.RegisterTimer
+							(this, this.interval,EvExpire);
+				}
+			}
+			else {
+				if( null != timerCookie ) {
+					ToolkitManager.Toolkit.UnregisterTimer
+							(timerCookie);
+					timerCookie = null;
+				}
+			}
+		}
+	}
+
 
 	// Start the timer.
 	public void Start()
@@ -135,7 +142,16 @@ public class Timer
 			}
 
 	// Event that is emitted when the timer expires.
-	public event EventHandler Tick;
+	public event EventHandler Tick {
+		add  {
+			this.onTimer = (EventHandler)Delegate.Combine(this.onTimer,value);
+			this.CheckTimer();
+		}
+		remove {
+			this.onTimer = (EventHandler)Delegate.Remove(this.onTimer,value);
+			this.CheckTimer();
+		}
+	}
 
 	// Dispose of the timer.
 #if !CONFIG_COMPONENT_MODEL
@@ -152,19 +168,13 @@ public class Timer
 				Enabled = false;
 			}
 
-	// Raise the "Tick" event.
-	protected virtual void OnTick(EventArgs e)
-			{
-				if(Tick != null)
-				{
-					Tick(this, e);
-				}
-			}
-
 	// Method that is called by the toolkit when the timer expires.
-	private void Expire(Object sender, EventArgs e)
+	static private void Expire(Object sender, EventArgs e)
 			{
-				OnTick(e);
+				Timer timer = (Timer) sender;
+				if( null != timer && null != timer.onTimer ) {
+					timer.onTimer(timer,e);
+				}
 			}
 
 }; // class Timer

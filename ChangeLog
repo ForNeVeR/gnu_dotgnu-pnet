@@ -1,3 +1,7 @@
+2006-07-18  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Timer.cs: fixed a memory leak.
+
 2006-07-13  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	*runtime/System/GC.cs: added a define for tests

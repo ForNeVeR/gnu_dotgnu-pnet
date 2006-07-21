@@ -1553,6 +1553,18 @@ void Until(ILDebugger *debugger, FILE *stream)
 	DumpMessage("ok", stream);
 }
 
+void IsStopped(ILDebugger *debugger, FILE *stream)
+{
+	if(debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED)
+	{
+		DumpMessage("yes", stream);
+	}
+	else
+	{
+		DumpMessage("no", stream);
+	}
+}
+
 /*
  * dasm command.
  */
@@ -1668,9 +1680,15 @@ static Cmd const commands[] = {
 	},
 
 	{ "until",			5,	0,	Until,
-		"u",
+		"until",
 		"Until.",
 		"Execute until the program reaches a source line greater than the current."
+	},
+
+	{ "is_stopped",			10,	0,	IsStopped,
+		"is_stopped",
+		"Report if execution is stopped.",
+		"Execution is stopped e.g when breakpoint is reached or break command is issued."
 	},
 
 /*	{ "suspend_all",		11,	0,	SuspendAll,

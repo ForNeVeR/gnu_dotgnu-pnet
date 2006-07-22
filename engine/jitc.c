@@ -231,14 +231,40 @@ static ILJitType _ILJitSignature_ILGetClrType = 0;
 static ILJitType _ILJitSignature_ILRuntimeHandleManagedSafePointFlags = 0;
 
 /*
+ * char *ILStringToAnsi(ILExecThread *thread, ILString *str)
+ */
+static ILJitType _ILJitSignature_ILStringToAnsi = 0;
+
+/*
  * char *ILStringToUTF8(ILExecThread *thread, ILString *str)
  */
 static ILJitType _ILJitSignature_ILStringToUTF8 = 0;
+
+/*
+ * char *ILStringToUTF16(ILExecThread *thread, ILString *str)
+ */
+static ILJitType _ILJitSignature_ILStringToUTF16 = 0;
 
 /* 
  * ILString *ILStringCreate(ILExecThread *thread, const char *str)
  */
 static ILJitType _ILJitSignature_ILStringCreate = 0;
+
+/* 
+ * ILString *ILStringCreateUTF8(ILExecThread *thread, const char *str)
+ */
+static ILJitType _ILJitSignature_ILStringCreateUTF8 = 0;
+
+/* 
+ * ILString *ILStringWCreate(ILExecThread *thread, const ILUInt16 *str)
+ */
+static ILJitType _ILJitSignature_ILStringWCreate = 0;
+
+/*
+ * void *ILJitDelegateGetClosure(ILExecThread *thread, ILObject *delegate, ILType *delType)
+ */
+static ILJitType _ILJitSignature_ILJitDelegateGetClosure = 0;
+
 
 /*
  * Define offsetof macro if not present.
@@ -2119,6 +2145,15 @@ int ILJitInit()
 	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILStringToAnsi =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+	
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILStringToUTF8 =
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
 	{
@@ -2130,6 +2165,43 @@ int ILJitInit()
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILStringCreate =
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILStringToUTF16 =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+	
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILStringCreateUTF8 =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+	
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILStringWCreate =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILJitDelegateGetClosure =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
 	{
 		return 0;
 	}
@@ -2378,7 +2450,7 @@ static ILJitValue _ILJitGetObjectClass(ILJitFunction func, ILJitValue object)
  */
 static ILJitType _ILJitTypeToStackType(ILJitType type)
 {
-	return jit_type_promote_int(type);;
+	return jit_type_promote_int(type);
 }
 
 /*
@@ -2516,7 +2588,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 	/* otherwise we need the thread as an additional argument. */
 	totalParams = numParams + 1;
 #endif
-	returnType = jit_type_get_return(signature);;
+	returnType = jit_type_get_return(signature);
 
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	if(numParams != (numArgs + 1))

@@ -1,3 +1,14 @@
+2006-07-22  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* engine/jitc.c: Add additional signatures needed for pinvokes.
+
+	* engine/jitc.h: Add prototype for ILJitDelegateGetClosure.
+
+	* engine/jitc_pinvoke.c: Implement marshalling for pinvokes.
+
+	* engine/lib_marshal.c: Call ILJitDelegateGetClosure if the engine is
+	built with the just in time compiler.
+
 2006-07-21  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: New command is_stopped that is used to check if

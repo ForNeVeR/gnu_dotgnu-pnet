@@ -218,6 +218,13 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType);
 void *_ILJitExceptionHandler(int exception_type);
 
 
+/*
+ * Get the closure for a delegate.
+ */
+void *ILJitDelegateGetClosure(ILExecThread *thread,
+							  ILObject *delegate,
+							  ILType *delType);
+
 #endif  /* IL_USE_JIT */
 
 #endif	/* _ENGINE_JITC_H */

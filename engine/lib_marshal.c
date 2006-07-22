@@ -635,15 +635,20 @@ void _ILStructToNative(ILExecThread *thread, void *value, ILType *type)
 		type = ILField_Type(field);
 		ptr = (void *)(((unsigned char *)value) + field->offset);
 		_ILStructToNative(thread, ptr, type);
-	    marshalType = ILPInvokeGetMarshalType(pinv, method, 0,
+		marshalType = ILPInvokeGetMarshalType(pinv, method, 0,
 	   										  &customName, &customNameLen,
 											  &customCookie,
 											  &customCookieLen, type);
 		/* TODO: convert other kinds of fields, not just delegates */
 		if(marshalType == IL_META_MARSHAL_FNPTR)
 		{
+	    #ifdef IL_USE_JIT
+			*((void **)ptr) = ILJitDelegateGetClosure
+				(thread, *((ILObject **)ptr), type);
+	    #else
 			*((void **)ptr) = _ILDelegateGetClosure
 				(thread, *((ILObject **)ptr));
+	    #endif
 		}
 	}
 }

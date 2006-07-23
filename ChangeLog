@@ -1,3 +1,9 @@
+2006-07-23  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Windows.Forms/DataGridTableStyle.cs: Call base.Dispose(disposing)
+	instead of base.Dispose() in Dispose(disposing). This caused an endless
+	loop during finalization. (Bug found by Kirill.)
+
 2006-07-18  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Timer.cs: fixed a memory leak.

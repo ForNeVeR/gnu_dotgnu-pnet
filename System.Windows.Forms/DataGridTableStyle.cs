@@ -100,7 +100,7 @@ namespace System.Windows.Forms
 		[TODO]
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose();
+			base.Dispose(disposing);
 		}
 
 		[TODO]

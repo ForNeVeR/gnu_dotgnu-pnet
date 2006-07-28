@@ -763,6 +763,18 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	/* Non-static fields are initialized differently */
 	if(node->owner && (node->owner->modifiers & IL_META_FIELDDEF_STATIC) == 0)
 	{
+		/* non-static field initializers are not allowed in structs */	 
+		if(ILClassIsValueType(((ILNode_ClassDefn *)info->currentClass)->classInfo))
+		{
+			if (node->initializer != NULL)
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node), 
+							"Structs cannot have instance field initializers");
+
+				return CSSemValueDefault;
+			}
+		}
+
 		initializer = ILNode_Assign_create(node->name, node->initializer);
 		yysetfilename(initializer,yygetfilename(node));
 		yysetlinenum(initializer,yygetlinenum(node));
@@ -943,6 +955,20 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	{
 		CSProcessAttrs(info, ILToProgramItem(node->methodInfo),
 					   node->attributes, CS_ATTR_CONSTRUCTOR);
+
+		if (ILClassIsValueType(((ILNode_ClassDefn *)info->currentClass)->classInfo)
+										&& ILMethod_IsConstructor(node->methodInfo))
+		{
+			int numParams = ILTypeNumParams(ILMethod_Signature(ILToProgramItem(node->methodInfo)));
+
+			if(numParams == 0)
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						"Structs cannot contain explicit parameterless constructors");
+
+				return CSSemValueDefault;
+			}
+		}
 	}
 	else
 	{

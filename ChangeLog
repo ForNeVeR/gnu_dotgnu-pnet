@@ -1,3 +1,9 @@
+2006-07-28  Kaushik Srenevasan  <ksrenev@gmail.com>
+
+	* cscc/csharp/cs_decls.tc: Disallow explicit parameterless constructors
+	for structs. (Patch #4800). Disallow initializers for non static members
+	in structs. (Patch #4812)
+
 2006-07-22  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/jitc.c: Add additional signatures needed for pinvokes.

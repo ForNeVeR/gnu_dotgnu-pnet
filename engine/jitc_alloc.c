@@ -63,7 +63,20 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
 	ILObject *obj;
 
 	/* Allocate memory from the heap */
+#ifdef IL_CONFIG_USE_THIN_LOCKS
 	ptr = ILGCAllocAtomic(size + IL_OBJECT_HEADER_SIZE);
+#else
+	/* We need this because we have to make sure the ILLockWord in the ObjectHeader is scanned by the GC. */
+	/* TODO: Move descriptor creation to layout.c */
+	if(classPrivate->gcTypeDescriptor == IL_MAX_NATIVE_UINT)
+	{
+		ILNativeUInt bitmap = IL_OBJECT_HEADER_PTR_MAP;
+
+		classPrivate->gcTypeDescriptor = ILGCCreateTypeDescriptor(&bitmap, IL_OBJECT_HEADER_SIZE / sizeof(ILNativeInt));		
+	}
+
+	ptr = ILGCAllocExplicitlyTyped(size + IL_OBJECT_HEADER_SIZE, classPrivate->gcTypeDescriptor);
+#endif
 
 	if(!ptr)
 	{

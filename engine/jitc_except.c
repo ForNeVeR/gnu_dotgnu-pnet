@@ -58,7 +58,10 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception)
 		"Ok",
 		"System.OutOfMemoryException",
 		"System.InvalidCastException",
-		"System.IndexOutOfRangeException"
+		"System.IndexOutOfRangeException",
+		"System.MissingMethodException",
+		"System.DllNotFoundException",
+		"System.EntryPointNotFoundException"
 	};
 	#define	numExceptions	(sizeof(exceptionClasses) / sizeof(const char *))
 	ILExecThread *_thread = ILExecThreadCurrent();

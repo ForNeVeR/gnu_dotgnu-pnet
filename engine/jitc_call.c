@@ -53,6 +53,8 @@ static ILJitValue _ILJitGetInterfaceFunction(ILJITCoder *jitCoder,
 	ILJitValue interfaceClass;
 	ILJitValue methodIndex;
 	ILJitValue args[3];
+	ILJitValue jitFunction;
+	jit_label_t label = jit_label_undefined;
 
 	_ILJitCheckNull(jitCoder, object);
 	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, object);
@@ -65,11 +67,17 @@ static ILJitValue _ILJitGetInterfaceFunction(ILJITCoder *jitCoder,
 	args[0] = classPrivate;
 	args[1] = interfaceClass;
 	args[2] = methodIndex;
-	return jit_insn_call_native(jitCoder->jitFunction,
-								"_ILRuntimeLookupInterfaceMethod",
-								_ILRuntimeLookupInterfaceMethod,
-								_ILJitSignature_ILRuntimeLookupInterfaceMethod,
-								args, 3, 0);
+	jitFunction = jit_insn_call_native(jitCoder->jitFunction,
+									   "_ILRuntimeLookupInterfaceMethod",
+									   _ILRuntimeLookupInterfaceMethod,
+									   _ILJitSignature_ILRuntimeLookupInterfaceMethod,
+									   args, 3, 0);
+
+	jit_insn_branch_if(jitCoder->jitFunction, jitFunction, &label);
+	_ILJitThrowSystem(jitCoder, _IL_JIT_MISSING_METHOD);
+	jit_insn_label(jitCoder->jitFunction, &label);
+
+	return jitFunction;
 }
 
 /*
@@ -82,6 +90,8 @@ static ILJitValue _ILJitGetVirtualFunction(ILJITCoder *jitCoder,
 	ILJitValue classPrivate;
 	ILJitValue vtable;
 	ILJitValue vtableIndex;
+	ILJitValue jitFunction;
+	jit_label_t label = jit_label_undefined;
 
 	_ILJitCheckNull(jitCoder, object);
 	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, object);
@@ -91,8 +101,14 @@ static ILJitValue _ILJitGetVirtualFunction(ILJITCoder *jitCoder,
 	vtableIndex = jit_value_create_nint_constant(jitCoder->jitFunction,
 												 _IL_JIT_TYPE_INT32,
 												 (jit_nint)index);
-	return jit_insn_load_elem(jitCoder->jitFunction,
+	jitFunction = jit_insn_load_elem(jitCoder->jitFunction,
 							  vtable, vtableIndex, _IL_JIT_TYPE_VPTR);
+
+	jit_insn_branch_if(jitCoder->jitFunction, jitFunction, &label);
+	_ILJitThrowSystem(jitCoder, _IL_JIT_MISSING_METHOD);
+	jit_insn_label(jitCoder->jitFunction, &label);
+
+	return jitFunction;
 }
 
 /*

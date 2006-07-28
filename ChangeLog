@@ -1,3 +1,24 @@
+2006-07-28  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add constants for the System.MissingMethodException,
+	System.DllNotFoundException and System.EntrypointNotFoundException thrown
+	by the engine. Add support for errorhandling in pinvokes if the shared
+	library could not be found or the entrypoint could not be located.
+
+	* engine/jitc_alloc.c: Allocate objects containing no references to managed
+	objects with ILGCAllocExplicitelyTyped so that the monitor for the object
+	is not prematurely collected.
+
+	* engine/jitc_call.c: Throw a System.MissingMethodException if the vtable
+	pointer returned for a virtual or interface call is null.
+
+	* engine/jitc_except.c: Add the System.MissingMethodException,
+	System.DllNotFoundException and System.EntrypointNotFoundException in
+	_ILJitThrowSystem.
+
+	* engine/jitc_pinvoke.c: Throw the right exception if a shared library or
+	the entrypoint for a pinvoke could not be found.
+
 2006-07-28  Kaushik Srenevasan  <ksrenev@gmail.com>
 
 	* cscc/csharp/cs_decls.tc: Disallow explicit parameterless constructors

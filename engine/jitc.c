@@ -351,6 +351,19 @@ struct _tagILJitMethodInfo
 #define _IL_JIT_IMPL_INTERNALMASK	0x3
 #define _IL_JIT_IMPL_PINVOKE		0x4
 
+/* Error codes stored in fnInfo.func in case a library or method was not */
+/* found */
+#define _IL_JIT_PINVOKE_DLLNOTFOUND			((void *)0x01)
+#define _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND	((void *)0x02)
+#define _IL_JIT_PINVOKE_ERRORMASK			((void *)0x03)
+
+#ifdef IL_NATIVE_INT64
+#define _ILJitPinvokeError(fnInfo)	((((ILInt64)(fnInfo).func) & ~((ILInt64)_IL_JIT_PINVOKE_ERRORMASK)) == 0)
+#endif
+#ifdef IL_NATIVE_INT32
+#define _ILJitPinvokeError(fnInfo)	((((ILInt32)(fnInfo).func) & ~((ILInt32)_IL_JIT_PINVOKE_ERRORMASK)) == 0)
+#endif
+	
 /*
  * Define the structure of a JIT coder's instance block.
  */
@@ -467,11 +480,13 @@ static ILJitValue _ILJitCoderGetThread(ILJITCoder *jitCoder)
 /*
  * Declaration of the engine internal exceptions.
  */
-#define _IL_JIT_OK					0
-#define _IL_JIT_OUT_OF_MEMORY		1
-#define _IL_JIT_INVALID_CAST		2
-#define _IL_JIT_INDEX_OUT_OF_RANGE	3
-#define _IL_JIT_METHOD_INVOKATION	4
+#define _IL_JIT_OK						0
+#define _IL_JIT_OUT_OF_MEMORY			1
+#define _IL_JIT_INVALID_CAST			2
+#define _IL_JIT_INDEX_OUT_OF_RANGE		3
+#define _IL_JIT_MISSING_METHOD			4
+#define _IL_JIT_DLL_NOT_FOUND			5
+#define _IL_JIT_ENTRYPOINT_NOT_FOUND	6
 
 /*
  * Emit the code to throw a system exception.
@@ -3057,25 +3072,27 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 					}
 					moduleHandle = LocateExternalModule
 									(ILExecThreadGetProcess(thread), name, pinv);
-					if(!moduleHandle)
+					if(moduleHandle)
 					{
-						return 0;
+
+						/* Get the name of the function within the module */
+						name = ILPInvoke_Alias(pinv);
+						if(!name || *name == '\0')
+						{
+							name = ILMethod_Name(method);
+						}
+
+						/* Look up the method within the module */
+						fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+
+						if(!(fnInfo.func))
+						{
+							fnInfo.func = _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND;
+						}
 					}
-
-					/* Get the name of the function within the module */
-					name = ILPInvoke_Alias(pinv);
-					if(!name || *name == '\0')
+					else
 					{
-						name = ILMethod_Name(method);
-					}
-
-					/* Look up the method within the module */
-					fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
-
-					/* Bail out if we did not find the underlying native method */
-					if(!(fnInfo.func))
-					{
-						return 0;
+						fnInfo.func = _IL_JIT_PINVOKE_DLLNOTFOUND;
 					}
 
 					/* Flag the method pinvoke. */

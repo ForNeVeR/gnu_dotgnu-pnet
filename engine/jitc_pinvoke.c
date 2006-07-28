@@ -52,10 +52,10 @@ static void MarshalDelegateByRefStruct(jit_function_t function, ILJitValue inAdd
 static int _ILJitCompilePinvoke(jit_function_t func)
 {
 	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	ILClass *info = ILMethod_Owner(method);
 	ILClassPrivate *classPrivate = (ILClassPrivate *)info->userData;
 	ILJITCoder *jitCoder = (ILJITCoder*)(classPrivate->process->coder);
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	char *methodName = _ILJitFunctionGetMethodName(func);
 #endif
 	ILJitMethodInfo *jitMethodInfo = (ILJitMethodInfo *)(method->userData);
@@ -86,6 +86,24 @@ static int _ILJitCompilePinvoke(jit_function_t func)
 		/* The pinvoke record could not be found. */
 		return JIT_RESULT_COMPILE_ERROR;
 	}
+
+	/* Setup the needed stuff in the jitCoder. */
+	jitCoder->jitFunction = func;
+
+	/* Check if the method to invoke was found on this system. */
+	if(_ILJitPinvokeError(jitMethodInfo->fnInfo))
+	{
+		if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_DLLNOTFOUND)
+		{
+			_ILJitThrowSystem(jitCoder, _IL_JIT_DLL_NOT_FOUND);
+		}
+		else if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND)
+		{
+			_ILJitThrowSystem(jitCoder, _IL_JIT_ENTRYPOINT_NOT_FOUND);
+		}
+		return JIT_RESULT_OK;
+	}
+
 	/* determine which calling convention to use. */
 	switch(pinv->member.attributes & IL_META_PINVOKE_CALL_CONV_MASK)
 	{

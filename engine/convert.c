@@ -38,23 +38,6 @@ extern	"C" {
 
 #ifdef IL_USE_JIT
 /*
- * Wee keep these macros for now until all references to _ILUnrollMethod
- * are removed when the jit coder is used.
- */
-#define	METADATA_WRLOCK(thread)	\
-			do { \
-				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
-				ILGCDisableFinalizers(0); \
-			} while (0)
-#define	METADATA_UNLOCK(thread)	\
-			do { \
-				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
-				ILGCInvokeFinalizers(0); \
-			} while (0)
-
-
-/*
  * Inner version of "_ILConvertMethod", which detects the type of
  * exception to throw, but does not throw it.
  * This method is invoked only during on demand compilation of a jitted IL method
@@ -87,13 +70,17 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	   method is written in IL or not */
 	if(code.code)
 	{
+		/* Disable the finalizers so that the coder will not be called resursively. */
+		ILGCDisableFinalizers(0);
 		/* Use the bytecode verifier and coder to convert the method */
 		if(!_ILVerify(coder, &start, method, &code,
 					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
 		{
+			ILGCEnableFinalizers();
 			*errorCode = IL_CONVERT_VERIFY_FAILED;
 			return 0;
 		}
+		ILGCEnableFinalizers();
 	}
 	else
 	{
@@ -105,7 +92,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 
 	/* The method is converted now */
 	*errorCode = IL_CONVERT_OK;
-	return 1;
+	return (unsigned char *)1;
 }
 #else
 #ifdef IL_CONFIG_PINVOKE

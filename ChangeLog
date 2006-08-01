@@ -1,3 +1,9 @@
+2006-08-01  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/convert.c: Remove the no longer needed macros for the metadata
+	lock and unlock. Disable finalizers during build of a function to prevent
+	finalizers trying to build a finalizer function. Fix a compiler warning.
+
 2006-07-28  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add constants for the System.MissingMethodException,

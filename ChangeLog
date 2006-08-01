@@ -1,3 +1,9 @@
+
+2006-02-23  Gopal V  <gopalv82@yahoo.com>
+	
+	* engine/debugger.c: Fix debugger build on amd64 (IL_BEST_ALIGNMENT)
+	for cvm.h.
+
 2006-08-01  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/convert.c: Remove the no longer needed macros for the metadata

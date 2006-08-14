@@ -1,3 +1,7 @@
+2006-08-14  Marcus Urban  <murban@warpspeed1.net>
+
+	* csant/csant_cscc.c: Change csant to emit csc-style flags in several
+	cases for mcs. (patch #4720, Klaus)
 
 2006-02-23  Gopal V  <gopalv82@yahoo.com>
 	

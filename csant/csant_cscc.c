@@ -855,33 +855,35 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 	AddArg(&argv, &argc, FindProgramPath("mcs", "csant.env.MCS"));
 
 	/* Set the target and output file */
-	AddArg(&argv, &argc, "--target");
-	AddArg(&argv, &argc, (char *)(args->target));
-	AddArg(&argv, &argc, "-o");
-	AddArg(&argv, &argc, (char *)(args->output));
+	AddValueArg(&argv, &argc, "-target:", (char *)(args->target));
+	AddValueArg(&argv, &argc, "-out:", (char *)(args->output));
 
 	/* Enable debugging if necessary */
 	if(args->debug == COMP_FLAG_TRUE)
 	{
-		AddArg(&argv, &argc, "-g");
+		AddArg(&argv, &argc, "-debug+");
 	}
 
 	/* Set the checked compilation state */
 	if(args->checked == COMP_FLAG_TRUE)
 	{
-		AddArg(&argv, &argc, "--checked");
+		AddArg(&argv, &argc, "/checked+");
+	}
+	else if(args->checked == COMP_FLAG_FALSE)
+	{
+		AddArg(&argv, &argc, "/checked-");
 	}
 
 	/* Set the unsafe compilation state */
 	if(args->unsafe == COMP_FLAG_TRUE)
 	{
-		AddArg(&argv, &argc, "--unsafe");
+		AddArg(&argv, &argc, "/unsafe");
 	}
 
 	/* Disable the standard library if necessary */
 	if(args->noStdLib == COMP_FLAG_TRUE)
 	{
-		AddArg(&argv, &argc, "--nostdlib");
+		AddArg(&argv, &argc, "-nostdlib");
 	}
 
 	/* Set the optimization level */
@@ -959,32 +961,19 @@ static char **BuildMcsCommandLine(CSAntCompileArgs *args)
 		AddValueArg(&argv, &argc, "-define:", temp);
 	}
 
-	/* Add the library references to the command-line */
+	/* Add the references to the command-line */
 	numFiles = CSAntFileSetSize(args->references);
+	temp = 0;
 	for(file = 0; file < numFiles; ++file)
 	{
-		temp = CSAntFileSetFile(args->references, file);
-		len = strlen(temp);
-		while(len > 0 && temp[len - 1] != '/' && temp[len - 1] != '\\')
-		{
-			--len;
-		}
-		if(len > 0)
-		{
-			if(len == 1)
-			{
-				AddArg(&argv, &argc, "-L");
-				AddValueLenArg(&argv, &argc, "", temp, 1);
-			}
-			else
-			{
-				AddArg(&argv, &argc, "-L");
-				AddValueLenArg(&argv, &argc, "", temp, len - 1);
-			}
-		}
-		AddArg(&argv, &argc, "-r");
-		AddArg(&argv, &argc, temp + len);
+		temp = SemiColonList(temp,
+					CSAntDirCombine	(CSAntFileSetFile(args->references, file), 0));
 	}
+	if(temp != 0)
+	{
+		AddValueArg(&argv, &argc, "-reference:", temp);
+	}
+
 
 	/* Terminate the command-line */
 	AddArg(&argv, &argc, (char *)0);

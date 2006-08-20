@@ -273,12 +273,9 @@ static int IsImageWatched(ILAssemblyWatch *watch, ILImage *image)
 	return 0;
 }
 
-/*
- * Check whether method is in assembly that we watch.
- */
-static int IsMethodImageWatched(ILAssemblyWatch *watch, ILMethod *method)
+int ILDebuggerIsAssemblyWatched(ILDebugger *debugger, ILMethod *method)
 {
-	return IsImageWatched(watch, ILClassToImage(ILMethod_Owner(method)));
+	return IsImageWatched(debugger->assemblyWatches, ILClassToImage(ILMethod_Owner(method)));
 }
 
 /*
@@ -1935,6 +1932,12 @@ static void CommandLoop(ILDebugger *debugger)
 		}
 	}
 	while(nextCommand);
+
+	/* Resume all threads so that they can terminate */
+	if(debugger->commandThread)
+	{
+		Resume(debugger, IL_DEBUGGER_RUN_TYPE_CONTINUE);
+	}
 }
 
 /*
@@ -2012,7 +2015,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	debugger = _ILExecThreadProcess(thread)->debugger;
 
 	/* Dont break in methods whose images are not watched */
-	if(!IsMethodImageWatched(debugger->assemblyWatches, method))
+	if(!ILDebuggerIsAssemblyWatched(debugger, method))
 	{
 		return IL_HOOK_CONTINUE;
 	}
@@ -2020,7 +2023,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	/* Read current position from debug info */
 	sourceFile = GetLocation(method, offset, &line, &col);
 
-	//fprintf(stderr, "DebugHook method=%s offset=%d sourceFile=%s line=%d\n", ILMethod_Name(method), offset, sourceFile, line);
+	//fprintf(stderr, "DebugHook method=%s.%s offset=%d sourceFile=%s line=%d\n", ILClass_Name(ILMethod_Owner(method)), ILMethod_Name(method), offset, sourceFile, line);
 
 	/* Continue if no debug info available */
 	if(sourceFile == 0)

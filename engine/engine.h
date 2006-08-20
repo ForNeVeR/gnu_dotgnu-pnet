@@ -379,6 +379,7 @@ struct _tagILExecThread
 	CVMWord		   *frame;			/* Base of the local variable frame */
 	CVMWord        *stackTop;		/* Current stack top */
 	ILMethod       *method;			/* Current method being executed */
+	ILUInt32	offset;			/* Current IL offset */
 	
 	/* Last exception that was thrown */
 	ILObject       *thrownException;

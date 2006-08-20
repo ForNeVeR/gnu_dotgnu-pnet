@@ -2280,11 +2280,34 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 }
 
 /*
+ * Debugger hook function called when breakpoint is reached.
+ */
+static void JitDebuggerHook(jit_function_t func, jit_nint data1, jit_nint data2)
+{
+	//fprintf(stderr, "hook called\n");
+
+	ILExecThread *thread = ILExecThreadCurrent();
+
+	/* Update thread data */
+	thread->method = (ILMethod *) data1;
+	thread->offset = (ILUInt32) data2;
+
+	_ILBreak(thread, 0);
+}
+
+/*
  * Enable debug mode in a JIT coder instance.
  */
 static void JITCoder_EnableDebug(ILCoder *coder)
 {
-	(_ILCoderToILJITCoder(coder))->debugEnabled = 1;
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	jitCoder->debugEnabled = 1;
+	jit_debugger_set_hook(jitCoder->context, JitDebuggerHook);
+}
+
+void ILJitMarkBreakpoint(ILCoder *coder, ILMethod *method, ILUInt32 offset)
+{
+	jit_insn_mark_breakpoint(_ILCoderToILJITCoder(coder)->jitFunction, (jit_nint) method, offset);
 }
 
 /*

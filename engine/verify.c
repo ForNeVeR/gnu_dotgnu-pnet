@@ -23,6 +23,10 @@
 #include "il_opcodes.h"
 #include "il_align.h"
 #include "il_debug.h"
+#include "debugger.h"
+#ifdef IL_USE_JIT
+#include "jitc.h"
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -666,6 +670,10 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 #else
 	int haveDebug = 0;
 #endif
+#if defined(IL_DEBUGGER) && defined(IL_USE_JIT)
+	ILDebugger *debugger;
+	int markBreakpoits;
+#endif
 
 	/* Include local variables that are required by the include files */
 #define IL_VERIFY_LOCALS
@@ -691,7 +699,20 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	coderFlags = ILCoderGetFlags(coder);
 	isStatic = ILMethod_IsStatic(method);
 	isSynchronized = ILMethod_IsSynchronized(method);
-		
+
+#if defined(IL_DEBUGGER) && defined(IL_USE_JIT)
+	/* Check if this method can be debugged */
+	debugger = ILDebuggerFromProcess(thread->process);
+	if(debugger && ILDebuggerIsAssemblyWatched(debugger, method))
+	{
+		markBreakpoits = 1;
+	}
+	else
+	{
+		markBreakpoits = 0;
+	}
+#endif
+
 restart:
 	result = 0;
 	labelList = 0;
@@ -1099,6 +1120,14 @@ restart:
 		{
 			VERIFY_STACK_ERROR();
 		}
+
+#if defined(IL_DEBUGGER) && defined(IL_USE_JIT)
+		/* Insert potential breakpoint */
+		if(markBreakpoits)
+		{
+			ILJitMarkBreakpoint(coder, method, offset);
+		}
+#endif
 
 		/* Verify the instruction */
 		lastWasJump = 0;

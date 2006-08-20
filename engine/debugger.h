@@ -48,6 +48,11 @@ extern	"C" {
 void SetupDebugger(ILExecProcess *process);
 
 /*
+ * Check whether debugger is watching method's assembly.
+ */
+int ILDebuggerIsAssemblyWatched(ILDebugger *debugger, ILMethod *method);
+
+/*
  * Information about a thread that is under the control of the debugger.
  */
 struct _tagILDebuggerThreadInfo

@@ -158,33 +158,35 @@ int _ILIsBreak(ILExecThread *thread, ILMethod *method)
 
 void _ILBreak(ILExecThread *thread, int type)
 {
-	unsigned char *start;
-	ILInt32 offset;
 	int action;
+#ifdef IL_USE_CVM
+	unsigned char *start;
+#endif
 
 	if(thread->process->debugHookFunc)
 	{
-		/* Consult the coder to convert the PC into an IL offset */
-		if(thread->method && thread->pc != IL_INVALID_PC)
-		{
-			start = (unsigned char *)ILMethodGetUserData(thread->method);
-			if(ILMethodIsConstructor(thread->method))
-			{
-				start -= ILCoderCtorOffset(thread->process->coder);
-			}
-			offset = (ILInt32)(ILCoderGetILOffset
-					(thread->process->coder, (void *)start,
-					 (ILUInt32)(thread->pc - start), 0));
-		}
-		else
-		{
-			offset = -1;
-		}
-
+#ifdef IL_USE_CVM
+               /* Consult the coder to convert the PC into an IL offset */
+               if(thread->method && thread->pc != IL_INVALID_PC)
+               {
+                       start = (unsigned char *)ILMethodGetUserData(thread->method);
+                       if(ILMethodIsConstructor(thread->method))
+                       {
+                               start -= ILCoderCtorOffset(thread->process->coder);
+                       }
+                       thread->offset = (ILInt32)(ILCoderGetILOffset
+                                       (thread->process->coder, (void *)start,
+                                        (ILUInt32)(thread->pc - start), 0));
+               }
+               else
+               {
+                       thread->offset = -1;
+               }
+#endif
 		/* Call the debugger to process the breakpoint */
 		action = (*(thread->process->debugHookFunc))
 			(thread->process->debugHookData,
-			 thread, thread->method, offset, type);
+			 thread, thread->method, thread->offset, type);
 
 		/* Abort the engine if requested by the debugger */
 		if(action == IL_HOOK_ABORT)

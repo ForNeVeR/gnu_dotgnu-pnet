@@ -1,3 +1,23 @@
+2006-08-20  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.h: expose IsMethodImageWatched() so that coder
+	can insert breakpoints only in watched assemblies.
+
+	* engine/debugger.c: return IL_HOOK_ABORT when connection with frontend
+	breaks.
+
+	* engine/engine.h: add variable for current IL offset in exec thread.
+	This variable is updated when debugger breaks.
+
+	* engine/jitc.c: implement jit debugging hook function.
+
+	* engine/jitc.h: expose function for marking breakpoits.
+
+	* engine/lib_diag.c: properly handle debugger break for jit engine.
+
+	* engine/verify.c: mark breakpoints before every IL instruction when
+	debugger is attached (applies only for jit engine).
+
 2006-08-14  Marcus Urban  <murban@warpspeed1.net>
 
 	* csant/csant_cscc.c: Change csant to emit csc-style flags in several
@@ -344,7 +364,7 @@
 	* engine/jitc.c, engine/jitc_call.c: Call internal fuctions now directly
 	for normal calls and ctors.
 	
-2006-03-19  Rainer Größlinger  <rainer.groesslinger@gmx.net>
+2006-03-19  Rainer Grï¿½linger  <rainer.groesslinger@gmx.net>
 
 	* libgc/Makefile.am, libgc/Makefile.direct, libgc/Makefile.in,
 	libgc/allchblk.c, libgc/alloc.c, libgc/configure, libgc/configure.in,
@@ -1315,12 +1335,12 @@
 	* csant/csant_dir.c: Prevent prepending of pathname if filename starts with
 	a drive specification on windows in CSAntDirCombine.
 
-2005-08-03  Rainer Größlinger  <rainer.groesslinger@gmx.net>
+2005-08-03  Rainer Grï¿½linger  <rainer.groesslinger@gmx.net>
 
 	* libffi/include/Makefile.am, libffi/include/Makefile.in: ffitarget.h is
 	installed in $(includedir)/pnet now. (applied by Klaus Treichel)
 
-2005-08-02  Rainer Größlinger  <rainer.groesslinger@gmx.net>
+2005-08-02  Rainer Grï¿½linger  <rainer.groesslinger@gmx.net>
 
 	* doc/cvmdoc.py: replace module regex by re. (applied by Klaus Treichel)
 
@@ -1328,7 +1348,7 @@
 
 	* ilalink/link_main.c: Add missing newline to error message.
 
-2005-08-01  Rainer Größlinger <rainer.groesslinger@gmx.net>
+2005-08-01  Rainer Grï¿½linger <rainer.groesslinger@gmx.net>
 
 	* doc/pnetasm.texi: remove incorrect @. (applied by Klaus Treichel)
 
@@ -1532,7 +1552,7 @@
 
 	* engine/lib_string.c: change String.Replace so that a new string is
 	created only if a replacement has to be done.  Changed the off by one
-	bug (thx. to Erich Kitzmüller) that fixed the problem.
+	bug (thx. to Erich Kitzmller) that fixed the problem.
 
 2005-03-06  Klaus Treichel  <ktreichel@web.de>
 

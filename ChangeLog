@@ -1,3 +1,10 @@
+
+2006-08-22   Yan Burman  <yan_952@hotmail.com>
+
+	* support/spawn.c, cscc/common/cc_main.c: Uses windows "posix" stuff
+	to spawn new process after redirecting its output through a pipe.
+	(patch #5321, Gopal)
+
 2006-08-20  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.h: expose IsMethodImageWatched() so that coder
@@ -23,7 +30,7 @@
 	* csant/csant_cscc.c: Change csant to emit csc-style flags in several
 	cases for mcs. (patch #4720, Klaus)
 
-2006-02-23  Gopal V  <gopalv82@yahoo.com>
+2006-08-01  Gopal V  <gopalv82@yahoo.com>
 
 	* engine/debugger.c: Fix debugger build on amd64 (IL_BEST_ALIGNMENT)
 	for cvm.h.

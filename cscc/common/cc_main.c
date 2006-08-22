@@ -46,6 +46,15 @@
 #endif
 #include <signal.h>
 
+#ifdef _WIN32
+#include <process.h>
+#include <io.h>
+#include <fcntl.h>
+#ifndef P_NOWAIT
+#define P_NOWAIT _P_NOWAIT
+#endif
+#endif
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -780,7 +789,70 @@ static FILE *SpawnOnPipe(char **argv, int *pid)
 		return file;
 	}
 
+#elif defined _WIN32
+	int pipefds[2];
+	FILE *file;
+	int orig_stdout;
+	
+	/* Report the command line if verbose mode is enabled */
+	if(verbose_mode == VERBOSE_CMDLINES)
+	{
+		int posn;
+		for(posn = 0; argv[posn] != 0; ++posn)
+		{
+			if(posn != 0)
+			{
+				putc(' ', stderr);
+			}
+			fputs(argv[posn], stderr);
+		}
+		putc('\n', stderr);
+	}
+	
+	/* Create a pipe to use to communicate with the child */
+	if(_pipe(pipefds, 512, O_NOINHERIT) < 0)
+	{
+		perror("_pipe");
+		return 0;
+	}
+
+	/* Duplicate the originale stdout descriptor */
+	orig_stdout = _dup(_fileno(stdout));
+
+	/* Duplicate write end of pipe to to stdout */
+	if (_dup2(pipefds[1], _fileno(stdout)))
+	{
+		perror("_dup2");
+		return 0;
+	}
+
+	/* Close original write end of pipe */
+	_close(pipefds[1]);
+
+	
+	*pid = _spawnvp(P_NOWAIT, argv[0],
+			(const char* const*)argv);
+
+	/* Duplicate original stdout back */
+	if (_dup2(orig_stdout, _fileno(stdout)))
+	{
+		perror("_dup2");
+		return 0;
+	}
+
+	/* Close the duplicate stdout */
+	_close(orig_stdout);
+
+	file = _fdopen(pipefds[0], "r");
+	if (!file)
+	{
+		perror("_fdopen");
+		return 0;
+	}
+
+	return file;
 #else
+	
 	fputs("Don't know how to spawn child processes on this system\n", stderr);
 	return 0;
 #endif
@@ -813,6 +885,16 @@ static int ClosePipe(FILE *file, int pid)
 	{
 		return 0;
 	}
+#elif defined _WIN32
+	int status = 1;
+	fclose(file);
+	if (_cwait(NULL, pid, _WAIT_CHILD) == -1)
+	{
+		perror("_cwait");
+		return 0;
+	}
+	
+	return (status == 0);
 #else
 	return 0;
 #endif

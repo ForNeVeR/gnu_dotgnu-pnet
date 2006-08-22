@@ -217,8 +217,13 @@ int ILSpawnProcessWithPipe(char *argv[], void **stream)
 
 int ILSpawnProcessWaitForExit(int pid, char *argv[])
 {
-	/* Not supported */
-	return 1;
+	int status = 1;
+	if (_cwait(&status, pid, _WAIT_CHILD) == -1)
+	{
+		return 0;
+	}
+	
+	return (status == 0);
 }
 
 #else

@@ -1,3 +1,7 @@
+2006-08-24  Klaus treichel  <ktreichel@web.de>
+
+	* engine/debugger.c: Wrap the #include <unistd.h> in #ifdef HAVE_UNISTD_H
+	... #endif to fix a build problem on mingw.
 
 2006-08-22   Yan Burman  <yan_952@hotmail.com>
 

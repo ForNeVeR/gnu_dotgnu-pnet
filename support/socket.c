@@ -74,6 +74,17 @@
 #endif
 #endif
 
+#ifdef IL_WIN32_NATIVE
+	/* Win32 defines IPPROTO_TCP, not SOL_TCP */
+	#if !defined (SOL_TCP) && defined(IPPROTO_TCP)
+		#define SOL_TCP IPPROTO_TCP
+	#endif
+	/* Win32 defines IPPROTO_UDP, not SOL_UDP */
+	#if !defined (SOL_UDP) && defined(IPPROTO_UDP)
+		#define SOL_UDP IPPROTO_UDP
+	#endif 
+#endif
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif

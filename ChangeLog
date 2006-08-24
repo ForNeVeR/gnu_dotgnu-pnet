@@ -1,9 +1,17 @@
+
+2006-08-25  Yan Burman  <yan_952@hotmail.com>
+
+	* support/socket.c: Use IPPROTO_TCP and IPPROTO_UDP instead of the 
+	SOL_* macros. (patch #5323, Gopal)
+
+	* cscc/common/cc_main.c: get exit codes from _cwait. (patch #5326, Gopal)
+
 2006-08-24  Klaus treichel  <ktreichel@web.de>
 
 	* engine/debugger.c: Wrap the #include <unistd.h> in #ifdef HAVE_UNISTD_H
 	... #endif to fix a build problem on mingw.
 
-2006-08-22   Yan Burman  <yan_952@hotmail.com>
+2006-08-22  Yan Burman  <yan_952@hotmail.com>
 
 	* support/spawn.c, cscc/common/cc_main.c: Uses windows "posix" stuff
 	to spawn new process after redirecting its output through a pipe.
@@ -5617,4 +5625,5 @@
 
 	* engine/lib_reflect.c: closures are not available if libffi
 	is disabled.
+
 

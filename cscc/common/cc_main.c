@@ -888,7 +888,7 @@ static int ClosePipe(FILE *file, int pid)
 #elif defined _WIN32
 	int status = 1;
 	fclose(file);
-	if (_cwait(NULL, pid, _WAIT_CHILD) == -1)
+	if (_cwait(&status, pid, _WAIT_CHILD) == -1)
 	{
 		perror("_cwait");
 		return 0;

@@ -24,6 +24,9 @@
 #ifdef IL_WIN32_PLATFORM
 	#include <windows.h>
 	#include <process.h>
+	#ifndef _WAIT_CHILD
+		#define _WAIT_CHILD WAIT_CHILD
+	#endif
 #elif !defined(__palmos__)
 	#ifdef HAVE_SYS_TYPES_H
 		#include <sys/types.h>

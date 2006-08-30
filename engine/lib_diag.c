@@ -166,22 +166,22 @@ void _ILBreak(ILExecThread *thread, int type)
 	if(thread->process->debugHookFunc)
 	{
 #ifdef IL_USE_CVM
-               /* Consult the coder to convert the PC into an IL offset */
-               if(thread->method && thread->pc != IL_INVALID_PC)
-               {
-                       start = (unsigned char *)ILMethodGetUserData(thread->method);
-                       if(ILMethodIsConstructor(thread->method))
-                       {
-                               start -= ILCoderCtorOffset(thread->process->coder);
-                       }
-                       thread->offset = (ILInt32)(ILCoderGetILOffset
-                                       (thread->process->coder, (void *)start,
-                                        (ILUInt32)(thread->pc - start), 0));
-               }
-               else
-               {
-                       thread->offset = -1;
-               }
+		/* Consult the coder to convert the PC into an IL offset */
+		if(thread->method && thread->pc != IL_INVALID_PC)
+		{
+				start = (unsigned char *)ILMethodGetUserData(thread->method);
+				if(ILMethodIsConstructor(thread->method))
+				{
+						start -= ILCoderCtorOffset(thread->process->coder);
+				}
+				thread->offset = (ILInt32)(ILCoderGetILOffset
+								(thread->process->coder, (void *)start,
+								(ILUInt32)(thread->pc - start), 0));
+		}
+		else
+		{
+				thread->offset = -1;
+		}
 #endif
 		/* Call the debugger to process the breakpoint */
 		action = (*(thread->process->debugHookFunc))

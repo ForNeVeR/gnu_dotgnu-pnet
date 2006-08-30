@@ -26,6 +26,9 @@
 
 #include "il_opcodes.h"
 #include "il_utils.h"
+#ifdef IL_DEBUGGER
+#include "debugger.h"
+#endif
 #ifndef IL_WITHOUT_TOOLS
 #include "il_dumpasm.h"
 #endif
@@ -417,6 +420,11 @@ struct _tagILJITCoder
 #ifndef IL_JIT_THREAD_IN_SIGNATURE
 	/* cache for the current thread. */
 	ILJitValue		thread;
+#endif
+
+#ifdef IL_DEBUGGER
+	/* Flag if current method can be debugged */
+	int markBreakpoints;
 #endif
 };
 
@@ -2305,11 +2313,6 @@ static void JITCoder_EnableDebug(ILCoder *coder)
 	jit_debugger_set_hook(jitCoder->context, JitDebuggerHook);
 }
 
-void ILJitMarkBreakpoint(ILCoder *coder, ILMethod *method, ILUInt32 offset)
-{
-	jit_insn_mark_breakpoint(_ILCoderToILJITCoder(coder)->jitFunction, (jit_nint) method, offset);
-}
-
 /*
  * Allocate memory within a JIT coder instance.
  */
@@ -2394,6 +2397,13 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 	{
 		jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
 	}
+#ifdef IL_DEBUGGER
+	/* Insert potential breakpoint */
+	if(jitCoder->markBreakpoints)
+	{
+		jit_insn_mark_breakpoint(jitCoder->jitFunction, (jit_nint) jitCoder->currentMethod, offset);
+	}
+#endif
 }
 
 #ifdef IL_CONFIG_PINVOKE

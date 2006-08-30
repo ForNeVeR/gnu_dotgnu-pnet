@@ -225,10 +225,6 @@ void *ILJitDelegateGetClosure(ILExecThread *thread,
 							  ILObject *delegate,
 							  ILType *delType);
 
-/*
- * Output potential breakpoint and remeber method in data1 and offset in data2.
- */
-void ILJitMarkBreakpoint(ILCoder *coder, ILMethod *method, ILUInt32 offset);
 
 #endif  /* IL_USE_JIT */
 

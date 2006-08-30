@@ -28,6 +28,9 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 {
 	ILJITCoder *coder = ((ILJITCoder *)_coder);
 	ILJITLabel *label0;
+#ifdef IL_DEBUGGER
+	ILDebugger *debugger;
+#endif
 
 	/* Record the current jitted function. */
 	coder->jitFunction = ILJitFunctionFromILMethod(method);
@@ -82,6 +85,12 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	/* Set the label for the start of the function. */
 	label0 = _ILJitLabelGet(coder, 0, _IL_JIT_LABEL_NORMAL);
 	jit_insn_label(coder->jitFunction, &(label0->label));
+
+#ifdef IL_DEBUGGER
+	/* Check if this method can be debugged */
+	debugger = ILDebuggerFromProcess(coder->process);
+	coder->markBreakpoints = (debugger && ILDebuggerIsAssemblyWatched(debugger, method));
+#endif
 
 	if(ILMethod_IsStaticConstructor(method))
 	{

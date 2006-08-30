@@ -33,6 +33,7 @@
 #include "../ildasm/ildasm_internal.h"
 
 #ifdef IL_USE_JIT
+#include <jit/jit-dump.h>
 #include "jitc.h"
 #endif
 
@@ -429,8 +430,8 @@ static void DumpMethod(FILE *stream, ILMethod *method, int indent)
 {
 	ILType *signature;
 	int isConstructor;
-	int line;
-	int col;
+	ILUInt32 line;
+	ILUInt32 col;
 	const char *sourceFile;
 
 	/* Bail out on null */
@@ -443,7 +444,7 @@ static void DumpMethod(FILE *stream, ILMethod *method, int indent)
 	Indent(stream, indent);
 	fputs("<Member MemberName=\"", stream);
 	DumpString(ILMethod_Name(method), stream);
-	fputs("\" Owner=\"", stream);
+	fputs("\" OwnerName=\"", stream);
 	DumpClassName(stream, ILMethod_Owner(method));
 	fputs("\">\n", stream);
 
@@ -505,7 +506,7 @@ void DumpExecPosition(FILE *stream, ILMethod *method,
 }
 
 /*
- *  Dump breakpoint.
+ * Dump breakpoint.
  */
 void DumpBreakpoint(FILE *stream, ILBreakpoint *breakpoint, int indent)
 {
@@ -519,6 +520,50 @@ void DumpBreakpoint(FILE *stream, ILBreakpoint *breakpoint, int indent)
 	Indent(stream, indent);
 	fputs("\n</Breakpoint>", stream);
 }
+
+/*
+ * Dump call frame (used only with CVM coder.)
+ */
+#ifdef IL_USE_CVM
+static void DumpCallFrame(FILE *stream, ILDebugger *debugger, ILCallFrame *frame, int indent)
+{
+	unsigned char *start;
+	ILInt32 offset;
+	ILUInt32 line;
+	ILUInt32 col;
+	const char *sourceFile;
+
+	if(frame->method && frame->pc != IL_INVALID_PC)
+	{
+		/* Find the start of the frame method */
+		start = (unsigned char *)ILMethodGetUserData(frame->method);
+		if(ILMethodIsConstructor(frame->method))
+		{
+			start -= ILCoderCtorOffset(debugger->process->coder);
+		}
+
+		offset = (ILInt32)ILCoderGetILOffset
+				(debugger->process->coder, (void *)start,
+				(ILUInt32)(frame->pc - start), 0);
+
+		/* Read current position from debug info */
+		sourceFile = GetLocation(frame->method, offset, &line, &col);
+	}
+	else
+	{
+		/* Probably a native method that does not have offsets */
+		offset = -1;
+		sourceFile = 0;
+		line = 0;
+		col = 0;
+	}
+
+	/* Dump the frame */
+	DumpExecPosition(stream, frame->method,
+						offset, sourceFile,
+						line, col, indent);
+}
+#endif	// IL_USE_CVM
 
 /*
  * Create new ILDebuggerThreadInfo.
@@ -697,13 +742,10 @@ void UnwatchAll(ILDebugger *debugger, FILE *stream)
 /*
  * Find method for given source file and line.
  */
-ILMethod *FindMethodByLocation(ILDebugger *debugger,
-														const char *sourceFile,
-														ILUInt32 reqLine, 
-														ILUInt32 *outLine,
-														ILUInt32 *outCol,
-														ILUInt32 *outOffset,
-														const char **outFile)
+ILMethod *FindMethodByLocation(ILDebugger *debugger, const char *sourceFile,
+								ILUInt32 reqLine, ILUInt32 *outLine,
+								ILUInt32 *outCol, ILUInt32 *outOffset,
+								const char **outFile)
 {
 	ILContext *context;
 	ILImage *image;
@@ -744,26 +786,25 @@ ILMethod *FindMethodByLocation(ILDebugger *debugger,
 		}
 		/* Iterate all methods */
 		method = 0;
-		while((method = (ILMethod *)ILImageNextToken
-					(image, IL_META_TOKEN_METHOD_DEF, (void *)method)) != 0)
+		while((method = (ILMethod *)ILImageNextToken(image, IL_META_TOKEN_METHOD_DEF, (void *)method)) != 0)
 		{
-			/* Get method start location (offset 0) */
-			filename = ILDebugGetLineInfo(dbgc, ILMethod_Token(method), 0,
-							&line, &col);
-
-			/* Check if filename is what we are looking for */
-			if(!filename || ILStrICmp(filename, sourceFile) != 0)
-			{
-				continue;
-			}
-			//fprintf(stderr, "filename=%s method=%s reqLine=%d line=%d\n", filename, ILMethod_Name(method), reqLine, line);
 			/* Find best matching offset in method */
 			if(ILMethodGetCode(method, &methodCode))
 			{
 				for(offset = 0; offset < methodCode.codeLen; offset++)
 				{
-					if(!ILDebugGetLineInfo(dbgc, ILMethod_Token(method), offset,
-										&line, &col))
+					/* Get debug info for current offset */
+					filename = ILDebugGetLineInfo(dbgc,
+														ILMethod_Token(method),
+												 		offset, &line, &col);
+
+					/* There is no line debug info for this offset */
+					if(!filename)
+					{
+						continue;
+					}
+					/* Try next method if not in requested file */
+					if(ILStrICmp(filename, sourceFile) != 0)
 					{
 						break;
 					}
@@ -773,7 +814,6 @@ ILMethod *FindMethodByLocation(ILDebugger *debugger,
 						continue;
 					}
 					/* Update the best debug info */
-					//fprintf(stderr, "offset=%d line=%d delta=%d\n", offset, line, delta);
 					bestMethod = method;
 					bestDelta = delta;
 					bestOffset = offset;
@@ -968,22 +1008,108 @@ void ShowPosition(ILDebugger *debugger, FILE *stream)
 }
 
 /*
- * stack_trace command.
+ * show_stack_trace command.
  */
 void ShowStackTrace(ILDebugger *debugger, FILE *stream)
 {
+#ifdef IL_USE_CVM
 	ILCallFrame *frame;
+	ILExecThread *thread = debugger->dbthread->execThread;
 
-	fputs("<StackTrace>\n", stream);
-	frame = _ILGetCallFrame(debugger->dbthread->execThread, 0);
+	/* Push the current frame data onto the stack temporarily
+		so that we can dump it */
+	if(thread->numFrames < thread->maxFrames)
+	{
+		frame = &(thread->frameStack[(thread->numFrames)++]);
+	}
+	else if((frame = _ILAllocCallFrame(thread)) == 0)
+	{
+		/* We ran out of memory trying to push the frame */
+		DumpError("out of memory while getting stack trace", stream);
+		return;
+	}
+	frame->method = thread->method;
+	frame->pc = thread->pc;
+	frame->frame = thread->frame;
+	frame->exceptHeight = thread->exceptHeight;
+	frame->permissions = 0;
+
+	fputs("  <StackTrace>\n", stream);
+	frame = _ILGetCallFrame(thread, 0);
+
 	while(frame != 0)
 	{
-		DumpMethod(stream, frame->method, 2);
-		frame = _ILGetNextCallFrame(debugger->dbthread->execThread, frame);
+		/* Dump the frame */
+		DumpCallFrame(stream, debugger, frame, 4);
+		putc('\n', stream);
+
+		/* Next frame */
+		frame = _ILGetNextCallFrame(thread, frame);
 	}
 
-	DumpMethod(stream, debugger->dbthread->method, 2);
-	fputs("</StackTrace>", stream);
+	/* Pop current frame, that was previously pushed for dumping */
+	--(thread->numFrames);
+
+	/* Dump xml footer */
+	fputs("  </StackTrace>", stream);
+#endif	// IL_USE_CVM
+
+#ifdef IL_USE_JIT
+	jit_stack_trace_t stackTrace;
+	ILUInt32 size;
+	ILUInt32 current;
+//	ILJITCoder *jitCoder;
+	ILJitFunction jitFunction;
+	ILMethod *method;
+	ILUInt32 offset;
+	ILUInt32 line;
+	ILUInt32 col;
+	const char *sourceFile;
+
+	/* Get jit stack trace */
+	stackTrace = jit_exception_get_stack_trace();
+	if(stackTrace == 0)
+	{
+		DumpError("error getting stack trace", stream);
+		return;
+	}
+
+	/* Dump xml header */
+	fputs("  <StackTrace>\n", stream);
+
+	/* Get info for reading stack trace */
+	size = jit_stack_trace_get_size(stackTrace);
+//	jitCoder = (ILJITCoder *)(debugger->process->coder);
+
+	/* Walk the stack and dump managed frames */
+	for(current = 0; current < size; ++current)
+	{
+//		jitFunction = jit_stack_trace_get_function(jitCoder->context,
+//										stackTrace, current);
+//		if(jitFunction)
+//		{
+//			if(jit_function_get_meta(jitFunction, IL_JIT_META_METHOD) != 0)
+//			{
+//				/* Get IL offset */
+//				offset = jit_stack_trace_get_offset(jitCoder->context,
+//													stackTrace,
+//													current);
+//				/* Read current position from debug info */
+//				sourceFile = GetLocation(frame->method, offset, &line, &col);
+//
+//				/* Dump the frame */
+//				DumpExecPosition(stream, frame->method,
+//						offset, sourceFile,
+//						line, col, 4);
+//			}
+//		}
+	}
+	/* Clean up */
+	jit_stack_trace_free(stackTrace);
+	
+	/* Dump xml footer */
+	fputs("  </StackTrace>", stream);
+#endif	// IL_USE_JIT
 }
 
 /*
@@ -1011,7 +1137,7 @@ ILMethod * FindMethod(ILDebugger *debugger, char *methodName, char *className)
 	context = ILExecProcessGetContext(debugger->process);
 	image = 0;
 	while((image = ILContextNextImage(context, image)) != 0)
-	{		
+	{
 		/* Check if class name is specified */
 		if(className)
 		{
@@ -1327,8 +1453,8 @@ void ShowLibraries(ILDebugger *debugger, FILE *stream)
 	ILClass *classInfo;
 	ILHashTable *table;
 	ILHashIter iter;
-	int line;
-	int col;
+	ILUInt32 line;
+	ILUInt32 col;
 	const char *sourceFile;
 	int error = 0;
 	int dumpMembers;
@@ -1738,8 +1864,8 @@ static Cmd const commands[] = {
 		"Specify 1 as first parameter to get all members dumped"
 	},
 
-	{ "stack_trace",		11,	0,	ShowStackTrace,
-		"stack_trace",
+	{ "show_stack_trace",		16,	0,	ShowStackTrace,
+		"show_stack_trace",
 		"Print stacktrace for current thread.",
 		"Print stacktrace for current thread."
 	},
@@ -1934,12 +2060,6 @@ static void CommandLoop(ILDebugger *debugger)
 		}
 	}
 	while(nextCommand);
-
-	/* Resume all threads so that they can terminate */
-	if(debugger->commandThread)
-	{
-		Resume(debugger, IL_DEBUGGER_RUN_TYPE_CONTINUE);
-	}
 }
 
 /*
@@ -2169,8 +2289,6 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	{
 		/* Suspend until resumed by continue or step command */
 		_ILExecThreadSuspendThread(thread, thread->supportThread);
-
-		//fprintf(stderr, "resumed %d\n", info->runType);	
 	}
 	else
 	{
@@ -2200,6 +2318,9 @@ static void CommandThreadFn(void *arg)
 		CommandLoop(debugger);
 	}
 	while(debugger->abort == 0);
+	
+	/* Resume all threads so that they can terminate by returning IL_HOOK_ABORT */
+	Resume(debugger, IL_DEBUGGER_RUN_TYPE_CONTINUE);
 }
 
 /*

@@ -1,3 +1,19 @@
+2006-08-30  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/cvmc_setup.c, engine/jitc_setup: Set coder->markBreakpoints
+	flag.
+
+	* engine/cvmc.c: Mark breakpoints only when needed.
+	
+	* engine/jitc.c, engine/jitc.h, engine/verify.c: Moved marking
+	breakpints to coder's MarkBytecode() function.
+
+	* engine/lib_diag.c: Reformated function (tabs instead of spaces).
+
+	* engine/debugger.c: Fix warnings, implement show_stack_trace command
+	for CVM engine, fix inserting breakpoints in ctors, correctly exit
+	debugged application when connection to debugger breaks.
+
 2006-08-25  Klaus Treichel  <ktreichel@web.de>
 
 	* support/spawn.c: Define _WAIT_CHILD as WAIT_CHILD on windows if

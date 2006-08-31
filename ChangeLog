@@ -1,3 +1,9 @@
+
+2006-08-31  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_thread.c: Set the exception handler which converts builtin
+	libjit exceptions into clr exceptions.
+
 2006-08-30  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/cvmc_setup.c, engine/jitc_setup: Set coder->markBreakpoints

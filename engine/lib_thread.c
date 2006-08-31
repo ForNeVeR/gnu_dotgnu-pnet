@@ -215,6 +215,12 @@ static void __PrivateThreadStart(void *objectArg)
 
 	thread = ILExecThreadCurrent();
 
+#ifdef IL_USE_JIT
+	/* Set the exception handler which converts builtin
+	   libjit exceptions into clr exceptions */
+	jit_exception_set_handler(_ILJitExceptionHandler);
+#endif
+
 	_ILCallMethod
 		(
 			thread,

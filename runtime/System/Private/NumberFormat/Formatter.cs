@@ -567,7 +567,8 @@ internal abstract class Formatter
 		// handle empty format
 		if(format.Length == 0)
 		{
-			return new CustomFormatter(format);
+			//return new CustomFormatter(format);
+			return new GeneralFormatter(-1, 'G');
 		}
 
 		//  Search for cached formats

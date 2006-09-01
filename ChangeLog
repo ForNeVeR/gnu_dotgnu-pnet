@@ -1,3 +1,9 @@
+2006-09-01  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Private/NumberFormat/Formatter.cs: use general formatter
+	instead of CustomFomatter if format string is empty.
+	CustomFormatter is buggy if format string is empty (if formatting e.g. 0).
+
 2006-07-23  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Windows.Forms/DataGridTableStyle.cs: Call base.Dispose(disposing)

@@ -156,8 +156,9 @@ void _ILThreadSuspendUntilResumed(ILThread *thread);
  * Primitive mutex operations.  Note: the "Lock" and "Unlock"
  * operations are not "suspend-safe".
  */
+extern pthread_mutexattr_t _ILMutexAttr;
 #define	_ILMutexCreate(mutex)	\
-			(pthread_mutex_init((mutex), (pthread_mutexattr_t *)0))
+			(pthread_mutex_init((mutex), &_ILMutexAttr))
 #define	_ILMutexDestroy(mutex)	\
 			(pthread_mutex_destroy((mutex)))
 #define	_ILMutexLockUnsafe(mutex)	\

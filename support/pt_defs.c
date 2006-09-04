@@ -46,6 +46,11 @@ extern	"C" {
 pthread_key_t _ILThreadObjectKey;
 
 /*
+ * Default mutex attribute.
+ */
+pthread_mutexattr_t _ILMutexAttr;
+
+/*
  * Suspend until we receive IL_SIG_RESUME from another thread
  * in this process.
  *
@@ -157,6 +162,12 @@ void _ILThreadInitSystem(ILThread *mainThread)
 
 	/* We need a thread-specific key for storing thread objects */
 	pthread_key_create(&_ILThreadObjectKey, (void (*)(void *))0);
+
+	/* Initialize the mutexattr used on this system. */
+	pthread_mutexattr_init(&_ILMutexAttr);
+#ifdef PTHREAD_MUTEX_NORMAL
+	pthread_mutexattr_settype(&_ILMutexAttr, PTHREAD_MUTEX_NORMAL);
+#endif
 
 	/* Block the IL_SIG_RESUME signal in the current thread.
 	   It will be unblocked by "SuspendUntilResumed" */

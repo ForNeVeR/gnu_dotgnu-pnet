@@ -1,3 +1,19 @@
+2006-09-04  Klaus treichel  <ktreichel@web.de>
+
+	* support/pt_defs.c: Add a default mutex attribute to make sure that fast
+	(deadlocking) mutexes are used. Initialize this mutex attribute during
+	initialization of threading.
+
+	* support/pt_defs.h: Add an extern declaration of the new mutex attribute
+	and replace the 0 mutex attribute in pthread_mutex_init with a reference
+	to the new created attribute.
+
+	* engine/lib_gc.c: Add a separate mutex in the gc handletable to
+	syncronize the access to this table instead of using the process->lock
+	mutex (which caused deadlocks if finalizers are invoked).
+	We use the process->lock only for the creation of the table and disable
+	/enable finalizers at this point.
+
 2006-09-04  Radek Polak	<psonek2@seznam.cz>
 
 	* engine/debugger.c: reformat with tabs set to 4, implemented

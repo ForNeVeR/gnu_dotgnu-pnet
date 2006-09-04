@@ -119,6 +119,9 @@ ILInt64 _IL_GC_GetTotalMemory(ILExecThread *_thread,
  */
 typedef struct _tagILGCHandleTable
 {
+	/* Lock to serialize access to this object */
+	ILMutex        *lock;
+
 	void **regularHandles;
 	ILInt32 numRegularHandles;
 	void **weakHandles;
@@ -126,17 +129,53 @@ typedef struct _tagILGCHandleTable
 
 } ILGCHandleTable;
 
+static void _ILGCHandleTableInit(ILGCHandleTable *table)
+{
+	/* Initialize all members even if that might be not needed. */
+	table->regularHandles = 0;
+	table->numRegularHandles = 0;
+	table->weakHandles = 0;
+	table->numWeakHandles = 0;
+
+	/* Initialize the object lock */
+	table->lock = ILMutexCreate();
+}
+
 /*
  * Get the GC handle table and lock it down.
  */
 static ILGCHandleTable *GetGCHandleTable(ILExecThread *_thread)
 {
 	ILExecProcess *process = _thread->process;
-	ILMutexLock(process->lock);
 	if(!(process->gcHandles))
 	{
-		process->gcHandles = (ILGCHandleTable *)
-			ILGCAllocPersistent(sizeof(ILGCHandleTable));
+		ILMutexLock(process->lock);
+		/* Check again because of race conditions. */
+		if(!(process->gcHandles))
+		{
+			/* Disable finalizers here because we hold the process lock.
+			 * Otherwise we might get a deadlock if finalizers are invoked
+			 * the first time and the finalizer thread is created.
+			 */
+			ILGCDisableFinalizers(-1);
+			process->gcHandles = (ILGCHandleTable *)
+				ILGCAllocPersistent(sizeof(ILGCHandleTable));
+			ILGCEnableFinalizers();
+			if(process->gcHandles)
+			{
+				_ILGCHandleTableInit(process->gcHandles);
+				ILMutexLock(process->gcHandles->lock);
+			}
+		}
+		else
+		{
+			ILMutexLock(process->gcHandles->lock);
+		}
+		ILMutexUnlock(process->lock);
+	}
+	else
+	{
+		ILMutexLock(process->gcHandles->lock);
 	}
 	return process->gcHandles;
 }
@@ -144,9 +183,9 @@ static ILGCHandleTable *GetGCHandleTable(ILExecThread *_thread)
 /*
  * Unlock the GC handle table.
  */
-static void UnlockGCHandleTable(ILExecThread *_thread)
+static void UnlockGCHandleTable(ILGCHandleTable *table)
 {
-	ILMutexUnlock(_thread->process->lock);
+	ILMutexUnlock(table->lock);
 }
 
 ILNativeInt _IL_GCHandle_GCAddrOfPinnedObject(ILExecThread *_thread,
@@ -178,10 +217,9 @@ ILNativeInt _IL_GCHandle_GCAddrOfPinnedObject(ILExecThread *_thread,
 				}
 			}
 		}
+		/* Unlock the handle table */
+		UnlockGCHandleTable(table);
 	}
-
-	/* Unlock the handle table */
-	UnlockGCHandleTable(_thread);
 
 	/* None of the objects in our implementation move about
 	   memory, so the object pointer is the pinned address */
@@ -232,10 +270,9 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 				if((table->numWeakHandles & 7) == 0)
 				{
 					/* Extend the size of the weak handle table */
-					/* 
-					*****: for weak refs, do not use AllocPersistent 
-					newArray = (void **)ILGCAllocPersistent		
-					*/
+					/* for weak refs, do use AllocAtomic so that the ref will
+					 * not be scanned.by the gc during collection.
+ 					 */
 					newArray = (void **)ILGCAllocAtomic
 						((table->numWeakHandles + 8) * sizeof(void *));
 					if(!newArray)
@@ -251,12 +288,9 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 							if(table->weakHandles[index] !=
 									(void *)(ILNativeInt)(-1))
 							{
-								/* *****:
-								ILGCUnregisterWeak(&(table->weakHandles[index]));
-								ILGCRegisterWeak(&(newArray[index]));
-								*/
-								
-								// use RegisterGeneralWeak to monitor disappearing links
+								/* use RegisterGeneralWeak to monitor 
+								 * disappearing links
+								 */
 								if( 0 != table->weakHandles[index] ) {
 									ILGCUnregisterWeak(&(table->weakHandles[index]));
 								}
@@ -270,8 +304,6 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 					table->weakHandles = newArray;
 				}
 				table->weakHandles[table->numWeakHandles] = ptr;
-				// *****: 
-				// ILGCRegisterWeak(&(table->weakHandles[table->numWeakHandles]));
 				
 				if( 0 != table->weakHandles[table->numWeakHandles] ) {
 					ILGCRegisterGeneralWeak(&(table->weakHandles[table->numWeakHandles]), table->weakHandles[table->numWeakHandles] );
@@ -315,10 +347,10 @@ ILInt32 _IL_GCHandle_GCAlloc(ILExecThread *_thread, ILObject *value,
 			}
 			break;
 		}
+		/* Unlock the GC handle table and return */
+		UnlockGCHandleTable(table);
 	}
 
-	/* Unlock the GC handle table and return */
-	UnlockGCHandleTable(_thread);
 	return handle;
 }
 
@@ -359,10 +391,9 @@ void _IL_GCHandle_GCFree(ILExecThread *_thread, ILInt32 handle)
 			}
 			break;
 		}
+		/* Unlock the GC handle table and return */
+		UnlockGCHandleTable(table);
 	}
-
-	/* Unlock the GC handle table and return */
-	UnlockGCHandleTable(_thread);
 }
 
 ILBool _IL_GCHandle_GCValidate(ILExecThread *_thread, ILInt32 handle)
@@ -391,10 +422,10 @@ ILBool _IL_GCHandle_GCValidate(ILExecThread *_thread, ILInt32 handle)
 			}
 			break;
 		}
+		/* Unlock the handle table and return */
+		UnlockGCHandleTable(table);
 	}
 
-	/* Unlock the handle table and return */
-	UnlockGCHandleTable(_thread);
 	return valid;
 }
 
@@ -440,10 +471,10 @@ ILObject *_IL_GCHandle_GCGetTarget(ILExecThread *_thread, ILInt32 handle)
 		{
 			object = GetObjectFromGcBase(ptr);
 		}
+		/* Unlock the handle table and return */
+		UnlockGCHandleTable(table);
 	}
 
-	/* Unlock the handle table and return */
-	UnlockGCHandleTable(_thread);
 	return object;
 }
 
@@ -478,18 +509,16 @@ void _IL_GCHandle_GCSetTarget(ILExecThread *_thread, ILInt32 handle,
 					if(table->weakHandles[index - 1] !=
 							(void *)(ILNativeInt)(-1))
 					{
-						/* *****:
-						unregister old Target and Register new Ttarget
-						*/
-						
-						if( 0 != table->weakHandles[index - 1] ) {
+						/* unregister old Target and Register new target */
+						if( 0 != table->weakHandles[index - 1] )
+						{
 							ILGCUnregisterWeak(&(table->weakHandles[index-1]));
 						}
 						
 						table->weakHandles[index - 1] = ptr;
 						
-						// *****:
-						if( 0 != ptr ) {
+						if( 0 != ptr )
+						{
 							ILGCRegisterGeneralWeak(&(table->weakHandles[index-1]), table->weakHandles[index-1] ); 
 						}
 					}
@@ -511,10 +540,9 @@ void _IL_GCHandle_GCSetTarget(ILExecThread *_thread, ILInt32 handle,
 			}
 			break;
 		}
+		/* Unlock the handle table and return */
+		UnlockGCHandleTable(table);
 	}
-
-	/* Unlock the handle table and return */
-	UnlockGCHandleTable(_thread);
 }
 
 void _ILGCHandleTableFree(ILGCHandleTable *table)
@@ -530,9 +558,13 @@ void _ILGCHandleTableFree(ILGCHandleTable *table)
 		{
 			ILGCUnregisterWeak(&(table->weakHandles[index]));
 		}
-		ILGCFreePersistent(table->weakHandles);
 	}
-	ILGCFreePersistent(table);
+
+	if(table->lock)
+	{
+		/* Destroy the object lock */
+		ILMutexDestroy(table->lock);
+	}
 }
 
 #endif /* IL_CONFIG_RUNTIME_INFRA */

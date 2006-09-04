@@ -135,6 +135,11 @@ int ILJitInit();
 int ILJitFunctionCreate(ILCoder *_coder, ILMethod *method);
 
 /*
+ * Get jit context.
+ */
+jit_context_t ILJitGetContext(ILCoder *_coder);
+
+/*
  * Create the jit function header for an ILMethod with the information from
  * a virtual ancestor.
  * We can reuse the signature in this case.

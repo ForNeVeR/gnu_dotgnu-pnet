@@ -2287,6 +2287,11 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	return &(coder->coder);
 }
 
+jit_context_t ILJitGetContext(ILCoder *_coder)
+{
+	return _ILCoderToILJITCoder(_coder)->context;
+}
+
 /*
  * Debugger hook function called when breakpoint is reached.
  */

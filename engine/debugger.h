@@ -22,6 +22,9 @@
 #define	_DEBUGGER_H
 
 #include "il_debugger.h"
+#ifdef IL_USE_JIT
+#include "jit/jit-except.h"
+#endif
 
 #ifdef IL_DEBUGGER
 
@@ -34,18 +37,14 @@ extern	"C" {
  */
 #define	IL_DEBUGGER_RUN_TYPE_STOPPED		0
 #define	IL_DEBUGGER_RUN_TYPE_CONTINUE		1
-#define	IL_DEBUGGER_RUN_TYPE_STEP		2
-#define	IL_DEBUGGER_RUN_TYPE_NEXT		3
-#define	IL_DEBUGGER_RUN_TYPE_FINISH		4
+#define	IL_DEBUGGER_RUN_TYPE_STEP			2
+#define	IL_DEBUGGER_RUN_TYPE_NEXT			3
+#define	IL_DEBUGGER_RUN_TYPE_FINISH			4
 #define	IL_DEBUGGER_RUN_TYPE_DETACHED		5
-#define	IL_DEBUGGER_RUN_TYPE_UNTIL		6
+#define	IL_DEBUGGER_RUN_TYPE_UNTIL			6
 
 #define IL_DEBUGGER_COMMAND_MAX_ARG_COUNT	3
 
-/*
- * Register debugger. - TODO: remove this
- */
-void SetupDebugger(ILExecProcess *process);
 
 /*
  * Check whether debugger is watching method's assembly.
@@ -73,8 +72,13 @@ struct _tagILDebuggerThreadInfo
 	ILUInt32 line;
 	ILUInt32 col;
 
-	/* Method that called current method */
-	ILMethod *caller;
+	/* Stack trace height */
+	ILInt32 numFrames;
+
+#ifdef IL_USE_JIT
+	/* JIT stack trace */
+	jit_stack_trace_t jitStackTrace;
+#endif
 
 	int volatile runType;
 	ILDebuggerThreadInfo *next;

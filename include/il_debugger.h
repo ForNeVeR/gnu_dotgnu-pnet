@@ -21,14 +21,6 @@
 #ifndef	_IL_DEBUGGER_H
 #define	_IL_DEBUGGER_H
 
-/*
- * Disable debugger if we dont have support for it.
- * We should do this in configure.in
- */
-//#if defined(IL_WITHOUT_TOOLS) || defined(IL_CONFIG_REDUCE_CODE) || defined(REDUCED_STDIO) || !defined(IL_CONFIG_DEBUG_LINES)
-//#undef IL_DEBUGGER
-//#endif
-
 #ifdef IL_DEBUGGER
 
 #include "il_sysio.h"

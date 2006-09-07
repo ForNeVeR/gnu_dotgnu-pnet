@@ -1,3 +1,10 @@
+2006-09-07  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Private/NumberFormat/RoundTripFormatter.cs: 
+	use general formatter for formatting since we do not support more than
+	7 (Single) or 15 (Double) precision.
+	Old code had bug formatting double 100.0, got 100. (with dot).
+
 2006-09-01  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Private/NumberFormat/Formatter.cs: use general formatter

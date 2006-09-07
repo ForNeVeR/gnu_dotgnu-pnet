@@ -36,35 +36,17 @@ internal class RoundTripFormatter : Formatter
 	public override string Format(Object o, IFormatProvider provider)
 	{
 #if CONFIG_EXTENDED_NUMERICS
-		//  Calculate precision
-		int precision;
-		if (o is Single) precision = 7;
-		else if (o is Double) precision = 15;
+
+		/* 
+			round trip should check if parsing the value as string is the same value.
+			if not, more precision should be used. Single 9, Double 17.
+			Since we do not support more than precision 7/15 use the GeneralFormatters.
+		*/
+		
+		if (o is Single) return ((Single)o).ToString( null, provider );
+		else if (o is Double) return ((Double)o).ToString( null, provider );
 		else throw new FormatException(_("Format_TypeException"));
 
-		//  Get initial number
-		string rawnumber = FormatAnyRound(o, precision, provider);
-		StringBuilder ret = new StringBuilder();
-
-		if (rawnumber[0] == '-')
-		{
-			ret.Append(NumberFormatInfo(provider).NegativeSign);
-			rawnumber = rawnumber.Substring(1);
-		}
-
-		//  Create portion before the decimal point
-		if (rawnumber[0] == '.') ret.Append('0');
-		else ret.Append(rawnumber.Substring(0,rawnumber.IndexOf('.')));
-
-		//  Insert decimal point
-		ret.Append(NumberFormatInfo(provider).NumberDecimalSeparator);
-
-		//  Append the portion of the number following the decimal point
-		int decpt = rawnumber.IndexOf('.')+1;	
-		ret.Append(rawnumber.Substring(decpt,
-								Math.Min(rawnumber.Length-decpt, precision)));
-
-		return ret.ToString();
 #else
 		throw new FormatException(_("Format_TypeException"));
 #endif

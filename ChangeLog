@@ -1,5 +1,9 @@
 2006-09-16  Klaus Treichel  <ktreichel@web.de>
 
+	* engine/call.c: Move the currentException to the thrownException after a
+	call to a jitted function so that the exception is propagated across native
+	calls.
+
 	* engine/jitc.c, engine/jitc_except.c: Move the thrownException in the
 	thread to the currentException if an exception is thrown. The
 	currentException is used only to prevent a collection of the exception

@@ -268,7 +268,6 @@ static ILJitType _ILJitSignature_ILStringWCreate = 0;
  */
 static ILJitType _ILJitSignature_ILJitDelegateGetClosure = 0;
 
-
 /*
  * Define offsetof macro if not present.
  */
@@ -1350,15 +1349,15 @@ static ILJitTypes *_ILJitGetTypes(ILType *type, ILExecProcess *process)
  */
 void ILRuntimeExceptionRethrow(ILObject *object)
 {
-	ILExecThread *thread = ILExecThreadCurrent();
-
-	if(thread)
-	{
-		thread->thrownException = object;
-	}
 	if(object)
 	{
-		jit_exception_throw(object);
+		ILExecThread *thread = ILExecThreadCurrent();
+
+		if(thread)
+		{
+			thread->currentException = object;
+			jit_exception_throw(object);
+		}
 	}
 }
 
@@ -1367,20 +1366,18 @@ void ILRuntimeExceptionRethrow(ILObject *object)
  */
 void ILRuntimeExceptionThrow(ILObject *object)
 {
-	ILExecThread *thread = ILExecThreadCurrent();
 	System_Exception *exception = (System_Exception *)object;
 
-	if(thread)
-	{
-		thread->thrownException = object;
-		if(exception)
-		{
-			exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
-		}
-	}
 	if(exception)
 	{
-		jit_exception_throw(exception);
+		ILExecThread *thread = ILExecThreadCurrent();
+
+		if(thread)
+		{
+			thread->currentException = (ILObject *)exception;
+			exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
+			jit_exception_throw(exception);
+		}
 	}
 }
 
@@ -1399,10 +1396,10 @@ void ILRuntimeExceptionThrowClass(ILClass *classInfo)
 	/* thrown an OutOfMenory exception then. */
 	if(thread)
 	{
-		thread->thrownException = (ILObject *)exception;
+		thread->currentException = (ILObject *)exception;
 		exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
+		jit_exception_throw(exception);
 	}
-	jit_exception_throw(exception);
 }
 
 /*
@@ -1411,12 +1408,11 @@ void ILRuntimeExceptionThrowClass(ILClass *classInfo)
 void ILRuntimeExceptionThrowOutOfMemory()
 {
 	ILExecThread *thread = ILExecThreadCurrent();
-	void *exception = 0;
 
 	if(thread)
 	{
-		thread->thrownException = thread->process->outOfMemoryObject;
-		jit_exception_throw(exception);
+		thread->currentException = thread->process->outOfMemoryObject;
+		jit_exception_throw(thread->currentException);
 		return;
 	}
 	jit_exception_builtin(JIT_RESULT_OUT_OF_MEMORY);
@@ -1431,7 +1427,9 @@ void ILRuntimeHandleManagedSafePointFlags(ILExecThread *thread)
 	{
 		if(_ILExecThreadSelfAborting(thread) == 0)
 		{
-			jit_exception_throw(thread->thrownException);
+			thread->currentException = thread->thrownException;
+			thread->thrownException = 0;
+			jit_exception_throw(thread->currentException);
 		}
 	}
 	else if(thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND)
@@ -1455,13 +1453,18 @@ static void _ILJitHandleThrownException(ILJitFunction func,
 	ILJitValue thrownException = jit_insn_load_relative(func, thread,
 									offsetof(ILExecThread, thrownException),
 									_IL_JIT_TYPE_VPTR);
+	ILJitValue nullException = jit_value_create_nint_constant(func,
+															  _IL_JIT_TYPE_VPTR,
+														      (jit_nint)0);
 	jit_label_t label = jit_label_undefined;
 
 	jit_insn_branch_if_not(func, thrownException, &label);
-	jit_insn_call_native(func, "jit_exception_clear_last",
-								jit_exception_clear_last,
-								_ILJitSignature_JitExceptionClearLast,
-								0, 0, JIT_CALL_NOTHROW);
+	jit_insn_store_relative(func, thread, 
+							offsetof(ILExecThread, currentException),
+							thrownException);
+	jit_insn_store_relative(func, thread, 
+							offsetof(ILExecThread, thrownException),
+							nullException);
 	jit_insn_throw(func, thrownException);
 	jit_insn_label(func, &label);
 }
@@ -1936,7 +1939,7 @@ void *_ILJitExceptionHandler(int exception_type)
 		}
 		break;
 	}
-	thread->thrownException = object;
+	thread->currentException = object;
 	return object;
 }
 
@@ -1949,7 +1952,17 @@ static void _ILJitThrowCurrentException(ILJITCoder *coder)
 	ILJitValue thrownException = jit_insn_load_relative(coder->jitFunction,
 									thread,
 									offsetof(ILExecThread, thrownException), 
-									jit_type_void_ptr);
+									_IL_JIT_TYPE_VPTR);
+	ILJitValue nullException = jit_value_create_nint_constant(coder->jitFunction,
+															  _IL_JIT_TYPE_VPTR,
+														      (jit_nint)0);
+
+	jit_insn_store_relative(coder->jitFunction, thread, 
+							offsetof(ILExecThread, currentException),
+							thrownException);
+	jit_insn_store_relative(coder->jitFunction, thread, 
+							offsetof(ILExecThread, thrownException),
+							nullException);
 	jit_insn_throw(coder->jitFunction, thrownException);
 }
 

@@ -1,3 +1,12 @@
+2006-09-16  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc_except.c: Move the thrownException in the
+	thread to the currentException if an exception is thrown. The
+	currentException is used only to prevent a collection of the exception
+	object by the gc.
+
+	* engine/lib_gc.c: Readd the ILGCFreePersistent of the handletable.
+
 2006-09-04  Klaus treichel  <ktreichel@web.de>
 
 	* support/pt_defs.c: Add a default mutex attribute to make sure that fast

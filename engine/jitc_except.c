@@ -496,6 +496,7 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
 	ILJitValue thread = _ILJitCoderGetThread(jitCoder);
+	ILJitValue currentException = (ILJitValue)(exception->ptrUserData);
 	ILJitValue classTo = jit_value_create_nint_constant(jitCoder->jitFunction,
 														_IL_JIT_TYPE_VPTR,
 														(jit_nint)classInfo);
@@ -505,6 +506,7 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 	ILJitValue nullException = jit_value_create_nint_constant(jitCoder->jitFunction,
 															  _IL_JIT_TYPE_VPTR,
 														      (jit_nint)0);
+
 	ILJitValue exceptionObject;
 	ILJitValue args[3];
 	ILJitValue returnValue;
@@ -524,14 +526,18 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 	}
 #endif
 
-	/* Get the current exception object. */
-	exceptionObject = jit_insn_load_relative(jitCoder->jitFunction, thread,
-											 offsetof(ILExecThread, thrownException),
+	/* Get the thrown exception object. */
+	exceptionObject = jit_insn_load_relative(jitCoder->jitFunction,
+											 thread,
+											 offsetof(ILExecThread, currentException),
 											 _IL_JIT_TYPE_VPTR);
+
+	/* Save the thrown exception to the current exception block. */
+	jit_insn_store(jitCoder->jitFunction, currentException, exceptionObject);
 
 	/* Look if the object can be casted to the cought exception type. */
 	args[0] = method;
-	args[1] = exceptionObject;
+	args[1] = currentException;
 	args[2] = classTo;
 	returnValue = jit_insn_call_native(jitCoder->jitFunction,
 									   "ILRuntimeCanCastClass",
@@ -541,21 +547,21 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 	jit_insn_branch_if_not(jitCoder->jitFunction, returnValue, &label);
 
 	/* Save the exception in the threadAbortException if it is one. */
-	_ILJitSetThreadAbortException(jitCoder, thread, exceptionObject);
+	_ILJitSetThreadAbortException(jitCoder, thread, currentException);
 
 	/* Push the exception object on the stack. */
-	jitCoder->jitStack[0] = exceptionObject;
+	jitCoder->jitStack[0] = currentException;
 	jitCoder->stackTop = 1;
 	catchBlock = _ILJitLabelGet(jitCoder, exception->handlerOffset,
 										  _IL_JIT_LABEL_STARTCATCH);
 
-	jit_insn_store_relative(jitCoder->jitFunction, thread, 
-							offsetof(ILExecThread, thrownException),
-							nullException);
 	jit_insn_call_native(jitCoder->jitFunction, "jit_exception_clear_last",
 												jit_exception_clear_last,
 												_ILJitSignature_JitExceptionClearLast,
 									   			0, 0, JIT_CALL_NOTHROW);
+	jit_insn_store_relative(jitCoder->jitFunction, thread, 
+							offsetof(ILExecThread, currentException),
+							nullException);
 	jit_insn_branch(jitCoder->jitFunction, &(catchBlock->label));
 	jit_insn_label(jitCoder->jitFunction, &label);
 }

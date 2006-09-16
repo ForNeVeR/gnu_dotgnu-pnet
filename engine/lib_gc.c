@@ -565,6 +565,7 @@ void _ILGCHandleTableFree(ILGCHandleTable *table)
 		/* Destroy the object lock */
 		ILMutexDestroy(table->lock);
 	}
+	ILGCFreePersistent(table);
 }
 
 #endif /* IL_CONFIG_RUNTIME_INFRA */

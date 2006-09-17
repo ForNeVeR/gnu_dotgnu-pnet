@@ -660,6 +660,12 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	thread->abortHandlerEndPC = 0;
 	thread->threadAbortException = 0;
 	thread->abortHandlerFrame = 0;
+
+#ifdef IL_DEBUGGER
+	thread->numWatches = 0;
+	thread->maxWatches = 0;
+#endif
+
 	/* Attach the thread to the process */
 	ILMutexLock(process->lock);
 	if (!ignoreProcessState
@@ -718,6 +724,14 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	/* Destroy the call frame stack */
 	ILGCFreePersistent(thread->frameStack);
 
+#ifdef IL_DEBUGGER
+	/* Destroy the watch stack */
+	if(thread->watchStack)
+	{
+		ILGCFreePersistent(thread->watchStack);
+	}
+#endif
+
 	/* Destroy the thread block */
 	ILGCFreePersistent(thread);
 
@@ -767,6 +781,49 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
 		return 0;
 	}
 }
+
+#ifdef IL_DEBUGGER
+
+ILWatch *_ILAllocWatch(ILExecThread *thread)
+{
+	ILUInt32 newsize;
+	ILWatch *watches;
+
+	/* Calculate watch stack size */
+	if(thread->maxWatches)
+	{
+		newsize = thread->maxWatches * 2;
+	}
+	else
+	{
+		newsize = 32;		/* initial value */
+	}
+
+	/* Allocate new watches */
+	if((watches = (ILWatch *)ILGCAllocPersistent
+				(sizeof(ILWatch) * newsize)) == 0)
+	{
+	    thread->thrownException = thread->process->outOfMemoryObject;
+		return 0;
+	}
+
+	/* Copy the old contents (if any) */
+	if(thread->maxWatches)
+	{
+		ILMemCpy(watches, thread->watchStack,
+				sizeof(ILWatch) * thread->maxWatches);
+
+		/* Free the old watches */
+		ILGCFreePersistent(thread->watchStack);
+	}
+	thread->watchStack = watches;
+	thread->maxWatches = newsize;
+
+	/* Return the new watch to the caller */
+	return &(thread->watchStack[(thread->numWatches)]);
+}
+
+#endif	// IL_DEBUGGER
 
 ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num)
 {

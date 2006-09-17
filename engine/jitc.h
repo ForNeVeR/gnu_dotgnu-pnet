@@ -82,6 +82,14 @@
 #define IL_JIT_CALLCONV_DEFAULT		IL_JIT_CALLCONV_CDECL
 
 /*
+ * Values in data1 in debug hook.
+ */
+#define	JIT_DEBUGGER_DATA1_METHOD_ENTER			0
+#define	JIT_DEBUGGER_DATA1_METHOD_LEAVE			1
+#define	JIT_DEBUGGER_DATA1_METHOD_OFFSET		2
+#define	JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR		3
+
+/*
  * Representation of a type representation for libjit.
  */
 typedef jit_type_t		ILJitType;

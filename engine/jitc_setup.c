@@ -48,49 +48,6 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-	/* Initialize the mem stack for the label stackstates. */
-	ILMemStackInit(&(coder->stackStates), 0);
-
-	/* Create the parameters. */
-	if(!_ILJitParamsCreate(coder))
-	{
-		return 0;
-	}
-
-	/* Create the local variables. */
-	if(!_ILJitLocalsCreate(coder, code->localVarSig))
-	{
-		return 0;
-	}
-#ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
-	coder->localsInitialized = 0;
-#endif
-
-#ifndef IL_JIT_THREAD_IN_SIGNATURE
-	/* Reset the cached thread. */
-	coder->thread = 0;
-#endif
-
-	/* Ensure that the evaluation stack can hold at least the methods maxStack */
-	/* items. */
-	/* We need two additional slots for the ValueCtorArgs. */
-	ALLOC_STACK(coder, code->maxStack + 2);
-	
-	/* And reset the stack top. */
-	coder->stackTop = 0;
-
-	/* Reset the isInCatcher flag. */
-	coder->isInCatcher = 0;
-
-	/* Set the label for the start of the function. */
-	label0 = _ILJitLabelGet(coder, 0, _IL_JIT_LABEL_NORMAL);
-	jit_insn_label(coder->jitFunction, &(label0->label));
-
-#ifdef IL_DEBUGGER
-	/* Check if this method can be debugged */
-	debugger = ILDebuggerFromProcess(coder->process);
-	coder->markBreakpoints = (debugger && ILDebuggerIsAssemblyWatched(debugger, method));
-#endif
 
 	if(ILMethod_IsStaticConstructor(method))
 	{
@@ -130,6 +87,59 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 		   other blocks are later moved to the function start. */
 		jit_insn_move_blocks_to_start(coder->jitFunction, startLabel, endLabel);
 	}
+
+#ifdef IL_DEBUGGER
+	/* Check if this method can be debugged */
+	debugger = ILDebuggerFromProcess(coder->process);
+	coder->markBreakpoints =
+				(debugger && ILDebuggerIsAssemblyWatched(debugger, method));
+
+	/* Insert potential breakpoint with method in data2 */
+	if(coder->markBreakpoints)
+	{
+		jit_insn_mark_breakpoint(coder->jitFunction,
+								 JIT_DEBUGGER_DATA1_METHOD_ENTER,
+								 (jit_nint) method);
+	}
+#endif
+
+	/* Initialize the mem stack for the label stackstates. */
+	ILMemStackInit(&(coder->stackStates), 0);
+
+	/* Create the parameters. */
+	if(!_ILJitParamsCreate(coder))
+	{
+		return 0;
+	}
+
+	/* Create the local variables. */
+	if(!_ILJitLocalsCreate(coder, code->localVarSig))
+	{
+		return 0;
+	}
+#ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
+	coder->localsInitialized = 0;
+#endif
+
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+	/* Reset the cached thread. */
+	coder->thread = 0;
+#endif
+
+	/* Ensure that the evaluation stack can hold at least the methods maxStack */
+	/* items. */
+	/* We need two additional slots for the ValueCtorArgs. */
+	ALLOC_STACK(coder, code->maxStack + 2);
+	
+	/* And reset the stack top. */
+	coder->stackTop = 0;
+
+	/* Reset the isInCatcher flag. */
+	coder->isInCatcher = 0;
+
+	/* Set the label for the start of the function. */
+	label0 = _ILJitLabelGet(coder, 0, _IL_JIT_LABEL_NORMAL);
+	jit_insn_label(coder->jitFunction, &(label0->label));
 
 	return 1;
 }

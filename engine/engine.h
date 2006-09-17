@@ -335,6 +335,19 @@ struct _tagILExecProcess
 #endif /* IL_CONFIG_APPDOMAINS */
 };
 
+#ifdef IL_DEBUGGER
+/*
+ * Information about local variable or function parameter.
+ */
+typedef struct _tagILWatch
+{
+	void           *addr;			/* Address of variable */
+	int				flag;
+	void		   *frame;			/* Frame pointer */
+
+} ILWatch;
+#endif
+
 /*
  * Information that is stored in a stack call frame.
  * Offsets are used to refer to the stack instead of
@@ -379,8 +392,8 @@ struct _tagILExecThread
 	CVMWord		   *frame;			/* Base of the local variable frame */
 	CVMWord        *stackTop;		/* Current stack top */
 	ILMethod       *method;			/* Current method being executed */
-	ILUInt32	offset;			/* Current IL offset */
-	
+	ILUInt32		offset;			/* Current IL offset */
+
 	/* Last exception that was thrown */
 	ILObject       *thrownException;
 
@@ -408,6 +421,13 @@ struct _tagILExecThread
 	ILCallFrame	   *frameStack;
 	ILUInt32		numFrames;
 	ILUInt32		maxFrames;
+
+#ifdef IL_DEBUGGER
+	/* Stack for watching local variables and function params */
+	ILWatch	       *watchStack;
+	ILUInt32		numWatches;
+	ILUInt32		maxWatches;
+#endif
 
 	/* Thread-static values for this thread */
 	void		  **threadStaticSlots;
@@ -852,6 +872,14 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame);
  * to provide more space.  Returns NULL if out of memory.
  */
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread);
+
+#ifdef IL_DEBUGGER
+/*
+ * Reallocate the watches for a given thread in order
+ * to provide more space.  Returns NULL if out of memory.
+ */
+ILWatch *_ILAllocWatch(ILExecThread *thread);
+#endif
 
 /*
  * Set a reference type field of a an object instance.

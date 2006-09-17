@@ -969,6 +969,7 @@ void Break(ILDebugger *debugger, FILE *stream)
  */
 void ShowLocals(ILDebugger *debugger, FILE *stream)
 {
+#ifdef IL_USE_CVM
 	CVMWord *p;
 	ILExecThread *thread = debugger->dbthread->execThread;
 	fputs("<LocalVariables>\n",stream);
@@ -977,6 +978,81 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
 		fprintf(stream, "  <LocalVariable Value=\"%d\" />\n", p->intValue);
 	}
 	fputs("</LocalVariables>",stream);
+#endif
+
+#ifdef IL_USE_JIT
+	ILExecThread *thread;
+	ILMethod *method;
+	ILMethodCode code;
+	ILType *signature;
+	ILUInt32 num;
+	ILUInt32 current;
+	ILUInt32 i;
+	ILWatch *watch;
+	ILType *type;
+	char *str;
+
+	/* Current thread and method */
+	thread = debugger->dbthread->execThread;
+	method = debugger->dbthread->method;
+
+	/* Get local variables info */
+	if(!ILMethodGetCode(method, &code))
+	{
+		DumpError("Unable to get method code", stream);
+		return;
+	}
+	if(code.localVarSig)
+	{
+		signature = ILStandAloneSigGetType(code.localVarSig);
+		num = ILTypeNumLocals(signature);
+	}
+	else
+	{
+		num = 0;
+	}
+
+	fputs("<LocalVariables>\n", stream);
+
+	/* Dump local variables in current frame */
+	current = 0;
+	for(i = 0; i < thread->numWatches && num > 0; i++)
+	{
+		watch = &(thread->watchStack[i]);
+		if(watch->frame != thread->frame)
+		{
+			continue;	/* Skip if variable is not in current frame */
+		}
+
+		/* TODO: dump local variable name */
+		fprintf(stream, "<LocalVariable Name=\"var%d\" Value=\"", i);
+
+		/* TODO: dump any type and dump string in utf8 */
+		type = ILTypeGetLocal(signature, current);
+		if(ILTypeIsStringClass(type))
+		{
+			str = ILStringToAnsi(thread, *((ILString **)(watch->addr)));
+			DumpString(str, stream);
+		}
+		else
+		{
+			fprintf(stream, "%d", *((int *)(watch->addr)));
+		}
+		fputs("\" >", stream);
+
+		str = ILTypeToName(type);
+		fputs("<Type Name=\"", stream);
+		DumpString(str, stream);
+		fputs("\" /></LocalVariable>\n", stream);
+		ILFree(str);
+
+		current++;
+		num--;
+	}
+
+	fputs("</LocalVariables>",stream);
+
+#endif
 }
 
 /*
@@ -1120,7 +1196,7 @@ void ShowStackTrace(ILDebugger *debugger, FILE *stream)
 	}
 
 	/* Dump xml footer */
-	fputs("  </StackTrace>", stream);
+	fputs("\n  </StackTrace>", stream);
 #endif	// IL_USE_JIT
 }
 
@@ -1871,7 +1947,7 @@ static void CommandLoop(ILDebugger *debugger)
 														debugger->io->output);
 
 		/* Next command flag - true until debugger is stopped */
-		nextCommand = 
+		nextCommand =
 				(debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED);
 
 		/* Unlock the debugger */
@@ -2027,10 +2103,10 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	sourceFile = GetLocation(method, offset, &line, &col);
 
 	/* The most important printf if you want to debug this debugger */
-	/*fprintf(stderr, "DebugHook method=%s.%s offset=%d sourceFile=%s line=%d\n",
+	/* fprintf(stderr, "DebugHook method=%s.%s offset=%d sourceFile=%s line=%d\n",
 							ILClass_Name(ILMethod_Owner(method)),
 							ILMethod_Name(method),
-							offset, sourceFile, line);*/
+							offset, sourceFile, line); */
 
 	/* Continue if no debug info available */
 	if(sourceFile == 0)

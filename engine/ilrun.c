@@ -112,13 +112,13 @@ static ILCmdLineOption const options[] = {
 		"Enable simple method profiling at program start."},
 #endif
 #ifdef IL_DEBUGGER
-	{"-G", 'G', 0, 0, 0},
-	{"--debug",	  'G', 0,
-		"--debug                 or -G",
+	{"-g", 'g', 0, 0, 0},
+	{"--debug",	  'g', 0,
+		"--debug                 or -g",
 		"Connect to debugger client on tcp://localhost:4571"},
-	{"-g", 'g', 1, 0, 0},
-	{"--debugger-url", 'g', 1,
-		"--debugger-url [url]    or -g",
+	{"-G", 'G', 1, 0, 0},
+	{"--debugger-url", 'G', 1,
+		"--debugger-url [url]    or -G",
 		"Connect to debugger client using specific connection string."},
 #endif
 	{"-T", 'T', 0, 0, 0},
@@ -340,7 +340,7 @@ int main(int argc, char *argv[])
 		#endif
 
 		#ifdef IL_DEBUGGER
-			case 'G':
+			case 'g':
 			{
 				if(debuggerConnectionString == 0)
 				{
@@ -349,7 +349,7 @@ int main(int argc, char *argv[])
 			}
 			break;
 
-			case 'g':
+			case 'G':
 			{
 				debuggerConnectionString = param;
 			}

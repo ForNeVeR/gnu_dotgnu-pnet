@@ -2305,21 +2305,147 @@ jit_context_t ILJitGetContext(ILCoder *_coder)
 	return _ILCoderToILJITCoder(_coder)->context;
 }
 
+#ifdef IL_DEBUGGER
 /*
- * Debugger hook function called when breakpoint is reached.
+ * Drop invalid watches from thread->watchStack.
+ * Watches are normaly removed on return statement (see handler
+ * for JIT_DEBUGGER_DATA1_METHOD_LEAVE). If function returns to caller by any
+ * other means e.g. because of exception, this function is called to drop
+ * watches in frames that are no longer valid.
+ */
+static void ILJitDropInvalidWatches(ILExecThread *thread)
+{
+	void *frame;
+	ILUInt32 i;
+	ILWatch *watch;
+
+	/* Mark all watches invalid */
+	for(i = 0; i < thread->numWatches; i++)
+	{
+		watch = &(thread->watchStack[i]);
+		watch->flag = 1;
+	}
+
+	/* Find and unmark watches with valid frame pointers */
+	frame = thread->frame;
+	while(frame)
+	{
+		for(i = 0; i < thread->numWatches; i++)
+		{
+			watch = &(thread->watchStack[i]);
+			if(watch->frame == frame)
+			{
+				/* Frame is valid */
+				watch->flag = 0;
+			}
+		}
+		frame = jit_get_next_frame_address(frame);
+	}
+
+	/* Remove all invalid watches */
+	for(i = thread->numWatches - 1; ((ILInt32)(i)) >= 0; i--)
+	{
+		watch = &(thread->watchStack[i]);
+		if(watch->flag)
+		{
+			/* Watch is invalid */
+			thread->numWatches--;
+			ILMemMove(watch, watch - 1, thread->numWatches - i);
+		}
+	}
+}
+
+/*
+ * Debugger hook function.
+ * This function keeps up thread data refreshed using values
+ * from soft breakpoints. These breakpoints are placed as function
+ * is compiled in following order and with following data:
+ *
+ * data1					data2					meaning
+ *-----------------------------------------------------------------------------
+ * METHOD_ENTER 			ILMethod *				method was called
+ * LOCAL_VAR_ADDR			void *					address of local variable
+ * ILMethod * (method)		ILUInt32 (IL offset)	soft breakpoint (before every IL instruction)
+ * METHOD_LEAVE				unused					return from method
  */
 static void JitDebuggerHook(jit_function_t func, jit_nint data1, jit_nint data2)
 {
-	//fprintf(stderr, "hook called\n");
+	ILExecThread *thread;
+	ILWatch *watch;
+	void *frame;
 
-	ILExecThread *thread = ILExecThreadCurrent();
+	thread = ILExecThreadCurrent();
 
-	/* Update thread data */
-	thread->method = (ILMethod *) data1;
-	thread->offset = (ILUInt32) data2;
+	switch(data1)
+	{
+		case JIT_DEBUGGER_DATA1_METHOD_ENTER:
+		{
+			thread->method = (ILMethod *) data2;
+			return;
+		}
+		/* Not reached */
 
+		case JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR:
+		{
+			/* Allocate watch for this local variable */
+			if(thread->numWatches < thread->maxWatches)
+			{
+				watch = &(thread->watchStack[(thread->numWatches)]);
+			}
+			else if((watch = _ILAllocWatch(thread)) == 0)
+			{
+				/* We ran out of memory trying to push the watch */
+				thread->numWatches = 0;
+				ILRuntimeExceptionThrowOutOfMemory();
+			}
+
+			/* Two frames above us should be frame for current method */
+			watch->frame = jit_get_frame_address(2);
+
+			/* Assign index of local variable. Type and address will follow */
+			watch->addr = (void *) data2;
+
+			thread->numWatches++;
+			return;
+		}
+		/* Not reached */
+
+		case JIT_DEBUGGER_DATA1_METHOD_LEAVE:
+		{
+			/* Remove all watches in current frame */
+			frame = thread->frame = jit_get_frame_address(2);
+			watch = &(thread->watchStack[(thread->numWatches - 1)]);
+			while(thread->numWatches > 0 && watch->frame == frame)
+			{
+				thread->numWatches--;
+				watch--;
+			}
+			return;
+		}
+		/* Not reached */
+
+		default:
+		{
+			/* Set current method and IL offset */
+			thread->method = (ILMethod *) data1;
+			thread->offset = (ILUInt32) data2;
+
+			/* Check if current frame has changed - e.g. after exception */
+			frame = jit_get_frame_address(2);
+			if(frame != thread->frame)
+			{
+				/* Call stack has changed, drop invalid watches */
+				thread->frame = frame;
+				ILJitDropInvalidWatches(thread);
+			}
+		}
+		break;
+	}
+
+	/* Call engine's breakpoint handler */
 	_ILBreak(thread, 0);
 }
+#endif
 
 /*
  * Enable debug mode in a JIT coder instance.
@@ -2328,7 +2454,9 @@ static void JITCoder_EnableDebug(ILCoder *coder)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	jitCoder->debugEnabled = 1;
+#ifdef IL_DEBUGGER
 	jit_debugger_set_hook(jitCoder->context, JitDebuggerHook);
+#endif
 }
 
 /*
@@ -2416,10 +2544,13 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 		jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
 	}
 #ifdef IL_DEBUGGER
-	/* Insert potential breakpoint */
+	/* Insert breakpoint marks if needed */
 	if(jitCoder->markBreakpoints)
 	{
-		jit_insn_mark_breakpoint(jitCoder->jitFunction, (jit_nint) jitCoder->currentMethod, offset);
+		/* Mark breakpoint that reports current ILMethod and IL offset */
+		jit_insn_mark_breakpoint(jitCoder->jitFunction,
+								 (jit_nint) jitCoder->currentMethod,
+								 (jit_nint) offset);
 	}
 #endif
 }

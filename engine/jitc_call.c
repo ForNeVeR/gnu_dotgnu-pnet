@@ -1665,6 +1665,17 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
+#ifdef IL_DEBUGGER
+	/* Insert potential breakpoint with method in data2 */
+	if(jitCoder->markBreakpoints)
+	{
+		jit_insn_mark_breakpoint(jitCoder->jitFunction,
+								 JIT_DEBUGGER_DATA1_METHOD_LEAVE,
+								 (jit_nint) jitCoder->currentMethod);
+	}
+#endif
+
 	if(engineType == ILEngineType_Invalid)
 	{
 	       jit_insn_return(jitCoder->jitFunction, 0);

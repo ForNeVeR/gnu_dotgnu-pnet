@@ -214,6 +214,10 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 	ILJitType jitType;
 	ILUInt32 num;
 	ILUInt32 current;
+#ifdef IL_DEBUGGER
+	jit_value_t data1;
+	jit_value_t data2;
+#endif
 
 	if(localVarSig)
 	{
@@ -230,6 +234,7 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 			ILJitLocalSlot *local = &_ILJitLocalGet(coder, current);
 
 			type = ILTypeGetLocal(signature, current);
+
 			if(!(jitType = _ILJitGetLocalsType(type, coder->process)))
 			{
 				return 0;
@@ -238,6 +243,26 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 			{
 				return 0;
 			}
+
+#ifdef IL_DEBUGGER
+			/* Notify debugger about address of local variable */
+			if(coder->markBreakpoints)
+			{
+				/* Make the variable accessible for debugger */
+				jit_value_set_volatile(local->value);
+				jit_value_set_addressable(local->value);
+
+				/* Report address of the variable to debugger */
+				data1 = jit_value_create_nint_constant(coder->jitFunction,
+				 							jit_type_nint,
+											JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR);
+
+				data2 = jit_insn_address_of(coder->jitFunction,	local->value);
+				jit_insn_mark_breakpoint_variable
+											(coder->jitFunction, data1, data2);
+			}
+#endif
+
 			local->flags = 0;
 		}
 		/* Record the number of used locals in the coder. */

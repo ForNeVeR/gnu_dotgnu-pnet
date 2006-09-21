@@ -27,8 +27,9 @@ namespace System.Drawing.Drawing2D
 public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 {
 	// Internal state.
-	private ArrayList  pathFigures  = new ArrayList();
-	private ArrayList  stringObjs   = new ArrayList();
+	private ArrayList  pathFigures  = new ArrayList(50);
+	private ArrayList  stringObjs   = new ArrayList(50);
+	private PointF     []pathPoints = new PointF[0];
 	private PathFigure actualFigure = null; 
 
 	private bool needPenBrush;
@@ -133,8 +134,8 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				{
 					PathData data = new PathData();
 					// TODO
-					//data.Points = pts;
-					//data.Types = types;
+					data.Points = this.pathPoints;
+					data.Types = this.PathTypes;
 					return data;
 				}
 			}
@@ -143,9 +144,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			{
 				get
 				{
-					// TODO
-					//return pts;
-					return null;
+					return this.pathPoints;
 				}
 			}
 	[TODO]
@@ -155,7 +154,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				{
 					// TODO
 					//return types;
-					return null;
+					return new byte [this.pathPoints.Length];
 				}
 			}
 
@@ -165,10 +164,18 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			{
 				get
 				{
-					// TODO
-					return 0;
+					return this.pathPoints.Length;
 				}
 			}
+			
+	private void AddPathPoints( PointF [] pts ) 
+		{
+			if( null == pts || pts.Length == 0 ) return;
+			PointF [] pNew = new PointF[this.pathPoints.Length+pts.Length];
+			Array.Copy( this.pathPoints, 0, pNew, 0, this.pathPoints.Length );
+			Array.Copy( pts, 0, pNew, this.pathPoints.Length, pts.Length );
+			this.pathPoints = pNew;
+		}
 
 	// Add an object to this path.
 	private void AddPathObject(PathObject obj)
@@ -178,6 +185,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					pathFigures.Add( actualFigure );
 				}
 				actualFigure.AddPathObject( obj );
+				this.AddPathPoints( obj.GetPathPoints() );
 			}
 
 	// Add an arc to the current figure.

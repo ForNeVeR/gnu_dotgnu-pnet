@@ -32,31 +32,31 @@
 
 2006-09-17  Radek Polak <psonek2@seznam.cz>
 
-        * engine/engine.h: add ILWatch struct for keeping information about
-        local variable. Thread has now watchStack that contains watches for
-        local variables. The watchStack is handled similar way to frameStack.
+	* engine/engine.h: add ILWatch struct for keeping information about
+	local variable. Thread has now watchStack that contains watches for
+	local variables. The watchStack is handled similar way to frameStack.
 
-        * engine/thread.c: implement allocation and freeing of watches.
+	* engine/thread.c: implement allocation and freeing of watches.
 
-        * engine/jitc.h: define values used in data1 when marking breakpoints.
+	* engine/jitc.h: define values used in data1 when marking breakpoints.
 
-        * engine/jitc_call.c: mark method leave before return from function.
+	* engine/jitc_call.c: mark method leave before return from function.
 
-        * engine/jitc_locals.c: make every local variable addresable and
-        volatile and mark breakpoint with variable's offset.
+	* engine/jitc_locals.c: make every local variable addresable and
+	volatile and mark breakpoint with variable's offset.
 
-        * engine/jitc_setup.c: move static constructor once-call-check at the
-        beginig before params and locals are created. Mark method enter
-        breakpoint.
+	* engine/jitc_setup.c: move static constructor once-call-check at the
+	beginig before params and locals are created. Mark method enter
+	breakpoint.
 
-        * engine/jitc.c: handle method enter, method leave and offsets for
-        local variables in debug hook.
+	* engine/jitc.c: handle method enter, method leave and offsets for
+	local variables in debug hook.
 
-        * engine/debugger.c: show_locals command can now display local
-        variables with jit coder. Works only for strings and integers.
+	* engine/debugger.c: show_locals command can now display local
+	variables with jit coder. Works only for strings and integers.
 
-        * engine/ilrun.c: swap -g and -G debug options. This is more consistent
-        with cscc and it is more comfortable for user.
+	* engine/ilrun.c: swap -g and -G debug options. This is more consistent
+	with cscc and it is more comfortable for user.
 
 2006-09-16  Klaus Treichel  <ktreichel@web.de>
 

@@ -1,3 +1,35 @@
+2006-09-24  Kirill Kononenko <Kirill.Kononenko@gmail.com>
+
+	* engine/jitc_pinvoke.c, engine/jitc.c:
+	Improve multicast delegates handling.
+	- Handle delegates and multicast delegates differently, that is,
+	with a direct call to the delegate method or with a use of
+	__ILJitDelegateInvokeCodeGen respectivaly.
+	- Improve marshaling to/from Ansi/UTF8/UTF16 strings using the pinvoke
+	record and the ILPInvokeGetMarshalType function.
+	- Allow extended marshaling of simple arrays for complex types and
+	strings if defined USE_BYREF_MARSHALING (default is set to 0).
+	- Implement handling of strings, which are embedded in structures or
+	simple arrays (needed for gtk#/sample/testdnd.exe).
+	- Improve recursive marshaling of arrays and structures by handling the
+	IL_META_MARSHAL_DIRECT flag and the NeedMarshalValue methods.
+	- Introduce handling of the IL_META_MARSHAL_CUSTOM flag with two new
+	MarshalCustomToObject and MarshalObjectToCustom methods which are used
+	for objects that support custom marshaling.
+	- Support marshaling for the case when the methods are compiled with
+	IL_JIT_THREAD_IN_SIGNATURE undefined.
+
+	* engine/jitc_pinvoke.c, engine/jitc_call.c: Inline marshaling
+	code, which embed a call to the external native method directly in
+	the body of the build function - if undefined _IL_JIT_ENABLE_DEBUG (if
+	it is defined we call a stub method).
+
+	* engine/jitc_pinvoke.c, engine/jitc.c, engine/jitc.h,
+	engine/lib_marshal.c: Changed the ILJitDelegateGetClosure signature.
+	Removed the thread from the first input argument in this method.
+	The current thread is handled in the delegate code with
+	_ILJitFunctionGetThread.
+
 2006-09-17  Radek Polak <psonek2@seznam.cz>
 
         * engine/engine.h: add ILWatch struct for keeping information about

@@ -695,22 +695,32 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		}
 	}
 	else
-	{		
-	#ifdef IL_JIT_THREAD_IN_SIGNATURE
-		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
-									jitFunction, 0,
-									jitParams, argCount + 1, 0);
-	#else
-		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
-									jitFunction, 0,
-									jitParams, argCount, 0);
-	#endif
+	{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(_IL_JIT_ENABLE_DEBUG)
+		ILPInvoke *pinv = ILPInvokeFind(methodInfo);
+		if(pinv && ((ILJitMethodInfo*)(methodInfo->userData))->fnInfo.func)
+		{
+			returnValue = _ILJitInlinePinvoke(jitCoder, methodInfo, jitParams);
+		}
+		else
+#endif
+		{
+		#ifdef IL_JIT_THREAD_IN_SIGNATURE
+			returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
+										jitFunction, 0,
+										jitParams, argCount + 1, 0);
+		#else
+			returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
+										jitFunction, 0,
+										jitParams, argCount, 0);
+		#endif
+		}
 		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
 		{
-			jitCoder->jitStack[jitCoder->stackTop] =
-					_ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  returnValue);
-			JITC_ADJUST(jitCoder, 1);
+				jitCoder->jitStack[jitCoder->stackTop] =
+						_ILJitValueConvertToStackType(jitCoder->jitFunction,
+													    returnValue);
+				JITC_ADJUST(jitCoder, 1);
 		}
 	}
 }

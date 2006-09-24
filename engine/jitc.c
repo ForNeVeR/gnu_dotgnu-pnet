@@ -129,12 +129,10 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size);
  * They have to be kept in sync wirh the corresponding engine funcions.
  */
 
-#ifndef IL_JIT_THREAD_IN_SIGNATURE
 /*
  * ILExecThread *ILExecThreadCurrent()
  */
 static ILJitType _ILJitSignature_ILExecThreadCurrent = 0;
-#endif
 
 /*
  * ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
@@ -264,9 +262,19 @@ static ILJitType _ILJitSignature_ILStringCreateUTF8 = 0;
 static ILJitType _ILJitSignature_ILStringWCreate = 0;
 
 /*
- * void *ILJitDelegateGetClosure(ILExecThread *thread, ILObject *delegate, ILType *delType)
+ * void *ILJitDelegateGetClosure(ILObject *delegate, ILType *delType)
  */
 static ILJitType _ILJitSignature_ILJitDelegateGetClosure = 0;
+
+/*
+ * void* MarshalObjectToCustom(void *value, ILType *type, ILMethod *method, ILExecThread *thread)
+ */
+static ILJitType _ILJitSignature_MarshalObjectToCustom = 0;
+
+/*
+ * void* MarshalCustomToObject(void *value, ILType *type, ILMethod *method, ILExecThread *thread)
+ */
+static ILJitType _ILJitSignature_MarshalCustomToObject = 0;
 
 /*
  * Define offsetof macro if not present.
@@ -2021,14 +2029,12 @@ int ILJitInit()
 	_ILJitTypesInitBase(&_ILJitType_TYPEDREF, _ILJitTypedRef);
 
 	/* Initialize the native method signatures. */
-#ifndef IL_JIT_THREAD_IN_SIGNATURE
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILExecThreadCurrent = 
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, 0, 0, 1)))
 	{
 		return 0;
 	}
-#endif
 
 	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_UINT32;
@@ -2234,10 +2240,31 @@ int ILJitInit()
 
 	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_VPTR;
-	args[2] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILJitDelegateGetClosure =
-		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_VPTR;
+	args[3] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_MarshalObjectToCustom =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 4, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_VPTR;
+	args[3] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_MarshalCustomToObject = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 4, 1)))
 	{
 		return 0;
 	}

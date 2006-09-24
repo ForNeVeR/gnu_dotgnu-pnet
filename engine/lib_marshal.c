@@ -644,7 +644,7 @@ void _ILStructToNative(ILExecThread *thread, void *value, ILType *type)
 		{
 	    #ifdef IL_USE_JIT
 			*((void **)ptr) = ILJitDelegateGetClosure
-				(thread, *((ILObject **)ptr), type);
+				(*((ILObject **)ptr), type);
 	    #else
 			*((void **)ptr) = _ILDelegateGetClosure
 				(thread, *((ILObject **)ptr));

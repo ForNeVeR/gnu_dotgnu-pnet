@@ -604,7 +604,7 @@ public sealed class Matrix : MarshalByRefObject, IDisposable
 	// this does only work for scaling, not for rotation or multiply transformations
 	// Normally we should stretch or shrink the font.
 	internal float TransformFontSize( float fIn ) {
-		return Math.Min( this.m11, this.m22 ) * fIn;
+		return Math.Abs(Math.Min( this.m11, this.m22 ) * fIn);
 	}
 }; // class Matrix
 

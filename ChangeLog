@@ -2,6 +2,7 @@
 
 	* System.Drawing/Graphics.cs: allow rotation of arcs and ellipses
 	by drawing and filling them with graphics path.
+	* System.Drawing/Drawing2D/Matrix.cs: fixed TransformFontSize.
 
 2006-09-25  Gopal V  <gopalv82@yahoo.com>
 

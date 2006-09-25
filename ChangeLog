@@ -1,3 +1,7 @@
+2006-09-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Graphics.cs: allow rotation of arcs and ellipses
+	by drawing and filling them with graphics path.
 
 2006-09-25  Gopal V  <gopalv82@yahoo.com>
 

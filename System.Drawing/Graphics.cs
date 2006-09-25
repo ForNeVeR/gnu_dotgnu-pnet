@@ -555,11 +555,25 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 	public void DrawArc(Pen pen, int x, int y, int width, int height,
 						float startAngle, float sweepAngle)
 			{
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
+				// Bail out now if there's nothing to draw.
+				if(pen.PenType == PenType.SolidColor && pen.Color.A == 0)
 				{
-					SelectPen(pen);
-					ToolkitGraphics.DrawArc(rect, startAngle, sweepAngle);
+					return;
+				}
+				
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddArc( x,y,width,height,startAngle,sweepAngle);
+					DrawPath( pen, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectPen(pen);
+						ToolkitGraphics.DrawArc(rect, startAngle, sweepAngle);
+					}
 				}
 			}
 	public void DrawArc(Pen pen, float x, float y, float width, float height,
@@ -571,11 +585,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
-				{
-					SelectPen(pen);
-					ToolkitGraphics.DrawArc(rect, startAngle, sweepAngle);
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddArc( x,y,width,height,startAngle,sweepAngle);
+					DrawPath( pen, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectPen(pen);
+						ToolkitGraphics.DrawArc(rect, startAngle, sweepAngle);
+					}
 				}
 			}
 
@@ -857,11 +879,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
-				{
-					SelectPen(pen);
-					ToolkitGraphics.DrawArc(rect, 0.0f, 360.0f);
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddEllipse( x,y,width,height);
+					DrawPath( pen, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectPen(pen);
+						ToolkitGraphics.DrawArc(rect, 0.0f, 360.0f);
+					}
 				}
 			}
 	public void DrawEllipse(Pen pen, float x, float y,
@@ -873,11 +903,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
-				{
-					SelectPen(pen);
-					ToolkitGraphics.DrawArc(rect, 0.0f, 360.0f);
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddEllipse( x,y,width,height);
+					DrawPath( pen, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectPen(pen);
+						ToolkitGraphics.DrawArc(rect, 0.0f, 360.0f);
+					}
 				}
 			}
 
@@ -1612,8 +1650,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 		}
 		return font;
 	}
-
-
+	
 	public void DrawString(String s, Font font, Brush brush, float x, float y)
 			{
 				DrawString(s, font, brush, x, y, null);
@@ -1994,11 +2031,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
-				{
-					SelectBrush(brush);
-					ToolkitGraphics.FillPie(rect, 0.0f, 360.0f);
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddEllipse( x,y,width,height);
+					FillPath( brush, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectBrush(brush);
+						ToolkitGraphics.FillPie(rect, 0.0f, 360.0f);
+					}
 				}
 			}
 	public void FillEllipse(Brush brush, float x, float y,
@@ -2010,11 +2055,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
-				{
-					SelectBrush(brush);
-					ToolkitGraphics.FillPie(rect, 0.0f, 360.0f);
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddEllipse( x,y,width,height);
+					FillPath( brush, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectBrush(brush);
+						ToolkitGraphics.FillPie(rect, 0.0f, 360.0f);
+					}
 				}
 			}
 
@@ -2064,11 +2117,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
-				{
-					SelectBrush(brush);
-					ToolkitGraphics.FillPie(rect, startAngle, sweepAngle);
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddPie( x,y,width,height,startAngle,sweepAngle);
+					FillPath( brush, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectBrush(brush);
+						ToolkitGraphics.FillPie(rect, startAngle, sweepAngle);
+					}
 				}
 			}
 	public void FillPie(Brush brush, float x, float y,
@@ -2081,11 +2142,19 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					return;
 				}
 
-				Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
-				lock(this)
-				{
-					SelectBrush(brush);
-					ToolkitGraphics.FillPie(rect, startAngle, sweepAngle);
+				// if transform is set use graphics path to draw or fill, since the transformation works for this then.
+				if( null != transform ) {
+					GraphicsPath path = new GraphicsPath();
+					path.AddPie( x,y,width,height,startAngle,sweepAngle);
+					FillPath( brush, path );
+				}
+				else {
+					Point[] rect = ConvertRectangle(x + baseWindow.X, y + baseWindow.Y, width, height, pageUnit);
+					lock(this)
+					{
+						SelectBrush(brush);
+						ToolkitGraphics.FillPie(rect, startAngle, sweepAngle);
+					}
 				}
 			}
 
@@ -4466,14 +4535,27 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				{
 					throw new ObjectDisposedException("graphics");
 				}
-				IToolkitPen tpen = pen.GetPen(graphics.Toolkit);
-				if(pen.PenType == PenType.SolidColor)
+				
+				Pen penNew = pen;
+				if( transform != null ) {
+					// calculation new pen size, if a transformation is set
+					// using the workaround for Font scaling
+					float penWidth = pen.Width;
+					float newWidth = transform.TransformFontSize(penWidth);
+					if( penWidth != newWidth ) {
+						penNew = (Pen) pen.Clone();
+						penNew.Width = newWidth;
+					}
+				}
+				
+				IToolkitPen tpen = penNew.GetPen(graphics.Toolkit);
+				if(penNew.PenType == PenType.SolidColor)
 				{
 					tpen.Select(graphics);
 				}
 				else
 				{
-					IToolkitBrush tbrush = pen.Brush.GetBrush(graphics.Toolkit);
+					IToolkitBrush tbrush = penNew.Brush.GetBrush(graphics.Toolkit);
 					tpen.Select(graphics, tbrush);
 				}
 			}

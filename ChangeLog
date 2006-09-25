@@ -1,4 +1,9 @@
-2006-09-24  Kirill Kononenko <Kirill.Kononenko@gmail.com>
+2006-09-25  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* engine/jitc_pinvoke.c: Add missing jump target for the case that the
+	array to be marshalled is null.
+
+2006-09-24  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/jitc_pinvoke.c, engine/jitc.c:
 	Improve multicast delegates handling.
@@ -30,7 +35,7 @@
 	The current thread is handled in the delegate code with
 	_ILJitFunctionGetThread.
 
-2006-09-17  Radek Polak <psonek2@seznam.cz>
+2006-09-17  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/engine.h: add ILWatch struct for keeping information about
 	local variable. Thread has now watchStack that contains watches for

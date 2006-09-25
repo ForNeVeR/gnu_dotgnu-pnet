@@ -1218,6 +1218,7 @@ static ILJitValue MarshalValue(jit_function_t function, ILJitValue in, ILType *t
 				    	    				newArray,
 				    					(jit_nint)(sizeof(ILUInt32))));
 			    }
+			    jit_insn_label(function, &endLoop);
 			    if(addressKind==MARSHAL_ITEM_OF_STRUCTURE || addressKind==MARSHAL_ITEM_OF_ARRAY)
 				    	jit_insn_store_relative(function, outAddressValue, offset, newArray);
 			    return newArray;

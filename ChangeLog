@@ -1,3 +1,9 @@
+
+2006-09-25  Gopal V  <gopalv82@yahoo.com>
+
+	* System.Xml/XmlElement.cs: Fix InnerXml to avoid skipping
+	over elements.
+
 2006-09-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Drawing2D/GraphicsPath.cs: added calculation Points.

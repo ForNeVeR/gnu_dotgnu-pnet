@@ -147,15 +147,12 @@ class XmlElement : XmlLinkedNode
 						// read the next child node
 						XmlNode child = doc.ReadNodeInternal(r);
 
-						// append the child or try to read another
+						// append the child (ReadNodeInternal should
+						// advance reader)
 						if(child != null)
 						{
 							// append the new child node
 							AppendChild(child);
-						}
-						else
-						{
-							r.Read();
 						}
 					}
 					while(r.ReadState == ReadState.Interactive);

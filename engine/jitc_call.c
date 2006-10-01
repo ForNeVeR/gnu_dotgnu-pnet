@@ -647,6 +647,14 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		ILJitValue thread = _ILJitCoderGetThread(jitCoder);
 
+	#ifndef IL_CONFIG_REDUCE_CODE
+		/* Emit the code to increase the call count of the method if profiling is enabled. */
+		if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
+		{
+			_ILJitProfileIncreaseMethodCallCount(jitCoder, methodInfo);
+		}
+	#endif
+
 		/* Call the engine function directly with the supplied args. */
 		JITC_ADJUST(jitCoder, -argCount);
 		returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
@@ -700,6 +708,13 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		ILPInvoke *pinv = ILPInvokeFind(methodInfo);
 		if(pinv && ((ILJitMethodInfo*)(methodInfo->userData))->fnInfo.func)
 		{
+		#ifndef IL_CONFIG_REDUCE_CODE
+			/* Emit the code to increase the call count of the method if profiling is enabled. */
+			if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
+			{
+				_ILJitProfileIncreaseMethodCallCount(jitCoder, methodInfo);
+			}
+		#endif
 			returnValue = _ILJitInlinePinvoke(jitCoder, methodInfo, jitParams);
 		}
 		else

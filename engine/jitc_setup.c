@@ -49,6 +49,14 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	}
 #endif
 
+#ifndef IL_CONFIG_REDUCE_CODE
+	/* Emit the code to increase the call count of the method if profiling is enabled. */
+	if(coder->flags & IL_CODER_FLAG_METHOD_PROFILE)
+	{
+		_ILJitProfileIncreaseMethodCallCount(coder, method);
+	}
+#endif
+
 	if(ILMethod_IsStaticConstructor(method))
 	{
 		/* We have to take care that the method is executed only once. */

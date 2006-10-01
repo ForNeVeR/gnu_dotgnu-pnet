@@ -34,6 +34,7 @@
 #endif
 #include "lib_defs.h"
 #include "jitc_gen.h"
+#include "interlocked.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -275,6 +276,11 @@ static ILJitType _ILJitSignature_MarshalObjectToCustom = 0;
  * void* MarshalCustomToObject(void *value, ILType *type, ILMethod *method, ILExecThread *thread)
  */
 static ILJitType _ILJitSignature_MarshalCustomToObject = 0;
+
+/*
+ * ILInt32 ILInterlockedIncrement(ILInt32 *destination)
+ */
+static ILJitType _ILJitSignature_ILInterlockedIncrement = 0;
 
 /*
  * Define offsetof macro if not present.
@@ -2269,6 +2275,14 @@ int ILJitInit()
 		return 0;
 	}
 
+	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_INT32;
+	if(!(_ILJitSignature_ILInterlockedIncrement = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
 	return 1;
 }
 /*
@@ -3028,6 +3042,7 @@ static int _ILJitMethodIsAbstract(ILMethod *method)
 	return 0;
 }
 
+#include "jitc_profile.c"
 #include "jitc_alloc.c"
 #include "jitc_delegate.c"
 #include "jitc_pinvoke.c"
@@ -3832,8 +3847,101 @@ ILJitTypes *ILJitPrimitiveClrTypeToJitTypes(int primitiveClrType)
  */
 int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 {
-	/* TODO */
-	return 0;
+	ILJITCoder *coder = (ILJITCoder *)(process->coder);
+	ILUInt32 count = 0;
+	ILUInt32 current = 0;
+	ILJitFunction function = 0;
+	int haveCounts = 0;
+	ILMethod *method;
+	ILMethod **methods;
+	ILMethod **temp;
+
+	/* Get the number of created and called functions */
+	function = jit_function_next(coder->context, 0);
+	while(function)
+	{
+		method = (ILMethod *)jit_function_get_meta(function, IL_JIT_META_METHOD);
+		if(method)
+		{
+			if(method->count > 0)
+			{
+				count++;
+			}
+		}
+		function = jit_function_next(coder->context, function);
+	}
+
+	/* Allocate the array for the methods. */
+	if(!(methods = (ILMethod **)ILMalloc((count + 1) * sizeof(ILMethod *))))
+	{
+		return 0;
+	}
+
+	/* Now fill the array. */
+	function = jit_function_next(coder->context, 0);
+	while(function)
+	{
+		method = (ILMethod *)jit_function_get_meta(function, IL_JIT_META_METHOD);
+		if(method)
+		{
+			if((method->count > 0) && (current < count))
+			{
+				methods[current] = method;
+				current++;
+			}
+		}
+		function = jit_function_next(coder->context, function);
+	}
+	/* Mark the end of the list. */
+	methods[current] = 0;
+
+	/* Sort the method list into decreasing order of count */
+	if(methods[0] != 0 && methods[1] != 0)
+	{
+		ILMethod **outer;
+		ILMethod **inner;
+		for(outer = methods; outer[1] != 0; ++outer)
+		{
+			for(inner = outer + 1; inner[0] != 0; ++inner)
+			{
+				if(outer[0]->count < inner[0]->count)
+				{
+					method = outer[0];
+					outer[0] = inner[0];
+					inner[0] = method;
+				}
+			}
+		}
+	}
+
+	/* Print the method information */
+	temp = methods;
+#ifdef ENHANCED_PROFILER
+	printf ("   Count    Total  Average\n             time     time\n");
+#endif
+	while((method = *temp++) != 0)
+	{
+		if(!(method->count))
+		{
+			continue;
+		}
+#ifdef ENHANCED_PROFILER
+		printf("%8lu %8lu %8lu   ", (unsigned long)(method->count),
+			(unsigned long)(method->time), (unsigned long)(method->time) / (unsigned long)(method->count));
+#else
+ 		printf("%8lu    ", (unsigned long)(method->count));
+#endif
+		ILDumpMethodType(stdout, ILProgramItem_Image(method),
+						 ILMethod_Signature(method), 0,
+						 ILMethod_Owner(method), ILMethod_Name(method), 0);
+		putc('\n', stdout);
+		haveCounts = 1;
+	}
+
+	/* Clean up and exit */
+
+	ILFree(methods);
+	return haveCounts;
 }
 
 #endif /* !IL_CONFIG_REDUCE_CODE */

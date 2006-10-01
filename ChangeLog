@@ -1,3 +1,16 @@
+2006-10-01  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Implement _ILDumpMethodProfile and add the signature for
+	ILInterlockedIncrement.
+
+	* engine/jitc_call.c, engine/jitc_setup.c: Emit the code for method
+	profiling on entry of a function or inlined calling of internal functions
+	and pinvokes.
+
+	* engine/jitc_profile.c: Added for profiling functions.
+
+	* engine/Makefile.am: Add jitc_profile.c to jit coder sources.
+
 2006-09-25  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/jitc_pinvoke.c: Add missing jump target for the case that the

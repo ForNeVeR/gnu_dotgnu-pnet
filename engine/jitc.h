@@ -119,6 +119,7 @@ struct _tagILJitTypes
  */
 #define IL_JIT_TYPEKIND_DELEGATE			0x00000001
 #define IL_JIT_TYPEKIND_MULTICASTDELEGATE	0x00000002
+#define IL_JIT_TYPEKIND_ARRAY				0x00000010
 
 /*
  * Initialize a ILJitTypes structure 

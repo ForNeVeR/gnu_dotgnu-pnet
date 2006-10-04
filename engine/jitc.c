@@ -350,6 +350,23 @@ struct _tagILJitLocalSlots
 		(s).maxSlots = 0;		\
 	} while (0);
 
+
+/*
+ * Forward declaration of the JIT coder's instance block.
+ */
+typedef struct _tagILJITCoder ILJITCoder;
+
+/*
+ * Prototype for inlining functioncalls.
+ *
+ * ILJitValue func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitValue *, ILInt32)
+ */
+typedef ILJitValue (*ILJitInlineFunc)(ILJITCoder *jitCoder,
+									  ILMethod *method,
+									  ILCoderMethodInfo *methodInfo,
+									  ILJitValue *args,
+									  ILInt32 numArgs);
+
 /*
  * Private method information for the jit coder.
  */
@@ -359,6 +376,7 @@ struct _tagILJitMethodInfo
 	ILJitFunction jitFunction;		/* Implementation of the method. */
 	ILUInt32 implementationType;	/* Flag how the method is implemented. */
 	ILInternalInfo fnInfo;			/* Information for internal calls or pinvokes. */
+	ILJitInlineFunc inlineFunc;		/* Function for inlining. */
 };
 
 #define _IL_JIT_IMPL_DEFAULT		0x0
@@ -383,7 +401,6 @@ struct _tagILJitMethodInfo
 /*
  * Define the structure of a JIT coder's instance block.
  */
-typedef struct _tagILJITCoder ILJITCoder;
 struct _tagILJITCoder
 {
 	ILCoder			coder;
@@ -3044,6 +3061,7 @@ static int _ILJitMethodIsAbstract(ILMethod *method)
 
 #include "jitc_profile.c"
 #include "jitc_alloc.c"
+#include "jitc_array.c"
 #include "jitc_delegate.c"
 #include "jitc_pinvoke.c"
 
@@ -3189,6 +3207,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 	ILClassPrivate *classPrivate;
 	ILUInt32 implementationType = 0;
 	jit_on_demand_func onDemandCompiler = 0;
+	ILJitInlineFunc inlineFunc = 0;
 	ILInt32 setRecompilable = 0;
 	ILInternalInfo fnInfo;
 
@@ -3204,32 +3223,57 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 
 	if(classPrivate->jitTypes.jitTypeKind != 0)
 	{
-		ILType *type = ILClassToType(info);
-
-		/* Handle the special cases. */
-		if(method == ILTypeGetDelegateMethod(type))
+		switch(classPrivate->jitTypes.jitTypeKind)
 		{
-			/* Flag method implemented in IL.. */
-			implementationType = _IL_JIT_IMPL_DEFAULT;
+			case IL_JIT_TYPEKIND_ARRAY:
+			{
+				if(!strcmp(ILMethod_Name(method), "Get"))
+				{
+					inlineFunc = _ILJitMArrayGet;
+				}
+				else if(!strcmp(ILMethod_Name(method), "Set"))
+				{
+					inlineFunc = _ILJitMArraySet;
+				}
+				else if(!strcmp(ILMethod_Name(method), "Address"))
+				{
+					inlineFunc = _ILJitMArrayAddress;
+				}
+			}
+			break;
 
-			/* now set the on demand compiler function */
-			onDemandCompiler = _ILJitCompileMultiCastDelegateInvoke;
-		}
-		else if (method == (ILMethod *)ILTypeGetDelegateBeginInvokeMethod(type))
-		{
-			/* Flag method implemented in IL.. */
-			implementationType = _IL_JIT_IMPL_DEFAULT;
+			case IL_JIT_TYPEKIND_DELEGATE:
+			case IL_JIT_TYPEKIND_MULTICASTDELEGATE:
+			{
+				ILType *type = ILClassToType(info);
 
-			/* now set the on demand compiler function */
-			onDemandCompiler = _ILJitCompileDelegateBeginInvoke;
-		}
-		else if (method == (ILMethod *)ILTypeGetDelegateEndInvokeMethod(type))
-		{
-			/* Flag method implemented in IL.. */
-			implementationType = _IL_JIT_IMPL_DEFAULT;
+				/* Handle the special cases. */
+				if(method == ILTypeGetDelegateMethod(type))
+				{
+					/* Flag method implemented in IL.. */
+					implementationType = _IL_JIT_IMPL_DEFAULT;
 
-			/* now set the on demand compiler function */
-			onDemandCompiler = _ILJitCompileDelegateEndInvoke;
+					/* now set the on demand compiler function */
+					onDemandCompiler = _ILJitCompileMultiCastDelegateInvoke;
+				}
+				else if (method == (ILMethod *)ILTypeGetDelegateBeginInvokeMethod(type))
+				{
+					/* Flag method implemented in IL.. */
+					implementationType = _IL_JIT_IMPL_DEFAULT;
+
+					/* now set the on demand compiler function */
+					onDemandCompiler = _ILJitCompileDelegateBeginInvoke;
+				}
+				else if (method == (ILMethod *)ILTypeGetDelegateEndInvokeMethod(type))
+				{
+					/* Flag method implemented in IL.. */
+					implementationType = _IL_JIT_IMPL_DEFAULT;
+
+					/* now set the on demand compiler function */
+					onDemandCompiler = _ILJitCompileDelegateEndInvoke;
+				}
+			}
+			break;
 		}
 	}
 
@@ -3484,6 +3528,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 		jitMethodInfo->jitFunction = jitFunction;
 		jitMethodInfo->implementationType = implementationType;
 		jitMethodInfo->fnInfo.func = fnInfo.func;
+		jitMethodInfo->inlineFunc = inlineFunc;
 
 		/* and link the new jitFunction to the method. */
 		method->userData = (void *)jitMethodInfo;
@@ -3733,6 +3778,10 @@ int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process)
 			{
 				classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_DELEGATE;
 			}
+		}
+		else if(ILType_IsArray(type))
+		{
+			classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_ARRAY;
 		}
 	}
 	else

@@ -1,3 +1,13 @@
+2006-10-04  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc.h, engine/jitc_call.c: Add support for
+	function inlining. Enable inlining of Get, Set and Address methods of
+	complex arrays (multidimensional or not zero based).
+
+	* engine/jitc_array.c: Added
+
+	* engine/Makefile.am: Add jitc_array.c to the jit coder sources.
+
 2006-10-01  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Implement _ILDumpMethodProfile and add the signature for

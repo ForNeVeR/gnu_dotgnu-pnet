@@ -593,6 +593,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	ILJitValue returnValue;
 	char *methodName = 0;
 	ILInternalInfo fnInfo;
+	ILJitInlineFunc inlineFunc = 0;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -640,6 +641,23 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	if(info->hasParamArray)
 	{
 		++argCount;
+	}
+
+	/* Check if the function can be inlined. */
+	if((inlineFunc = ((ILJitMethodInfo*)(methodInfo->userData))->inlineFunc))
+	{
+		JITC_ADJUST(jitCoder, -argCount);
+
+		returnValue = (*inlineFunc)(jitCoder, methodInfo, info, &(jitCoder->jitStack[jitCoder->stackTop]), argCount);
+
+		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
+		{
+			jitCoder->jitStack[jitCoder->stackTop] =
+					_ILJitValueConvertToStackType(jitCoder->jitFunction,
+												  returnValue);
+			JITC_ADJUST(jitCoder, 1);
+		}
+		return;
 	}
 
 	/* Check if the function is implemented in the engine. */

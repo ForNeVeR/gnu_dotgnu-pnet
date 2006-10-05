@@ -162,7 +162,7 @@ static void JITCoder_ArrayAccess(ILCoder *coder, int opcode,
 
 			_ILJitCheckNull(jitCoder, array);
 			len = GetArrayLength(jitCoder, array);
-			ValidateArrayIndex(jitCoder, array, index);
+			ValidateArrayIndex(jitCoder, len, index);
 			arrayBase = GetArrayBase(jitCoder, array);
 
 			ILJitType type = _ILJitGetReturnType(elemType, jitCoder->process);

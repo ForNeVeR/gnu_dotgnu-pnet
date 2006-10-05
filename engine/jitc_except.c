@@ -73,6 +73,7 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception)
 							 ILRuntimeExceptionThrowOutOfMemory,
 							 _ILJitSignature_ILRuntimeExceptionThrowOutOfMemory,
 							 0, 0, JIT_CALL_NORETURN);
+		return;
 	}
 	if(exception > 0)
 	{

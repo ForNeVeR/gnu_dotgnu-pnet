@@ -20,13 +20,27 @@
 
 #ifdef	IL_JITC_DECLARATIONS
 
-typedef struct _tagILJitStackItem ILJitStachItem;
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+
+typedef struct _tagILJitStackItem ILJitStackItem;
 struct _tagILJitStackItem
 {
-	ILJitValue	value;
+	ILInt32			flags;
+	ILJitValue		value;
+	ILJitLocalSlot *refValue;
 };
 
-#endif
+#define ILJitStackItemNew(name) ILJitStackItem name
+
+#else
+
+typedef ILJitValue ILJitStackItem;
+
+#define ILJitStackItemNew(name) ILJitStackItem name = 0
+
+#endif	/* _IL_JIT_OPTIMIZE_LOCALS */
+
+#endif	/* IL_JITC_DECLARATIONS */
 
 #ifdef	IL_JITC_CODER_INSTANCE
 
@@ -58,14 +72,33 @@ struct _tagILJitStackItem
 
 #ifdef	IL_JITC_FUNCTIONS
 
+/*
+ * Allocate enough space for "n" values on the stack.
+ */
+#define	ALLOC_STACK(coder, n)	\
+	do { \
+		if((n) > (coder)->stackSize) \
+		{ \
+			ILJitValue *newStack = \
+				(ILJitValue *)ILRealloc((coder)->jitStack, \
+									  (n) * sizeof(ILJitValue)); \
+			if(!newStack) \
+			{ \
+				return 0; \
+			} \
+			(coder)->jitStack = newStack; \
+			(coder)->stackSize = (n); \
+		} \
+	} while (0)
+
 #define _JITC_ADJUST(coder, num) \
 	do { \
 		(coder)->stackTop += (num); \
 	} while(0)
 
-#endif
-
 #define JITC_ADJUST(coder, num) _JITC_ADJUST((coder), (num))
+
+#endif
 
 #ifdef IL_JITC_CODE
 

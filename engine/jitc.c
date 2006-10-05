@@ -467,25 +467,6 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception);
 	}
 
 /*
- * Allocate enough space for "n" values on the stack.
- */
-#define	ALLOC_STACK(coder, n)	\
-			do { \
-				if((n) > (coder)->stackSize) \
-				{ \
-					ILJitValue *newStack = \
-						(ILJitValue *)ILRealloc((coder)->jitStack, \
-											  (n) * sizeof(ILJitValue)); \
-					if(!newStack) \
-					{ \
-						return 0; \
-					} \
-					(coder)->jitStack = newStack; \
-					(coder)->stackSize = (n); \
-				} \
-			} while (0)
-
-/*
  * Acquire and release the metadata lock during layouting a class.
  */
 #define	METADATA_WRLOCK(thread)	\

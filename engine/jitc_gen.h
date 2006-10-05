@@ -82,12 +82,6 @@ extern	"C" {
 		__temp[7] = arg[7]; \
 	} while(0)
 
-#define _JITC_ADJUST(coder, num) \
-	do { \
-		(coder)->stackTop += (num); \
-	} while(0)
-
-#define JITC_ADJUST(coder, num) _JITC_ADJUST((coder), (num))
 #define JITC_GET_INT8(arg, value) _JITC_GET_INT8((arg), (value))
 #define JITC_GET_INT16(arg, value) _JITC_GET_INT16((arg), (value))
 #define JITC_GET_INT32(arg, value) _JITC_GET_INT32((arg), (value))

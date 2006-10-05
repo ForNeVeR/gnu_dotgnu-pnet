@@ -1,5 +1,9 @@
 2006-10-05  Klaus Treichel  <ktreichel@web.de>
 
+	* engine/jitc.c, engine/jitc_gen.h, engine/jitc_labels.c,
+	engine/jitc_locals.c, engine/jitc_stack.c: Start with some code
+	reorganization.
+
 	* engine/jitc_except.c: Add return after throwing an OutOfMemoryException
 	in _ILJitThrowSystem. Without this return an other erroneous call to
 	ILRuntimeExceptionThrowClass was emitted.

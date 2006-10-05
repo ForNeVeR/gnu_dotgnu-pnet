@@ -18,11 +18,58 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef IL_JITC_DECLARATIONS
+
+/*
+ * Define the structure of a local/argument slot.
+ */
+typedef struct _tagILJitLocalSlot ILJitLocalSlot;
+struct _tagILJitLocalSlot
+{
+	ILJitValue	value;			/* the ILJitValue */
+	ILUInt32	flags;			/* State of the local/arg. */
+};
+
+/*
+ * Define the structure for managing the local slots.
+ */
+typedef struct _tagILJitLocalSlots ILJitLocalSlots;
+struct _tagILJitLocalSlots
+{
+	ILJitLocalSlot *slots;		/* Pointer to the slots. */
+	int				numSlots;	/* Number of used slots. */
+	int				maxSlots;	/* Number of allocated slots. */
+};
+
+#define _ILJitLocalSlotsInit(s) \
+	do { \
+		(s).slots = 0;		\
+		(s).numSlots = 0;	\
+		(s).maxSlots = 0;	\
+	} while (0);
+
+#define _ILJitLocalSlotsDestroy(s) \
+	do { \
+		if((s).slots)			\
+		{						\
+			ILFree((s).slots);	\
+		}						\
+		(s).slots = 0;			\
+		(s).numSlots = 0;		\
+		(s).maxSlots = 0;		\
+	} while (0);
+
 /*
  * definitions used in the slot's flags
  */
-#define _IL_JIT_VALUE_NULLCHECKED 1
-#define _IL_JIT_VALUE_INITIALIZED 2
+#define _IL_JIT_VALUE_NULLCHECKED 	0x00000001
+#define _IL_JIT_VALUE_INITIALIZED 	0x00000002
+
+/*
+ * additional flags used on the evaluation stack.
+ */
+#define _IL_JIT_VALUE_COPYOF		0x00000100	/* complete copy of the local/arg value */
+#define _IL_JIT_VALUE_POINTER_TO	0x00000200	/* pointer to the local/arg value */
 
 /*
  * Allocate enough space for "n" slots.
@@ -84,6 +131,40 @@
  */
 #define _ILJitParamValue(coder, n) _ILJitParamGet((coder), (n)).value
 
+#endif /* IL_JITC_DECLARATIONS */
+
+#ifdef	IL_JITC_CODER_INSTANCE
+
+	/* Members to manage the fixed arguments. */
+	ILJitLocalSlots	jitParams;
+
+	/* Members to manage the local variables. */
+	ILJitLocalSlots jitLocals;
+#ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
+	int				localsInitialized;
+#endif
+
+#endif	/* IL_JITC_CODER_INSTANCE */
+
+#ifdef	IL_JITC_CODER_INIT
+
+	/* Initialize the parameter management. */
+	_ILJitLocalSlotsInit(coder->jitParams)
+
+	/* Initialize the locals management. */
+	_ILJitLocalSlotsInit(coder->jitLocals)
+
+#endif	/* IL_JITC_CODER_INIT */
+
+#ifdef	IL_JITC_CODER_DESTROY
+
+	_ILJitLocalSlotsDestroy(coder->jitLocals)
+
+	_ILJitLocalSlotsDestroy(coder->jitParams)
+
+#endif	/* IL_JITC_CODER_DESTROY */
+
+#ifdef IL_JITC_FUNCTIONS
 
 /*
  * Get the pointer to a local.
@@ -580,4 +661,5 @@ static void _ILJitCheckNull(ILJITCoder *coder, ILJitValue address)
 	jit_insn_check_null(coder->jitFunction, address);
 }
 
+#endif /* IL_JITC_FUNCTIONS */
 

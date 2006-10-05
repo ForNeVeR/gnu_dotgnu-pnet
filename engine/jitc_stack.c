@@ -18,6 +18,55 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef	IL_JITC_DECLARATIONS
+
+typedef struct _tagILJitStackItem ILJitStachItem;
+struct _tagILJitStackItem
+{
+	ILJitValue	value;
+};
+
+#endif
+
+#ifdef	IL_JITC_CODER_INSTANCE
+
+	/* Members to manage the evaluation stack. */
+	ILJitValue	   *jitStack;
+	int				stackSize;
+	int				stackTop;
+
+#endif
+
+#ifdef	IL_JITC_CODER_INIT
+
+	/* Initialize the stack management. */
+	coder->jitStack = 0;
+	coder->stackTop = -1;
+	coder->stackSize = 0;
+
+#endif	/* IL_JITC_CODER_INIT */
+
+#ifdef	IL_JITC_CODER_DESTROY
+
+	if(coder->jitStack)
+	{
+		ILFree(coder->jitStack);
+		coder->jitStack = 0;
+	}
+
+#endif	/* IL_JITC_CODER_DESTROY */
+
+#ifdef	IL_JITC_FUNCTIONS
+
+#define _JITC_ADJUST(coder, num) \
+	do { \
+		(coder)->stackTop += (num); \
+	} while(0)
+
+#endif
+
+#define JITC_ADJUST(coder, num) _JITC_ADJUST((coder), (num))
+
 #ifdef IL_JITC_CODE
 
 /*

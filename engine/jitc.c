@@ -291,70 +291,15 @@ static ILJitType _ILJitSignature_ILInterlockedIncrement = 0;
 #endif
 
 /*
- * declaration of the different label types.
- */
-#define _IL_JIT_LABEL_NORMAL 1
-#define _IL_JIT_LABEL_STARTCATCH 2
-#define _IL_JIT_LABEL_STARTFINALLY 4
-
-/*
- * Define the structure of a JIT label.
- */
-typedef struct _tagILJITLabel ILJITLabel;
-struct _tagILJITLabel
-{
-	ILUInt32	address;		/* Address in the IL code */
-	jit_label_t	label;			/* the libjit label */
-	ILJITLabel *next;			/* Next label block */
-	int			labelType;      /* type of the label. */
-	int			stackSize;		/* No. of elements on the stack. */
-	ILJitValue *jitStack;		/* Values on the stack. */
-};
-
-/*
- * Define the structure of a local/argument slot.
- */
-typedef struct _tagILJitLocalSlot ILJitLocalSlot;
-struct _tagILJitLocalSlot
-{
-	ILJitValue	value;			/* the ILJitValue */
-	ILUInt32	flags;			/* State of the local/arg. */
-};
-
-/*
- * Define the structure for managing the local slots.
- */
-typedef struct _tagILJitLocalSlots ILJitLocalSlots;
-struct _tagILJitLocalSlots
-{
-	ILJitLocalSlot *slots;		/* Pointer to the slots. */
-	int				numSlots;	/* Number of used slots. */
-	int				maxSlots;	/* Number of allocated slots. */
-};
-
-#define _ILJitLocalSlotsInit(s) \
-	do { \
-		(s).slots = 0;		\
-		(s).numSlots = 0;	\
-		(s).maxSlots = 0;	\
-	} while (0);
-
-#define _ILJitLocalSlotsDestroy(s) \
-	do { \
-		if((s).slots)			\
-		{						\
-			ILFree((s).slots);	\
-		}						\
-		(s).slots = 0;			\
-		(s).numSlots = 0;		\
-		(s).maxSlots = 0;		\
-	} while (0);
-
-
-/*
  * Forward declaration of the JIT coder's instance block.
  */
 typedef struct _tagILJITCoder ILJITCoder;
+
+#define	IL_JITC_DECLARATIONS
+#include "jitc_locals.c"
+#include "jitc_stack.c"
+#include "jitc_labels.c"
+#undef	IL_JITC_DECLARATIONS
 
 /*
  * Prototype for inlining functioncalls.
@@ -414,30 +359,11 @@ struct _tagILJITCoder
 	/* Pool for the method infos. */
 	ILMemPool		methodPool;
 
-	/* Members to manage the evaluation stack. */
-	ILJitValue	   *jitStack;
-	int				stackSize;
-	int				stackTop;
-
-	/* Members to manage the fixed arguments. */
-	ILJitLocalSlots	jitParams;
-
-	/* Members to manage the local variables. */
-	ILJitLocalSlots jitLocals;
-#ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
-	int				localsInitialized;
-#endif
-
-	/* Handle the labels. */
-	ILMemPool		labelPool;
-	ILJITLabel     *labelList;
-	int				labelOutOfMemory;
-	ILMemStack		stackStates;
-
-	/* Handle the switch table. */
-	ILJitValue		switchValue;
-	int				numSwitch;
-	int				maxSwitch;
+#define	IL_JITC_CODER_INSTANCE
+#include "jitc_locals.c"
+#include "jitc_stack.c"
+#include "jitc_labels.c"
+#undef	IL_JITC_CODER_INSTANCE
 
 	/* The current jitted function. */
 	ILJitFunction	jitFunction;
@@ -459,7 +385,7 @@ struct _tagILJITCoder
 };
 
 /*
- * Convert a pointer to an ILCoder to a pointer to the ILJITVoder instance
+ * Convert a pointer to an ILCoder to a pointer to the ILJITCoder instance
  */
 #define _ILCoderToILJITCoder(coder) ((ILJITCoder *)coder)
 
@@ -2326,33 +2252,18 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	/* Intialize the pool for the method infos. */
 	ILMemPoolInit(&(coder->methodPool), sizeof(ILJitMethodInfo), 100);
 
-	/* Initialize the stack management. */
-	coder->jitStack = 0;
-	coder->stackTop = -1;
-	coder->stackSize = 0;
-
-	/* Initialize the parameter management. */
-	_ILJitLocalSlotsInit(coder->jitParams)
-
-	/* Initialize the locals management. */
-	_ILJitLocalSlotsInit(coder->jitLocals)
-
 	/* Init the current jitted function. */
 	coder->jitFunction = 0;
-
-	/* Init the label stuff. */
-	ILMemPoolInit(&(coder->labelPool), sizeof(ILJITLabel), 8);
-	coder->labelList = 0;
-	coder->labelOutOfMemory = 0;
-
-	/* Init the switch stuff. */
-	coder->switchValue = 0;
-	coder->numSwitch = 0;
-	coder->maxSwitch = 0;
 
 #ifndef IL_JIT_THREAD_IN_SIGNATURE
 	coder->thread = 0;
 #endif
+
+#define IL_JITC_CODER_INIT
+	#include "jitc_locals.c"
+	#include "jitc_stack.c"
+	#include "jitc_labels.c"
+#undef IL_JITC_CODER_INIT
 
 	/* Ready to go */
 	return &(coder->coder);
@@ -2544,22 +2455,18 @@ static unsigned long JITCoder_GetCacheSize(ILCoder *_coder)
 static void JITCoder_Destroy(ILCoder *_coder)
 {
 	ILJITCoder *coder = _ILCoderToILJITCoder(_coder);
-	if(coder->jitStack)
-	{
-		ILFree(coder->jitStack);
-		coder->jitStack = 0;
-	}
 
-	_ILJitLocalSlotsDestroy(coder->jitLocals)
-
-	_ILJitLocalSlotsDestroy(coder->jitParams)
+#define IL_JITC_CODER_DESTROY
+#include "jitc_locals.c"
+#include "jitc_stack.c"
+#include "jitc_labels.c"
+#undef IL_JITC_CODER_DESTROY
 
 	if(coder->context)
 	{
 		jit_context_destroy(coder->context);
 		coder->context = 0;
 	}
-	ILMemPoolDestroy(&(coder->labelPool));
 
 	ILMemPoolDestroy(&(coder->methodPool));
 
@@ -3995,9 +3902,12 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 
 #endif /* !IL_CONFIG_REDUCE_CODE */
 
+#define	IL_JITC_FUNCTIONS
 #include "jitc_diag.c"
 #include "jitc_locals.c"
+#include "jitc_stack.c"
 #include "jitc_labels.c"
+#undef	IL_JITC_FUNCTIONS
 
 /*
  * Include the rest of the JIT conversion routines from other files.

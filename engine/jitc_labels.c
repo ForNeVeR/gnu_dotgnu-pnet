@@ -18,6 +18,68 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef IL_JITC_DECLARATIONS
+
+/*
+ * declaration of the different label types.
+ */
+#define _IL_JIT_LABEL_NORMAL 1
+#define _IL_JIT_LABEL_STARTCATCH 2
+#define _IL_JIT_LABEL_STARTFINALLY 4
+
+/*
+ * Define the structure of a JIT label.
+ */
+typedef struct _tagILJITLabel ILJITLabel;
+struct _tagILJITLabel
+{
+	ILUInt32	address;		/* Address in the IL code */
+	jit_label_t	label;			/* the libjit label */
+	ILJITLabel *next;			/* Next label block */
+	int			labelType;      /* type of the label. */
+	int			stackSize;		/* No. of elements on the stack. */
+	ILJitValue *jitStack;		/* Values on the stack. */
+};
+
+#endif /* IL_JITC_DECLARATIONS */
+
+#ifdef	IL_JITC_CODER_INSTANCE
+
+	/* Handle the labels. */
+	ILMemPool		labelPool;
+	ILJITLabel     *labelList;
+	int				labelOutOfMemory;
+	ILMemStack		stackStates;
+
+	/* Handle the switch table. */
+	ILJitValue		switchValue;
+	int				numSwitch;
+	int				maxSwitch;
+
+#endif	/* IL_JITC_CODER_INSTANCE */
+
+#ifdef	IL_JITC_CODER_INIT
+
+	/* Init the label stuff. */
+	ILMemPoolInit(&(coder->labelPool), sizeof(ILJITLabel), 8);
+	coder->labelList = 0;
+	coder->labelOutOfMemory = 0;
+
+	/* Init the switch stuff. */
+	coder->switchValue = 0;
+	coder->numSwitch = 0;
+	coder->maxSwitch = 0;
+
+#endif	/* IL_JITC_CODER_INIT */
+
+#ifdef	IL_JITC_CODER_DESTROY
+
+	ILMemPoolDestroy(&(coder->labelPool));
+
+#endif	/* IL_JITC_CODER_DESTROY */
+
+#ifdef IL_JITC_FUNCTIONS
+
 /*
  * Save the current jitStack status to the label.
  * This is done when the label is referenced the first time.
@@ -196,4 +258,5 @@ static ILJITLabel *_ILJitLabelGet(ILJITCoder *coder, ILUInt32 address,
 	return label;
 }
 
+#endif /* IL_JITC_FUNCTIONS */
 

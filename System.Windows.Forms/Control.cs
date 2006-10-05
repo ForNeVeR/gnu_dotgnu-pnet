@@ -348,14 +348,20 @@ public class Control : IWin32Window, IDisposable
 			if( null == iParm ) break;	// no more items
 		
 			Delegate dg = iParm.method;
-			Object ro = dg.DynamicInvoke(iParm.args);
-	
-			InvokeAsyncResult ar = iParm.wr;
 			
-			if( ar != null )
-			{
-				ar.retObject = ro;
-				ar.SetComplete();
+			Object ro = null;
+			
+			try {
+				ro = dg.DynamicInvoke(iParm.args);
+			}
+			finally {
+				InvokeAsyncResult ar = iParm.wr;
+				
+				if( ar != null )
+				{
+					ar.retObject = ro;
+					ar.SetComplete();
+				}
 			}
 		}
 	}

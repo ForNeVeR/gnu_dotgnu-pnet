@@ -1,3 +1,11 @@
+2006-10-05  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Control.cs: handle exception in 
+	ProcessInvokeEvent.
+	if an exception occurs in invoking the delegate be sure to set the 
+	async result to complete, or app could hang and no more events are 
+	invoked.
+
 2006-09-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Graphics.cs: allow rotation of arcs and ellipses

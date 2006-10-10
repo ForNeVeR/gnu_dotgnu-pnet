@@ -27,17 +27,13 @@
 static void _ILJitFillArguments(ILJITCoder *coder, ILJitValue *args,
 								ILCoderMethodInfo *info)
 {
-	int argCount = info->numBaseArgs + info->numVarArgs;
+	int argCount = _ILJitStackNumArgs(info);
+	ILJitStackItem *stackItems = _ILJitStackItemGetAndPop(coder, argCount);
 	int current = 0;
 	
-	if(info->hasParamArray)
-	{
-		++argCount;
-	}
-	JITC_ADJUST(coder, -argCount);
 	for(current = 0; current < argCount; current++)
 	{
-		args[current] = coder->jitStack[coder->stackTop + current];
+		args[current] = _ILJitStackItemValue(stackItems[current]);
 	}
 }
 
@@ -45,7 +41,7 @@ static void _ILJitFillArguments(ILJITCoder *coder, ILJitValue *args,
  * Get the vtable pointer for an interface function from an object.
  */
 static ILJitValue _ILJitGetInterfaceFunction(ILJITCoder *jitCoder,
-											 ILJitValue object,
+											 ILJitStackItem *object,
 											 ILClass *interface,
 											 int index)
 {
@@ -56,8 +52,9 @@ static ILJitValue _ILJitGetInterfaceFunction(ILJITCoder *jitCoder,
 	ILJitValue jitFunction;
 	jit_label_t label = jit_label_undefined;
 
-	_ILJitCheckNull(jitCoder, object);
-	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, object);
+	_ILJitStackItemCheckNull(jitCoder, *object);
+	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*object));
 	interfaceClass = jit_value_create_nint_constant(jitCoder->jitFunction,
 													_IL_JIT_TYPE_VPTR,
 													(jit_nint)interface);
@@ -84,7 +81,7 @@ static ILJitValue _ILJitGetInterfaceFunction(ILJITCoder *jitCoder,
  * Get the vtable pointer for a virtual function from an object.
  */
 static ILJitValue _ILJitGetVirtualFunction(ILJITCoder *jitCoder,
-										   ILJitValue object,
+										   ILJitStackItem *object,
 										   int index)
 {
 	ILJitValue classPrivate;
@@ -93,8 +90,9 @@ static ILJitValue _ILJitGetVirtualFunction(ILJITCoder *jitCoder,
 	ILJitValue jitFunction;
 	jit_label_t label = jit_label_undefined;
 
-	_ILJitCheckNull(jitCoder, object);
-	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, object);
+	_ILJitStackItemCheckNull(jitCoder, *object);
+	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*object));
 	vtable = jit_insn_load_relative(jitCoder->jitFunction, classPrivate, 
 									offsetof(ILClassPrivate, jitVtable), 
 									_IL_JIT_TYPE_VPTR);
@@ -149,6 +147,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 	ILJitValue ptr;
 	jit_label_t labelException = jit_label_undefined;
 	jit_label_t label = jit_label_undefined;
+	ILJitStackItem *stackItems;
 	ILJitValue args[3];
 
 
@@ -175,7 +174,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 									  array,
 									  sizeof(void *));
 	/* Adjust the stack just to the first vararg. */
-	JITC_ADJUST(jitCoder, -numArgs);
+	stackItems = _ILJitStackItemGetAndPop(jitCoder, numArgs);
 
 	/* Convert the arguments into objects in the array */
 	for(param = 0; param < numArgs; ++param)
@@ -198,7 +197,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_I1:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_SBYTE);
 					}
 					break;
@@ -207,7 +206,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_BOOLEAN:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_BYTE);
 					}
 					break;
@@ -215,7 +214,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_I2:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_INT16);
 					}
 					break;
@@ -224,7 +223,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_CHAR:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_UINT16);
 					}
 					break;
@@ -235,7 +234,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_INT32);
 					}
 					break;
@@ -246,7 +245,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_UINT32);
 					}
 					break;
@@ -257,7 +256,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_INT64);
 					}
 					break;
@@ -268,7 +267,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_UINT64);
 					}
 					break;
@@ -276,7 +275,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_R4:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_SINGLE);
 					}
 					break;
@@ -284,7 +283,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_R8:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_DOUBLE);
 					}
 					break;
@@ -292,7 +291,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_R:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_NFLOAT);
 					}
 					break;
@@ -300,7 +299,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					default:
 					{
 						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
+														  _ILJitStackItemValue(stackItems[param]),
 														  0, _IL_JIT_TYPE_VPTR);
 					}
 					break;
@@ -308,14 +307,14 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			}
 			else if(ILType_IsValueType(paramType))
 			{
-				ptr = jitCoder->jitStack[jitCoder->stackTop + param];
+				ptr = _ILJitStackItemValue(stackItems[param]);
 			}
 			else if(ILTypeIsReference(paramType))
 			{
 				/* Ref to an object reference type: pass the object reference */
 				boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
-														  0, _IL_JIT_TYPE_VPTR);
+												  _ILJitStackItemValue(stackItems[param]),
+												  0, _IL_JIT_TYPE_VPTR);
 				jit_insn_store_relative(jitCoder->jitFunction, arrayBase, 0,
 										boxValue);
 				boxValue = 0;
@@ -325,8 +324,8 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 				/* Assume that everything else is a pointer, and wrap
 				it up within a "System.IntPtr" object */
 				boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-								jitCoder->jitStack[jitCoder->stackTop + param],
-														  0, _IL_JIT_TYPE_VPTR);
+												  _ILJitStackItemValue(stackItems[param]),
+												  0, _IL_JIT_TYPE_VPTR);
 				paramType = ILType_Int;
 			}
 		}
@@ -344,8 +343,8 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_I1:
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_SBYTE, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_SBYTE, 0);
 					}
 					break;
 
@@ -353,16 +352,16 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_BOOLEAN:
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_BYTE, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_BYTE, 0);
 					}
 					break;
 
 					case IL_META_ELEMTYPE_I2:
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_INT16, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_INT16, 0);
 					}
 					break;
 
@@ -370,8 +369,8 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 					case IL_META_ELEMTYPE_CHAR:
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_UINT16, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_UINT16, 0);
 					}
 					break;
 
@@ -381,8 +380,8 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_INT32, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_INT32, 0);
 					}
 					break;
 
@@ -392,8 +391,8 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_UINT32, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_UINT32, 0);
 					}
 					break;
 
@@ -403,8 +402,8 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_INT64, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_INT64, 0);
 					}
 					break;
 
@@ -414,37 +413,37 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 #endif
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_UINT64, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_UINT64, 0);
 					}
 					break;
 
 					case IL_META_ELEMTYPE_R4:
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_SINGLE, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_SINGLE, 0);
 					}
 					break;
 
 					case IL_META_ELEMTYPE_R8:
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_DOUBLE, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_DOUBLE, 0);
 					}
 					break;
 
 					case IL_META_ELEMTYPE_R:
 					{
 						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_NFLOAT, 0);
+													_ILJitStackItemValue(stackItems[param]),
+													_IL_JIT_TYPE_NFLOAT, 0);
 					}
 
 					default:
 					{
-						boxValue = jitCoder->jitStack[jitCoder->stackTop + param];
+						boxValue = _ILJitStackItemValue(stackItems[param]);
 					}
 					break;
 				}
@@ -452,21 +451,21 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			else if(ILType_IsValueType(paramType))
 			{
 				ptr = jit_insn_address_of(jitCoder->jitFunction,
-							jitCoder->jitStack[jitCoder->stackTop + param]);
+										  _ILJitStackItemValue(stackItems[param]));
 			}
 			else if(ILTypeIsReference(paramType))
 			{
 				/* Object reference type: pass it directly */
 				jit_insn_store_relative(jitCoder->jitFunction, arrayBase, 0,
-							jitCoder->jitStack[jitCoder->stackTop + param]);
+										_ILJitStackItemValue(stackItems[param]));
 			}
 			else
 			{
 				/* Assume that everything else is a pointer, and wrap
 				it up within a "System.IntPtr" object */
 				boxValue = jit_insn_convert(jitCoder->jitFunction, 
-								jitCoder->jitStack[jitCoder->stackTop + param],
-								_IL_JIT_TYPE_VPTR, 0);
+											_ILJitStackItemValue(stackItems[param]),
+											_IL_JIT_TYPE_VPTR, 0);
 				paramType = ILType_Int;
 			}
 		}
@@ -505,8 +504,7 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 	jit_insn_label(jitCoder->jitFunction, &label);
 
 	/* push the array on the stack */
-	jitCoder->jitStack[jitCoder->stackTop] = array;
-	JITC_ADJUST(jitCoder, 1);
+	_ILJitStackPushNotNullValue(jitCoder, array);
 }
 
 static void JITCoder_UpConvertArg(ILCoder *coder, ILEngineStackItem *args,
@@ -545,8 +543,7 @@ static void JITCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 								   ILEngineStackItem *args, ILUInt32 numArgs)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILInt32 argPos = jitCoder->stackTop - numArgs;
-	ILInt32 current = 0;
+	ILJitStackItem *stackItems;
 	ILJitType valueType = _ILJitGetTypeFromClass(classInfo);
 	ILJitValue value = jit_value_create(jitCoder->jitFunction, valueType);
 
@@ -562,17 +559,10 @@ static void JITCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 	}
 #endif
 
-	jitCoder->stackTop += 2;
-	/* Move the constructor args up two slots on the stack. */
-	for(current = 0; current < numArgs; current++)
-	{
-		jitCoder->jitStack[jitCoder->stackTop - current - 1] = 
-			jitCoder->jitStack[jitCoder->stackTop - current - 3];
-	}
-	jitCoder->jitStack[argPos] = value;
-	jitCoder->jitStack[argPos + 1] = jit_insn_address_of(jitCoder->jitFunction,
-														 value);
-	
+	stackItems = _ILJitStackMakeFreeSlots(jitCoder, 2, numArgs);
+	_ILJitStackItemInitWithValue(stackItems[0], value);
+	value = jit_insn_address_of(jitCoder->jitFunction, value);
+	_ILJitStackItemInitWithValue(stackItems[1], value);
 }
 
 static void JITCoder_CheckCallNull(ILCoder *coder, ILCoderMethodInfo *info)
@@ -588,7 +578,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
-	int argCount = info->numBaseArgs + info->numVarArgs;
+	int argCount = _ILJitStackNumArgs(info);
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
 	char *methodName = 0;
@@ -638,24 +628,16 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	methodName = _ILJitFunctionGetMethodName(jitFunction);
 #endif
 
-	if(info->hasParamArray)
-	{
-		++argCount;
-	}
-
 	/* Check if the function can be inlined. */
 	if((inlineFunc = ((ILJitMethodInfo*)(methodInfo->userData))->inlineFunc))
 	{
-		JITC_ADJUST(jitCoder, -argCount);
+		ILJitStackItem *args = _ILJitStackItemGetAndPop(jitCoder, argCount);
 
-		returnValue = (*inlineFunc)(jitCoder, methodInfo, info, &(jitCoder->jitStack[jitCoder->stackTop]), argCount);
+		returnValue = (*inlineFunc)(jitCoder, methodInfo, info, args, argCount);
 
 		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
 		{
-			jitCoder->jitStack[jitCoder->stackTop] =
-					_ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  returnValue);
-			JITC_ADJUST(jitCoder, 1);
+			_ILJitStackPushValue(jitCoder, returnValue);
 		}
 		return;
 	}
@@ -674,18 +656,15 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	#endif
 
 		/* Call the engine function directly with the supplied args. */
-		JITC_ADJUST(jitCoder, -argCount);
+		_ILJitFillArguments(jitCoder, jitParams, info);
 		returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
 										 methodInfo,
 										 fnInfo.func, methodName,
-										 &(jitCoder->jitStack[jitCoder->stackTop]),
+										 jitParams,
 										 argCount);
 		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
 		{
-			jitCoder->jitStack[jitCoder->stackTop] =
-					_ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  returnValue);
-			JITC_ADJUST(jitCoder, 1);
+			_ILJitStackPushValue(jitCoder, returnValue);
 		}
 		return;
 	}
@@ -714,10 +693,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	#endif
 		if(returnItem->engineType != ILEngineType_Invalid)
 		{
-			jitCoder->jitStack[jitCoder->stackTop] =
-					_ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  returnValue);
-			JITC_ADJUST(jitCoder, 1);
+			_ILJitStackPushValue(jitCoder, returnValue);
 		}
 	}
 	else
@@ -750,10 +726,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		}
 		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
 		{
-				jitCoder->jitStack[jitCoder->stackTop] =
-						_ILJitValueConvertToStackType(jitCoder->jitFunction,
-													    returnValue);
-				JITC_ADJUST(jitCoder, 1);
+			_ILJitStackPushValue(jitCoder, returnValue);
 		}
 	}
 }
@@ -762,7 +735,8 @@ static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 								  ILEngineStackItem *returnItem)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue ftnPtr = jitCoder->jitStack[jitCoder->stackTop - 1];
+	_ILJitStackItemNew(stackItem);
+	ILJitValue ftnPtr;
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -774,17 +748,18 @@ static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 	}
 #endif
 
+	_ILJitStackPop(jitCoder, stackItem);
 #ifdef IL_JIT_FNPTR_ILMETHOD
 	/* We need to convert the method pointer to the vtable pointer first. */
 	ftnPtr = jit_insn_call_native(jitCoder->jitFunction,
 								  "ILRuntimeMethodToVtablePointer",
 								  ILRuntimeMethodToVtablePointer,
 								  _ILJitSignature_ILRuntimeMethodToVtablePointer,
-								  &ftnPtr, 1, 0);
+								  &(_ILJitStackItemValue(stackItem)), 1, 0);
 #endif
 
-	/* Pop the function pointer from the stack. */
-	JITC_ADJUST(jitCoder, -1);
+	/* TODO: build a signature from the call signature (info) and call the */
+	/* method. */
 }
 
 static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
@@ -795,7 +770,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	ILType *type;
 	ILType *synType;
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
-	int argCount = info->numBaseArgs + info->numVarArgs;
+	int argCount = _ILJitStackNumArgs(info);
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
 	ILInternalInfo fnInfo;
@@ -857,19 +832,13 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		if(internalType == _IL_JIT_IMPL_INTERNALALLOC)
 		{
 			/* This is an allocating constructor. */
-			if(info->hasParamArray)
-			{
-				++argCount;
-			}
-			JITC_ADJUST(jitCoder, -argCount);
+			_ILJitFillArguments(jitCoder, jitParams, info);
 			returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
 											 methodInfo,
 											 fnInfo.func, methodName,
-											 &(jitCoder->jitStack[jitCoder->stackTop]),
+											 jitParams,
 											 argCount);
-			jitCoder->jitStack[jitCoder->stackTop] =
-						_ILJitValueConvertToStackType(jitCoder->jitFunction,
-													  returnValue);
+			_ILJitStackPushNotNullValue(jitCoder, returnValue);
 		}
 		else
 		{
@@ -881,11 +850,8 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 											 methodInfo,
 											 fnInfo.func, methodName,
 											 jitParams, argCount + 1);
-			jitCoder->jitStack[jitCoder->stackTop] =
-						_ILJitValueConvertToStackType(jitCoder->jitFunction,
-													  jitParams[0]);
+			_ILJitStackPushNotNullValue(jitCoder, jitParams[0]);
 		}
-		JITC_ADJUST(jitCoder, 1);
 		return;
 	}
 
@@ -906,7 +872,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
 									jitParams, argCount, 0);
 	#endif
-		jitCoder->jitStack[jitCoder->stackTop] = returnValue;
+		_ILJitStackPushNotNullValue(jitCoder, returnValue);
 	}
 	else
 	{
@@ -920,7 +886,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 									jitFunction, 0,
 									jitParams, argCount + 2, 0);
 
-		jitCoder->jitStack[jitCoder->stackTop] = jitParams[1];
+		_ILJitStackPushNotNullValue(jitCoder, jitParams[1]);
 	#else
 		/* create a newobj and add it to the jitParams[0]. */
 		_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[0]);
@@ -931,10 +897,9 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 									jitFunction, 0,
 									jitParams, argCount + 1, 0);
 
-		jitCoder->jitStack[jitCoder->stackTop] = jitParams[0];
+		_ILJitStackPushNotNullValue(jitCoder, jitParams[0]);
 	#endif
 	}	
-	JITC_ADJUST(jitCoder, 1);
 }
 
 static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
@@ -999,14 +964,14 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	/* TODO: handle varargs here and create a call signature. */
 
 	jitFunction = _ILJitGetVirtualFunction(jitCoder,
-										   jitParams[1],
+										   _ILJitStackItemGetTop(jitCoder, -1),
 										   methodInfo->index);
 #else
 	_ILJitFillArguments(jitCoder, &(jitParams[0]), info);
 	/* TODO: handle varargs here and create a call signature. */
 
 	jitFunction = _ILJitGetVirtualFunction(jitCoder,
-										   jitParams[0],
+										   _ILJitStackItemGetTop(jitCoder, -1),
 										   methodInfo->index);
 #endif
 	if(info->tailCall == 1)
@@ -1039,9 +1004,7 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	}
 	if(returnItem->engineType != ILEngineType_Invalid)
 	{
-		jitCoder->jitStack[jitCoder->stackTop] =
-			_ILJitValueConvertToStackType(jitCoder->jitFunction, returnValue);
-		JITC_ADJUST(jitCoder, 1);
+		_ILJitStackPushValue(jitCoder, returnValue);
 	}
 }
 
@@ -1096,7 +1059,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	/* TODO: handle varargs here and create a call signature. */
 
 	jitFunction = _ILJitGetInterfaceFunction(jitCoder,
-											 jitParams[1],
+											 _ILJitStackItemGetTop(jitCoder, -1),
 											 methodInfo->member.owner,
 											 methodInfo->index);
 #else
@@ -1104,7 +1067,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	/* TODO: handle varargs here and create a call signature. */
 
 	jitFunction = _ILJitGetInterfaceFunction(jitCoder,
-											 jitParams[0],
+											 _ILJitStackItemGetTop(jitCoder, -1),
 											 methodInfo->member.owner,
 											 methodInfo->index);
 #endif
@@ -1142,9 +1105,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	}
 	if(returnItem->engineType != ILEngineType_Invalid)
 	{
-		jitCoder->jitStack[jitCoder->stackTop] = 
-			_ILJitValueConvertToStackType(jitCoder->jitFunction, returnValue);
-		JITC_ADJUST(jitCoder, 1);
+		_ILJitStackPushValue(jitCoder, returnValue);
 	}
 }
 
@@ -1159,13 +1120,12 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 		case IL_INLINEMETHOD_MONITOR_ENTER:
 		{
 			/* Enter the monitor on the top-most object */
+			_ILJitStackItemNew(stackItem);
 			ILJitValue args[2];
 
+			_ILJitStackPop(jitCoder, stackItem);
 			args[0] = _ILJitCoderGetThread(jitCoder);
-			args[1] = jitCoder->jitStack[jitCoder->stackTop - 1]; 
-
-			/* Pop the object from the stack. */
-			JITC_ADJUST(jitCoder, -1);
+			args[1] = _ILJitStackItemValue(stackItem);
 
 			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
 			jit_insn_call_native(jitCoder->jitFunction,
@@ -1182,13 +1142,12 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 		case IL_INLINEMETHOD_MONITOR_EXIT:
 		{
 			/* Exit the monitor on the top-most object */
+			_ILJitStackItemNew(stackItem);
 			ILJitValue args[2];
 
+			_ILJitStackPop(jitCoder, stackItem);
 			args[0] = _ILJitCoderGetThread(jitCoder);
-			args[1] = jitCoder->jitStack[jitCoder->stackTop - 1]; 
-
-			/* Pop the object from the stack. */
-			JITC_ADJUST(jitCoder, -1);
+			args[1] = _ILJitStackItemValue(stackItem);
 
 			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
 			jit_insn_call_native(jitCoder->jitFunction,
@@ -1204,15 +1163,17 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 		case IL_INLINEMETHOD_TYPE_FROM_HANDLE:
 		{
 			/* Convert a RuntimeTypeHandle into a Type object */
+			_ILJitStackItemNew(stackItem);
 			ILJitValue returnValue = jit_value_create(jitCoder->jitFunction,
 													  _IL_JIT_TYPE_VPTR);
 			ILJitValue temp;
 			ILJitValue args[2];
 			jit_label_t label = jit_label_undefined;
 ;
+			_ILJitStackPop(jitCoder, stackItem);
 			jit_insn_store(jitCoder->jitFunction,
 						   returnValue, 
-						   jitCoder->jitStack[jitCoder->stackTop - 1]);
+						   _ILJitStackItemValue(stackItem));
 
 			jit_insn_branch_if_not(jitCoder->jitFunction, returnValue, &label);
 
@@ -1229,7 +1190,7 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 						   returnValue, 
 						   temp);
 			jit_insn_label(jitCoder->jitFunction, &label);
-			jitCoder->jitStack[jitCoder->stackTop - 1] = returnValue;
+			_ILJitStackPushValue(jitCoder, returnValue);
 			return 1;
 		}
 		/* Not reached */
@@ -1239,80 +1200,75 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 		 */
 		case IL_INLINEMETHOD_ABS_I4:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_INT32);
 			value = jit_insn_abs(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_ABS_R4:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_SINGLE);
 			value = jit_insn_abs(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_ABS_R8:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_abs(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_ASIN:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_asin(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_ATAN:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_atan(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
@@ -1325,80 +1281,75 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 
 		case IL_INLINEMETHOD_CEILING:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_ceil(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_COS:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_cos(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_COSH:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_cosh(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_EXP:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_exp(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_FLOOR:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_floor(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
@@ -1411,182 +1362,162 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 
 		case IL_INLINEMETHOD_LOG:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_log(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_LOG10:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_log10(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_MAX_I4:
 		{
-			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
-			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem1);
+			ILJitValue value2;
+			ILJitValue value1;
 			ILJitValue result;
 
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem1);
 			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value1,
+											   _ILJitStackItemValue(stackItem1),
 											   _IL_JIT_TYPE_INT32);
 			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value2,
+											   _ILJitStackItemValue(stackItem2),
 											   _IL_JIT_TYPE_INT32);
 			result = jit_insn_max(jitCoder->jitFunction, value1, value2);
-			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												   result);
-			
-			/* Pop one value from the stack. */
-			JITC_ADJUST(jitCoder, -1);
-
-			/* and replace the second one with the result. */
-			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			_ILJitStackPushValue(jitCoder, result);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_MIN_I4:
 		{
-			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
-			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem1);
+			ILJitValue value2;
+			ILJitValue value1;
 			ILJitValue result;
 
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem1);
 			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value1,
+											   _ILJitStackItemValue(stackItem1),
 											   _IL_JIT_TYPE_INT32);
 			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value2,
+											   _ILJitStackItemValue(stackItem2),
 											   _IL_JIT_TYPE_INT32);
 			result = jit_insn_min(jitCoder->jitFunction, value1, value2);
-			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												   result);
-			
-			/* Pop one value from the stack. */
-			JITC_ADJUST(jitCoder, -1);
-
-			/* and replace the second one with the result. */
-			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			_ILJitStackPushValue(jitCoder, result);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_MAX_R4:
 		{
-			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
-			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem1);
+			ILJitValue value2;
+			ILJitValue value1;
 			ILJitValue result;
 
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem1);
 			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value1,
+											   _ILJitStackItemValue(stackItem1),
 											   _IL_JIT_TYPE_SINGLE);
 			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value2,
+											   _ILJitStackItemValue(stackItem2),
 											   _IL_JIT_TYPE_SINGLE);
 			result = jit_insn_max(jitCoder->jitFunction, value1, value2);
-			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												   result);
-			
-			/* Pop one value from the stack. */
-			JITC_ADJUST(jitCoder, -1);
-
-			/* and replace the second one with the result. */
-			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			_ILJitStackPushValue(jitCoder, result);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_MIN_R4:
 		{
-			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
-			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem1);
+			ILJitValue value2;
+			ILJitValue value1;
 			ILJitValue result;
 
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem1);
 			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value1,
+											   _ILJitStackItemValue(stackItem1),
 											   _IL_JIT_TYPE_SINGLE);
 			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value2,
+											   _ILJitStackItemValue(stackItem2),
 											   _IL_JIT_TYPE_SINGLE);
 			result = jit_insn_min(jitCoder->jitFunction, value1, value2);
-			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												   result);
-			
-			/* Pop one value from the stack. */
-			JITC_ADJUST(jitCoder, -1);
-
-			/* and replace the second one with the result. */
-			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			_ILJitStackPushValue(jitCoder, result);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_MAX_R8:
 		{
-			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
-			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem1);
+			ILJitValue value2;
+			ILJitValue value1;
 			ILJitValue result;
 
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem1);
 			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value1,
+											   _ILJitStackItemValue(stackItem1),
 											   _IL_JIT_TYPE_DOUBLE);
 			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value2,
+											   _ILJitStackItemValue(stackItem2),
 											   _IL_JIT_TYPE_DOUBLE);
 			result = jit_insn_max(jitCoder->jitFunction, value1, value2);
-			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												   result);
-			
-			/* Pop one value from the stack. */
-			JITC_ADJUST(jitCoder, -1);
-
-			/* and replace the second one with the result. */
-			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			_ILJitStackPushValue(jitCoder, result);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_MIN_R8:
 		{
-			ILJitValue value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
-			ILJitValue value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem1);
+			ILJitValue value2;
+			ILJitValue value1;
 			ILJitValue result;
 
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem1);
 			value1 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value1,
+											   _ILJitStackItemValue(stackItem1),
 											   _IL_JIT_TYPE_DOUBLE);
 			value2 = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value2,
+											   _ILJitStackItemValue(stackItem2),
 											   _IL_JIT_TYPE_DOUBLE);
 			result = jit_insn_min(jitCoder->jitFunction, value1, value2);
-			result = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												   result);
-			
-			/* Pop one value from the stack. */
-			JITC_ADJUST(jitCoder, -1);
-
-			/* and replace the second one with the result. */
-			jitCoder->jitStack[jitCoder->stackTop - 1] = result;
+			_ILJitStackPushValue(jitCoder, result);
 			return 1;
 		}
 		/* Not reached */
@@ -1600,16 +1531,15 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 
 		case IL_INLINEMETHOD_SIN:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_sin(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
@@ -1624,64 +1554,60 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 
 		case IL_INLINEMETHOD_SINH:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_sinh(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_SQRT:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_sqrt(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_TAN:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_tan(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
 
 		case IL_INLINEMETHOD_TANH:
 		{
-			ILJitValue value = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackItemNew(stackItem);
+			ILJitValue value;
 
+			_ILJitStackPop(jitCoder, stackItem);
 			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-											   value,
+											   _ILJitStackItemValue(stackItem),
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_tanh(jitCoder->jitFunction, value);
-			value = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  value);
-			
-			jitCoder->jitStack[jitCoder->stackTop - 1] = value;
+			_ILJitStackPushValue(jitCoder, value);
 			return 1;
 		}
 		/* Not reached */
@@ -1725,9 +1651,11 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	}
 	else
 	{
+		_ILJitStackItemNew(value);
+
+		_ILJitStackPop(jitCoder, value);
 		jit_insn_return(jitCoder->jitFunction,
-					jitCoder->jitStack[jitCoder->stackTop - 1]);
-		JITC_ADJUST(jitCoder, -1);
+						_ILJitStackItemValue(value));
 	}
 }
 
@@ -1772,14 +1700,13 @@ static void JITCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 												(jit_nint)function);
 #endif
 	/* Push the function pointer on the stack. */
-	jitCoder->jitStack[jitCoder->stackTop] = functionPtr;
-	JITC_ADJUST(jitCoder, 1);
+	_ILJitStackPushValue(jitCoder, functionPtr);
 }
 
 static void JITCoder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue object = jitCoder->jitStack[jitCoder->stackTop - 1];
+	_ILJitStackItemNew(object);
 	ILJitValue jitFunction;
 #ifdef IL_JIT_FNPTR_ILMETHOD
 	ILJitValue classPrivate;
@@ -1800,11 +1727,12 @@ static void JITCoder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 	}
 #endif
 
+	_ILJitStackPop(jitCoder, object);
 #ifdef IL_JIT_FNPTR_ILMETHOD
-	_ILJitCheckNull(jitCoder, object);
-	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, object);
+	_ILJitStackItemCheckNull(jitCoder, object);
+	classPrivate = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, _ILJitStackItemValue(object));
 	vtable = jit_insn_load_relative(jitCoder->jitFunction, classPrivate, 
-									offsetof(ILClassPrivate, vtable), 
+									offsetof(ILClassPrivate, vtable),
 									_IL_JIT_TYPE_VPTR);
 	vtableIndex = jit_value_create_nint_constant(jitCoder->jitFunction,
 												 _IL_JIT_TYPE_INT32,
@@ -1813,17 +1741,17 @@ static void JITCoder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 									 vtable, vtableIndex, _IL_JIT_TYPE_VPTR);
 #else
 	jitFunction = _ILJitGetVirtualFunction(jitCoder,
-										   object,
+										   &object,
 										   methodInfo->index);
 #endif
 	/* Push the function pointer on the stack. */
-	jitCoder->jitStack[jitCoder->stackTop - 1] = jitFunction;
+	_ILJitStackPushValue(jitCoder, jitFunction);
 }
 
 static void JITCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue object = jitCoder->jitStack[jitCoder->stackTop - 1];
+	_ILJitStackItemNew(object);
 	ILJitValue jitFunction;
 #ifdef IL_JIT_FNPTR_ILMETHOD
 	ILJitValue args[3];
@@ -1842,9 +1770,11 @@ static void JITCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 	}
 #endif
 
+	_ILJitStackPop(jitCoder, object);
 #ifdef IL_JIT_FNPTR_ILMETHOD
-	_ILJitCheckNull(jitCoder, object);
-	args[0] = _ILJitGetObjectClassPrivate(jitCoder->jitFunction, object);
+	_ILJitStackItemCheckNull(jitCoder, object);
+	args[0] = _ILJitGetObjectClassPrivate(jitCoder->jitFunction,
+										  _ILJitStackItemValue(object));
 	args[1] = jit_value_create_nint_constant(jitCoder->jitFunction,
 											 _IL_JIT_TYPE_VPTR,
 											 (jit_nint)methodInfo->member.owner);
@@ -1860,12 +1790,12 @@ static void JITCoder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 
 #else
 	jitFunction = _ILJitGetInterfaceFunction(jitCoder,
-											 object,
+											 &object,
 											 methodInfo->member.owner,
 											 methodInfo->index);
 #endif
 	/* Push the function pointer on the stack. */
-	jitCoder->jitStack[jitCoder->stackTop - 1] = jitFunction;
+	_ILJitStackPushValue(jitCoder, jitFunction);
 }
 
 #endif	/* IL_JITC_CODE */

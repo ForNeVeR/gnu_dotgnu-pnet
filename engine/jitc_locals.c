@@ -27,8 +27,11 @@ typedef struct _tagILJitLocalSlot ILJitLocalSlot;
 struct _tagILJitLocalSlot
 {
 	ILJitValue	value;			/* the ILJitValue */
+	ILJitValue	refValue;		/* the address of the value */
 	ILUInt32	flags;			/* State of the local/arg. */
 };
+
+#define ILJitLocalSlotValue(localSlot)	(localSlot).value
 
 /*
  * Define the structure for managing the local slots.
@@ -75,21 +78,21 @@ struct _tagILJitLocalSlots
  * Allocate enough space for "n" slots.
  */
 #define	_ILJitLocalsAlloc(s, n)	\
-			do { \
-				ILUInt32 temp = (ILUInt32)(((n) + 7) & ~7); \
-				if(temp > (s).maxSlots) \
-				{ \
-					ILJitLocalSlot *newSlots = \
-						(ILJitLocalSlot *)ILRealloc((s).slots, \
-											  temp * sizeof(ILJitLocalSlot)); \
-					if(!newSlots) \
-					{ \
-						return 0; \
-					} \
-					(s).slots = newSlots; \
-					(s).maxSlots = temp; \
-				} \
-			} while (0)
+	do { \
+		ILUInt32 temp = (ILUInt32)(((n) + 7) & ~7); \
+		if(temp > (s).maxSlots) \
+		{ \
+			ILJitLocalSlot *newSlots = \
+				(ILJitLocalSlot *)ILRealloc((s).slots, \
+									  temp * sizeof(ILJitLocalSlot)); \
+			if(!newSlots) \
+			{ \
+				return 0; \
+			} \
+			(s).slots = newSlots; \
+			(s).maxSlots = temp; \
+		} \
+	} while (0)
 
 /*
  * Get the slot for a local value.
@@ -104,7 +107,7 @@ struct _tagILJitLocalSlots
 /*
  * Access the ptrToValue member of a locals slot.
  */
-#define _ILJitLocalPointer(coder, n) _ILJitLocalGet((coder), (n)).ptrToValue
+#define _ILJitLocalPointer(coder, n) _ILJitLocalGet((coder), (n)).refValue
 
 /*
  * Access the value member of a locals slot.
@@ -124,7 +127,7 @@ struct _tagILJitLocalSlots
 /*
  * Access the ptrToValue member of a locals slot.
  */
-#define _ILJitParamPointer(coder, n) _ILJitParamGet((coder), (n)).ptrToValue
+#define _ILJitParamPointer(coder, n) _ILJitParamGet((coder), (n)).refValue
 
 /*
  * Access the value member of a locals slot.
@@ -175,6 +178,13 @@ static ILJitValue _ILJitLocalGetPointerTo(ILJITCoder *coder,
 {
 	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, localNum);
 
+	/*
+	if(!slot->refValue)
+	{	
+		slot->refValue = jit_insn_address_of(coder->jitFunction, slot->value);
+	}
+	return slot->refValue;
+	*/
 	return jit_insn_address_of(coder->jitFunction, slot->value);
 }
 
@@ -187,6 +197,13 @@ static ILJitValue _ILJitParamGetPointerTo(ILJITCoder *coder,
 {
 	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
 
+	/*
+	if(!slot->refValue)
+	{	
+		slot->refValue = jit_insn_address_of(coder->jitFunction, slot->value);
+	}
+	return slot->refValue;
+	*/
 	return jit_insn_address_of(coder->jitFunction, slot->value);
 }
 
@@ -324,6 +341,7 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 			{
 				return 0;
 			}
+			local->refValue = 0;
 
 #ifdef IL_DEBUGGER
 			/* Notify debugger about address of local variable */
@@ -394,6 +412,7 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 
 				param->value = jit_value_get_param(coder->jitFunction, current);
 				param->flags = 0;
+				param->refValue = 0;
 			}
 			coder->jitParams.numSlots = numParams - 1;
 		}
@@ -411,6 +430,7 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 
 				param->value = jit_value_get_param(coder->jitFunction, current);
 				param->flags = 0;
+				param->refValue = 0;
 			}
 			coder->jitParams.numSlots = numParams;
 		}
@@ -423,30 +443,6 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 	}
 	return 0;
 }
-
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-
-/*
- * Find the given value on the stack and replace it by a duplicate.
- */
-static void _ILJitValueFindAndDup(ILJITCoder *coder, ILJitValue value)
-{
-	ILJitValue dupValue = 0;
-	ILInt32 stackPos = 0;
-
-	for(stackPos = 0; stackPos < coder->stackTop; ++stackPos)
-	{
-		if(coder->jitStack[stackPos] == value)
-		{
-			if(!dupValue)
-			{
-				dupValue = jit_insn_dup(coder->jitFunction, value);
-			}
-			coder->jitStack[stackPos] = dupValue;
-		}
-	}
-}
-#endif
 
 /*
  * Get the value of a local slot.
@@ -474,10 +470,6 @@ static void _ILJitLocalStoreValue(ILJITCoder *coder, ILUInt32 localNum,
 {
 	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, localNum);
 
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-	_ILJitValueFindAndDup(coder, slot->value);
-#endif
-
 	jit_insn_store(coder->jitFunction, slot->value, 
 				   _ILJitValueConvertImplicit(coder->jitFunction,
 											  value,
@@ -486,6 +478,27 @@ static void _ILJitLocalStoreValue(ILJITCoder *coder, ILUInt32 localNum,
 	slot->flags |= _IL_JIT_VALUE_INITIALIZED;
 	slot->flags &= ~_IL_JIT_VALUE_NULLCHECKED;
 }
+
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+
+/*
+ * Store a value known to be not null in a local variable.
+ */
+static void _ILJitLocalStoreNotNullValue(ILJITCoder *coder,
+										 ILUInt32 paramNum,
+										 ILJitValue value)
+{
+	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, paramNum);
+
+	jit_insn_store(coder->jitFunction, slot->value,
+				   _ILJitValueConvertImplicit(coder->jitFunction,
+											  value,
+											  jit_value_get_type(slot->value)));
+
+	slot->flags |= (_IL_JIT_VALUE_INITIALIZED | _IL_JIT_VALUE_NULLCHECKED);
+}
+
+#endif
 
 /*
  * Get the value of a parameter slot.
@@ -505,10 +518,6 @@ static void _ILJitParamStoreValue(ILJITCoder *coder, ILUInt32 paramNum,
 {
 	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
 
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-	_ILJitValueFindAndDup(coder, slot->value);
-#endif
-
 	jit_insn_store(coder->jitFunction, slot->value,
 				   _ILJitValueConvertImplicit(coder->jitFunction,
 											  value,
@@ -516,6 +525,27 @@ static void _ILJitParamStoreValue(ILJITCoder *coder, ILUInt32 paramNum,
 
 	slot->flags &= ~_IL_JIT_VALUE_NULLCHECKED;
 }
+
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+
+/*
+ * Store a value known to be not null in a parameter.
+ */
+static void _ILJitParamStoreNotNullValue(ILJITCoder *coder,
+										 ILUInt32 paramNum,
+										 ILJitValue value)
+{
+	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
+
+	jit_insn_store(coder->jitFunction, slot->value,
+				   _ILJitValueConvertImplicit(coder->jitFunction,
+											  value,
+											  jit_value_get_type(slot->value)));
+
+	slot->flags |= _IL_JIT_VALUE_NULLCHECKED;
+}
+
+#endif
 
 /*
  * Check if the given value is a parameter or local.

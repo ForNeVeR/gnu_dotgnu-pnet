@@ -288,8 +288,7 @@ static void JITCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 				ILMutexUnlock(globalTraceMutex);
 			}
 		#endif
-			jitCoder->jitStack[0] = exception;
-			jitCoder->stackTop = 1;
+			_ILJitStackPushValue(jitCoder, exception);
 			_ILJitLabelGet(jitCoder, exceptions->handlerOffset,
 									 _IL_JIT_LABEL_STARTCATCH);
 			jitCoder->stackTop = 0;
@@ -322,14 +321,16 @@ static void JITCoder_Throw(ILCoder *coder, int inCurrentMethod)
 
 	if(!(jitCoder->isInCatcher))
 	{
-		ILJitValue exception = jitCoder->jitStack[jitCoder->stackTop - 1];
+		_ILJitStackItemNew(exception);
+
+		_ILJitStackPop(jitCoder, exception);
 
 		jit_insn_call_native(jitCoder->jitFunction,
 							 "ILRuntimeExceptionThrow",
 							 ILRuntimeExceptionThrow,
 							 _ILJitSignature_ILRuntimeExceptionThrow,
-							 &exception, 1, JIT_CALL_NORETURN);
-		JITC_ADJUST(jitCoder, -1);
+							 &(_ILJitStackItemValue(exception)), 1,
+							 JIT_CALL_NORETURN);
 	}
 }
 
@@ -551,8 +552,8 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 	_ILJitSetThreadAbortException(jitCoder, thread, currentException);
 
 	/* Push the exception object on the stack. */
-	jitCoder->jitStack[0] = currentException;
-	jitCoder->stackTop = 1;
+	jitCoder->stackTop = 0;
+	_ILJitStackPushValue(jitCoder, currentException);
 	catchBlock = _ILJitLabelGet(jitCoder, exception->handlerOffset,
 										  _IL_JIT_LABEL_STARTCATCH);
 

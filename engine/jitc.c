@@ -304,12 +304,12 @@ typedef struct _tagILJITCoder ILJITCoder;
 /*
  * Prototype for inlining functioncalls.
  *
- * ILJitValue func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitValue *, ILInt32)
+ * ILJitValue func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitStackItem *, ILInt32)
  */
 typedef ILJitValue (*ILJitInlineFunc)(ILJITCoder *jitCoder,
 									  ILMethod *method,
 									  ILCoderMethodInfo *methodInfo,
-									  ILJitValue *args,
+									  ILJitStackItem *args,
 									  ILInt32 numArgs);
 
 /*
@@ -551,6 +551,33 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception);
  */
 #define _JIT_TYPEKIND_IS_POINTER(typeKind) \
 (typeKind == JIT_TYPE_PTR)
+
+/*
+ * Get the evaluation stack type for the given ILJitType.
+ */
+static ILJitType _ILJitTypeToStackType(ILJitType type)
+{
+	ILJitType jitType = jit_type_promote_int(type);
+	int typeKind = jit_type_get_kind(jitType);
+
+
+	if(_JIT_TYPEKIND_IS_UNSIGNED(typeKind))
+	{
+		if(_JIT_TYPEKIND_IS_LONG(typeKind))
+		{
+			jitType = _IL_JIT_TYPE_INT64;
+		}
+		else if(typeKind == JIT_TYPE_NUINT)
+		{
+			jitType = _IL_JIT_TYPE_NINT;
+		}
+		else
+		{
+			jitType = _IL_JIT_TYPE_INT32;
+		}
+	}
+	return jitType;
+}
 
 /*
  * Convert a value to the corresponding signed/unsigned type.
@@ -939,6 +966,28 @@ static ILJitValue _ILJitValueConvertImplicit(ILJitFunction func,
 }
 
 /*
+ * Convert the given ILJitValue to the type needed on the evaluation stack.
+ * When no conversion is needed the value is returned as it is.
+ */
+static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
+												ILJitValue value)
+{
+	ILJitValue temp = value;
+	ILJitType type = jit_value_get_type(temp);
+	ILJitType stackType = _ILJitTypeToStackType(type);
+
+	if(type != stackType)
+	{
+		temp = jit_insn_convert(func, temp, stackType, 0);
+	}
+
+	/* We have only signed values on the stack. */
+	AdjustSign(func, &temp, 0, 0);
+
+	return temp;
+}
+
+/*
  * Readjust the stack to normalize binary operands when
  * I and I4 are mixed together.  Also determine which of
  * I4 or I8 to use if the operation involves I.
@@ -947,11 +996,11 @@ static void AdjustMixedBinary(ILJITCoder *coder, int isUnsigned,
 							  ILJitValue *value1, ILJitValue *value2)
 {
 	ILJitType type1 = jit_value_get_type(*value1);
-	ILJitType newType1 = type1;
+	ILJitType newType1 = _ILJitTypeToStackType(type1);
 	ILJitType type2 = jit_value_get_type(*value2);
-	ILJitType newType2 = type2;
-	int type1Kind = jit_type_get_kind(type1);
-	int type2Kind = jit_type_get_kind(type2);
+	ILJitType newType2 = _ILJitTypeToStackType(type2);
+	int type1Kind = jit_type_get_kind(newType1);
+	int type2Kind = jit_type_get_kind(newType2);
 	int type1IsFloat = _JIT_TYPEKIND_IS_FLOAT(type1Kind);
 	int type2IsFloat = _JIT_TYPEKIND_IS_FLOAT(type2Kind);
 	int type1IsLong = _JIT_TYPEKIND_IS_LONG(type1Kind);
@@ -2586,36 +2635,6 @@ static ILJitValue _ILJitGetObjectClass(ILJitFunction func, ILJitValue object)
 	return jit_insn_load_relative(func, classPrivate, 
 								  offsetof(ILClassPrivate, classInfo),
 								  _IL_JIT_TYPE_VPTR);
-}
-
-/*
- * Get the evaluation stack type for the given ILJitType.
- */
-static ILJitType _ILJitTypeToStackType(ILJitType type)
-{
-	return jit_type_promote_int(type);
-}
-
-/*
- * Convert the given ILJitValue to the type needed on the evaluation stack.
- * When no conversion is needed the value is returned as it is.
- */
-static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
-												ILJitValue value)
-{
-	ILJitValue temp = value;
-	ILJitType type = jit_value_get_type(temp);
-	ILJitType stackType = _ILJitTypeToStackType(type);
-
-	if(type != stackType)
-	{
-		temp = jit_insn_convert(func, temp, stackType, 0);
-	}
-
-	/* We have only signed values on the stack. */
-	AdjustSign(func, &temp, 0, 0);
-
-	return temp;
 }
 
 /*

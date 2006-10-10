@@ -170,9 +170,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJITLabel *label = 0;
-	ILJitValue value1 = 0;
-	ILJitValue value2 = 0;
 	ILJitValue temp = 0;
+	_ILJitStackItemNew(value2);
+	_ILJitStackItemNew(value1);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -203,11 +203,12 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		case IL_OP_BRTRUE:
 		{
 			/* Branch if the top-most stack item is true */
-			value1 = jitCoder->jitStack[jitCoder->stackTop - 1];
-			JITC_ADJUST(jitCoder, -1);
+			_ILJitStackPop(jitCoder, value1);
 			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 
-			jit_insn_branch_if(jitCoder->jitFunction, value1, &(label->label));
+			jit_insn_branch_if(jitCoder->jitFunction,
+							   _ILJitStackItemValue(value1),
+							   &(label->label));
 		}
 		break;
 
@@ -215,20 +216,19 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		case IL_OP_BRFALSE:
 		{
 			/* Branch if the top-most stack item is false */
-			value1 = jitCoder->jitStack[jitCoder->stackTop - 1];
-			JITC_ADJUST(jitCoder, -1);
+			_ILJitStackPop(jitCoder, value1);
 			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 
-			jit_insn_branch_if_not(jitCoder->jitFunction, value1,
-									&(label->label));
+			jit_insn_branch_if_not(jitCoder->jitFunction,
+								   _ILJitStackItemValue(value1),
+								   &(label->label));
 		}
 		break;
 
 		default:
 		{
-			value1 = jitCoder->jitStack[jitCoder->stackTop - 2];
-			value2 = jitCoder->jitStack[jitCoder->stackTop - 1];
-			JITC_ADJUST(jitCoder, -2);
+			_ILJitStackPop(jitCoder, value2);
+			_ILJitStackPop(jitCoder, value1);
 			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
 
 			switch(opcode)
@@ -237,7 +237,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BEQ_S:
 				{
 					/* Equality testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BEQ, &value1, &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BEQ,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp, 
 									   &(label->label));
 				}
@@ -247,8 +249,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BNE_UN_S:
 				{
 					/* Unsigned inequality testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BNE_UN, &value1, 
-																 &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BNE_UN,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp, 
 									   &(label->label));
 				}
@@ -258,7 +261,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BGT_S:
 				{
 					/* Signed greater than testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BGT, &value1, &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BGT,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -268,8 +273,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BGT_UN_S:
 				{
 					/* Unsigned greater than testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BGT_UN, &value1,
-																 &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BGT_UN,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -279,7 +285,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BGE_S:
 				{
 					/* Signed greater than or equal testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BGE, &value1, &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BGE,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -289,8 +297,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BGE_UN_S:
 				{
 					/* Unsigned greater than or equal testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BGE_UN, &value1,
-																 &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BGE_UN,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -300,7 +309,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BLT_S:
 				{
 					/* Signed less than testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BLT, &value1, &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BLT,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -310,8 +321,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BLT_UN_S:
 				{
 					/* Unsigned less than testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BLT_UN, &value1,
-																 &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BLT_UN,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -321,7 +333,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BLE_S:
 				{
 					/* Signed less than or equal testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BLE, &value1, &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BLE,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -331,8 +345,9 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 				case IL_OP_BLE_UN_S:
 				{
 					/* Unsigned less than or equal testing branch */
-					temp = OutputCompare(jitCoder, IL_OP_BLE_UN, &value1,
-																 &value2);
+					temp = OutputCompare(jitCoder, IL_OP_BLE_UN,
+										 &(_ILJitStackItemValue(value1)),
+										 &(_ILJitStackItemValue(value2)));
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
@@ -350,11 +365,12 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 static void JITCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	_ILJitStackItemNew(value);
 
+	_ILJitStackPop(jitCoder, value);
 	jitCoder->numSwitch = 0;
 	jitCoder->maxSwitch = numEntries;
-	jitCoder->switchValue = jitCoder->jitStack[jitCoder->stackTop - 1];
-	JITC_ADJUST(jitCoder, -1);
+	jitCoder->switchValue = _ILJitStackItemValue(value);
 }
 
 /*
@@ -386,11 +402,15 @@ static void JITCoder_Compare(ILCoder *coder, int opcode,
 							 int invertTest)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	_ILJitStackItemNew(value2);
+	_ILJitStackItemNew(value1);
 	ILJitValue temp;
 
+	_ILJitStackPop(jitCoder, value2);
+	_ILJitStackPop(jitCoder, value1);
 	temp = OutputCompare(jitCoder, opcode,
-						 &(jitCoder->jitStack[jitCoder->stackTop - 2]),
-						 &(jitCoder->jitStack[jitCoder->stackTop - 1]));
+						 &(_ILJitStackItemValue(value1)),
+						 &(_ILJitStackItemValue(value2)));
 	if(invertTest)
 	{
 		temp = jit_insn_to_not_bool(jitCoder->jitFunction, temp);
@@ -399,8 +419,7 @@ static void JITCoder_Compare(ILCoder *coder, int opcode,
 	{
 		temp = jit_insn_to_bool(jitCoder->jitFunction, temp);
 	}
-	jitCoder->jitStack[jitCoder->stackTop - 2] = temp;
-	JITC_ADJUST(jitCoder, -1);
+	_ILJitStackPushValue(jitCoder, temp);
 }
 
 #endif	/* IL_JITC_CODE */

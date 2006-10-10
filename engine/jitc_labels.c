@@ -86,45 +86,45 @@ struct _tagILJITLabel
  */
 static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
 {
+	int coderStackHeight = _ILJitStackHeight(coder);
+
 	if(((label->labelType & (_IL_JIT_LABEL_NORMAL |
 							 _IL_JIT_LABEL_STARTCATCH)) != 0) &&
-		(coder->stackTop > 0))
+		(coderStackHeight > 0))
 	{
 		int current = 0;
 		ILJitValue *stack = ILMemStackAllocItem(&(coder->stackStates),
-									coder->stackTop * sizeof(ILJitValue));
+									coderStackHeight * sizeof(ILJitValue));
 		if(!stack)
 		{
 			return 0;
 		}
 		/* Now save the current stack state. */
-		for(current = 0; current < coder->stackTop; current++)
+		for(current = 0; current < coderStackHeight; current++)
 		{
-			ILJitValue value = coder->jitStack[current];
+			ILJitStackItem *stackItem = _ILJitStackItemGet(coder, current);
 
-			if(jit_value_is_constant(value))
+			stack[current] = _ILJitStackItemValue(*stackItem);
+			if(jit_value_is_constant(_ILJitStackItemValue(*stackItem)))
 			{
 				/* We have to handle this case different. */
 				/* Create a local value of the type of the constant. */
 				ILJitValue temp = jit_value_create(coder->jitFunction,
-												   jit_value_get_type(value));
-				/* and store the value o the constant in the new temporary. */
-				jit_insn_store(coder->jitFunction, temp, value);
+												   jit_value_get_type(_ILJitStackItemValue(*stackItem)));
+				/* and store the value of the constant in the new temporary. */
+				jit_insn_store(coder->jitFunction, temp, _ILJitStackItemValue(*stackItem));
 				/* Now replace the constant with the new temporary. */
-				coder->jitStack[current] = temp;
+				stack[current] = temp;
 			}
-			else
+			else if(_ILJitStackItemNeedsDupOnLabel(*stackItem))
 			{
-				if(_ILJitValueIsArgOrLocal(coder, coder->jitStack[current]))
-				{
-					coder->jitStack[current] = jit_insn_dup(coder->jitFunction,
-													coder->jitStack[current]);
-				}
+				ILJitValue temp = jit_insn_dup(coder->jitFunction,
+											   _ILJitStackItemValue(*stackItem));
+				stack[current] = temp;
 			}
-			stack[current] = coder->jitStack[current];
 		}
 		label->jitStack = stack;
-		label->stackSize = coder->stackTop;
+		label->stackSize = coderStackHeight;
 	}
 	return 1;
 }
@@ -134,30 +134,31 @@ static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
  */
 static int _ILJitLabelMergeStack(ILJITCoder *coder, ILJITLabel *label)
 {
+	int coderStackHeight = _ILJitStackHeight(coder);
+
 	if(label->labelType & (_IL_JIT_LABEL_NORMAL | _IL_JIT_LABEL_STARTCATCH))
 	{
 		/* Verify that the stack sizes match. */
-		if(coder->stackTop != label->stackSize)
+		if(coderStackHeight != label->stackSize)
 		{
 			fprintf(stdout, "Stack sizes don't match!\n");
 			/* return 0; */
 		}
-		if(coder->stackTop > 0)
+		if(coderStackHeight > 0)
 		{
-			int numItems = coder->stackTop > label->stackSize ?
-								label->stackSize : coder->stackTop;
 			int current = 0;
 
 			/* Now save the current stack state. */
-			for(current = 0; current < numItems; current++)
+			for(current = 0; current < coderStackHeight; current++)
 			{
-				ILJitValue value = coder->jitStack[current];
+				ILJitStackItem *stackItem = _ILJitStackItemGet(coder, current);
 
-				if(value != label->jitStack[current])
+				if(_ILJitStackItemValue(*stackItem) != label->jitStack[current])
 				{
 					/* store the changed value to the saved stack. */
-					jit_insn_store(coder->jitFunction, label->jitStack[current],
-								   value);
+					jit_insn_store(coder->jitFunction,
+								   label->jitStack[current],
+								   _ILJitStackItemValue(*stackItem));
 				}
 			}
 		}
@@ -170,14 +171,24 @@ static int _ILJitLabelMergeStack(ILJITCoder *coder, ILJITLabel *label)
  */
 static void _ILJitLabelRestoreStack(ILJITCoder *coder, ILJITLabel *label)
 {
-	if(label->stackSize > 0)
+	int coderStackHeight = _ILJitStackHeight(coder);
+
+	/* Verify that the stack sizes match. */
+	if(coderStackHeight != label->stackSize)
+	{
+		fprintf(stdout, "Stack sizes don't match!\n");
+		/* return 0; */
+	}
+	if(coderStackHeight > 0)
 	{
 		int current = 0;
 
 		/* Now restore the stack state. */
-		for(current = 0; current < label->stackSize; current++)
+		for(current = 0; current < coderStackHeight; current++)
 		{
-			coder->jitStack[current] = label->jitStack[current];
+			ILJitStackItem *stackItem = _ILJitStackItemGet(coder, current);
+
+			_ILJitStackItemInitWithValue(*stackItem, label->jitStack[current]);
 		}
 	}
 	coder->stackTop = label->stackSize;

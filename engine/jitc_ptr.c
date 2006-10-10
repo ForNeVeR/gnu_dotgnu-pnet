@@ -43,6 +43,27 @@ static ILJitValue GetArrayLength(ILJITCoder *coder, ILJitValue array)
 /*
  * Validate the array index.
  */
+#define JITC_START_CHECK_ARRAY_INDEX(jitCoder, length, index) \
+	{ \
+		jit_label_t __label = jit_label_undefined; \
+		jit_label_t __okLabel = jit_label_undefined; \
+		ILJitValue  __length = (length); \
+		ILJitValue  __index = (index); \
+		ILJitValue  __temp; \
+		\
+		AdjustSign(jitCoder->jitFunction, &(__length), 1, 0); \
+		AdjustSign(jitCoder->jitFunction, &(__index), 1, 0); \
+		\
+		__temp = jit_insn_lt(jitCoder->jitFunction, __index, __length); \
+		jit_insn_branch_if_not(jitCoder->jitFunction, __temp, &__label);
+
+#define JITC_END_CHECK_ARRAY_INDEX(jitCoder) \
+		jit_insn_branch(jitCoder->jitFunction, &__okLabel); \
+		jit_insn_label(jitCoder->jitFunction, &__label); \
+		_ILJitThrowSystem(jitCoder, _IL_JIT_INDEX_OUT_OF_RANGE); \
+		jit_insn_label(jitCoder->jitFunction, &__okLabel); \
+	}
+
 static void ValidateArrayIndex(ILJITCoder *coder, ILJitValue length,
 												  ILJitValue index)
 {
@@ -65,21 +86,24 @@ static void ValidateArrayIndex(ILJITCoder *coder, ILJitValue length,
  */
 static void LoadArrayElem(ILJITCoder *coder, ILJitType type)
 {
-	ILJitValue array = coder->jitStack[coder->stackTop - 2];
-	ILJitValue index = coder->jitStack[coder->stackTop - 1];
+	_ILJitStackItemNew(index);
+	_ILJitStackItemNew(array);
 	ILJitValue length;
 	ILJitValue value;
 	ILJitValue arrayBase;
 
-	_ILJitCheckNull(coder, array);
-	length = GetArrayLength(coder, array);
-	ValidateArrayIndex(coder, length, index);
-	arrayBase = GetArrayBase(coder, array);
-	value = jit_insn_load_elem(coder->jitFunction, arrayBase, index,
+	_ILJitStackPop(coder, index);
+	_ILJitStackPop(coder, array);
+	_ILJitStackItemCheckNull(coder, array);
+	length = GetArrayLength(coder, _ILJitStackItemValue(array));
+	JITC_START_CHECK_ARRAY_INDEX(coder, length, _ILJitStackItemValue(index))
+	arrayBase = GetArrayBase(coder, _ILJitStackItemValue(array));
+	value = jit_insn_load_elem(coder->jitFunction,
+							   arrayBase,
+							   _ILJitStackItemValue(index),
 							   type);
-	coder->jitStack[coder->stackTop - 2] = 
-		_ILJitValueConvertToStackType(coder->jitFunction, value);
-	JITC_ADJUST(coder, -1);
+	_ILJitStackPushValue(coder, value);
+	JITC_END_CHECK_ARRAY_INDEX(coder)
 }
 
 /*
@@ -87,25 +111,38 @@ static void LoadArrayElem(ILJITCoder *coder, ILJitType type)
  */
 static void StoreArrayElem(ILJITCoder *coder, ILJitType type)
 {
-	ILJitValue array = coder->jitStack[coder->stackTop - 3];
-	ILJitValue index = coder->jitStack[coder->stackTop - 2];
-	ILJitValue value = coder->jitStack[coder->stackTop - 1];
+	_ILJitStackItemNew(value);
+	_ILJitStackItemNew(index);
+	_ILJitStackItemNew(array);
 	ILJitValue length;
 	ILJitValue arrayBase;
-	ILJitType valueType = jit_value_get_type(value);
+	ILJitValue temp;
+	ILJitType valueType;
 
-	_ILJitCheckNull(coder, array);
-	length = GetArrayLength(coder, array);
-	ValidateArrayIndex(coder, length, index);
-	arrayBase = GetArrayBase(coder, array);
+	_ILJitStackPop(coder, value);
+	_ILJitStackPop(coder, index);
+	_ILJitStackPop(coder, array);
+	valueType = jit_value_get_type(_ILJitStackItemValue(value));
+	_ILJitStackItemCheckNull(coder, array);
+	length = GetArrayLength(coder, _ILJitStackItemValue(array));
+	ValidateArrayIndex(coder, length, _ILJitStackItemValue(index));
+	arrayBase = GetArrayBase(coder, _ILJitStackItemValue(array));
 
 	/* Convert the value to the array type when needed. */
 	if(valueType != type)
 	{
-		value = _ILJitValueConvertImplicit(coder->jitFunction, value, type);
+		temp = _ILJitValueConvertImplicit(coder->jitFunction,
+										  _ILJitStackItemValue(value),
+										  type);
 	}
-	jit_insn_store_elem(coder->jitFunction, arrayBase, index, value);
-	JITC_ADJUST(coder, -3);
+	else
+	{
+		temp = _ILJitStackItemValue(value);
+	}
+	jit_insn_store_elem(coder->jitFunction,
+						arrayBase,
+						_ILJitStackItemValue(index),
+						temp);
 }
 
 /*
@@ -113,13 +150,16 @@ static void StoreArrayElem(ILJITCoder *coder, ILJitType type)
  */
 static void LoadRelative(ILJITCoder *coder, ILJitType type)
 {
-	ILJitValue ptr = coder->jitStack[coder->stackTop - 1];
+	_ILJitStackItemNew(ptr);
 	ILJitValue value;
 
-	_ILJitCheckNull(coder, ptr);
-	value = jit_insn_load_relative(coder->jitFunction, ptr, (jit_nint)0, type);
-	coder->jitStack[coder->stackTop - 1] = 
-		_ILJitValueConvertToStackType(coder->jitFunction, value);
+	_ILJitStackPop(coder, ptr);
+	_ILJitStackItemCheckNull(coder, ptr);
+	value = jit_insn_load_relative(coder->jitFunction,
+								   _ILJitStackItemValue(ptr),
+								   (jit_nint)0,
+								   type);
+	_ILJitStackPushValue(coder, value);
 }
 
 /*
@@ -127,17 +167,26 @@ static void LoadRelative(ILJITCoder *coder, ILJitType type)
  */
 static void StoreRelative(ILJITCoder *coder, ILJitType type)
 {
-	ILJitValue ptr = coder->jitStack[coder->stackTop - 2];
-	ILJitValue value  = coder->jitStack[coder->stackTop - 1];
-	ILJitType valueType = jit_value_get_type(value);
+	_ILJitStackItemNew(value);
+	_ILJitStackItemNew(ptr);
+	ILJitType valueType;
+	ILJitValue temp;
 
-	_ILJitCheckNull(coder, ptr);
+	_ILJitStackPop(coder, value);
+	_ILJitStackPop(coder, ptr);
+	valueType = jit_value_get_type(_ILJitStackItemValue(value));
+	_ILJitStackItemCheckNull(coder, ptr);
 	if(valueType != type)
 	{
-		value = _ILJitValueConvertImplicit(coder->jitFunction, value, type);
+		temp = _ILJitValueConvertImplicit(coder->jitFunction,
+										  _ILJitStackItemValue(value),
+										  type);
 	}
-	jit_insn_store_relative(coder->jitFunction, ptr, (jit_nint)0, value);
-	JITC_ADJUST(coder, -2);
+	else
+	{
+		temp = _ILJitStackItemValue(value);
+	}
+	_ILJitStackItemStoreRelative(coder, ptr, 0, temp);
 }
 
 /*
@@ -147,8 +196,8 @@ static void JITCoder_ArrayAccess(ILCoder *coder, int opcode,
 								 ILEngineType indexType, ILType *elemType)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue array;
-	ILJitValue index;
+	_ILJitStackItemNew(array);
+	_ILJitStackItemNew(index);
 	ILJitValue len;
 	ILJitValue value;
 	ILJitValue arrayBase;
@@ -157,20 +206,21 @@ static void JITCoder_ArrayAccess(ILCoder *coder, int opcode,
 	{
 		case IL_OP_LDELEMA:
 		{
-			array = jitCoder->jitStack[jitCoder->stackTop - 2];
-			index = jitCoder->jitStack[jitCoder->stackTop - 1];
+			_ILJitStackPop(jitCoder, index);
+			_ILJitStackPop(jitCoder, array);
 
-			_ILJitCheckNull(jitCoder, array);
-			len = GetArrayLength(jitCoder, array);
-			ValidateArrayIndex(jitCoder, len, index);
-			arrayBase = GetArrayBase(jitCoder, array);
+			_ILJitStackItemCheckNull(jitCoder, array);
+			len = GetArrayLength(jitCoder, _ILJitStackItemValue(array));
+			ValidateArrayIndex(jitCoder, len, _ILJitStackItemValue(index));
+			arrayBase = GetArrayBase(jitCoder, _ILJitStackItemValue(array));
 
 			ILJitType type = _ILJitGetReturnType(elemType, jitCoder->process);
 
-			value = jit_insn_load_elem_address(jitCoder->jitFunction, arrayBase,
-									    index, type);
-			jitCoder->jitStack[jitCoder->stackTop - 2] = value;
-			JITC_ADJUST(jitCoder, -1);
+			value = jit_insn_load_elem_address(jitCoder->jitFunction,
+											   arrayBase,
+											   _ILJitStackItemValue(index),
+											   type);
+			_ILJitStackPushNotNullValue(jitCoder, value);
 		}
 		break;
 
@@ -475,36 +525,43 @@ static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILType *type = ILClassToType(classInfo);
 	ILJitType jitType = _ILJitGetReturnType(type, jitCoder->process);
-	ILJitValue address;
+	_ILJitStackItemNew(address);
+	_ILJitStackItemNew(object);
+	ILJitValue value;
 
 	if(opcode == IL_OP_LDOBJ)
 	{
 		/* Load from a pointer */
-		address = jitCoder->jitStack[jitCoder->stackTop - 1];
-		_ILJitCheckNull(jitCoder, address);
-		jitCoder->jitStack[jitCoder->stackTop - 1] =
-			_ILJitValueConvertToStackType(jitCoder->jitFunction,
-										  jit_insn_load_relative(jitCoder->jitFunction,
-																 address, (jit_nint)0,
-									   							 jitType));
+		/* Pop the address off the evaluation stack. */
+		_ILJitStackPop(jitCoder, address);
+		_ILJitStackItemCheckNull(jitCoder, address);
+		value = jit_insn_load_relative(jitCoder->jitFunction,
+									   _ILJitStackItemValue(address),
+									   (jit_nint)0,
+									   jitType);
+		_ILJitStackPushValue(jitCoder, value);
 	}
 	else
 	{
 		/* Store to a pointer */
-		ILJitValue object = jitCoder->jitStack[jitCoder->stackTop - 1];;
-
-		address = jitCoder->jitStack[jitCoder->stackTop - 2];
-		_ILJitCheckNull(jitCoder, address);
+		/* Pop the object off the evaluation stack. */
+		_ILJitStackPop(jitCoder, object);
+		/* Pop the address off the evaluation stack. */
+		_ILJitStackPop(jitCoder, address);
+		_ILJitStackItemCheckNull(jitCoder, address);
 		
-		if(jit_value_get_type(object) != jitType)
+		if(jit_value_get_type(_ILJitStackItemValue(object)) != jitType)
 		{
-			object = _ILJitValueConvertImplicit(jitCoder->jitFunction, object,
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+												_ILJitStackItemValue(object),
 												jitType);
 		}
-		jit_insn_store_relative(jitCoder->jitFunction, address, (jit_nint)0, object);
-		JITC_ADJUST(jitCoder, -2);
+		else
+		{
+			value = _ILJitStackItemValue(object);
+		}
+		_ILJitStackItemStoreRelative(jitCoder, address, 0, value);
 	}
-
 }
 
 /*
@@ -521,16 +578,15 @@ static void JITCoder_PtrPrefix(ILCoder *coder, int alignment)
 static void JITCoder_ArrayLength(ILCoder *coder)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue array = jitCoder->jitStack[jitCoder->stackTop - 1];
-	ILJitValue len;
+	_ILJitStackItemNew(array);
+	ILJitValue length;
 
-	_ILJitCheckNull(jitCoder, array);
-	len = GetArrayLength(jitCoder, array);
-	jitCoder->jitStack[jitCoder->stackTop - 1] = 
-		_ILJitValueConvertToStackType(jitCoder->jitFunction,
-									  jit_insn_convert(jitCoder->jitFunction,
-													   len,
-													   _IL_JIT_TYPE_NUINT, 0));
+	/* Pop the array off the evaluation stack. */
+	_ILJitStackPop(jitCoder, array);
+
+	_ILJitStackItemCheckNull(jitCoder, array);
+	length = GetArrayLength(jitCoder, _ILJitStackItemValue(array));
+	_ILJitStackPushValue(jitCoder, length);
 }
 
 /*
@@ -540,13 +596,18 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 					 		  ILClass *arrayClass, ILEngineType lengthType)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue length = jitCoder->jitStack[jitCoder->stackTop - 1];
+	_ILJitStackItemNew(length);
+	ILJitValue returnValue;
+
+#if 1
 	ILJitValue args[2];
 	ILMethod *ctor;
 	ILJitFunction jitFunction;
-	ILJitValue returnValue;
 	jit_label_t label = jit_label_undefined;
 	ILInternalInfo fnInfo;
+
+	/* Pop the length off the evaluation stack. */
+	_ILJitStackPop(jitCoder, length);
 
 	/* Find the allocation constructor within the array class.
 	   We know that the class only has one method, so it must
@@ -568,22 +629,23 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 	{
 		ILJitValue thread = _ILJitCoderGetThread(jitCoder);
 
-		JITC_ADJUST(jitCoder, -1);
-		returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread, ctor,
-										 fnInfo.func, 0, &length, 1);
+		returnValue = _ILJitCallInternal(jitCoder->jitFunction,
+										 thread,
+										 ctor,
+										 fnInfo.func, 0,
+										 &_ILJitStackItemValue(length), 1);
 	}
 	else
 	{
 	#ifdef IL_JIT_THREAD_IN_SIGNATURE
 		args[0] = _ILJitCoderGetThread(jitCoder);
-		args[1] = length;
-		JITC_ADJUST(jitCoder, -1);
+		args[1] = _ILJitStackItemValue(length);
+
 		/* Output code to call the array type's constructor */
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction,
 									0, args, 2, 0);
 	#else
-		args[0] = length;
-		JITC_ADJUST(jitCoder, -1);
+		args[0] = _ILJitStackItemValue(length);
 		/* Output code to call the array type's constructor */
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction,
 									0, args, 1, 0);
@@ -592,8 +654,16 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 	jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
 	_ILJitThrowCurrentException(jitCoder);
 	jit_insn_label(jitCoder->jitFunction, &label);
-	jitCoder->jitStack[jitCoder->stackTop] = returnValue;
-	JITC_ADJUST(jitCoder, 1);
+#else
+	/* Pop the length off the evaluation stack. */
+	_ILJitStackPop(jitCoder, length);
+
+	returnValue = _ILJitSArrayNew(jitCoder,
+								  arrayClass,
+								  _ILJitStackItemValue(length));
+#endif
+
+	_ILJitStackPushNotNullValue(jitCoder, returnValue);
 }
 
 /*
@@ -602,8 +672,10 @@ static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
 static void JITCoder_CheckNull(ILCoder *coder)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	_ILJitStackItemNew(value);
 
-	_ILJitCheckNull(jitCoder, jitCoder->jitStack[jitCoder->stackTop - 1]);
+	_ILJitStackGetTop(jitCoder, value);
+	_ILJitStackItemCheckNull(jitCoder, value);
 }
 
 #endif	/* IL_JITC_CODE */

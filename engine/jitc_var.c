@@ -20,21 +20,12 @@
 
 #ifdef IL_JITC_CODE
 
-
 /*
  * Handle a load from an argument.
  */
 static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJitValue param = _ILJitParamValue(jitCoder, argNum);
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-	ILJitValue newParam = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-														param);
-#else
-	ILJitValue newParam = _ILJitValueConvertToStackType(jitCoder->jitFunction,
-									jit_insn_dup(jitCoder->jitFunction, param));
-#endif
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -46,8 +37,8 @@ static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-	jitCoder->jitStack[jitCoder->stackTop] = newParam;
-	JITC_ADJUST(jitCoder, 1);
+
+	_ILJitStackPushArg(jitCoder, argNum);
 }
 
 /*
@@ -56,12 +47,6 @@ static void JITCoder_LoadArg(ILCoder *coder, ILUInt32 argNum, ILType *type)
 static void JITCoder_LoadLocal(ILCoder *coder, ILUInt32 localNum, ILType *type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-#ifdef _IL_JIT_OPTIMIZE_LOCALS
-	ILJitValue localValue = _ILJitLocalValue(jitCoder, localNum);
-#else
-	ILJitValue localValue = jit_insn_dup(jitCoder->jitFunction,
-										 _ILJitLocalValue(jitCoder, localNum));
-#endif
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -73,10 +58,8 @@ static void JITCoder_LoadLocal(ILCoder *coder, ILUInt32 localNum, ILType *type)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-	jitCoder->jitStack[jitCoder->stackTop] = 
-					_ILJitValueConvertToStackType(jitCoder->jitFunction,
-												  localValue);
-	JITC_ADJUST(jitCoder, 1);
+
+	_ILJitStackPushLocal(jitCoder, localNum);
 }
 
 /*
@@ -98,10 +81,7 @@ static void JITCoder_StoreArg(ILCoder *coder, ILUInt32 argNum,
 	}
 #endif
 
-	JITC_ADJUST(jitCoder, -1);
-
-	_ILJitParamStoreValue(jitCoder, argNum,
-						  jitCoder->jitStack[jitCoder->stackTop]);
+	_ILJitStackPopToArg(jitCoder, argNum);
 }
 
 /*
@@ -123,10 +103,7 @@ static void JITCoder_StoreLocal(ILCoder *coder, ILUInt32 localNum,
 	}
 #endif
 
-	JITC_ADJUST(jitCoder, -1);
-
-	_ILJitLocalStoreValue(jitCoder, localNum,
-						  jitCoder->jitStack[jitCoder->stackTop]);
+	_ILJitStackPopToLocal(jitCoder, localNum);
 }
 
 /*
@@ -136,9 +113,7 @@ static void JITCoder_AddrOfArg(ILCoder *coder, ILUInt32 argNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
-	jitCoder->jitStack[jitCoder->stackTop] = _ILJitParamGetPointerTo(jitCoder,
-																	 argNum);
-	JITC_ADJUST(jitCoder, 1);
+	_ILJitStackPushAddressOfArg(jitCoder, argNum);
 }
 
 /*
@@ -148,9 +123,7 @@ static void JITCoder_AddrOfLocal(ILCoder *coder, ILUInt32 localNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
-	jitCoder->jitStack[jitCoder->stackTop] = _ILJitLocalGetPointerTo(jitCoder,
-																	 localNum);
-	JITC_ADJUST(jitCoder, 1);
+	_ILJitStackPushAddressOfLocal(jitCoder, localNum);
 }
 
 /*
@@ -159,10 +132,12 @@ static void JITCoder_AddrOfLocal(ILCoder *coder, ILUInt32 localNum)
 static void JITCoder_LocalAlloc(ILCoder *coder, ILEngineType sizeType)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	_ILJitStackItemNew(value) ;
+	ILJitValue address;
 
-	jitCoder->jitStack[jitCoder->stackTop - 1] = 
-					jit_insn_alloca(jitCoder->jitFunction,
-									jitCoder->jitStack[jitCoder->stackTop - 1]);
+	_ILJitStackPop(jitCoder, value);
+	address = jit_insn_alloca(jitCoder->jitFunction, _ILJitStackItemValue(value));
+	_ILJitStackPushNotNullValue(jitCoder, address);
 }
 
 #endif	/* IL_JITC_CODE */

@@ -1,3 +1,14 @@
+2006-10-10  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc_arith.c, engine/jitc_array.c,
+	engine/jitc_branch.c, engine/jitc_branch.c, engine/jitc_call.c,
+	engine/jitc_const.c, engine/jitc_conv.c, engine/jitc_except.c,
+	engine/jitc_labels.c, engine/jitc_locals.c, engine/jitc_obj.c,
+	engine/jitc_ptr.c, engine/jitc_stack.c, engine/jitc_var.c: Complete rework
+	of the evaluation stack management. Without enabling
+	_IL_JIT_OPTIMIZE_LOCALS in jitc.c it behaves similar to the old one.
+	With _IL_JIT_OPTIMIZE_LOCALS enabled it allows a lot more optimizations.
+
 2006-10-05  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c, engine/jitc_gen.h, engine/jitc_labels.c,

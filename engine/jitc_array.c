@@ -21,7 +21,7 @@
 /*
  * Prototype for inlining functioncalls.
  *
- * ILJitValue func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitValue *, ILInt32)
+ * ILJitValue func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitStackItem *, ILInt32)
  */
 
 /*
@@ -157,7 +157,7 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
  */
 static ILJitValue _ILJitMArrayCalcIndex(ILJITCoder *jitCoder,
 										ILJitValue array,
-										ILJitValue *index,
+										ILJitStackItem *index,
 										ILInt32 rank)
 {
 	jit_label_t arrayOutOfBoundsLabel = jit_label_undefined;
@@ -170,7 +170,7 @@ static ILJitValue _ILJitMArrayCalcIndex(ILJITCoder *jitCoder,
 	{
 		ILJitValue temp;
 		ILJitValue multiplier;
-		ILJitValue pos = index[currentIndex];
+		ILJitValue pos = _ILJitStackItemValue(index[currentIndex]);
 		ILJitValue base = jit_insn_load_relative(jitCoder->jitFunction, array,
 												 offsetof(System_MArray, bounds) +
 												 (sizeof(MArrayBounds) * currentIndex) +
@@ -240,11 +240,11 @@ static ILJitValue _ILJitMarrayGetBase(ILJITCoder *jitCoder,
 static ILJitValue _ILJitMArrayGet(ILJITCoder *jitCoder,
 								  ILMethod *method,
 								  ILCoderMethodInfo *methodInfo,
-								  ILJitValue *args,
+								  ILJitStackItem *args,
 								  ILInt32 numArgs)
 {
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
-	ILJitValue array = args[0];
+	ILJitValue array = _ILJitStackItemValue(args[0]);
 	ILJitValue arrayBase;
 	ILJitType signature;
 	ILJitType arrayType;
@@ -274,11 +274,11 @@ static ILJitValue _ILJitMArrayGet(ILJITCoder *jitCoder,
 static ILJitValue _ILJitMArrayAddress(ILJITCoder *jitCoder,
 									  ILMethod *method,
 									  ILCoderMethodInfo *methodInfo,
-									  ILJitValue *args,
+									  ILJitStackItem *args,
 									  ILInt32 numArgs)
 {
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
-	ILJitValue array = args[0];
+	ILJitValue array = _ILJitStackItemValue(args[0]);
 	ILClass *arrayClass = ILMethod_Owner(method);
 	ILType *elementType = ILTypeGetElemType(ILClassToType(arrayClass));
 	ILJitValue arrayBase;
@@ -313,12 +313,12 @@ static ILJitValue _ILJitMArrayAddress(ILJITCoder *jitCoder,
 static ILJitValue _ILJitMArraySet(ILJITCoder *jitCoder,
 								  ILMethod *method,
 								  ILCoderMethodInfo *methodInfo,
-								  ILJitValue *args,
+								  ILJitStackItem *args,
 								  ILInt32 numArgs)
 {
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
-	ILJitValue array = args[0];
-	ILJitValue value = args[numArgs - 1];
+	ILJitValue array = _ILJitStackItemValue(args[0]);
+	ILJitValue value = _ILJitStackItemValue(args[numArgs - 1]);
 	ILJitValue arrayBase;
 	ILJitType signature;
 	ILJitType arrayType;

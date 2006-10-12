@@ -273,14 +273,39 @@ typedef ILJitValue ILJitStackItem;
 			if(((coder)->jitStack[__stackPos].refValue == (localSlot)) && \
 				((coder)->jitStack[__stackPos].flags & _IL_JIT_VALUE_COPYOF)) \
 			{ \
-				if(!__dupValue) \
-				{ \
-					__dupValue = jit_insn_dup((coder)->jitFunction, ILJitLocalSlotValue(*localSlot)); \
-				} \
+				__dupValue = jit_insn_dup((coder)->jitFunction, (coder)->jitStack[__stackPos].value); \
 				(coder)->jitStack[__stackPos].value = __dupValue; \
 				(coder)->jitStack[__stackPos].refValue = 0; \
 				(coder)->jitStack[__stackPos].flags |= ~_IL_JIT_VALUE_COPYOF; \
 			} \
+		} \
+	} while(0)
+
+/*
+ * Flag all occurances of the value (v) null checked on the stack.
+ */
+#define _ILJitStackSetNullChecked(coder, v) \
+	do { \
+		ILInt32 __stackTop = (coder)->stackTop; \
+		ILInt32 __stackPos ; \
+		for(__stackPos = 0; __stackPos < __stackTop; ++__stackPos) \
+		{ \
+			if((coder)->jitStack[__stackPos].value == (v)) \
+			{ \
+				(coder)->jitStack[__stackPos].flags |= _IL_JIT_VALUE_NULLCHECKED; \
+			} \
+		} \
+	} while(0)
+
+/*
+ * Take the actions needed to preserve items on the stack from changing if the
+ * value this stackitem points to is modified during a call.
+ */
+#define _ILJitStackHandleCallByRefArg(coder, stackItem) \
+	do { \
+		if((stackItem).refValue && ((stackItem).flags & _IL_JIT_VALUE_POINTER_TO)) \
+		{ \
+			_ILJitStackDupLocal(coder, (stackItem).refValue); \
 		} \
 	} while(0)
 
@@ -477,6 +502,7 @@ typedef ILJitValue ILJitStackItem;
 			{ \
 				((stackItem).refValue)->flags |= _IL_JIT_VALUE_NULLCHECKED; \
 			} \
+			_ILJitStackSetNullChecked(coder, _ILJitStackItemValue(stackItem)); \
 		} \
 	} while(0)
 
@@ -507,6 +533,19 @@ typedef ILJitValue ILJitStackItem;
  * a label.
  */
 #define _ILJitStackItemNeedsDupOnLabel(stackItem)	(0)
+
+/*
+ * Flag all occurances of the value (v) null checked on the stack.
+ * This is a NOP without optimizations enabled.
+ */
+#define _ILJitStackSetNullChecked(coder, v)
+
+/*
+ * Take the actions needed to preserve items on the stack from changing if the
+ * value this stackitem points to is modified during a call.
+ * This is a NOP without optimizations enabled.
+ */
+#define _ILJitStackHandleCallByRefArg(coder, stackItem)
 
 /*
  * Set the value in a stack item.

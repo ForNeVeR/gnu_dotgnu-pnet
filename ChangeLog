@@ -1,3 +1,28 @@
+2006-10-12  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Move _ILJitValueConvertExplicit below
+	_ILJitValueConvertImplicit. Optimize both functions to
+	minimize the steps needed for the conversion. Extend
+	_ILJitCreateMethodSignature so that varargs are handled correctly.
+	-> Add an additional void * arg for internal methods and set the
+	jit_abi to vararg for pinvokes.
+
+	* engine/jitc_arith.c: Fix the shift right opcodes so that values
+	on the stack < Int32 are handled correctly.
+
+	* engine/jitc_call.c: Add creation of the call signature. Inplicitely
+	convert the args to the type in the signature.
+
+	* engine/jitc_const.c: Replace jit_type_void_ptr by _IL_JIT_TYPE_VPTR
+	for the LDNULL opcode.
+
+	* engine/jitc_ptr.c: Return the array length as int instead of unsigned
+	int.
+
+	* engine/jitc_stack.c: Set all duplicates of a value null checked if the
+	value is checked for null. Check if references to a local/arg is passed
+	in a method call and replace this local on the stack with duplicates.
+
 2006-10-10  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c, engine/jitc_arith.c, engine/jitc_array.c,

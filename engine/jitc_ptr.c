@@ -36,7 +36,7 @@ static ILJitValue GetArrayLength(ILJITCoder *coder, ILJitValue array)
 	ILJitValue len;
 
 	len = jit_insn_load_relative(coder->jitFunction, array, 0,
-								 _IL_JIT_TYPE_UINT32);
+								 _IL_JIT_TYPE_INT32);
 	return len;
 }
 

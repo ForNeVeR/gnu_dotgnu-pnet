@@ -21,20 +21,72 @@
 #ifdef IL_JITC_CODE
 
 /*
+ * Get the call signature from the methodInfo or the ILCoderMethoInfo.
+ * If the value returned is != 0 then the signature must be destroyed after
+ * the call is done.
+ */
+static ILInt32 _ILJitGetCallSignature(ILJITCoder *coder,
+									  ILMethod *method,
+									  ILCoderMethodInfo *info,
+									  ILJitType *signature)
+{
+	if(method)
+	{
+		ILJitFunction func = ILJitFunctionFromILMethod(method);
+
+		if(!func)
+		{
+			*signature = _ILJitCreateMethodSignature(coder, method, 0);
+			return 1;
+		}
+		else
+		{
+			*signature = jit_function_get_signature(func);
+			return 0;
+		}
+	}
+	return 0;
+}
+
+/*
  * Fill the argument array for the methodcall with the args on the stack.
  * This function pops the arguments off the stack too.
+ * The signature is filled with the call signature.
+ * If the value returned is != 0 then the signature must be destroyed after
+ * the call is done.
  */
-static void _ILJitFillArguments(ILJITCoder *coder, ILJitValue *args,
-								ILCoderMethodInfo *info)
+static ILInt32 _ILJitFillArguments(ILJITCoder *coder,
+								   ILMethod *method,
+								   ILCoderMethodInfo *info,
+								   ILJitValue *args,
+								   ILInt32 startParam,
+								   ILJitType *signature)
 {
 	int argCount = _ILJitStackNumArgs(info);
 	ILJitStackItem *stackItems = _ILJitStackItemGetAndPop(coder, argCount);
+	ILInt32 returnValue = _ILJitGetCallSignature(coder,
+												 method,
+												 info,
+												 signature);
 	int current = 0;
-	
+	int numJitParams = jit_type_num_params(*signature);
+	ILJitType paramType;
+	ILJitValue value;
+
+	if(numJitParams != (startParam + argCount))
+	{
+		printf("Argument count mismatch!\n");
+	}	
 	for(current = 0; current < argCount; current++)
 	{
-		args[current] = _ILJitStackItemValue(stackItems[current]);
+		_ILJitStackHandleCallByRefArg(coder, stackItems[current]);
+		paramType = jit_type_get_param(*signature, startParam + current);
+		value = _ILJitValueConvertImplicit(coder->jitFunction,
+										   _ILJitStackItemValue(stackItems[current]),
+										   paramType);
+		args[current] = value;
 	}
+	return returnValue;
 }
 
 /*
@@ -581,6 +633,8 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	int argCount = _ILJitStackNumArgs(info);
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
+	ILJitType callSignature = 0;
+	int destroyCallSignature = 0;
 	char *methodName = 0;
 	ILInternalInfo fnInfo;
 	ILJitInlineFunc inlineFunc = 0;
@@ -656,7 +710,21 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	#endif
 
 		/* Call the engine function directly with the supplied args. */
-		_ILJitFillArguments(jitCoder, jitParams, info);
+	#ifdef IL_JIT_THREAD_IN_SIGNATURE
+		destroyCallSignature = _ILJitFillArguments(jitCoder,
+												   methodInfo,
+												   info,
+												   jitParams,
+												   1,
+												   &callSignature);
+	#else
+		destroyCallSignature = _ILJitFillArguments(jitCoder,
+												   methodInfo,
+												   info,
+												   jitParams,
+												   0,
+												   &callSignature);
+	#endif
 		returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
 										 methodInfo,
 										 fnInfo.func, methodName,
@@ -666,6 +734,10 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		{
 			_ILJitStackPushValue(jitCoder, returnValue);
 		}
+		if(destroyCallSignature && callSignature)
+		{
+			jit_type_free(callSignature);
+		}
 		return;
 	}
 
@@ -673,9 +745,19 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	/* Set the ILExecThread argument. */
 	jitParams[0] = _ILJitCoderGetThread(jitCoder);
 
-	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   methodInfo,
+											   info,
+											   &(jitParams[1]),
+											   1,
+											   &callSignature);
 #else
-	_ILJitFillArguments(jitCoder, &(jitParams[0]), info);
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   methodInfo,
+											   info,
+											   &(jitParams[0]),
+											   0,
+											   &callSignature);
 #endif
 
 	/* TODO: create call signature for vararg calls. */	
@@ -729,6 +811,10 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 			_ILJitStackPushValue(jitCoder, returnValue);
 		}
 	}
+	if(destroyCallSignature && callSignature)
+	{
+		jit_type_free(callSignature);
+	}
 }
 
 static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
@@ -771,6 +857,8 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	ILType *synType;
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(methodInfo);
 	int argCount = _ILJitStackNumArgs(info);
+	ILJitType callSignature = 0;
+	int destroyCallSignature = 0;
 	ILJitValue jitParams[argCount + 2];
 	ILJitValue returnValue;
 	ILInternalInfo fnInfo;
@@ -832,7 +920,21 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		if(internalType == _IL_JIT_IMPL_INTERNALALLOC)
 		{
 			/* This is an allocating constructor. */
-			_ILJitFillArguments(jitCoder, jitParams, info);
+		#ifdef IL_JIT_THREAD_IN_SIGNATURE
+			destroyCallSignature = _ILJitFillArguments(jitCoder,
+													   methodInfo,
+													   info,
+													   jitParams,
+													   1,
+													   &callSignature);
+		#else
+			destroyCallSignature = _ILJitFillArguments(jitCoder,
+													   methodInfo,
+													   info,
+													   jitParams,
+													   0,
+													   &callSignature);
+		#endif
 			returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
 											 methodInfo,
 											 fnInfo.func, methodName,
@@ -844,13 +946,22 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		{
 			/* create a newobj and add it to the jitParams[0]. */
 			_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[0]); 
-			_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+			destroyCallSignature = _ILJitFillArguments(jitCoder,
+													   methodInfo,
+													   info,
+													   &(jitParams[1]),
+													   1,
+													   &callSignature);
 
 			returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
 											 methodInfo,
 											 fnInfo.func, methodName,
 											 jitParams, argCount + 1);
 			_ILJitStackPushNotNullValue(jitCoder, jitParams[0]);
+		}
+		if(destroyCallSignature && callSignature)
+		{
+			jit_type_free(callSignature);
 		}
 		return;
 	}
@@ -862,12 +973,22 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	if((synType && ILType_IsArray(synType)) || ILTypeIsStringClass(type))
 	{
 	#ifdef IL_JIT_THREAD_IN_SIGNATURE
-		_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+		destroyCallSignature = _ILJitFillArguments(jitCoder,
+												   methodInfo,
+												   info,
+												   &(jitParams[1]),
+												   1,
+												   &callSignature);
 		// call the constructor with jitParams as input
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
 									jitParams, argCount + 1, 0);
 	#else
-		_ILJitFillArguments(jitCoder, &(jitParams[0]), info);
+		destroyCallSignature = _ILJitFillArguments(jitCoder,
+												   methodInfo,
+												   info,
+												   &(jitParams[0]),
+												   0,
+												   &callSignature);
 		// call the constructor with jitParams as input
 		returnValue = jit_insn_call(jitCoder->jitFunction, 0, jitFunction, 0,
 									jitParams, argCount, 0);
@@ -879,7 +1000,12 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	#ifdef IL_JIT_THREAD_IN_SIGNATURE
 		/* create a newobj and add it to the jitParams[1]. */
 		_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[1]);
-		_ILJitFillArguments(jitCoder, &(jitParams[2]), info);
+		destroyCallSignature = _ILJitFillArguments(jitCoder,
+												   methodInfo,
+												   info,
+												   &(jitParams[2]),
+												   2,
+												   &callSignature);
 
 		// call the constructor with jitParams as input
 		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
@@ -890,7 +1016,12 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	#else
 		/* create a newobj and add it to the jitParams[0]. */
 		_ILJitNewObj(jitCoder, ILMethod_Owner(methodInfo), &jitParams[0]);
-		_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
+		destroyCallSignature = _ILJitFillArguments(jitCoder,
+												   methodInfo,
+												   info,
+												   &(jitParams[1]),
+												   1,
+												   &callSignature);
 
 		// call the constructor with jitParams as input
 		returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
@@ -900,6 +1031,10 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		_ILJitStackPushNotNullValue(jitCoder, jitParams[0]);
 	#endif
 	}	
+	if(destroyCallSignature && callSignature)
+	{
+		jit_type_free(callSignature);
+	}
 }
 
 static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
@@ -911,6 +1046,7 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	int argCount = info->numBaseArgs + info->numVarArgs;
 	ILJitFunction func = ILJitFunctionFromILMethod(methodInfo);
 	ILJitType  signature;
+	int destroyCallSignature = 0;
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
 	ILJitValue jitFunction;
@@ -938,14 +1074,30 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 		func = ILJitFunctionFromILMethod(methodInfo);
 	}
 
-	if(!func)
-	{
-		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo, 0);
-	}
-	else
-	{
-		signature = jit_function_get_signature(func);
-	}
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+	jitParams[0] = _ILJitCoderGetThread(jitCoder);
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   methodInfo,
+											   info,
+											   &(jitParams[1]),
+											   1,
+											   &signature);
+
+	jitFunction = _ILJitGetVirtualFunction(jitCoder,
+										   _ILJitStackItemGetTop(jitCoder, -1),
+										   methodInfo->index);
+#else
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   methodInfo,
+											   info,
+											   &(jitParams[0]),
+											   0,
+											   &signature);
+
+	jitFunction = _ILJitGetVirtualFunction(jitCoder,
+										   _ILJitStackItemGetTop(jitCoder, -1),
+										   methodInfo->index);
+#endif
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
@@ -957,22 +1109,6 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 			jit_type_num_params(signature));
 		ILMutexUnlock(globalTraceMutex);
 	}
-#endif
-#ifdef IL_JIT_THREAD_IN_SIGNATURE
-	jitParams[0] = _ILJitCoderGetThread(jitCoder);
-	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
-	/* TODO: handle varargs here and create a call signature. */
-
-	jitFunction = _ILJitGetVirtualFunction(jitCoder,
-										   _ILJitStackItemGetTop(jitCoder, -1),
-										   methodInfo->index);
-#else
-	_ILJitFillArguments(jitCoder, &(jitParams[0]), info);
-	/* TODO: handle varargs here and create a call signature. */
-
-	jitFunction = _ILJitGetVirtualFunction(jitCoder,
-										   _ILJitStackItemGetTop(jitCoder, -1),
-										   methodInfo->index);
 #endif
 	if(info->tailCall == 1)
 	{
@@ -1006,6 +1142,10 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		_ILJitStackPushValue(jitCoder, returnValue);
 	}
+	if(destroyCallSignature && signature)
+	{
+		jit_type_free(signature);
+	}
 }
 
 static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
@@ -1014,21 +1154,13 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	int argCount = info->numBaseArgs + info->numVarArgs;
-	ILJitFunction func = ILJitFunctionFromILMethod(methodInfo);
-	ILJitType  signature;
+	ILJitType  signature = 0;
+	int destroyCallSignature = 0;
 	ILJitValue jitParams[argCount + 1];
 	ILJitValue returnValue;
 	ILJitValue jitFunction;
 	jit_label_t label = jit_label_undefined;
 
-	if(!func)
-	{
-		signature = _ILJitCreateMethodSignature(jitCoder, methodInfo, 0);
-	}
-	else
-	{
-		signature = jit_function_get_signature(func);
-	}
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
@@ -1040,7 +1172,34 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 			methodInfo->index);
 		ILMutexUnlock(globalTraceMutex);
 	}
-#if defined(_IL_JIT_ENABLE_DEBUG)
+#endif
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+	jitParams[0] = _ILJitCoderGetThread(jitCoder);
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   methodInfo,
+											   info,
+											   &(jitParams[1]),
+											   1,
+											   &signature);
+
+	jitFunction = _ILJitGetInterfaceFunction(jitCoder,
+											 _ILJitStackItemGetTop(jitCoder, -1),
+											 methodInfo->member.owner,
+											 methodInfo->index);
+#else
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   methodInfo,
+											   info,
+											   &(jitParams[0]),
+											   0,
+											   &signature);
+
+	jitFunction = _ILJitGetInterfaceFunction(jitCoder,
+											 _ILJitStackItemGetTop(jitCoder, -1),
+											 methodInfo->member.owner,
+											 methodInfo->index);
+#endif
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
 		ILMutexLock(globalTraceMutex);
@@ -1051,25 +1210,6 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 			jit_type_num_params(signature));
 		ILMutexUnlock(globalTraceMutex);
 	}
-#endif
-#endif
-#ifdef IL_JIT_THREAD_IN_SIGNATURE
-	jitParams[0] = _ILJitCoderGetThread(jitCoder);
-	_ILJitFillArguments(jitCoder, &(jitParams[1]), info);
-	/* TODO: handle varargs here and create a call signature. */
-
-	jitFunction = _ILJitGetInterfaceFunction(jitCoder,
-											 _ILJitStackItemGetTop(jitCoder, -1),
-											 methodInfo->member.owner,
-											 methodInfo->index);
-#else
-	_ILJitFillArguments(jitCoder, &(jitParams[0]), info);
-	/* TODO: handle varargs here and create a call signature. */
-
-	jitFunction = _ILJitGetInterfaceFunction(jitCoder,
-											 _ILJitStackItemGetTop(jitCoder, -1),
-											 methodInfo->member.owner,
-											 methodInfo->index);
 #endif
 	jit_insn_branch_if(jitCoder->jitFunction, jitFunction, &label);
 	/* TODO: raise a MissingMethodException here. */
@@ -1106,6 +1246,10 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 	if(returnItem->engineType != ILEngineType_Invalid)
 	{
 		_ILJitStackPushValue(jitCoder, returnValue);
+	}
+	if(destroyCallSignature && signature)
+	{
+		jit_type_free(signature);
 	}
 }
 
@@ -1651,11 +1795,17 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	}
 	else
 	{
+		ILJitType signature = jit_function_get_signature(jitCoder->jitFunction);
+		ILJitType returnType = jit_type_get_return(signature);
 		_ILJitStackItemNew(value);
+		ILJitValue returnValue;
 
 		_ILJitStackPop(jitCoder, value);
+		returnValue = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+												 _ILJitStackItemValue(value),
+												 returnType);
 		jit_insn_return(jitCoder->jitFunction,
-						_ILJitStackItemValue(value));
+						returnValue);
 	}
 }
 

@@ -31,7 +31,7 @@ static void JITCoder_Constant(ILCoder *coder, int opcode, unsigned char *arg)
 	if(opcode == IL_OP_LDNULL)
 	{
 		value = jit_value_create_nint_constant(jitCoder->jitFunction,
-											   jit_type_void_ptr,
+											   _IL_JIT_TYPE_VPTR,
 											   (jit_nint)0);
 		_ILJitStackPushValue(jitCoder, value);
 	}

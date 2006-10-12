@@ -683,163 +683,6 @@ static int AdjustSign(ILJitFunction func, ILJitValue *value, int toUnsigned,
 }
 
 /*
- * Do the explicit conversion of an ILJitValue to the given target type.
- * The value to convert is on the stack in it's source type. This means that no
- * implicit conversion to the stacktype (either INT32, INT64 or a pointer type
- * was done.
- * Because of this we have to take into account that unsigned values with a
- * length < 4 should have been zero extended to a size of an INT32 and signed
- * values would have been sign extended.
- */
-static ILJitValue _ILJitValueConvertExplicit(ILJitFunction func,
-											 ILJitValue value,
-											 ILJitType targetType,
-											 int isUnsigned,
-											 int overflowCheck)
-{
-	ILJitType sourceType = jit_value_get_type(value);
-	int sourceSize;
-	int sourceTypeKind;
-	int targetSize;
-	int targetTypeKind;
-
-	if(sourceType == targetType)
-	{
-		/* Nothing to do here. */
-		return value;
-	}
-	if(jit_type_is_struct(sourceType) || jit_type_is_union(sourceType))
-	{
-		/* something is wrong here. */
-		return value;
-	}
-	sourceTypeKind = jit_type_get_kind(sourceType);
-	targetTypeKind = jit_type_get_kind(targetType);
-	if(_JIT_TYPEKIND_IS_FLOAT(sourceTypeKind))
-	{
-		/* We can convert these values directly */
-		return jit_insn_convert(func, value, targetType, overflowCheck);
-	}
-	else
-	{
-		if(_JIT_TYPEKIND_IS_FLOAT(targetTypeKind))
-		{
-			if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
-			{
-				if(isUnsigned)
-				{
-					AdjustSign(func, &value, 1, overflowCheck);
-				}
-			}
-			else if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
-			{
-				if(!isUnsigned)
-				{
-					AdjustSign(func, &value, 0, overflowCheck);
-				}
-			}
-			else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
-			{
-				if(isUnsigned)
-				{
-					value = jit_insn_convert(func, value, _IL_JIT_TYPE_NUINT,
-														  overflowCheck);
-				}
-				else
-				{
-						value = jit_insn_convert(func, value, _IL_JIT_TYPE_NINT,
-													  overflowCheck);
-				}
-			}
-			value = jit_insn_convert(func, value, targetType, overflowCheck);
-		}
-		else
-		{
-			sourceSize = jit_type_get_size(sourceType);
-			targetSize = jit_type_get_size(targetType);
-
-			if(targetSize <= sourceSize)
-			{
-				/* The value is truncated or the sign is changed. */
-			}
-			else
-			{
-				if(_JIT_TYPEKIND_IS_LONG(targetTypeKind))
-				{
-					if(_JIT_TYPEKIND_IS_SIGNED(targetTypeKind))
-					{
-						/* In this case we have to zero extend unsigned source */
-						/* values to the size of an INT32 first. */
-						if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
-						{
-							/* We have to zero extend the value to the */
-							/* size an INT32 first. */
-							/* I assume that unsigned source values will be  */
-							/* zero extended to the target size. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_INT32,
-														 overflowCheck);
-						}
-						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
-						{
-							/* Pointers have to be sign extended in this case. */
-							/* So we convert to a signed NINT first. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_NINT,
-														 overflowCheck);
-						}
-					}
-					else if(_JIT_TYPEKIND_IS_UNSIGNED(targetTypeKind))
-					{
-
-						/* In this case we have to sign extend signed source */
-						/* values to the size of an INT32 first. */
-						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
-						{
-							/* We have to sign extend the value to the */
-							/* size an INT32 first. */
-							/* I assume that signed source values will be  */
-							/* sign extended to the target size. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_UINT32,
-														 overflowCheck);
-						}
-						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
-						{
-							/* Pointers have to be zero extended in this case. */
-							/* So we convert to a unsigned NUINT first. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_NUINT,
-														 overflowCheck);
-						}
-					}
-#ifdef IL_NATIVE_INT64
-					else if(_JIT_TYPEKIND_IS_POINTER(targetTypeKind))
-					{
-						/* This is not allowed in explicit conversion. */
-						/* But we treat pointers like unsigned values. */
-						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
-						{
-							AdjustSign(func, &value, 1, overflowCheck);
-						}
-					}
-#endif
-				}
-				else
-				{
-					/* The value would have been zero- or sign extended to */
-					/* the size of an INT32 depending on the signedness of */
-					/* the value. Now we have the less or the same size so */
-					/* we can safely simply convert to the target type.    */
-				}
-			}
-			value = jit_insn_convert(func, value, targetType, overflowCheck);
-		}
-	}
-	return value;
-}
-
-/*
  * Do the implicit conversion of an ILJitValue to the given target type.
  * The value to convert is on the stack in it's source type. This means that no
  * implicit conversion to the stacktype (either INT32, INT64 or a pointer type
@@ -847,6 +690,14 @@ static ILJitValue _ILJitValueConvertExplicit(ILJitFunction func,
  * Because of this we have to take into account that unsigned values with a
  * length < 4 should have been zero extended to a size of an INT32 and signed
  * values would have been sign extended.
+ * This means we have the following versions:
+ * 1. Target size is <= 4 bytes:
+ *    We can convert directly to the target type because either the source
+ *    value is truncated if it's long or the sign is changed if it's int or
+ *    unsigned int or it would have been extended to 4 byted depending on it's
+ *    own sign.
+ * 2. Both values are signed or both values are unsigned:
+ *    we can convert directly to the target type.
  */
 static ILJitValue _ILJitValueConvertImplicit(ILJitFunction func,
 											 ILJitValue value,
@@ -873,94 +724,416 @@ static ILJitValue _ILJitValueConvertImplicit(ILJitFunction func,
 		/* We can convert these values directly */
 		return jit_insn_convert(func, value, targetType, 0);
 	}
-	else
+	else if(_JIT_TYPEKIND_IS_FLOAT(targetTypeKind))
 	{
-		if(_JIT_TYPEKIND_IS_FLOAT(targetTypeKind))
-		{
-			value = jit_insn_convert(func, value, targetType, 0);
-		}
-		else
+		if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
 		{
 			int sourceSize = jit_type_get_size(sourceType);
-			int targetSize = jit_type_get_size(targetType);
 
-			if(targetSize <= sourceSize)
+			if(sourceSize >= 4)
 			{
-				/* The value is truncated or the sign is changed. */
+				/* We have to convert the value to signed first because we */
+				/* don't know the value of the sign bit. */
+				AdjustSign(func, &value, 0, 0);
 			}
-			else
-			{
-				if(_JIT_TYPEKIND_IS_LONG(targetTypeKind))
-				{
-					if(_JIT_TYPEKIND_IS_SIGNED(targetTypeKind))
-					{
-						/* In this case we have to zero extend unsigned source */
-						/* values to the size of an INT32 first. */
-						if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
-						{
-							/* We have to zero extend the value to the */
-							/* size an INT32 first. */
-							/* I assume that unsigned source values will be  */
-							/* zero extended to the target size. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_INT32,
-														 0);
-						}
-						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
-						{
-							/* Pointers have to be sign extended in this case. */
-							/* So we convert to a signed NINT first. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_NINT,
-														 0);
-						}
-					}
-					else if(_JIT_TYPEKIND_IS_UNSIGNED(targetTypeKind))
-					{
+		}
+		return jit_insn_convert(func, value, targetType, 0);
+	}
+	else if(_JIT_TYPEKIND_IS_INT(targetTypeKind))
+	{
+		/* We can convert this directly directly because the source value is */
+		/* either truncated or expanded to the target type depending on the */
+		/* sign of the source value. */
+		return jit_insn_convert(func, value, targetType, 0);
+	}
+	else if(_JIT_TYPEKIND_IS_LONG(targetTypeKind))
+	{
+		if(_JIT_TYPEKIND_IS_LONG(sourceTypeKind))
+		{
+			/* we can convert this directly because only the sign is changed. */
+			return jit_insn_convert(func, value, targetType, 0);
+		}
+		if(_JIT_TYPEKIND_IS_INT(sourceTypeKind))
+		{
+			int sourceIsSigned = _JIT_TYPEKIND_IS_SIGNED(sourceTypeKind);
+			int targetIsSigned = _JIT_TYPEKIND_IS_SIGNED(targetTypeKind);
+			int sourceIsUnsigned = _JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind);
+			int targetIsUnsigned = _JIT_TYPEKIND_IS_UNSIGNED(targetTypeKind);
 
-						/* In this case we have to sign extend signed source */
-						/* values to the size of an INT32 first. */
-						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
-						{
-							/* We have to sign extend the value to the */
-							/* size an INT32 first. */
-							/* I assume that signed source values will be  */
-							/* sign extended to the target size. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_UINT32,
-														 0);
-						}
-						else if(_JIT_TYPEKIND_IS_POINTER(sourceTypeKind))
-						{
-							/* Pointers have to be zero extended in this case. */
-							/* So we convert to a unsigned NUINT first. */
-							value = jit_insn_convert(func, value,
-														 _IL_JIT_TYPE_NUINT,
-														 0);
-						}
-					}
-#ifdef IL_NATIVE_INT64
-					else if(_JIT_TYPEKIND_IS_POINTER(targetTypeKind))
-					{
-						/* This is not allowed in explicit conversion. */
-						/* But we treat pointers like unsigned values. */
-						if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
-						{
-							AdjustSign(func, &value, 1, 0);
-						}
-					}
-#endif
+			if((sourceIsSigned && targetIsSigned) ||
+			  (sourceIsUnsigned && targetIsUnsigned))
+			{
+				/* The signs match so we can convert directly. */
+				return jit_insn_convert(func, value, targetType, 0);
+			}
+			else if(sourceIsUnsigned && targetIsSigned)
+			{
+				int sourceSize = jit_type_get_size(sourceType);
+
+				if(sourceSize < 4)
+				{
+					/* The source value is 0 extended to INT32 and then */
+					/* extended to INT64. */
+					/* Because the source value is less than 4 bytes we */
+					/* know that the sign will be 0 on the 32 bit value. */
+					return jit_insn_convert(func, value, targetType, 0);
 				}
 				else
 				{
-					/* The value would have been zero- or sign extended to */
-					/* the size of an INT32 depending on the signedness of */
-					/* the value. Now we have the less or the same size so */
-					/* we can safely simply convert to the target type.    */
+					/* Because we don't know the sign of the 32 bit value we */
+					/* have to convert it to INT32 first. */
+					value = jit_insn_convert(func, value, _IL_JIT_TYPE_INT32, 0);
+					return jit_insn_convert(func, value, targetType, 0);
 				}
 			}
-			value = jit_insn_convert(func, value, targetType, 0);
+			else if(sourceIsSigned && targetIsUnsigned)
+			{
+				/* In this case we'll allways have to do two conversions. */
+				/* We have to convert it to UINT32 first. */
+				value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT32, 0);
+				return jit_insn_convert(func, value, targetType, 0);
+			}
 		}
+	}
+	/* All other values can be converted directly. */
+	return jit_insn_convert(func, value, targetType, 0);
+}
+
+/*
+ * Do the explicit conversion of an ILJitValue to the given target type.
+ * The value to convert is on the stack in it's source type. This means that no
+ * implicit conversion to the stacktype (either INT32, INT64 or a pointer type
+ * was done.
+ * Because of this we have to take into account that unsigned values with a
+ * length < 4 should have been zero extended to a size of an INT32 and signed
+ * values would have been sign extended.
+ */
+static ILJitValue _ILJitValueConvertExplicit(ILJitFunction func,
+											 ILJitValue value,
+											 ILJitType targetType,
+											 int isUnsigned,
+											 int overflowCheck)
+{
+	ILJitType sourceType = jit_value_get_type(value);
+	int sourceTypeKind;
+	int targetTypeKind;
+
+	if(sourceType == targetType)
+	{
+		/* Nothing to do here. */
+		return value;
+	}
+	if(jit_type_is_struct(sourceType) || jit_type_is_union(sourceType))
+	{
+		/* something is wrong here. */
+		return value;
+	}
+	if(!isUnsigned && !overflowCheck)
+	{
+		/* This is just like the implicit type conversion. */
+		return _ILJitValueConvertImplicit(func,
+										  value,
+										  targetType);
+	}
+	else if(!isUnsigned)
+	{
+		/* Do a signed type conversion with overflow check. */
+		/* This is just like the implicit type conversion with overflow check. */
+		sourceTypeKind = jit_type_get_kind(sourceType);
+		targetTypeKind = jit_type_get_kind(targetType);
+		if(_JIT_TYPEKIND_IS_FLOAT(sourceTypeKind))
+		{
+			/* We can convert these values directly */
+			return jit_insn_convert(func, value, targetType, overflowCheck);
+		}
+		else if(_JIT_TYPEKIND_IS_FLOAT(targetTypeKind))
+		{
+			if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
+			{
+				int sourceSize = jit_type_get_size(sourceType);
+
+				if(sourceSize >= 4)
+				{
+					/* We have to convert the value to signed first because we */
+					/* don't know the value of the sign bit. */
+					AdjustSign(func, &value, 0, 0);
+				}
+			}
+			return jit_insn_convert(func, value, targetType, 1);
+		}
+		else if(_JIT_TYPEKIND_IS_INT(targetTypeKind))
+		{
+			/* We have to check if the sign has to be adjusted. */
+			if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
+			{
+				int sourceSize = jit_type_get_size(sourceType);
+
+				if(sourceSize >= 4)
+				{
+					/* We have to convert the value to signed first because we */
+					/* don't know the value of the sign bit. */
+					AdjustSign(func, &value, 0, 0);
+				}
+			}
+			return jit_insn_convert(func, value, targetType, overflowCheck);
+		}
+		else if(_JIT_TYPEKIND_IS_LONG(targetTypeKind))
+		{
+			if(_JIT_TYPEKIND_IS_LONG(sourceTypeKind))
+			{
+				/* If the source value is unsigned we have to convert to */
+				/* signed first. */
+				if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
+				{
+					AdjustSign(func, &value, 0, 0);
+				}
+				return jit_insn_convert(func, value, targetType, overflowCheck);
+			}
+			if(_JIT_TYPEKIND_IS_INT(sourceTypeKind))
+			{
+				int sourceIsSigned = _JIT_TYPEKIND_IS_SIGNED(sourceTypeKind);
+				int targetIsSigned = _JIT_TYPEKIND_IS_SIGNED(targetTypeKind);
+				int sourceIsUnsigned = _JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind);
+				int targetIsUnsigned = _JIT_TYPEKIND_IS_UNSIGNED(targetTypeKind);
+
+				if(sourceIsSigned && targetIsSigned)
+				{
+					/* Both values are signed and the source type is smaller */
+					/* than the target type. So there won't be an overflow. */
+					return jit_insn_convert(func, value, targetType, 0);
+				}
+				else if(sourceIsUnsigned && targetIsUnsigned)
+				{
+					int sourceSize = jit_type_get_size(sourceType);
+
+					if(sourceSize < 4)
+					{
+						/* We know that the sign bit is 0 on the stack. */
+						/* So we can convert directly without overflow check. */
+						/* don't know the value of the sign bit. */
+						return jit_insn_convert(func, value, targetType, 0);
+					}
+
+					/* TODO */
+					/* This case is problematic right now because this type */
+					/* of conversion with overflow check can't be handled  */
+					/* correctly with libjit atm. */
+					/* We should make the source value signed first before */
+					/* the conversion with overflow check is done. */
+					/* AdjustSign(func, &value, 0, 0); */
+					return jit_insn_convert(func, value, targetType, overflowCheck);
+				}
+				else if(sourceIsUnsigned && targetIsSigned)
+				{
+					int sourceSize = jit_type_get_size(sourceType);
+
+					if(sourceSize < 4)
+					{
+						/* The source value is 0 extended to INT32 and then */
+						/* extended to INT64. */
+						/* Because the source value is less than 4 bytes we */
+						/* know that the sign will be 0 on the 32 bit value */
+						/* and no overflow is possible. */
+						return jit_insn_convert(func, value, targetType, 0);
+					}
+					else
+					{
+						/* Because we don't know the sign of the 32 bit value we */
+						/* have to convert it to INT32 first. */
+						value = jit_insn_convert(func, value, _IL_JIT_TYPE_INT32, 0);
+						return jit_insn_convert(func, value, targetType, overflowCheck);
+					}
+				}
+				else if(sourceIsSigned && targetIsUnsigned)
+				{
+					/* TODO */
+					/* This case is problematic right now because this type */
+					/* of conversion with overflow check can't be handled  */
+					/* correctly with libjit atm. */
+					/* We should make the source value signed first before */
+					/* the conversion with overflow check is done. */
+					/* value = jit_insn_convert(func, value, _IL_JIT_TYPE_INT32, 0); */
+					/* to get the correct result we convert to UINT32 with */
+					/* overflowCheck instead. */
+					value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT32, overflowCheck);
+					return jit_insn_convert(func, value, targetType, overflowCheck);
+				}
+			}
+		}
+		/* We have to check if the sign has to be adjusted before the  */
+		/* conversion is done. */
+		if(_JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind))
+		{
+			int sourceSize = jit_type_get_size(sourceType);
+
+			if(sourceSize >= 4)
+			{
+				/* We have to convert the value to signed first because we */
+				/* don't know the value of the sign bit. */
+				AdjustSign(func, &value, 0, 0);
+			}
+		}
+		return jit_insn_convert(func, value, targetType, overflowCheck);
+	}
+	else
+	{
+		/* We do an unsigned conversion. */
+		sourceTypeKind = jit_type_get_kind(sourceType);
+		targetTypeKind = jit_type_get_kind(targetType);
+		if(_JIT_TYPEKIND_IS_FLOAT(sourceTypeKind))
+		{
+			/* We can convert these values directly */
+			return jit_insn_convert(func, value, targetType, overflowCheck);
+		}
+		else if(_JIT_TYPEKIND_IS_FLOAT(targetTypeKind))
+		{
+			/* We have to adjust the sign first and sign extend the source */
+			/* value to at least 4 bytes without overflow check. */
+			if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+			{
+				int sourceSize = jit_type_get_size(sourceType);
+
+				if(sourceSize <= 4)
+				{
+					/* We have to convert the value to UInt32 first. */
+					value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT32, 0);
+				}
+				else if(sourceSize == 8)
+				{
+					/* We have to convert the value to UInt64 first. */
+					value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT64, 0);
+				}
+			}
+			return jit_insn_convert(func, value, targetType, overflowCheck);
+		}
+		else if(_JIT_TYPEKIND_IS_INT(targetTypeKind))
+		{
+			if(!overflowCheck)
+			{
+				/* We can convert this directly directly because the source value is */
+				/* either truncated or expanded to the target type depending on the */
+				/* sign of the source value. */
+				return jit_insn_convert(func, value, targetType, 0);
+			}
+			else
+			{
+				/* We have to adjust the sign first and sign extend the source */
+				/* value to at least 4 bytes without overflow check. */
+				if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+				{
+					int sourceSize = jit_type_get_size(sourceType);
+
+					if(sourceSize <= 4)
+					{
+						/* We have to convert the value to UInt32 first. */
+						value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT32, 0);
+					}
+					else if(sourceSize == 8)
+					{
+						/* We have to convert the value to UInt64 first. */
+						value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT64, 0);
+					}
+				}
+				return jit_insn_convert(func, value, targetType, overflowCheck);
+			}
+		}
+		else if(_JIT_TYPEKIND_IS_LONG(targetTypeKind))
+		{
+			if(_JIT_TYPEKIND_IS_LONG(sourceTypeKind))
+			{
+				if(!overflowCheck)
+				{
+					/* we can convert this directly because only the sign is changed. */
+					return jit_insn_convert(func, value, targetType, 0);
+				}
+				else
+				{
+					/* We have to adjust the sign of the source value first. */
+					if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+					{
+						/* We have to convert the value to UInt64 first. */
+						value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT64, 0);
+					}
+					return jit_insn_convert(func, value, targetType, overflowCheck);
+				}
+			}
+			if(_JIT_TYPEKIND_IS_INT(sourceTypeKind))
+			{
+				int sourceIsSigned = _JIT_TYPEKIND_IS_SIGNED(sourceTypeKind);
+				int targetIsSigned = _JIT_TYPEKIND_IS_SIGNED(targetTypeKind);
+				int sourceIsUnsigned = _JIT_TYPEKIND_IS_UNSIGNED(sourceTypeKind);
+				int targetIsUnsigned = _JIT_TYPEKIND_IS_UNSIGNED(targetTypeKind);
+
+				if(sourceIsSigned && targetIsSigned)
+				{
+					if(!overflowCheck)
+					{
+						/* The signs match so we can convert directly. */
+						return jit_insn_convert(func, value, targetType, 0);
+					}
+					else
+					{
+						/* We have to adjust the sign and sign extend the */
+						/* source value first to 4 bytes. */
+						value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT32, overflowCheck);
+						return jit_insn_convert(func, value, targetType, overflowCheck);
+					}
+				}
+				else if (sourceIsUnsigned && targetIsUnsigned)
+				{
+					/* The signs match so we can convert directly without overflow check. */
+					return jit_insn_convert(func, value, targetType, 0);
+				}
+				else if(sourceIsUnsigned && targetIsSigned)
+				{
+					int sourceSize = jit_type_get_size(sourceType);
+
+					if(sourceSize < 4)
+					{
+						/* The source value is 0 extended to INT32 and then */
+						/* extended to INT64. */
+						/* Because the source value is less than 4 bytes we */
+						/* know that the sign will be 0 on the 32 bit value. */
+						return jit_insn_convert(func, value, targetType, 0);
+					}
+					else
+					{
+						/* Because we don't know the sign of the 32 bit */
+						/* value we have to convert it to INT32 first. */
+						value = jit_insn_convert(func, value, _IL_JIT_TYPE_INT32, overflowCheck);
+						/* Because the signed value will be extended we */
+						/* don't have to check for overflow now. */
+						return jit_insn_convert(func, value, targetType, 0);
+					}
+				}
+				else if(sourceIsSigned && targetIsUnsigned)
+				{
+					/* In this case we'll allways have to do two conversions. */
+					/* We have to convert it to UINT32 without overflow check */
+					/* first. */
+					value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT32, 0);
+					return jit_insn_convert(func, value, targetType, 0);
+				}
+			}
+		}
+		/* We have to adjust the sign first and sign extend the source */
+		/* value to at least 4 bytes without overflow check. */
+		if(_JIT_TYPEKIND_IS_SIGNED(sourceTypeKind))
+		{
+			int sourceSize = jit_type_get_size(sourceType);
+
+			if(sourceSize <= 4)
+			{
+				/* We have to convert the value to UInt32 first. */
+				value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT32, 0);
+			}
+			else if(sourceSize == 8)
+			{
+				/* We have to convert the value to UInt64 first. */
+				value = jit_insn_convert(func, value, _IL_JIT_TYPE_UINT64, 0);
+			}
+		}
+		return jit_insn_convert(func, value, targetType, 0);
 	}
 	return value;
 }
@@ -991,119 +1164,77 @@ static ILJitValue _ILJitValueConvertToStackType(ILJitFunction func,
  * Readjust the stack to normalize binary operands when
  * I and I4 are mixed together.  Also determine which of
  * I4 or I8 to use if the operation involves I.
+ * The verifier makes sure that no invalid combinations are on the stack.
+ * That means: 
+ * 1. If one value is a pointer then the second one is a pointer too.
+ * 2. If one value is a float then the second one is a float too.
  */
 static void AdjustMixedBinary(ILJITCoder *coder, int isUnsigned,
 							  ILJitValue *value1, ILJitValue *value2)
 {
 	ILJitType type1 = jit_value_get_type(*value1);
-	ILJitType newType1 = _ILJitTypeToStackType(type1);
 	ILJitType type2 = jit_value_get_type(*value2);
-	ILJitType newType2 = _ILJitTypeToStackType(type2);
-	int type1Kind = jit_type_get_kind(newType1);
-	int type2Kind = jit_type_get_kind(newType2);
+	ILJitType newType = 0;
+	int type1Kind = jit_type_get_kind(type1);
+	int type2Kind = jit_type_get_kind(type2);
 	int type1IsFloat = _JIT_TYPEKIND_IS_FLOAT(type1Kind);
 	int type2IsFloat = _JIT_TYPEKIND_IS_FLOAT(type2Kind);
+	int type1IsPointer = _JIT_TYPEKIND_IS_POINTER(type1Kind);
+	int type2IsPointer = _JIT_TYPEKIND_IS_POINTER(type2Kind);
 	int type1IsLong = _JIT_TYPEKIND_IS_LONG(type1Kind);
 	int type2IsLong = _JIT_TYPEKIND_IS_LONG(type2Kind);
 
 	if(type1IsFloat || type2IsFloat)
 	{
+		/* Nothing to do here. */
 		return;
 	}
-
-	/* If the arguments mix I8 and I4, then cast the I4 value to I8 */
-	if(type1IsLong && !type2IsLong)
+	else if(type1IsLong || type2IsLong)
 	{
+		/* If the arguments mix I8 and I4, then cast the I4 value to I8 */
 		if(isUnsigned)
 		{
-			newType2 = _IL_JIT_TYPE_UINT64;
+			newType = _IL_JIT_TYPE_UINT64;
 		}
 		else
 		{
-			newType2 = _IL_JIT_TYPE_INT64;
+			newType = _IL_JIT_TYPE_INT64;
 		}
-		type2Kind = jit_type_get_kind(newType2);
-		type2IsLong = 1;
 	}
-	else if(!type1IsLong && type2IsLong)
+	else if(!type1IsPointer || type2IsPointer)
 	{
 		if(isUnsigned)
 		{
-			newType1 = _IL_JIT_TYPE_UINT64;
+			newType = _IL_JIT_TYPE_NUINT;
 		}
 		else
 		{
-			newType1 = _IL_JIT_TYPE_INT64;
-		}
-		type1Kind = jit_type_get_kind(newType1);
-		type1IsLong = 1;
-	}
-
-	if(isUnsigned)
-	{
-		if(_JIT_TYPEKIND_IS_SIGNED(type1Kind))
-		{
-			if(type1IsLong)
-			{
-				newType1 = _IL_JIT_TYPE_UINT64;
-			}
-			else
-			{
-				newType1 = _IL_JIT_TYPE_UINT32;
-			}
-			type1Kind = jit_type_get_kind(newType1);
-		}
-		if(_JIT_TYPEKIND_IS_SIGNED(type2Kind))
-		{
-			if(type2IsLong)
-			{
-				newType2 = _IL_JIT_TYPE_UINT64;
-			}
-			else
-			{
-				newType2 = _IL_JIT_TYPE_UINT32;
-			}
-			type2Kind = jit_type_get_kind(newType2);
+			newType = _IL_JIT_TYPE_NINT;
 		}
 	}
 	else
 	{
-		if(_JIT_TYPEKIND_IS_UNSIGNED(type1Kind))
+		/* We have only 32 bit values left. */
+		if(isUnsigned)
 		{
-			if(type1IsLong)
-			{
-				newType1 = _IL_JIT_TYPE_INT64;
-			}
-			else
-			{
-				newType1 = _IL_JIT_TYPE_INT32;
-			}
-			type1Kind = jit_type_get_kind(newType1);
+			newType = _IL_JIT_TYPE_UINT32;
 		}
-		if(_JIT_TYPEKIND_IS_UNSIGNED(type2Kind))
+		else
 		{
-			if(type2IsLong)
-			{
-				newType2 = _IL_JIT_TYPE_INT64;
-			}
-			else
-			{
-				newType2 = _IL_JIT_TYPE_INT32;
-			}
-			type2Kind = jit_type_get_kind(newType2);
+			newType = _IL_JIT_TYPE_INT32;
 		}
 	}
 	
 	/* now do the conversion if necessairy. */
-	if(type1 != newType1)
+	if(type1 != newType)
 	{
 		*value1 = _ILJitValueConvertImplicit(coder->jitFunction, *value1,
-											 newType1);
+											 newType);
 	}
-	if(type2 != newType2)
+	if(type2 != newType)
 	{
 		*value2 = _ILJitValueConvertImplicit(coder->jitFunction, *value2,
-											 newType2);
+											 newType);
 	}
 }
 
@@ -2808,8 +2939,15 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 			{
 				jitParamTypes[param] = paramType;
 			#ifdef IL_JIT_THREAD_IN_SIGNATURE
+				args[current - 1] = _ILJitValueConvertImplicit(func,
+															  args[current - 1],
+															  paramType);
 				jitParams[param] = args[current - 1];
+		
 			#else
+				args[current] = _ILJitValueConvertImplicit(func,
+														   args[current],
+														   paramType);
 				jitParams[param] = args[current];
 			#endif
 			}
@@ -3009,6 +3147,10 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder,
 	int isCtor = ILMethodIsConstructor(method);
 	/* Some infos that we'll need later. */
 	ILClass *info = ILMethod_Owner(method);
+#ifdef IL_CONFIG_VARARGS
+	/* Flag to check if this is an internal vararg method. */
+	ILInt32 isInternalVararg = 0;
+#endif
 
 	if(ILType_HasThis(signature))
 	{
@@ -3030,6 +3172,26 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder,
 			}
 		}
 	}
+
+#ifdef IL_CONFIG_VARARGS
+	/* Vararg methods implemented in the engine have an additional argument */
+	/* of type void * which must be added to the jit signature. */
+	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
+			IL_META_CALLCONV_VARARG)
+	{
+		if((implementationType & _IL_JIT_IMPL_INTERNALMASK) != 0)
+		{
+			total++;
+			isInternalVararg = 1;
+		}
+		else
+		{
+			/* Methods not implemented internal must have the vararg calling */
+			/* convertion. */
+			jitAbi = IL_JIT_CALLCONV_VARARG;
+		}
+	}
+#endif
 
 	/* Array to hold the parameter types. */
 	ILJitType jitArgs[total];
@@ -3088,11 +3250,12 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder,
 	}
 
 #ifdef IL_CONFIG_VARARGS
-	/* Vararg methods can have additional arguments not specified in the signature. */
-	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
-			IL_META_CALLCONV_VARARG)
+	/* If it's an internal vararg method add the pointer to the vararg */
+	/* information. */
+	if(isInternalVararg)
 	{
-		jitAbi = IL_JIT_CALLCONV_VARARG;
+		jitArgs[jitArgc] = _IL_JIT_TYPE_VPTR;
+		jitArgc++;
 	}
 #endif
 

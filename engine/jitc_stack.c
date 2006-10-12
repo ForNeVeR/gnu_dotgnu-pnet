@@ -72,7 +72,7 @@ struct _tagILJitStackItem
 			(dest).value = jit_insn_add_relative((coder)->jitFunction, (ptr).value, (offset)); \
 			if((dest).refValue && ((dest).flags & _IL_JIT_VALUE_COPYOF)) \
 			{ \
-				(dest).flags |= ~_IL_JIT_VALUE_COPYOF; \
+				(dest).flags &= ~_IL_JIT_VALUE_COPYOF; \
 				if(!((dest).flags & _IL_JIT_VALUE_POINTER_TO)) \
 				{ \
 					(dest).refValue = 0; \
@@ -276,7 +276,7 @@ typedef ILJitValue ILJitStackItem;
 				__dupValue = jit_insn_dup((coder)->jitFunction, (coder)->jitStack[__stackPos].value); \
 				(coder)->jitStack[__stackPos].value = __dupValue; \
 				(coder)->jitStack[__stackPos].refValue = 0; \
-				(coder)->jitStack[__stackPos].flags |= ~_IL_JIT_VALUE_COPYOF; \
+				(coder)->jitStack[__stackPos].flags &= ~_IL_JIT_VALUE_COPYOF; \
 			} \
 		} \
 	} while(0)

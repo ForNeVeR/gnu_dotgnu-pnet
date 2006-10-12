@@ -22,6 +22,7 @@
 	* engine/jitc_stack.c: Set all duplicates of a value null checked if the
 	value is checked for null. Check if references to a local/arg is passed
 	in a method call and replace this local on the stack with duplicates.
+	Fix two small bugs when clearing flags.
 
 2006-10-10  Klaus Treichel  <ktreichel@web.de>
 

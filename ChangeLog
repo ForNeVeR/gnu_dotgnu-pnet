@@ -1,3 +1,8 @@
+
+2006-10-13  Gopal V  <gopalv82@yahoo.com>
+
+	* engine/verify_ptr.c: Allow floats/doubles to be stored using stobj.
+
 2006-10-12  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Move _ILJitValueConvertExplicit below

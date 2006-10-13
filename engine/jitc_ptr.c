@@ -131,9 +131,46 @@ static void StoreArrayElem(ILJITCoder *coder, ILJitType type)
 	/* Convert the value to the array type when needed. */
 	if(valueType != type)
 	{
-		temp = _ILJitValueConvertImplicit(coder->jitFunction,
-										  _ILJitStackItemValue(value),
-										  type);
+		int valueIsStruct = (jit_type_is_struct(valueType) || jit_type_is_union(valueType));
+		int destIsStruct = (jit_type_is_struct(type) || jit_type_is_union(type));
+
+		if(valueIsStruct || destIsStruct)
+		{
+			int valueSize = jit_type_get_size(valueType);
+			int destSize = jit_type_get_size(type);
+
+			if(destSize == valueSize)
+			{
+				/* The sizes match so we can safely use store element. */
+				temp = _ILJitStackItemValue(value);
+			}
+			else
+			{
+				/* We assume that destSize is smaller than valueSize because */
+				/* the values have to be assignment compatible. */
+				/* But we have to use memcpy instead. */
+				_ILJitStackItemNew(dest);
+				ILJitValue destPtr = jit_insn_load_elem_address(coder->jitFunction,
+																arrayBase,
+																_ILJitStackItemValue(index),
+																type);
+				ILJitValue srcPtr = jit_insn_address_of(coder->jitFunction,
+														_ILJitStackItemValue(value));
+				ILJitValue size = jit_value_create_nint_constant(coder->jitFunction,
+																 _IL_JIT_TYPE_NINT,
+																 (jit_nint)destSize);
+
+				_ILJitStackItemInitWithNotNullValue(dest, destPtr);
+				_ILJitStackItemMemCpy(coder, dest, srcPtr, size);
+				return;
+			}
+		}
+		else
+		{
+			temp = _ILJitValueConvertImplicit(coder->jitFunction,
+											  _ILJitStackItemValue(value),
+											  type);
+		}
 	}
 	else
 	{
@@ -178,9 +215,40 @@ static void StoreRelative(ILJITCoder *coder, ILJitType type)
 	_ILJitStackItemCheckNull(coder, ptr);
 	if(valueType != type)
 	{
-		temp = _ILJitValueConvertImplicit(coder->jitFunction,
-										  _ILJitStackItemValue(value),
-										  type);
+		int valueIsStruct = (jit_type_is_struct(valueType) || jit_type_is_union(valueType));
+		int destIsStruct = (jit_type_is_struct(type) || jit_type_is_union(type));
+
+		if(valueIsStruct || destIsStruct)
+		{
+			int valueSize = jit_type_get_size(valueType);
+			int destSize = jit_type_get_size(type);
+
+			if(destSize == valueSize)
+			{
+				/* The sizes match so we can safely use store relative. */
+				temp = _ILJitStackItemValue(value);
+			}
+			else
+			{
+				/* We assume that destSize is smaller than valueSize because */
+				/* the values have to be assignment compatible. */
+				/* But we have to use memcpy instead. */
+				ILJitValue srcPtr = jit_insn_address_of(coder->jitFunction,
+														_ILJitStackItemValue(value));
+				ILJitValue size = jit_value_create_nint_constant(coder->jitFunction,
+																 _IL_JIT_TYPE_NINT,
+																 (jit_nint)destSize);
+
+				_ILJitStackItemMemCpy(coder, ptr, srcPtr, size);
+				return;
+			}
+		}
+		else
+		{
+			temp = _ILJitValueConvertImplicit(coder->jitFunction,
+											  _ILJitStackItemValue(value),
+											  type);
+		}
 	}
 	else
 	{
@@ -544,17 +612,50 @@ static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 	else
 	{
 		/* Store to a pointer */
+		ILJitType valueType;
 		/* Pop the object off the evaluation stack. */
 		_ILJitStackPop(jitCoder, object);
 		/* Pop the address off the evaluation stack. */
 		_ILJitStackPop(jitCoder, address);
+		valueType = jit_value_get_type(_ILJitStackItemValue(object));
 		_ILJitStackItemCheckNull(jitCoder, address);
 		
-		if(jit_value_get_type(_ILJitStackItemValue(object)) != jitType)
+		if(valueType != jitType)
 		{
-			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-												_ILJitStackItemValue(object),
-												jitType);
+			int valueIsStruct = (jit_type_is_struct(valueType) || jit_type_is_union(valueType));
+			int destIsStruct = (jit_type_is_struct(jitType) || jit_type_is_union(jitType));
+
+			if(valueIsStruct || destIsStruct)
+			{
+				int valueSize = jit_type_get_size(valueType);
+				int destSize = jit_type_get_size(jitType);
+
+				if(destSize == valueSize)
+				{
+					/* The sizes match so we can safely use store relative. */
+					value = _ILJitStackItemValue(object);
+				}
+				else
+				{
+					/* We assume that destSize is smaller than valueSize because */
+					/* the values have to be assignment compatible. */
+					/* But we have to use memcpy instead. */
+					ILJitValue srcPtr = jit_insn_address_of(jitCoder->jitFunction,
+															_ILJitStackItemValue(object));
+					ILJitValue size = jit_value_create_nint_constant(jitCoder->jitFunction,
+																	 _IL_JIT_TYPE_NINT,
+																	 (jit_nint)destSize);
+
+					_ILJitStackItemMemCpy(jitCoder, address, srcPtr, size);
+					return;
+				}
+			}
+			else
+			{
+				value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+													_ILJitStackItemValue(object),
+													jitType);
+			}
 		}
 		else
 		{

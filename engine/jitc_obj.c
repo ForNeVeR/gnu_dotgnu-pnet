@@ -793,10 +793,10 @@ static void JITCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 	_ILJitStackItemCheckNull(jitCoder, dest);
 	_ILJitStackItemCheckNull(jitCoder, src);
 
-	jit_insn_memcpy(jitCoder->jitFunction,
-					_ILJitStackItemValue(dest),
-					_ILJitStackItemValue(src),
-					memSize);
+	_ILJitStackItemMemCpy(jitCoder,
+						  dest,
+						  _ILJitStackItemValue(src),
+						  memSize);
 }
 
 static void JITCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
@@ -816,10 +816,10 @@ static void JITCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
 	_ILJitStackItemCheckNull(jitCoder, dest);
 	_ILJitStackItemCheckNull(jitCoder, src);
 
-	jit_insn_memcpy(jitCoder->jitFunction,
-					_ILJitStackItemValue(dest),
-					_ILJitStackItemValue(src),
-					_ILJitStackItemValue(size));
+	_ILJitStackItemMemCpy(jitCoder,
+						  dest,
+						  _ILJitStackItemValue(src),
+						  _ILJitStackItemValue(size));
 }
 
 static void JITCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
@@ -842,10 +842,10 @@ static void JITCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 	 */
 	_ILJitStackItemCheckNull(jitCoder, dest);
 
-	jit_insn_memset(jitCoder->jitFunction,
-					_ILJitStackItemValue(dest),
-					value,
-					memSize);
+	_ILJitStackItemMemSet(jitCoder,
+						  dest,
+						  value,
+						  memSize);
 }
 
 static void JITCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
@@ -867,10 +867,10 @@ static void JITCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 	filler = _ILJitValueConvertImplicit(jitCoder->jitFunction,
 									   _ILJitStackItemValue(value),
 									   _IL_JIT_TYPE_BYTE);
-	jit_insn_memset(jitCoder->jitFunction,
-					_ILJitStackItemValue(dest), 
-					filler,
-					_ILJitStackItemValue(size));
+	_ILJitStackItemMemSet(jitCoder,
+						  dest, 
+						  filler,
+						  _ILJitStackItemValue(size));
 }
 
 static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
@@ -943,20 +943,56 @@ static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	_ILJitStackItemNew(stackItem);
 	ILJitValue value;
 	ILJitValue newObj;
+	ILJitType jitValueType;
 
 	/* Pop the value off the stack. */
 	_ILJitStackPop(jitCoder, stackItem);
+
+	/* Get the type of the popped object. */
+	jitValueType = jit_value_get_type(_ILJitStackItemValue(stackItem));
 
 	/* Allocate memory */
 	newObj = _ILJitAllocGen(jitCoder->jitFunction,
 							boxClass, jit_type_get_size(jitType));
 	
 	/* If the smallerType is smaller then the initiale type then convert to it. */
-	if(jit_value_get_type(_ILJitStackItemValue(stackItem)) != jitType)
+	if(jitValueType != jitType)
 	{
-		value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
-										   _ILJitStackItemValue(stackItem),
-										   jitType);
+		int valueIsStruct = (jit_type_is_struct(jitValueType) || jit_type_is_union(jitValueType));
+		int destIsStruct = (jit_type_is_struct(jitType) || jit_type_is_union(jitType));
+
+		if(valueIsStruct || destIsStruct)
+		{
+			int valueSize = jit_type_get_size(jitValueType);
+			int destSize = jit_type_get_size(jitType);
+
+			if(destSize == valueSize)
+			{
+				/* The sizes match so we can safely use store relative. */
+				value = _ILJitStackItemValue(stackItem);
+			}
+			else
+			{
+				/* We assume that destSize is smaller than valueSize because */
+				/* the values have to be assignment compatible. */
+				/* But we have to use memcpy instead. */
+				ILJitValue srcPtr = jit_insn_address_of(jitCoder->jitFunction,
+														_ILJitStackItemValue(stackItem));
+				ILJitValue size = jit_value_create_nint_constant(jitCoder->jitFunction,
+																 _IL_JIT_TYPE_NINT,
+																 (jit_nint)destSize);
+
+				_ILJitStackItemInitWithNotNullValue(stackItem, newObj);
+				_ILJitStackItemMemCpy(jitCoder, stackItem, srcPtr, size);
+				return;
+			}
+		}
+		else
+		{
+			value = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											   _ILJitStackItemValue(stackItem),
+											   jitType);
+		}
 	}
 	else
 	{

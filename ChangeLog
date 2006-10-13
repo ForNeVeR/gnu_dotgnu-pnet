@@ -1,3 +1,9 @@
+2006-10-13  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_obj.c, engine/jitc_ptr.c: Handle the pointer relative store
+	of value types correctly which are subclasses of the type to store.
+
+	* engine/jitc_stack.c: Add macros to handle memcpy, memmove and memset.
 
 2006-10-13  Gopal V  <gopalv82@yahoo.com>
 

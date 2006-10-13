@@ -518,6 +518,42 @@ typedef ILJitValue ILJitStackItem;
 		jit_insn_store_relative((coder)->jitFunction, (dest).value, (jit_nint)(offset), (v)); \
 	} while(0)
 
+/*
+ * Copy an amount of data relative to a stack item.
+ */
+#define _ILJitStackItemMemCpy(coder, dest, src, size) \
+	do { \
+		if((dest).refValue && ((dest).flags & _IL_JIT_VALUE_POINTER_TO)) \
+		{ \
+			_ILJitStackDupLocal(coder, (dest).refValue); \
+		} \
+		jit_insn_memcpy((coder)->jitFunction, (dest).value, (src), (size)); \
+	} while(0)
+
+/*
+ * Move an amount of data relative to a stack item.
+ */
+#define _ILJitStackItemMemMove(coder, dest, src, size) \
+	do { \
+		if((dest).refValue && ((dest).flags & _IL_JIT_VALUE_POINTER_TO)) \
+		{ \
+			_ILJitStackDupLocal(coder, (dest).refValue); \
+		} \
+		jit_insn_memmove((coder)->jitFunction, (dest).value, (src), (size)); \
+	} while(0)
+
+/*
+ * Set size bytes relative to a stack item to v.
+ */
+#define _ILJitStackItemMemSet(coder, dest, v, size) \
+	do { \
+		if((dest).refValue && ((dest).flags & _IL_JIT_VALUE_POINTER_TO)) \
+		{ \
+			_ILJitStackDupLocal(coder, (dest).refValue); \
+		} \
+		jit_insn_memset((coder)->jitFunction, (dest).value, (v), (size)); \
+	} while(0)
+
 #else /* !_IL_JIT_OPTIMIZE_LOCALS */
 
 /*
@@ -680,6 +716,30 @@ typedef ILJitValue ILJitStackItem;
 #define _ILJitStackItemStoreRelative(coder, dest, offset, v) \
 	do { \
 		jit_insn_store_relative((coder)->jitFunction, (dest), (jit_nint)(offset), (v)); \
+	} while(0)
+
+/*
+ * Copy an amount of data relative to s stack item.
+ */
+#define _ILJitStackItemMemCpy(coder, dest, src, size) \
+	do { \
+		jit_insn_memcpy((coder)->jitFunction, (dest), (src), (size)); \
+	} while(0)
+
+/*
+ * Move an amount of data relative to a stack item.
+ */
+#define _ILJitStackItemMemMove(coder, dest, src, size) \
+	do { \
+		jit_insn_memmove((coder)->jitFunction, (dest), (src), (size)); \
+	} while(0)
+
+/*
+ * Set size bytes relative to a stack item to v.
+ */
+#define _ILJitStackItemMemSet(coder, dest, v, size) \
+	do { \
+		jit_insn_memset((coder)->jitFunction, (dest), (v), (size)); \
 	} while(0)
 
 #endif /* _IL_JIT_OPTIMIZE_LOCALS */

@@ -1,3 +1,7 @@
+2006-10-13  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Diagnostics/DebuggableAttribute.cs: Add 2.0 features.
+
 2006-10-05  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/Control.cs: handle exception in 

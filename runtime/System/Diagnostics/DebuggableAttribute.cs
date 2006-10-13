@@ -24,15 +24,78 @@ namespace System.Diagnostics
 
 #if !ECMA_COMPAT
 
+#if CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+#endif
+
 [AttributeUsage(AttributeTargets.Assembly |
 				AttributeTargets.Module,
 				AllowMultiple=false)]
 public sealed class DebuggableAttribute : Attribute
 {
+#if CONFIG_FRAMEWORK_2_0
+	[Flags]
+	[ComVisible(true)]
+	public enum DebuggingModes
+	{
+		None							= 0,
+		Default							= 1,
+		IgnoreSymbolStoreSequencePoints = 2,
+		EnableEditAndContinue			= 4,
+		DisableOptimizations			= 256
+	}
+
+	DebuggingModes debuggingFlags;
+#else
 	// Internal state.
 	private bool jitTracking;
 	private bool disableOpt;
+#endif
 
+#if CONFIG_FRAMEWORK_2_0
+	// Constructors.
+	public DebuggableAttribute(DebuggingModes modes)
+			{
+				debuggingFlags = modes;
+			}
+
+	public DebuggableAttribute(bool enableJITTracking,
+							   bool disableJITOptimizer)
+			{
+				debuggingFlags = DebuggingModes.None;
+				if(enableJITTracking)
+				{
+					debuggingFlags |= DebuggingModes.Default;
+				}
+				if(disableJITOptimizer)
+				{
+					debuggingFlags |= DebuggingModes.DisableOptimizations;
+				}
+			}
+
+	// Properties.
+	public bool IsJITTrackingEnabled
+			{
+				get
+				{
+					return (debuggingFlags & DebuggingModes.Default) != DebuggingModes.None;
+				}
+			}
+	public bool IsJITOptimizerDisabled
+			{
+				get
+				{
+					return (debuggingFlags & DebuggingModes.DisableOptimizations) != DebuggingModes.None;
+				}
+			}
+	public DebuggingModes DebuggingFlags
+			{
+				get
+				{
+					return debuggingFlags;
+				}
+			}
+#else
 	// Constructors.
 	public DebuggableAttribute(bool enableJITTracking,
 							   bool disableJITOptimizer)
@@ -56,7 +119,7 @@ public sealed class DebuggableAttribute : Attribute
 					return disableOpt;
 				}
 			}
-
+#endif
 }; // class DebuggableAttribute
 
 #endif // !ECMA_COMPAT

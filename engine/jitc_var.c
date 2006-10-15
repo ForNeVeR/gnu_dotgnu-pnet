@@ -113,6 +113,17 @@ static void JITCoder_AddrOfArg(ILCoder *coder, ILUInt32 argNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Address of Arg: %i\n", 
+			argNum);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
 	_ILJitStackPushAddressOfArg(jitCoder, argNum);
 }
 
@@ -122,6 +133,17 @@ static void JITCoder_AddrOfArg(ILCoder *coder, ILUInt32 argNum)
 static void JITCoder_AddrOfLocal(ILCoder *coder, ILUInt32 localNum)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"Address of Local: %i\n", 
+			localNum);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
 
 	_ILJitStackPushAddressOfLocal(jitCoder, localNum);
 }

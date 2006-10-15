@@ -90,6 +90,7 @@ typedef struct
 	ILUInt32 numVarArgs;
 	int hasParamArray;
 	int tailCall;
+	ILType *signature;
 
 } ILCoderMethodInfo;
 

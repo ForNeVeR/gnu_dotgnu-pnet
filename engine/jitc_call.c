@@ -36,7 +36,7 @@ static ILInt32 _ILJitGetCallSignature(ILJITCoder *coder,
 
 		if(!func)
 		{
-			*signature = _ILJitCreateMethodSignature(coder, method, 0);
+			*signature = _ILJitCreateMethodSignature(coder, method, 0, 0);
 			return 1;
 		}
 		else
@@ -44,6 +44,14 @@ static ILInt32 _ILJitGetCallSignature(ILJITCoder *coder,
 			*signature = jit_function_get_signature(func);
 			return 0;
 		}
+	}
+	else
+	{
+		*signature = _ILJitCreateMethodSignature(coder,
+												 method,
+												 info->signature,
+												 0);
+		return 1;
 	}
 	return 0;
 }
@@ -821,8 +829,13 @@ static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 								  ILEngineStackItem *returnItem)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	_ILJitStackItemNew(stackItem);
+	int argCount = _ILJitStackNumArgs(info);
 	ILJitValue ftnPtr;
+	ILJitType callSignature = 0;
+	int destroyCallSignature = 0;
+	ILJitValue jitParams[argCount + 1];
+	ILJitValue returnValue;
+	_ILJitStackItemNew(stackItem);
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -842,10 +855,85 @@ static void JITCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 								  ILRuntimeMethodToVtablePointer,
 								  _ILJitSignature_ILRuntimeMethodToVtablePointer,
 								  &(_ILJitStackItemValue(stackItem)), 1, 0);
+#else
+	/* The function pointer on the stack is the vtable pointer. */
+	ftnPtr = _ILJitStackItemValue(stackItem);
 #endif
 
-	/* TODO: build a signature from the call signature (info) and call the */
-	/* method. */
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+	jitParams[0] = _ILJitCoderGetThread(jitCoder);
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   0,
+											   info,
+											   &(jitParams[1]),
+											   1,
+											   &callSignature);
+
+#else
+	destroyCallSignature = _ILJitFillArguments(jitCoder,
+											   0,
+											   info,
+											   &(jitParams[0]),
+											   0,
+											   &callSignature);
+#endif
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+			"CallInfos: StackTop: %i, ArgCount: %i, Signature argCount: %i\n",
+			jitCoder->stackTop,
+			argCount,
+			jit_type_num_params(callSignature));
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	if(info->tailCall == 1)
+	{
+	#ifdef IL_JIT_THREAD_IN_SIGNATURE
+		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
+													ftnPtr,
+													callSignature,
+													jitParams,
+													argCount + 1,
+													JIT_CALL_TAIL);
+	#else
+		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
+													ftnPtr,
+													callSignature,
+													jitParams,
+													argCount,
+													JIT_CALL_TAIL);
+	#endif
+	}
+	else
+	{
+	#ifdef IL_JIT_THREAD_IN_SIGNATURE
+		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
+													ftnPtr,
+													callSignature,
+													jitParams,
+													argCount + 1,
+													0);
+	#else
+		returnValue = jit_insn_call_indirect_vtable(jitCoder->jitFunction,
+													ftnPtr,
+													callSignature,
+													jitParams,
+													argCount,
+													0);
+	#endif
+	}
+	if(returnItem->engineType != ILEngineType_Invalid)
+	{
+		_ILJitStackPushValue(jitCoder, returnValue);
+	}
+	if(destroyCallSignature && callSignature)
+	{
+		jit_type_free(callSignature);
+	}
 }
 
 static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
@@ -1043,7 +1131,7 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 {
 
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	int argCount = info->numBaseArgs + info->numVarArgs;
+	int argCount = _ILJitStackNumArgs(info);
 	ILJitFunction func = ILJitFunctionFromILMethod(methodInfo);
 	ILJitType  signature;
 	int destroyCallSignature = 0;
@@ -1153,7 +1241,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 								   ILMethod *methodInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	int argCount = info->numBaseArgs + info->numVarArgs;
+	int argCount = _ILJitStackNumArgs(info);
 	ILJitType  signature = 0;
 	int destroyCallSignature = 0;
 	ILJitValue jitParams[argCount + 1];

@@ -27,10 +27,10 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue value = 0;
-	_ILJitStackItemNew(stackItem);
+	ILJitStackItem *stackItem;
 
-	/* Pop the topmost item from the stack. */
-	_ILJitStackPop(jitCoder, stackItem);
+	/* Get the topmost item on the stack. */
+	stackItem = _ILJitStackItemGetTop(jitCoder, 0);
 
 	/* Determine how to convert the value */
 	switch(opcode)
@@ -39,7 +39,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int8" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_SBYTE,
 											   0, 0);
 		}
@@ -49,34 +49,38 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int16" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT16,
 											   0, 0);
 		}
 		break;
 
 		case IL_OP_CONV_I4:
-	#ifdef IL_NATIVE_INT32
-		case IL_OP_CONV_I:
-	#endif
 		{
 			/* Convert to "int32" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT32,
 											   0, 0);
 		}
 		break;
 
 		case IL_OP_CONV_I8:
-	#ifdef IL_NATIVE_INT64
-		case IL_OP_CONV_I:
-	#endif
 		{
 			/* Convert to "int64" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT64,
+											   0, 0);
+		}
+		break;
+
+		case IL_OP_CONV_I:
+		{
+			/* Convert to "native int" */
+			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*stackItem),
+											   _IL_JIT_TYPE_NINT,
 											   0, 0);
 		}
 		break;
@@ -85,7 +89,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "float32" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_SINGLE,
 											   0, 0);
 		}
@@ -95,7 +99,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "float64" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_DOUBLE,
 											   0, 0);
 		}
@@ -105,7 +109,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int8" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_BYTE,
 											   0, 0);
 		}
@@ -115,34 +119,38 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int16" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT16,
 											   0, 0);
 		}
 		break;
 
 		case IL_OP_CONV_U4:
-	#ifdef IL_NATIVE_INT32
-		case IL_OP_CONV_U:
-	#endif
 		{
 			/* Convert to "unsigned int32" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT32,
 											   0, 0);
 		}
 		break;
 
 		case IL_OP_CONV_U8:
-	#ifdef IL_NATIVE_INT64
-		case IL_OP_CONV_U:
-	#endif
 		{
 			/* Convert to "unsigned int64" */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT64,
+											   0, 0);
+		}
+		break;
+
+		case IL_OP_CONV_U:
+		{
+			/* Convert to "unsigned native int" */
+			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*stackItem),
+											   _IL_JIT_TYPE_NUINT,
 											   0, 0);
 		}
 		break;
@@ -151,7 +159,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "native float" with unsigned input */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_NFLOAT,
 											   1, 0);
 		}
@@ -161,7 +169,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int8" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_SBYTE,
 											   1, 1);
 		}
@@ -171,34 +179,38 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int16" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT16,
 											   1, 1);
 		}
 		break;
 
 		case IL_OP_CONV_OVF_I4_UN:
-	#ifdef IL_NATIVE_INT32
-		case IL_OP_CONV_OVF_I_UN:
-	#endif
 		{
 			/* Convert to "int32" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT32,
 											   1, 1);
 		}
 		break;
 
 		case IL_OP_CONV_OVF_I8_UN:
-	#ifdef IL_NATIVE_INT64
-		case IL_OP_CONV_OVF_I_UN:
-	#endif
 		{
 			/* Convert to "int64" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT64,
+											   1, 1);
+		}
+		break;
+
+		case IL_OP_CONV_OVF_I_UN:
+		{
+			/* Convert to "native int" with unsigned input and overflow */
+			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*stackItem),
+											   _IL_JIT_TYPE_NINT,
 											   1, 1);
 		}
 		break;
@@ -207,7 +219,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int8" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_BYTE,
 											   1, 1);
 		}
@@ -217,35 +229,40 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int16" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT16,
 											   1, 1);
 		}
 		break;
 
 		case IL_OP_CONV_OVF_U4_UN:
-	#ifdef IL_NATIVE_INT32
-		case IL_OP_CONV_OVF_U_UN:
-	#endif
 		{
 			/* Convert to "unsigned int32" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT32,
 											   1, 1);
 		}
 		break;
 
 		case IL_OP_CONV_OVF_U8_UN:
-	#ifdef IL_NATIVE_INT64
-		case IL_OP_CONV_OVF_U_UN:
-	#endif
 		{
 			/* Convert to "unsigned int64" with unsigned input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT64,
 											   1, 1);
+		}
+		break;
+
+		case IL_OP_CONV_OVF_U_UN:
+		{
+			/* Convert to "unsigned native int" with unsigned input and overflow */
+			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*stackItem),
+											   _IL_JIT_TYPE_NUINT,
+											   1, 1);
+
 		}
 		break;
 
@@ -253,7 +270,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int8" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_SBYTE,
 											   0, 1);
 		}
@@ -263,7 +280,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int8" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_BYTE,
 											   0, 1);
 		}
@@ -273,7 +290,7 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "int16" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT16,
 											   0, 1);
 		}
@@ -283,65 +300,73 @@ static void JITCoder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 		{
 			/* Convert to "unsigned int16" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT16,
 											   0, 1);
 		}
 		break;
 
 		case IL_OP_CONV_OVF_I4:
-	#ifdef IL_NATIVE_INT32
-		case IL_OP_CONV_OVF_I:
-	#endif
 		{
 			/* Convert to "int32" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT32,
 											   0, 1);
 		}
 		break;
 
 		case IL_OP_CONV_OVF_U4:
-	#ifdef IL_NATIVE_INT32
-		case IL_OP_CONV_OVF_U:
-	#endif
 		{
 			/* Convert to "unsigned int32" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT32,
 											   0, 1);
 		}
 		break;
 
-		case IL_OP_CONV_OVF_I8:
-	#ifdef IL_NATIVE_INT64
 		case IL_OP_CONV_OVF_I:
-	#endif
+		{
+			/* Convert to "native int" with signed input and overflow */
+			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*stackItem),
+											   _IL_JIT_TYPE_NINT,
+											   0, 1);
+		}
+		break;
+
+		case IL_OP_CONV_OVF_U:
+		{
+			/* Convert to "unsigned native int" with signed input and overflow */
+			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
+											   _ILJitStackItemValue(*stackItem),
+											   _IL_JIT_TYPE_NUINT,
+											   0, 1);
+		}
+		break;
+
+		case IL_OP_CONV_OVF_I8:
 		{
 			/* Convert to "int64" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_INT64,
 											   0, 1);
 		}
 		break;
 
 		case IL_OP_CONV_OVF_U8:
-	#ifdef IL_NATIVE_INT64
-		case IL_OP_CONV_OVF_U:
-	#endif
 		{
 			/* Convert to "unsigned int64" with signed input and overflow */
 			value = _ILJitValueConvertExplicit(jitCoder->jitFunction,
-											   _ILJitStackItemValue(stackItem),
+											   _ILJitStackItemValue(*stackItem),
 											   _IL_JIT_TYPE_UINT64,
 											   0, 1);
 		}
 		break;
 	}
-	_ILJitStackPushValue(jitCoder, value);
+	_ILJitStackItemSetValue(*stackItem, value);
 }
 
 /*

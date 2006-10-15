@@ -21,6 +21,11 @@
 #ifdef IL_JITC_CODE
 
 /*
+ * Check if the engine type is a pointer type.
+ */
+#define _IL_JIT_ENGINE_TYPE_IS_POINTER(type)  (((type) == ILEngineType_M) || ((type) == ILEngineType_T))
+
+/*
  * Handle a binary opcode.
  */
 static void JITCoder_Binary(ILCoder *coder, int opcode,
@@ -217,6 +222,8 @@ static void JITCoder_BinaryPtr(ILCoder *coder, int opcode,
 							   ILEngineType type1, ILEngineType type2)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	int value1IsPointer = _IL_JIT_ENGINE_TYPE_IS_POINTER(type1);
+	int value2IsPointer = _IL_JIT_ENGINE_TYPE_IS_POINTER(type2);
 	_ILJitStackItemNew(value2);
 	_ILJitStackItemNew(value1);
 	ILJitValue result = 0;
@@ -253,7 +260,28 @@ static void JITCoder_BinaryPtr(ILCoder *coder, int opcode,
 		}
 		break;
 	}
-	_ILJitStackPushValue(jitCoder, result);
+	if(value1IsPointer && value2IsPointer)
+	{
+		/* We can't keep the reference information for this case. */
+		_ILJitStackPushValue(jitCoder, result);
+	}
+	else if(value1IsPointer)
+	{
+		/* Keep the reference information for value1. */
+		_ILJitStackItemSetValue(value1, result);
+		_ILJitStackPush(jitCoder, value1);
+	}
+	else if(value2IsPointer)
+	{
+		/* Keep the reference information for value2. */
+		_ILJitStackItemSetValue(value2, result);
+		_ILJitStackPush(jitCoder, value2);
+	}
+	else
+	{
+		/* There is no pointer involved in this operation. */
+		_ILJitStackPushValue(jitCoder, result);
+	}
 }
 
 /*

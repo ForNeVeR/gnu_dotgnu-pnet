@@ -3115,43 +3115,127 @@ static int _ILJitMethodIsAbstract(ILMethod *method)
  */
 static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder,
 											 ILMethod *method,
+											 ILType* signature,
 											 ILUInt32 implementationType)
 {
-	ILType *signature = ILMethod_Signature(method);
 	ILType *type;
-
 	/* number of args in the bytecode */
 	/* Argument 0 is the type of the return value. */
-	ILUInt32 num = ILTypeNumParams(signature);
+	ILUInt32 num = 0;
 	/* total number of args */
-#ifdef IL_JIT_THREAD_IN_SIGNATURE
-	/* because we pass the ILExecThread as first arg we have to add one */
-	ILUInt32 total = num + 1;
-	/* We set jitArgc to 1 because we allways pass the current ILExecThread */
-	/* in jitArgs[0]. */
-	ILUInt32 jitArgc = 1;
-#else
-	ILUInt32 total = num;
-	ILUInt32 jitArgc = 0;
-#endif
+	ILUInt32 total;
+	ILUInt32 jitArgc;
 	ILUInt32 current;
-	jit_abi_t jitAbi = IL_JIT_CALLCONV_DEFAULT;
+	/* calling convention for this function. */
+	/* Hold the abi to use for libjit. */
+	jit_abi_t jitAbi;
 	/* JitType to hold the return type */
 	ILJitType jitReturnType;
-	/* calling convention for this function. */
 	/* The type of the jit signature for this function. */
 	ILJitType jitSignature;
 	/* Flag if this is an array or string constructor. */
 	int isArrayOrString = 0;
 	/* Flag if the method is a ctor. */
-	int isCtor = ILMethodIsConstructor(method);
+	int isCtor = 0;
 	/* Some infos that we'll need later. */
-	ILClass *info = ILMethod_Owner(method);
+	ILClass *info = 0;
 #ifdef IL_CONFIG_VARARGS
 	/* Flag to check if this is an internal vararg method. */
 	ILInt32 isInternalVararg = 0;
 #endif
 
+	/* Get the information needed from the method. */
+	if(method)
+	{
+		signature = ILMethod_Signature(method);
+		isCtor = ILMethodIsConstructor(method);
+		info = ILMethod_Owner(method);
+	}
+
+	/* Get the number of args in the signature. */
+	num = ILTypeNumParams(signature);
+	/* Get the total number of args for the jit signature. */
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+	/* because we pass the ILExecThread as first arg we have to add one */
+	total = num + 1;
+	/* We set jitArgc to 1 because we allways pass the current ILExecThread */
+	/* in jitArgs[0]. */
+	jitArgc = 1;
+#else
+	total = num;
+	jitArgc = 0;
+#endif
+
+	/* Get the calling convention to use for this method/call. */
+	switch((ILType_CallConv(signature) & IL_META_CALLCONV_MASK))
+	{
+		case IL_META_CALLCONV_DEFAULT:
+		{
+			jitAbi = IL_JIT_CALLCONV_DEFAULT;
+		}
+		break;
+
+		case IL_META_CALLCONV_C:
+		{
+			jitAbi = IL_JIT_CALLCONV_CDECL;
+		}
+		break;
+
+		case IL_META_CALLCONV_STDCALL:
+		{
+			jitAbi = IL_JIT_CALLCONV_STDCALL;
+		}
+		break;
+
+		case IL_META_CALLCONV_THISCALL:
+		{
+			/* This calling convention is not yet supported with libjit. */
+			/* So we use cdecl instead. */
+			jitAbi = IL_JIT_CALLCONV_CDECL;
+		}
+		break;
+
+		case IL_META_CALLCONV_FASTCALL:
+		{
+			jitAbi = IL_JIT_CALLCONV_FASTCALL;
+		}
+		break;
+
+		case IL_META_CALLCONV_VARARG:
+		{
+		#ifdef IL_CONFIG_VARARGS
+			if((implementationType & _IL_JIT_IMPL_PINVOKE) != 0)
+			{
+				/* Methods not implemented internal must have the vararg calling */
+				/* convertion. */
+				jitAbi = IL_JIT_CALLCONV_VARARG;
+			}
+			else
+			{
+				/* For internal vararg methods we add an additional arg and */
+				/* use the default calling convention instead. */
+				jitAbi = IL_JIT_CALLCONV_DEFAULT;
+				total++;
+				isInternalVararg = 1;
+			}
+		#else
+			/* Vararg calls are not supported. */
+			return 0;
+		#endif
+		}
+		break;
+
+		default:
+		{
+			/* Invalid calling convention. */
+			return 0;
+		}
+		break;
+
+	}
+
+	/* Check if the method has a not explicit this argument. */
+	/* This is true only for non function pointer signatures. */
 	if(ILType_HasThis(signature))
 	{
 		if(!isCtor)
@@ -3172,26 +3256,6 @@ static ILJitType _ILJitCreateMethodSignature(ILJITCoder *coder,
 			}
 		}
 	}
-
-#ifdef IL_CONFIG_VARARGS
-	/* Vararg methods implemented in the engine have an additional argument */
-	/* of type void * which must be added to the jit signature. */
-	if((ILType_CallConv(signature) & IL_META_CALLCONV_MASK) ==
-			IL_META_CALLCONV_VARARG)
-	{
-		if((implementationType & _IL_JIT_IMPL_INTERNALMASK) != 0)
-		{
-			total++;
-			isInternalVararg = 1;
-		}
-		else
-		{
-			/* Methods not implemented internal must have the vararg calling */
-			/* convertion. */
-			jitAbi = IL_JIT_CALLCONV_VARARG;
-		}
-	}
-#endif
 
 	/* Array to hold the parameter types. */
 	ILJitType jitArgs[total];
@@ -3553,7 +3617,9 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 
 		if(!jitSignature)
 		{
-			if(!(jitSignature = _ILJitCreateMethodSignature(jitCoder, method,
+			if(!(jitSignature = _ILJitCreateMethodSignature(jitCoder,
+															method,
+															0,
 															implementationType)))
 			{
 				return 0;

@@ -1,3 +1,19 @@
+2006-10-15  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c, engine/jitc_call.c, engine/verify_call.c,
+	include/il_coder.h: Add the call signature to the ILCoderMethodInfo to
+	create the libjit call signature for the indirect call (calli opcode).
+	Handle call signature in _ILJitCreateMethodSignature. Implement the
+	calli opcode.
+
+	* engine/jitc_arith.c: Preserve the flags of the pointer value in
+	pointer operations if one and only one pointer is involved.
+
+	* engine/jitc_conv.c: Preserve the flags of the original value after the
+	conversion is done.
+
+	* engine/jitc_var.c: Add stats info for the address_of opcodes.
+
 2006-10-13  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_obj.c, engine/jitc_ptr.c: Handle the pointer relative store

@@ -964,6 +964,7 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 	callInfo->numVarArgs = totalParams - numParams;
 	callInfo->hasParamArray = 0;
 	callInfo->tailCall = tailCall;
+	callInfo->signature = signature;
 
 #ifdef IL_CONFIG_VARARGS
 	/* Convert the vararg parameters into an "Object[]" array */

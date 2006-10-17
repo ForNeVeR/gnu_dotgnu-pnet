@@ -121,16 +121,20 @@ internal class XmlFragmentTextWriter : XmlTextWriter
 				}
 
 				// write the start of the document
-				string start = "<?xml version=\"1.0\"";
+				StringBuilder start = new StringBuilder( "<?xml version=\"1.0\"" );
 				if( haveEncoding ) {
-					start += " encoding=\"" + encoding + "\"";
+					start.Append( " encoding=\"" );
+					start.Append( encoding );
+					start.Append( "\"" );
 				}
 				if( haveStandalone ) {
-					start += " standalone=\"" + standalone;
+					start.Append( " standalone=\"" );
+					start.Append( standalone );
+					start.Append( "\"" );
 				}
-				start += "?>";
+				start.Append( "?>" );
 				
-				writer.Write( start );
+				writer.Write( start.ToString() );
 				writeState = System.Xml.WriteState.Prolog;
 			}
 	

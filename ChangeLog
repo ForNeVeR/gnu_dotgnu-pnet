@@ -1,3 +1,11 @@
+2006-10-17  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Xml/XmlTextWriter.cs,
+	  System.Xml/Private/XmlFragmentTextWriter.cs:
+	  fixed WriteXmlDeclaration for XmlDocument.OuterXml not to use
+	  the textwriter encoding attribute (which is always utf-16), but the 
+	  encoding attribute of the XmlDocument itself.
+	
 2006-10-13  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Diagnostics/DebuggableAttribute.cs: Add 2.0 features.

@@ -42,8 +42,8 @@ public class XmlTextWriter : XmlWriter
 	private SpecialWriter       specialWriter;
 	private String              nsPrefix;
 	private String              xmlLang;
-	private WriteState          writeState;
-	private XmlNameTable        nameTable;
+	protected WriteState        writeState; // need protected for XmlFragmentTextWriter
+	protected XmlNameTable      nameTable;  // need protected for XmlFragmentTextWriter
 	private XmlNamespaceManager namespaceManager;
 	private XmlSpace            xmlSpace;
 	internal bool               autoShiftToContent;
@@ -506,7 +506,7 @@ public class XmlTextWriter : XmlWriter
 			}
 
 	// Write an xml declaration.
-	private void WriteXmlDeclaration(String text)
+	virtual protected void WriteXmlDeclaration(String text)
 			{
 				// make sure we're in the start state
 				if(writeState != System.Xml.WriteState.Start)

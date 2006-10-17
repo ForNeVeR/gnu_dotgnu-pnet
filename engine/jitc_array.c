@@ -18,86 +18,157 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- * Prototype for inlining functioncalls.
- *
- * ILJitValue func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitStackItem *, ILInt32)
- */
+#ifdef	IL_JITC_DECLARATIONS
 
 /*
- * Create a new simple array (1 dimension and zero based) 
+ * The simple array header size.
  */
-static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJitValue length)
+#define _IL_JIT_SARRAY_HEADERSIZE	sizeof(System_Array)
+
+/*
+ * Validate the array index.
+ */
+#define JITC_START_CHECK_ARRAY_INDEX(jitCoder, length, index) \
+	{ \
+		jit_label_t __label = jit_label_undefined; \
+		jit_label_t __okLabel = jit_label_undefined; \
+		ILJitValue  __length = (length); \
+		ILJitValue  __index = (index); \
+		ILJitValue  __temp; \
+		\
+		AdjustSign(jitCoder->jitFunction, &(__length), 1, 0); \
+		AdjustSign(jitCoder->jitFunction, &(__index), 1, 0); \
+		\
+		__temp = jit_insn_lt(jitCoder->jitFunction, __index, __length); \
+		jit_insn_branch_if_not(jitCoder->jitFunction, __temp, &__label);
+
+#define JITC_END_CHECK_ARRAY_INDEX(jitCoder) \
+		jit_insn_branch(jitCoder->jitFunction, &__okLabel); \
+		jit_insn_label(jitCoder->jitFunction, &__label); \
+		_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_INDEX_OUT_OF_RANGE); \
+		jit_insn_label(jitCoder->jitFunction, &__okLabel); \
+	}
+
+/*
+ * Create an Object array with the given size.
+ */
+static ILJitValue _ILJitSObjectArrayCreate(ILJitFunction jitFunction,
+										   ILExecThread *_thread,
+										   ILJitValue thread,
+										   ILUInt32 numElements);
+
+/*
+ * Get an array element at the specified indexes from a complex array.
+ */
+static ILJitValue _ILJitMArrayGet(ILJITCoder *jitCoder,
+								  ILMethod *method,
+								  ILCoderMethodInfo *methodInfo,
+								  ILJitStackItem *args,
+								  ILInt32 numArgs);
+
+/*
+ * Get the address of an array element at the specified indexes in a complex
+ * array.
+ */
+static ILJitValue _ILJitMArrayAddress(ILJITCoder *jitCoder,
+									  ILMethod *method,
+									  ILCoderMethodInfo *methodInfo,
+									  ILJitStackItem *args,
+									  ILInt32 numArgs);
+
+/*
+ * Set an array element at the specified indexes in a complex array.
+ */
+static ILJitValue _ILJitMArraySet(ILJITCoder *jitCoder,
+								  ILMethod *method,
+								  ILCoderMethodInfo *methodInfo,
+								  ILJitStackItem *args,
+								  ILInt32 numArgs);
+
+#endif	/* IL_JITC_DECLARATIONS */
+
+#ifdef	IL_JITC_FUNCTIONS
+
+/*
+ * Allocate a simple array which elements comntain object references.
+ */
+static System_Array *_ILJitSArrayAlloc(ILClass *arrayClass,
+									   ILUInt32 numElements,
+									   ILUInt32 elementSize)
 {
-	ILExecThread *thread = ILExecThreadCurrent();
-	/* Get the array element type. */
-	ILType *elementType = ILType_ElemType(ILClassGetSynType(arrayClass));
-	/* Get the size of one array element. */
-	ILUInt32 elementSize = ILSizeOfType(thread, elementType);
-	ILJitValue headerSize = jit_value_create_nint_constant(jitCoder->jitFunction,
-														   _IL_JIT_TYPE_UINT32,
-														   sizeof(System_Array));
+	ILUInt64 totalSize;
+	System_Array *ptr;
+
+	totalSize = (((ILUInt64)elementSize) * ((ILUInt64)numElements)) + _IL_JIT_SARRAY_HEADERSIZE;
+	if(totalSize > (ILUInt64)IL_MAX_INT32)
+	{
+		/* The array is too large. */
+		/* Throw an "OutOfMemoryException" */
+		ILRuntimeExceptionThrowOutOfMemory();
+		return (System_Array *)0;
+	}
+	ptr = (System_Array *)_ILJitAlloc(arrayClass, (ILUInt32)totalSize);
+	ptr->length = numElements;
+	return ptr;
+}
+
+/*
+ * Allocate a simple array which elements do not comntain object references.
+ */
+static System_Array *_ILJitSArrayAllocAtomic(ILClass *arrayClass,
+											 ILUInt32 numElements,
+											 ILUInt32 elementSize)
+{
+	ILUInt64 totalSize;
+	System_Array *ptr;
+
+	totalSize = (((ILUInt64)elementSize) * ((ILUInt64)numElements)) + _IL_JIT_SARRAY_HEADERSIZE;
+	if(totalSize > (ILUInt64)IL_MAX_INT32)
+	{
+		/* The array is too large. */
+		/* Throw an "OutOfMemoryException" */
+		ILRuntimeExceptionThrowOutOfMemory();
+		return (System_Array *)0;
+	}
+	ptr = (System_Array *)_ILJitAllocAtomic(arrayClass, (ILUInt32)totalSize);
+	ptr->length = numElements;
+	return ptr;
+}
+
+/*
+ * Create a new simple array (1 dimension and zero based) with a constant size.
+ */
+static ILJitValue _ILJitSArrayNewWithConstantSize(ILJitFunction jitFunction,
+												  ILExecThread *thread,
+												  ILClass *arrayClass,
+												  ILUInt32 length)
+{
+	/* The array element type. */
+	ILType *elementType;
+	/* The size of one array element. */
+	ILUInt32 elementSize;
+	ILUInt64 totalSize;
+	/* Number of elements in the array. */
+	ILJitValue arrayLength;
+	/* Total amount of memory needed for the array. */
 	ILJitValue arraySize;
 	ILJitValue newArray;
 	ILClass *elementClass;
 	ILClassPrivate *classPrivate;
 	ILJitValue args[2];
 
-	if(jit_value_is_constant(length))
-	{
-		ILUInt64 totalSize = ((ILUInt64)elementSize) * ((ILUInt64)jit_value_get_nint_constant(length));
-	
-		if(totalSize > (ILUInt64)IL_MAX_INT32)
-		{
-			/* The array is too large. */
-			ILJitValue array = jit_value_create_nint_constant(jitCoder->jitFunction,
-															  _IL_JIT_TYPE_VPTR, 0);
-
-			_ILJitThrowSystem(jitCoder, _IL_JIT_OUT_OF_MEMORY);
-			return array;
-		}
-		arraySize = jit_value_create_nint_constant(jitCoder->jitFunction,
-												   _IL_JIT_TYPE_UINT32,
-												   (ILUInt32)totalSize);
-	}
-	else
-	{
-		ILJitValue temp;
-		jit_label_t label = jit_label_undefined;
-		ILJitValue maxSize = jit_value_create_long_constant(jitCoder->jitFunction,
-															_IL_JIT_TYPE_UINT64,
-															IL_MAX_INT32);
-	
-		arraySize = jit_value_create_long_constant(jitCoder->jitFunction,
-												   _IL_JIT_TYPE_UINT64,
-												   elementSize);
-		arraySize = jit_insn_mul(jitCoder->jitFunction, arraySize,
-								 _ILJitValueConvertImplicit(jitCoder->jitFunction,
-															length,
-															_IL_JIT_TYPE_UINT64));
-
-		/* Check if the total arraysize is > IL_MAX_INT32. */
-		temp = jit_insn_gt(jitCoder->jitFunction, arraySize, maxSize);
-		jit_insn_branch_if_not(jitCoder->jitFunction, temp, &label);
-		/* And throw an OutOfMemoryException then. */
-		_ILJitThrowSystem(jitCoder, _IL_JIT_OUT_OF_MEMORY);
-		jit_insn_label(jitCoder->jitFunction, &label);
-
-		/* Downconvert the array size to an UINT32. */
-		arraySize = _ILJitValueConvertImplicit(jitCoder->jitFunction, arraySize, _IL_JIT_TYPE_UINT32);
-	}
 	/* Make sure the synthetic array class is layouted. */
 	if(!(arrayClass->userData))
 	{
 		/* We have to layout the class first. */
 		if(!_LayoutClass(thread, arrayClass))
 		{
+			printf("Failed to layout class: %s\n", ILClass_Name(arrayClass));
 			return (ILJitValue)0;
 		}
 	}
 
-	/* Make sure that the length has the correct type. */
-	length = _ILJitValueConvertImplicit(jitCoder->jitFunction, length, _IL_JIT_TYPE_UINT32);
+	elementType = ILType_ElemType(ILClassGetSynType(arrayClass));
 
 	elementClass = ILClassFromType(ILProgramItem_Image(arrayClass),
 								   0, elementType, 0);
@@ -108,48 +179,258 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
 	{
 		if(!_LayoutClass(thread, elementClass))
 		{
+			printf("Failed to layout class: %s\n", ILClass_Name(elementClass));
 			return (ILJitValue)0;
 		}
 		classPrivate = (ILClassPrivate *)(elementClass->userData);
 	}
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
+
+	/* Get the size of one array element. */
+	elementSize = ILSizeOfType(thread, elementType);
+
+	totalSize = (((ILUInt64)elementSize) * ((ILUInt64)length)) + _IL_JIT_SARRAY_HEADERSIZE;
+	if(totalSize > (ILUInt64)IL_MAX_INT32)
 	{
-		ILMutexLock(globalTraceMutex);
-		fprintf(stdout, "New Array of type: %s\n", ILClass_Name(elementClass));
-		ILMutexUnlock(globalTraceMutex);
+		/* The array is too large. */
+		ILJitValue array = jit_value_create_nint_constant(jitFunction,
+														  _IL_JIT_TYPE_VPTR, 0);
+
+		_ILJitThrowSystem(jitFunction, _IL_JIT_OUT_OF_MEMORY);
+		return array;
 	}
-#endif
+	arraySize = jit_value_create_nint_constant(jitFunction,
+											   _IL_JIT_TYPE_UINT32,
+											   (ILUInt32)totalSize);
+
+	arrayLength = jit_value_create_nint_constant(jitFunction,
+												_IL_JIT_TYPE_UINT32,
+												length);
+
 	/* We call the alloc functions. */
 	/* They thow an out of memory exception so we don't need to care. */
-	args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
+	args[0] = jit_value_create_nint_constant(jitFunction,
 											 _IL_JIT_TYPE_VPTR,
 											 (jit_nint)arrayClass);
-	args[1] = jit_insn_add(jitCoder->jitFunction, arraySize, headerSize);
+	args[1] = arraySize;
 
-	if(classPrivate->managedInstance)
+	/* if(!(classPrivate->managedInstance)) */
+	if(ILType_IsPrimitive(elementType) &&
+	   elementType != ILType_TypedRef)
 	{
-		/* The element contains object references. */
-		newArray = jit_insn_call_native(jitCoder->jitFunction,
-										"_ILJitAlloc",
-										_ILJitAlloc,
-										_ILJitSignature_ILJitAlloc,
-			 							args, 2, 0);
-	}
-	else
-	{
-		newArray = jit_insn_call_native(jitCoder->jitFunction,
+		newArray = jit_insn_call_native(jitFunction,
 										"_ILJitAllocAtomic",
 										_ILJitAllocAtomic,
 										_ILJitSignature_ILJitAlloc,
 			 							args, 2, 0);
 	}
+	else
+	{
+		/* The element contains object references. */
+		newArray = jit_insn_call_native(jitFunction,
+										"_ILJitAlloc",
+										_ILJitAlloc,
+										_ILJitSignature_ILJitAlloc,
+			 							args, 2, 0);
+	}
 	/* Set the length in the array. */
-	jit_insn_store_relative(jitCoder->jitFunction, newArray, 
-							offsetof(System_Array, length), length);
+	jit_insn_store_relative(jitFunction,
+							newArray, 
+							offsetof(System_Array, length),
+							arrayLength);
 	return newArray;
 }
 
+/*
+ * Create a new simple array (1 dimension and zero based) 
+ */
+static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJitValue length)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+
+	if(jit_value_is_constant(length))
+	{
+		ILUInt32 numElements = jit_value_get_nint_constant(length);
+
+		return _ILJitSArrayNewWithConstantSize(jitCoder->jitFunction,
+											   thread,
+											   arrayClass,
+											   numElements);
+	}
+	else
+	{
+		ILJitValue headerSize = jit_value_create_nint_constant(jitCoder->jitFunction,
+															   _IL_JIT_TYPE_UINT32,
+															   _IL_JIT_SARRAY_HEADERSIZE);
+		/* The array element type. */
+		ILType *elementType;
+		/* The size of one array element. */
+		ILUInt32 elementSize;
+		/* Total amount of memory needed for the array. */
+		ILJitValue arraySize;
+		ILJitValue newArray;
+		ILClass *elementClass;
+		ILClassPrivate *classPrivate;
+		ILJitValue temp;
+		jit_label_t label = jit_label_undefined;
+		ILJitValue args[3];
+
+		/* Make sure the synthetic array class is layouted. */
+		if(!(arrayClass->userData))
+		{
+			/* We have to layout the class first. */
+			if(!_LayoutClass(thread, arrayClass))
+			{
+				printf("Failed to layout class: %s\n", ILClass_Name(arrayClass));
+				return (ILJitValue)0;
+			}
+		}
+
+		elementType = ILType_ElemType(ILClassGetSynType(arrayClass));
+
+		/* Get the size of one array element. */
+		elementSize = ILSizeOfType(thread, elementType);
+
+		elementClass = ILClassFromType(ILProgramItem_Image(arrayClass),
+									   0, elementType, 0);
+		elementClass = ILClassResolve(elementClass);
+		classPrivate = (ILClassPrivate *)(elementClass->userData);
+
+		if(!classPrivate)
+		{
+			if(!_LayoutClass(thread, elementClass))
+			{
+				printf("Failed to layout class: %s\n", ILClass_Name(elementClass));
+				return (ILJitValue)0;
+			}
+			classPrivate = (ILClassPrivate *)(elementClass->userData);
+		}
+
+	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+		if(jitCoder->flags & IL_CODER_FLAG_STATS)
+		{
+			ILMutexLock(globalTraceMutex);
+			fprintf(stdout, "New Array of type: %s\n", ILClass_Name(elementClass));
+			ILMutexUnlock(globalTraceMutex);
+		}
+	#endif
+
+	#if 0
+		ILJitValue maxSize = jit_value_create_long_constant(jitCoder->jitFunction,
+															_IL_JIT_TYPE_UINT64,
+															IL_MAX_INT32);
+	
+		arraySize = jit_value_create_long_constant(jitCoder->jitFunction,
+												   _IL_JIT_TYPE_UINT64,
+												   elementSize);
+		arraySize = jit_insn_mul(jitCoder->jitFunction,
+								 arraySize,
+								 _ILJitValueConvertImplicit(jitCoder->jitFunction,
+															length,
+															_IL_JIT_TYPE_UINT64));
+
+		/* Check if the total arraysize is > IL_MAX_INT32. */
+		temp = jit_insn_gt(jitCoder->jitFunction, arraySize, maxSize);
+		jit_insn_branch_if_not(jitCoder->jitFunction, temp, &label);
+		/* And throw an OutOfMemoryException then. */
+		_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_OUT_OF_MEMORY);
+		jit_insn_label(jitCoder->jitFunction, &label);
+
+		/* Downconvert the array size to an UINT32. */
+		arraySize = _ILJitValueConvertImplicit(jitCoder->jitFunction, arraySize, _IL_JIT_TYPE_UINT32);
+
+		/* Make sure that the length has the correct type. */
+		length = _ILJitValueConvertImplicit(jitCoder->jitFunction, length, _IL_JIT_TYPE_UINT32);
+
+		/* We call the alloc functions. */
+		/* They thow an out of memory exception so we don't need to care. */
+		args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
+												 _IL_JIT_TYPE_VPTR,
+												 (jit_nint)arrayClass);
+		args[1] = jit_insn_add(jitCoder->jitFunction, arraySize, headerSize);
+
+		/* if(!(classPrivate->managedInstance)) */
+		if(ILType_IsPrimitive(elementType) &&
+		   elementType != ILType_TypedRef)
+		{
+			newArray = jit_insn_call_native(jitCoder->jitFunction,
+											"_ILJitAllocAtomic",
+											_ILJitAllocAtomic,
+											_ILJitSignature_ILJitAlloc,
+				 							args, 2, 0);
+		}
+		else
+		{
+			/* The element contains object references. */
+			newArray = jit_insn_call_native(jitCoder->jitFunction,
+											"_ILJitAlloc",
+											_ILJitAlloc,
+											_ILJitSignature_ILJitAlloc,
+				 							args, 2, 0);
+		}
+		/* Set the length in the array. */
+		jit_insn_store_relative(jitCoder->jitFunction,
+								newArray, 
+								offsetof(System_Array, length), length);
+	#else
+		/* We call the alloc functions. */
+		/* They thow an out of memory exception so we don't need to care. */
+		args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
+												 _IL_JIT_TYPE_VPTR,
+												 (jit_nint)arrayClass);
+		args[1] = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+											 length,
+											 _IL_JIT_TYPE_UINT32);
+		args[2] = jit_value_create_nint_constant(jitCoder->jitFunction,
+												 _IL_JIT_TYPE_UINT32,
+												 elementSize);
+
+		/* if(!(classPrivate->managedInstance)) */
+		if(ILType_IsPrimitive(elementType) &&
+		   elementType != ILType_TypedRef)
+		{
+			newArray = jit_insn_call_native(jitCoder->jitFunction,
+											"_ILJitSArrayAllocAtomic",
+											_ILJitSArrayAllocAtomic,
+											_ILJitSignature_ILJitSArrayAlloc,
+				 							args, 3, 0);
+		}
+		else
+		{
+			/* The element contains object references. */
+			newArray = jit_insn_call_native(jitCoder->jitFunction,
+											"_ILJitSArrayAlloc",
+											_ILJitSArrayAlloc,
+											_ILJitSignature_ILJitSArrayAlloc,
+				 							args, 3, 0);
+		}
+	#endif
+		return newArray;
+	}
+}
+
+/*
+ * Create an Object array with the given size.
+ */
+static ILJitValue _ILJitSObjectArrayCreate(ILJitFunction jitFunction,
+										   ILExecThread *_thread,
+										   ILJitValue thread,
+										   ILUInt32 numElements)
+{
+	ILMethod *ctor;
+
+	/* Find the constructor for the array. */
+	ctor = ILExecThreadLookupMethod(_thread, "[oSystem.Object;", ".ctor",
+									"(Ti)V");
+	if(!ctor)
+	{
+		return 0;
+	}
+
+	return _ILJitSArrayNewWithConstantSize(jitFunction,
+										   _thread,
+										   ILMethod_Owner(ctor),
+										   numElements);
+}
 
 /*
  * Calculate the absolute Index of an element in the array.
@@ -215,7 +496,7 @@ static ILJitValue _ILJitMArrayCalcIndex(ILJITCoder *jitCoder,
 	jit_insn_branch(jitCoder->jitFunction, &okLabel);
 	jit_insn_label(jitCoder->jitFunction, &arrayOutOfBoundsLabel);
 	/* Throw a System.IndexOutOfRange exception. */
-	_ILJitThrowSystem(jitCoder, _IL_JIT_INDEX_OUT_OF_RANGE);
+	_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_INDEX_OUT_OF_RANGE);
 	jit_insn_label(jitCoder->jitFunction, &okLabel);
 
 	return absoluteIndex;
@@ -347,4 +628,370 @@ static ILJitValue _ILJitMArraySet(ILJITCoder *jitCoder,
 	/* We have no return value in this case. */
 	return 0;
 }
+
+/*
+ * Get the base pointer to the array data.
+ */
+static ILJitValue GetArrayBase(ILJITCoder *coder, ILJitValue array)
+{
+	return jit_insn_add_relative(coder->jitFunction, array, sizeof(System_Array));
+}
+
+/*
+ * Get the array length.
+ */
+static ILJitValue GetArrayLength(ILJITCoder *coder, ILJitValue array)
+{
+	ILJitValue len;
+
+	len = jit_insn_load_relative(coder->jitFunction, array, 0,
+								 _IL_JIT_TYPE_INT32);
+	return len;
+}
+
+static void ValidateArrayIndex(ILJITCoder *coder, ILJitValue length,
+												  ILJitValue index)
+{
+	jit_label_t label = jit_label_undefined;
+	ILJitValue temp;
+
+	/* Make both values unsigned. We can save one compare this way. */
+	AdjustSign(coder->jitFunction, &length, 1, 0);
+	AdjustSign(coder->jitFunction, &index, 1, 0);
+
+	temp = jit_insn_lt(coder->jitFunction, index, length);
+	jit_insn_branch_if(coder->jitFunction, temp, &label);
+	/* Throw a System.IndexOutOfRange exception. */
+	_ILJitThrowSystem(coder->jitFunction, _IL_JIT_INDEX_OUT_OF_RANGE);
+	jit_insn_label(coder->jitFunction, &label);
+}
+
+/*
+ * Handle the ldelem* instructions.
+ */
+static void LoadArrayElem(ILJITCoder *coder, ILJitType type)
+{
+	_ILJitStackItemNew(index);
+	_ILJitStackItemNew(array);
+	ILJitValue length;
+	ILJitValue value;
+	ILJitValue arrayBase;
+
+	_ILJitStackPop(coder, index);
+	_ILJitStackPop(coder, array);
+	_ILJitStackItemCheckNull(coder, array);
+	length = GetArrayLength(coder, _ILJitStackItemValue(array));
+	JITC_START_CHECK_ARRAY_INDEX(coder, length, _ILJitStackItemValue(index))
+	arrayBase = GetArrayBase(coder, _ILJitStackItemValue(array));
+	value = jit_insn_load_elem(coder->jitFunction,
+							   arrayBase,
+							   _ILJitStackItemValue(index),
+							   type);
+	_ILJitStackPushValue(coder, value);
+	JITC_END_CHECK_ARRAY_INDEX(coder)
+}
+
+/*
+ * Handle the stelem* instructions.
+ */
+static void StoreArrayElem(ILJITCoder *coder, ILJitType type)
+{
+	_ILJitStackItemNew(value);
+	_ILJitStackItemNew(index);
+	_ILJitStackItemNew(array);
+	ILJitValue length;
+	ILJitValue arrayBase;
+	ILJitValue temp;
+	ILJitType valueType;
+
+	_ILJitStackPop(coder, value);
+	_ILJitStackPop(coder, index);
+	_ILJitStackPop(coder, array);
+	valueType = jit_value_get_type(_ILJitStackItemValue(value));
+	_ILJitStackItemCheckNull(coder, array);
+	length = GetArrayLength(coder, _ILJitStackItemValue(array));
+	ValidateArrayIndex(coder, length, _ILJitStackItemValue(index));
+	arrayBase = GetArrayBase(coder, _ILJitStackItemValue(array));
+
+	/* Convert the value to the array type when needed. */
+	if(valueType != type)
+	{
+		int valueIsStruct = (jit_type_is_struct(valueType) || jit_type_is_union(valueType));
+		int destIsStruct = (jit_type_is_struct(type) || jit_type_is_union(type));
+
+		if(valueIsStruct || destIsStruct)
+		{
+			int valueSize = jit_type_get_size(valueType);
+			int destSize = jit_type_get_size(type);
+
+			if(destSize == valueSize)
+			{
+				/* The sizes match so we can safely use store element. */
+				temp = _ILJitStackItemValue(value);
+			}
+			else
+			{
+				/* We assume that destSize is smaller than valueSize because */
+				/* the values have to be assignment compatible. */
+				/* But we have to use memcpy instead. */
+				_ILJitStackItemNew(dest);
+				ILJitValue destPtr = jit_insn_load_elem_address(coder->jitFunction,
+																arrayBase,
+																_ILJitStackItemValue(index),
+																type);
+				ILJitValue srcPtr = jit_insn_address_of(coder->jitFunction,
+														_ILJitStackItemValue(value));
+				ILJitValue size = jit_value_create_nint_constant(coder->jitFunction,
+																 _IL_JIT_TYPE_NINT,
+																 (jit_nint)destSize);
+
+				_ILJitStackItemInitWithNotNullValue(dest, destPtr);
+				_ILJitStackItemMemCpy(coder, dest, srcPtr, size);
+				return;
+			}
+		}
+		else
+		{
+			temp = _ILJitValueConvertImplicit(coder->jitFunction,
+											  _ILJitStackItemValue(value),
+											  type);
+		}
+	}
+	else
+	{
+		temp = _ILJitStackItemValue(value);
+	}
+	jit_insn_store_elem(coder->jitFunction,
+						arrayBase,
+						_ILJitStackItemValue(index),
+						temp);
+}
+
+#endif	/* IL_JITC_FUNCTIONS */
+
+#ifdef IL_JITC_CODE
+
+/*
+ * Handle an array access opcode.
+ */
+static void JITCoder_ArrayAccess(ILCoder *coder, int opcode,
+								 ILEngineType indexType, ILType *elemType)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	_ILJitStackItemNew(array);
+	_ILJitStackItemNew(index);
+	ILJitValue len;
+	ILJitValue value;
+	ILJitValue arrayBase;
+
+	switch(opcode)
+	{
+		case IL_OP_LDELEMA:
+		{
+			_ILJitStackPop(jitCoder, index);
+			_ILJitStackPop(jitCoder, array);
+
+			_ILJitStackItemCheckNull(jitCoder, array);
+			len = GetArrayLength(jitCoder, _ILJitStackItemValue(array));
+			ValidateArrayIndex(jitCoder, len, _ILJitStackItemValue(index));
+			arrayBase = GetArrayBase(jitCoder, _ILJitStackItemValue(array));
+
+			ILJitType type = _ILJitGetReturnType(elemType, jitCoder->process);
+
+			value = jit_insn_load_elem_address(jitCoder->jitFunction,
+											   arrayBase,
+											   _ILJitStackItemValue(index),
+											   type);
+			_ILJitStackPushNotNullValue(jitCoder, value);
+		}
+		break;
+
+		case IL_OP_LDELEM_I1:
+		{
+			/* Load a signed byte from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_SBYTE);
+		}
+		break;
+
+		case IL_OP_LDELEM_I2:
+		{
+			/* Load a signed short from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_INT16);
+		}
+		break;
+
+		case IL_OP_LDELEM_I4:
+	#ifdef IL_NATIVE_INT32
+		case IL_OP_LDELEM_I:
+	#endif
+		{
+			/* Load an integer from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_INT32);
+		}
+		break;
+
+		case IL_OP_LDELEM_I8:
+	#ifdef IL_NATIVE_INT64
+		case IL_OP_LDELEM_I:
+	#endif
+		{
+			/* Load a long from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_INT64);
+		}
+		break;
+
+		case IL_OP_LDELEM_U1:
+		{
+			/* Load an unsigned byte from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_BYTE);
+		}
+		break;
+
+		case IL_OP_LDELEM_U2:
+		{
+			/* Load an unsigned short from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_UINT16);
+		}
+		break;
+
+		case IL_OP_LDELEM_U4:
+		{
+			/* Load an unsigned integer from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_UINT32);
+		}
+		break;
+
+		case IL_OP_LDELEM_R4:
+		{
+			/* Load a 32-bit float from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_SINGLE);
+		}
+		break;
+
+		case IL_OP_LDELEM_R8:
+		{
+			/* Load a 64-bit float from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_DOUBLE);
+		}
+		break;
+
+		case IL_OP_LDELEM_REF:
+		{
+			/* Load a pointer from an array */
+			LoadArrayElem(jitCoder, _IL_JIT_TYPE_VPTR);
+		}
+		break;
+
+		case IL_OP_LDELEM:
+		{
+			ILJitType type = _ILJitGetReturnType(elemType, jitCoder->process);
+			LoadArrayElem(jitCoder, type);
+		}
+		break;
+
+		case IL_OP_STELEM_I1:
+		{
+			/* Store a byte value to an array */
+			StoreArrayElem(jitCoder, _IL_JIT_TYPE_SBYTE);
+		}
+		break;
+
+		case IL_OP_STELEM_I2:
+		{
+			/* Store a short value to an array */
+			StoreArrayElem(jitCoder, _IL_JIT_TYPE_INT16);
+		}
+		break;
+
+		case IL_OP_STELEM_I4:
+	#ifdef IL_NATIVE_INT32
+		case IL_OP_STELEM_I:
+	#endif
+		{
+			/* Store an integer value to an array */
+			StoreArrayElem(jitCoder, _IL_JIT_TYPE_INT32);
+		}
+		break;
+
+		case IL_OP_STELEM_I8:
+	#ifdef IL_NATIVE_INT64
+		case IL_OP_STELEM_I:
+	#endif
+		{
+			/* Store a long value to an array */
+			StoreArrayElem(jitCoder, _IL_JIT_TYPE_INT64);
+		}
+		break;
+
+		case IL_OP_STELEM_R4:
+		{
+			/* Store a 32-bit floating point value to an array */
+			StoreArrayElem(jitCoder, _IL_JIT_TYPE_SINGLE);
+		}
+		break;
+
+		case IL_OP_STELEM_R8:
+		{
+			/* Store a 64-bit floating point value to an array */
+			StoreArrayElem(jitCoder, _IL_JIT_TYPE_DOUBLE);
+		}
+		break;
+
+		case IL_OP_STELEM_REF:
+		{
+			/* Store a pointer to an array */
+			/* TODO: Check if the types are assignmentcompatible. */
+			StoreArrayElem(jitCoder, _IL_JIT_TYPE_VPTR);
+		}
+		break;
+
+		case IL_OP_STELEM:
+		{
+			/* Store a pointer to an array */
+			/* TODO: Check if the types are assignmentcompatible. */
+			ILJitType type = _ILJitGetReturnType(elemType, jitCoder->process);
+			StoreArrayElem(jitCoder, type);
+		}
+		break;
+	}
+}
+
+/*
+ * Get the length of an array.
+ */
+static void JITCoder_ArrayLength(ILCoder *coder)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	_ILJitStackItemNew(array);
+	ILJitValue length;
+
+	/* Pop the array off the evaluation stack. */
+	_ILJitStackPop(jitCoder, array);
+
+	_ILJitStackItemCheckNull(jitCoder, array);
+	length = GetArrayLength(jitCoder, _ILJitStackItemValue(array));
+	_ILJitStackPushValue(jitCoder, length);
+}
+
+/*
+ * Construct a new array, given a type and length value.
+ */
+static void JITCoder_NewArray(ILCoder *coder, ILType *arrayType,
+					 		  ILClass *arrayClass, ILEngineType lengthType)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	_ILJitStackItemNew(length);
+	ILJitValue returnValue;
+
+	/* Pop the length off the evaluation stack. */
+	_ILJitStackPop(jitCoder, length);
+
+	returnValue = _ILJitSArrayNew(jitCoder,
+								  arrayClass,
+								  _ILJitStackItemValue(length));
+
+	_ILJitStackPushNotNullValue(jitCoder, returnValue);
+}
+
+#endif /* IL_JITC_CODE */
 

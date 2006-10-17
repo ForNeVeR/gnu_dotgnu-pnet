@@ -183,7 +183,7 @@ static ILJitValue _ILJitGetValFromRef(ILJITCoder *jitCoder, ILJitValue refValue,
 	temp = jit_insn_eq(jitCoder->jitFunction, type, info);
 	jit_insn_branch_if(jitCoder->jitFunction, temp, &label1);
 	/* Throw an InvalidCastException */
-	_ILJitThrowSystem(jitCoder, _IL_JIT_INVALID_CAST);
+	_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_INVALID_CAST);
 	jit_insn_label(jitCoder->jitFunction, &label1);
 	valuePtr = jit_insn_load_relative(jitCoder->jitFunction, ptr,
 									  offsetof(ILTypedRef, value),
@@ -302,7 +302,7 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 		_ILJitStackPush(jitCoder, object);
 		jit_insn_branch_if(jitCoder->jitFunction, returnValue, &label);
 		/* Throw an InvalidCastException. */
-		_ILJitThrowSystem(jitCoder, _IL_JIT_INVALID_CAST);
+		_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_INVALID_CAST);
 
 	}
 	else
@@ -1099,6 +1099,29 @@ static void JITCoder_SizeOf(ILCoder *coder, ILType *type)
 
 static void JITCoder_ArgList(ILCoder *coder)
 {
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitType signature = jit_function_get_signature(jitCoder->jitFunction);
+	ILInt32 numArgs = jit_type_num_params(signature);
+	_ILJitStackItemNew(stackItem);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+				"ArgList: Arg = %i\n",
+				numArgs - 1);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+
+	/* We have to push the last argument for this function on the stack. */
+#ifdef IL_JIT_THREAD_IN_SIGNATURE
+	_ILJitStackItemLoadArg(jitCoder, stackItem, numArgs - 2);
+#else
+	_ILJitStackItemLoadArg(jitCoder, stackItem, numArgs - 1);
+#endif
+	_ILJitStackPush(jitCoder, stackItem);
 }
 
 #endif	/* IL_JITC_CODE */

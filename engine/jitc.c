@@ -127,7 +127,7 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size);
 
 /*
  * Definition of signatures of internal functions used by jitted code.
- * They have to be kept in sync wirh the corresponding engine funcions.
+ * They have to be kept in sync with the corresponding engine funcions.
  */
 
 /*
@@ -139,6 +139,13 @@ static ILJitType _ILJitSignature_ILExecThreadCurrent = 0;
  * ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
  */
 static ILJitType _ILJitSignature_ILJitAlloc = 0;
+
+/*
+ * System_Array *_ILJitSArrayAlloc(ILClass *arrayClass,
+ *									   ILUInt32 numElements,
+ *									   ILUInt32 elementSize)
+ */
+static ILJitType _ILJitSignature_ILJitSArrayAlloc = 0;
 
 /*
  * System_Array *_ILJitGetExceptionStackTrace(ILExecThread *thread)
@@ -299,6 +306,11 @@ typedef struct _tagILJITCoder ILJITCoder;
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
+#include "jitc_except.c"
+#include "jitc_alloc.c"
+#include "jitc_array.c"
+#include "jitc_call.c"
+#include "jitc_delegate.c"
 #undef	IL_JITC_DECLARATIONS
 
 /*
@@ -440,22 +452,6 @@ static ILJitValue _ILJitCoderGetThread(ILJITCoder *jitCoder)
 	return jitCoder->thread;
 }
 #endif
-
-/*
- * Declaration of the engine internal exceptions.
- */
-#define _IL_JIT_OK						0
-#define _IL_JIT_OUT_OF_MEMORY			1
-#define _IL_JIT_INVALID_CAST			2
-#define _IL_JIT_INDEX_OUT_OF_RANGE		3
-#define _IL_JIT_MISSING_METHOD			4
-#define _IL_JIT_DLL_NOT_FOUND			5
-#define _IL_JIT_ENTRYPOINT_NOT_FOUND	6
-
-/*
- * Emit the code to throw a system exception.
- */
-static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception);
 
 /*
  * Initialize a ILJitTypes base structure 
@@ -2156,6 +2152,16 @@ int ILJitInit()
 	}
 
 	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_UINT32;
+	args[2] = _IL_JIT_TYPE_UINT32;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILJitSArrayAlloc = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 3, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_VPTR;
 	args[2] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_INT32;
@@ -2907,7 +2913,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 		jitParams[0] = thread;
 
 		/* Check if the return type is a value type. */
-		if(ILType_IsValueType(type))
+		if(ILType_IsValueType(type) && (returnType != _ILJitTypedRef))
 		{
 			++totalParams;
 			jitParamTypes[1] = _IL_JIT_TYPE_VPTR;
@@ -2926,7 +2932,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 		{
 			paramType = jit_type_get_param(signature, current);
 
-			if(jit_type_is_struct(paramType))
+			if(jit_type_is_struct(paramType) && (paramType != _ILJitTypedRef))
 			{
 				jitParamTypes[param] = _IL_JIT_TYPE_VPTR;
 			#ifdef IL_JIT_THREAD_IN_SIGNATURE
@@ -3105,9 +3111,6 @@ static int _ILJitMethodIsAbstract(ILMethod *method)
 }
 
 #include "jitc_profile.c"
-#include "jitc_alloc.c"
-#include "jitc_array.c"
-#include "jitc_delegate.c"
 #include "jitc_pinvoke.c"
 
 /*
@@ -3869,6 +3872,10 @@ static ILJitType _ILJitTypeSpecials(ILClassName *className)
 		{
 			return _IL_JIT_TYPE_NINT;
 		}
+		if(!strcmp(className->name, "TypedRef"))
+		{
+			return _ILJitTypedRef;
+		}
 	}
 	return 0;
 }
@@ -4136,6 +4143,11 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
+#include "jitc_alloc.c"
+#include "jitc_array.c"
+#include "jitc_except.c"
+#include "jitc_call.c"
+#include "jitc_delegate.c"
 #undef	IL_JITC_FUNCTIONS
 
 /*
@@ -4149,6 +4161,7 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 #include "jitc_var.c"
 #include "jitc_stack.c"
 #include "jitc_ptr.c"
+#include "jitc_array.c"
 #include "jitc_branch.c"
 #include "jitc_except.c"
 #include "jitc_conv.c"

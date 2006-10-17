@@ -1,3 +1,38 @@
+2006-10-17  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add signature for allocating simple arrays. Return and
+	pass TypeRef values by reference in internal calls. Do some more
+	reorganization of the source files.
+
+	* engine/jitc_alloc.c: Move the prototypes for memory allocation from
+	jitc.c to this file.
+
+	* engine/jitc_array.c: Move the coder functions for array handling from
+	jitc_ptr.c to this file. Move the function for creation of an Object *
+	array from jitc_delegate.c to this file. Optimize creation of simple
+	arrays. Adjust the calls to _ILJitThrowSystem to the new signature.
+
+	* engine/jitc_call.c: Adjust the calls to _ILJitThrowSystem to the new
+	signature. Fix the function for packing varargs. 
+
+	* engine/jitc_delegate.c: Move the function to create an object array to
+	jitc_array.c and adjust the name change in the calls. 
+
+	* engine/jitc_except.c: Move the declaration of the internal exceptions
+	from jitc.c to this file. Change _ILJitThrowInternal so that the first arg
+	is a ILJitFunction instead of the ILJITCoder *.
+
+	* engine/jitc_obj.c: Adjust the calls to _ILJitThrowSystem to the new
+	signature. Implement the arglist opcode.
+
+	* engine/jitc_pinvoke.c: Adjust the calls to _ILJitThrowSystem to the new
+	signature.
+
+	* engine/jitc_ptr.c: Move the coder functions for arrays to jitc_array.c.
+
+	* engine/lib_misc.c: The System.RuntimeArgumentHandle is passed by value
+	if the jit coder is used.
+ 
 2006-10-15  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c, engine/jitc_call.c, engine/verify_call.c,

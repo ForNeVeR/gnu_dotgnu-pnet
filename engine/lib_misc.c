@@ -207,7 +207,11 @@ void _IL_ArgIterator_ctor_RuntimeArgumentHandle(ILExecThread *_thread,
 												void *_this, void *argList)
 {
 	ArgIterator *iter = (ArgIterator *)_this;
+#ifdef IL_USE_JIT
+	iter->un.argIter.args = (System_Array *)((ILObject *)argList);
+#else
 	iter->un.argIter.args = (System_Array *)(*((ILObject **)argList));
+#endif
 	iter->un.argIter.posn = 0;
 }
 

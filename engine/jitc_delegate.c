@@ -18,52 +18,31 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef	IL_JITC_DECLARATIONS
+
 /*
- * Create an Object array with the given size.
+ * Build the Invoke method for the delegate.
  */
-static ILJitValue _ILJitObjectArrayCreate(ILJitFunction jitFunction,
-										  ILExecThread *_thread,
-										  ILJitValue thread,
-										  ILUInt32 numElements)
-{
-	ILMethod *ctor;
-	ILJitFunction jitCtor;
-	ILJitValue array;
-	ILJitValue arrayLength = jit_value_create_nint_constant(jitFunction,
-															_IL_JIT_TYPE_UINT32,
-															(jit_nint)numElements);
-	ILJitValue args[2];
+static int _ILJitCompileDelegateInvoke(ILJitFunction func);
 
-	/* Find the constructor for the array. */
-	ctor = ILExecThreadLookupMethod(_thread, "[oSystem.Object;", ".ctor",
-									"(Ti)V");
-	if(!ctor)
-	{
-		return 0;
-	}
+/*
+ * Build the BeginInvoke method for a delegate.
+ */
+static int _ILJitCompileDelegateBeginInvoke(ILJitFunction func);
 
-	jitCtor = ILJitFunctionFromILMethod(ctor);
-	if(!jitCtor)
-	{
-		/* We have to layout the class first. */
-		if(!_LayoutClass(_thread, ILMethod_Owner(ctor)))
-		{
-			return 0;
-		}
-		jitCtor = ILJitFunctionFromILMethod(ctor);
-	}
-#ifdef IL_JIT_THREAD_IN_SIGNATURE
-	args[0] = thread;
-	args[1] = arrayLength;
-	array = jit_insn_call(jitFunction, 0, jitCtor,
-						  0, args, 2, 0);
-#else
-	args[0] = arrayLength;
-	array = jit_insn_call(jitFunction, 0, jitCtor,
-						  0, args, 1, 0);
-#endif
-	return array;
-}
+/*
+ * Build the EndInvoke method for a delegate.
+ */
+static int _ILJitCompileDelegateEndInvoke(ILJitFunction func);
+
+/*
+ * Build the Invoke method for the multicast delegate.
+ */
+static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func);
+
+#endif	/* IL_JITC_DECLARATIONS */
+
+#ifdef	IL_JITC_FUNCTIONS
 
 /*
  * Pack the delegate invoke arguments into an "Object[]" array and return the
@@ -90,7 +69,7 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 	ILJitValue ptr;
 
 	/* Allocate an array to hold all of the arguments */
-	array = _ILJitObjectArrayCreate(jitFunction, _thread, thread, numArgs);
+	array = _ILJitSObjectArrayCreate(jitFunction, _thread, thread, numArgs);
 	if(!array)
 	{
 		return 0;
@@ -721,7 +700,7 @@ static int _ILJitCompileDelegateEndInvoke(ILJitFunction func)
 	}
 
 	/* Allocate an array to hold the out arguments */
-	array = _ILJitObjectArrayCreate(func, _thread, thread, numOutParams);
+	array = _ILJitSObjectArrayCreate(func, _thread, thread, numOutParams);
 	if(!array)
 	{
 		return JIT_RESULT_COMPILE_ERROR;
@@ -879,4 +858,6 @@ static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func)
 #endif
 	return JIT_RESULT_OK;
 }
+
+#endif	/* IL_JITC_FUNCTIONS */
 

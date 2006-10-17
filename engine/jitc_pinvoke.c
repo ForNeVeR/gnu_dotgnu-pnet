@@ -117,11 +117,11 @@ static int _ILJitCompilePinvoke(jit_function_t func)
 	{
 		if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_DLLNOTFOUND)
 		{
-			_ILJitThrowSystem(jitCoder, _IL_JIT_DLL_NOT_FOUND);
+			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_DLL_NOT_FOUND);
 		}
 		else if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND)
 		{
-			_ILJitThrowSystem(jitCoder, _IL_JIT_ENTRYPOINT_NOT_FOUND);
+			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_ENTRYPOINT_NOT_FOUND);
 		}
 		return JIT_RESULT_OK;
 	}
@@ -443,11 +443,11 @@ static ILJitValue _ILJitInlinePinvoke(ILJITCoder *jitCoder, ILMethod *method, IL
 	{
 		if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_DLLNOTFOUND)
 		{
-			_ILJitThrowSystem(jitCoder, _IL_JIT_DLL_NOT_FOUND);
+			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_DLL_NOT_FOUND);
 		}
 		else if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND)
 		{
-			_ILJitThrowSystem(jitCoder, _IL_JIT_ENTRYPOINT_NOT_FOUND);
+			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_ENTRYPOINT_NOT_FOUND);
 		}
 		return 0;
 	}

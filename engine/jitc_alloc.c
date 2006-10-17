@@ -18,6 +18,27 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef	IL_JITC_DECLARATIONS
+
+/*
+ * Generate the code to allocate the memory for an object with the given size.
+ * Returns the ILJitValue with the pointer to the new object.
+ */
+static ILJitValue _ILJitAllocGen(ILJitFunction jitFunction,
+								 ILClass *classInfo,
+								 ILUInt32 size);
+
+/*
+ * Generate the code to allocate the memory for an object.
+ * Returns the ILJitValue with the pointer to the new object.
+ */
+static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction,
+									   ILClass *classInfo);
+
+#endif	/* IL_JITC_DECLARATIONS */
+
+#ifdef	IL_JITC_FUNCTIONS
+
 /*
  * Allocate memory for an object that contains object references.
  */
@@ -105,7 +126,8 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
  * Generate the code to allocate the memory for an object with the given size.
  * Returns the ILJitValue with the pointer to the new object.
  */
-static ILJitValue _ILJitAllocGen(ILJitFunction jitFunction, ILClass *classInfo,
+static ILJitValue _ILJitAllocGen(ILJitFunction jitFunction,
+								 ILClass *classInfo,
 								 ILUInt32 size)
 {
 	ILJitValue newObj;
@@ -149,7 +171,8 @@ static ILJitValue _ILJitAllocGen(ILJitFunction jitFunction, ILClass *classInfo,
  * Generate the code to allocate the memory for an object.
  * Returns the ILJitValue with the pointer to the new object.
  */
-static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction, ILClass *classInfo)
+static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction,
+									   ILClass *classInfo)
 {
 	/* Make sure the class has been layouted. */
 	if(!(classInfo->userData) || 
@@ -163,4 +186,6 @@ static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction, ILClass *class
 	return _ILJitAllocGen(jitFunction, classInfo,
 						  ((ILClassPrivate *)(classInfo->userData))->size);
 }
+
+#endif	/* IL_JITC_FUNCTIONS */
 

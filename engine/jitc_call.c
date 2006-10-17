@@ -18,7 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef IL_JITC_CODE
+#ifdef	IL_JITC_DECLARATIONS
+
+#endif	/* IL_JITC_DECLARATIONS */
+
+#ifdef	IL_JITC_FUNCTIONS
 
 /*
  * Get the call signature from the methodInfo or the ILCoderMethoInfo.
@@ -131,7 +135,7 @@ static ILJitValue _ILJitGetInterfaceFunction(ILJITCoder *jitCoder,
 									   args, 3, 0);
 
 	jit_insn_branch_if(jitCoder->jitFunction, jitFunction, &label);
-	_ILJitThrowSystem(jitCoder, _IL_JIT_MISSING_METHOD);
+	_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_MISSING_METHOD);
 	jit_insn_label(jitCoder->jitFunction, &label);
 
 	return jitFunction;
@@ -163,7 +167,7 @@ static ILJitValue _ILJitGetVirtualFunction(ILJITCoder *jitCoder,
 							  vtable, vtableIndex, _IL_JIT_TYPE_VPTR);
 
 	jit_insn_branch_if(jitCoder->jitFunction, jitFunction, &label);
-	_ILJitThrowSystem(jitCoder, _IL_JIT_MISSING_METHOD);
+	_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_MISSING_METHOD);
 	jit_insn_label(jitCoder->jitFunction, &label);
 
 	return jitFunction;
@@ -183,56 +187,36 @@ static void _ILJitNewObj(ILJITCoder *coder, ILClass *info, ILJitValue *newArg)
  * This is not included in VarArgs as this is needed by non-vararg operations 
  * like BeginInvoke.
  */
-void _ILJitPackVarArgs(ILJITCoder *jitCoder,
-							ILUInt32 firstParam, ILUInt32 numArgs,
-							ILType *callSiteSig)
+ILInt32 _ILJitPackVarArgs(ILJITCoder *jitCoder,
+						  ILUInt32 firstParam,
+						  ILUInt32 numArgs,
+						  ILType *callSiteSig)
 {
 	ILExecThread *_thread = ILExecThreadCurrent();
 	ILUInt32 param;
 	ILType *paramType;
 	ILType *enumType;
 	ILClass *info;
-	ILMethod *ctor;
 	ILUInt32 typeSize;
-	ILJitFunction jitCtor;
 	ILJitValue thread = _ILJitCoderGetThread(jitCoder);
-	ILJitValue arrayLength = jit_value_create_nint_constant(jitCoder->jitFunction,
-															_IL_JIT_TYPE_UINT32,
-															(jit_nint)numArgs);
 	ILJitValue array;
-	ILJitValue arrayBase;
+	ILInt32 arrayBase;
 	ILJitValue boxObject;
 	ILJitValue boxValue;
 	ILJitValue boxObjectSize;
 	ILJitValue ptr;
-	jit_label_t labelException = jit_label_undefined;
-	jit_label_t label = jit_label_undefined;
 	ILJitStackItem *stackItems;
-	ILJitValue args[3];
 
 
 	/* Allocate an array to hold all of the arguments */
-	/* Find the constructor for the array. */
-	ctor = ILExecThreadLookupMethod(_thread, "[oSystem.Object;", ".ctor",
-									"(Ti)V");
-	jitCtor = ILJitFunctionFromILMethod(ctor);
-	if(!jitCtor)
+	array = _ILJitSObjectArrayCreate(jitCoder->jitFunction, _thread, thread, numArgs);
+	if(!array)
 	{
-		/* We have to layout the class first. */
-		if(!_LayoutClass(_thread, ILMethod_Owner(ctor)))
-		{
-			return;
-		}
-		jitCtor = ILJitFunctionFromILMethod(ctor);
+		return 0;
 	}
-	args[0] = thread;
-	args[1] = arrayLength;
-	array = jit_insn_call(jitCoder->jitFunction, 0, jitCtor,
-						  0, args, 2, 0);
-	jit_insn_branch_if_not(jitCoder->jitFunction, array, &labelException);
-	arrayBase = jit_insn_add_relative(jitCoder->jitFunction,
-									  array,
-									  sizeof(void *));
+
+	arrayBase = _IL_JIT_SARRAY_HEADERSIZE;
+
 	/* Adjust the stack just to the first vararg. */
 	stackItems = _ILJitStackItemGetAndPop(jitCoder, numArgs);
 
@@ -249,121 +233,20 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			paramType = ILType_Ref(paramType);
 
 			enumType = ILTypeGetEnumType(paramType);
+
 			if(ILType_IsPrimitive(enumType))
 			{
-				/* Box a primitive value after aligning it properly */
-				switch(ILType_ToElement(enumType))
+				ILJitType jitType = _ILJitGetReturnType(enumType,
+														jitCoder->process);
+
+				if(!jitType)
 				{
-					case IL_META_ELEMTYPE_I1:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_SBYTE);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U1:
-					case IL_META_ELEMTYPE_BOOLEAN:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_BYTE);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_I2:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_INT16);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U2:
-					case IL_META_ELEMTYPE_CHAR:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_UINT16);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_I4:
-#ifdef IL_NATIVE_INT32
-					case IL_META_ELEMTYPE_I:
-#endif
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_INT32);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U4:
-#ifdef IL_NATIVE_INT32
-					case IL_META_ELEMTYPE_U:
-#endif
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_UINT32);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_I8:
-#ifdef IL_NATIVE_INT64
-					case IL_META_ELEMTYPE_I:
-#endif
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_INT64);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U8:
-#ifdef IL_NATIVE_INT64
-					case IL_META_ELEMTYPE_U:
-#endif
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_UINT64);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_R4:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_SINGLE);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_R8:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_DOUBLE);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_R:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_NFLOAT);
-					}
-					break;
-
-					default:
-					{
-						boxValue = jit_insn_load_relative(jitCoder->jitFunction,
-														  _ILJitStackItemValue(stackItems[param]),
-														  0, _IL_JIT_TYPE_VPTR);
-					}
-					break;
+					return 0;
 				}
+
+				boxValue = jit_insn_load_relative(jitCoder->jitFunction,
+												  _ILJitStackItemValue(stackItems[param]),
+												  0, jitType);
 			}
 			else if(ILType_IsValueType(paramType))
 			{
@@ -375,7 +258,9 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 				boxValue = jit_insn_load_relative(jitCoder->jitFunction,
 												  _ILJitStackItemValue(stackItems[param]),
 												  0, _IL_JIT_TYPE_VPTR);
-				jit_insn_store_relative(jitCoder->jitFunction, arrayBase, 0,
+				jit_insn_store_relative(jitCoder->jitFunction,
+										array,
+										arrayBase,
 										boxValue);
 				boxValue = 0;
 			}
@@ -385,128 +270,28 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 				it up within a "System.IntPtr" object */
 				boxValue = jit_insn_load_relative(jitCoder->jitFunction,
 												  _ILJitStackItemValue(stackItems[param]),
-												  0, _IL_JIT_TYPE_VPTR);
+												  0,
+												  _IL_JIT_TYPE_VPTR);
 				paramType = ILType_Int;
 			}
 		}
 		else
 		{
 			enumType = ILTypeGetEnumType(paramType);
+
 			if(ILType_IsPrimitive(enumType))
 			{
-				int x;
+				ILJitType jitType = _ILJitGetReturnType(enumType,
+														jitCoder->process);
 
-				x = ILType_ToElement(enumType);
-				/* Box a primitive value after aligning it properly */
-				switch(ILType_ToElement(paramType))
+				if(!jitType)
 				{
-					case IL_META_ELEMTYPE_I1:
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_SBYTE, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U1:
-					case IL_META_ELEMTYPE_BOOLEAN:
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_BYTE, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_I2:
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_INT16, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U2:
-					case IL_META_ELEMTYPE_CHAR:
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_UINT16, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_I4:
-#ifdef IL_NATIVE_INT32
-					case IL_META_ELEMTYPE_I:
-#endif
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_INT32, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U4:
-#ifdef IL_NATIVE_INT32
-					case IL_META_ELEMTYPE_U:
-#endif
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_UINT32, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_I8:
-#ifdef IL_NATIVE_INT64
-					case IL_META_ELEMTYPE_I:
-#endif
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_INT64, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_U8:
-#ifdef IL_NATIVE_INT64
-					case IL_META_ELEMTYPE_U:
-#endif
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_UINT64, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_R4:
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_SINGLE, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_R8:
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_DOUBLE, 0);
-					}
-					break;
-
-					case IL_META_ELEMTYPE_R:
-					{
-						boxValue = jit_insn_convert(jitCoder->jitFunction, 
-													_ILJitStackItemValue(stackItems[param]),
-													_IL_JIT_TYPE_NFLOAT, 0);
-					}
-
-					default:
-					{
-						boxValue = _ILJitStackItemValue(stackItems[param]);
-					}
-					break;
+					return 0;
 				}
+
+				boxValue = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+													  _ILJitStackItemValue(stackItems[param]),
+													  jitType);
 			}
 			else if(ILType_IsValueType(paramType))
 			{
@@ -516,16 +301,18 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			else if(ILTypeIsReference(paramType))
 			{
 				/* Object reference type: pass it directly */
-				jit_insn_store_relative(jitCoder->jitFunction, arrayBase, 0,
+				jit_insn_store_relative(jitCoder->jitFunction,
+										array,
+										arrayBase,
 										_ILJitStackItemValue(stackItems[param]));
 			}
 			else
 			{
 				/* Assume that everything else is a pointer, and wrap
 				it up within a "System.IntPtr" object */
-				boxValue = jit_insn_convert(jitCoder->jitFunction, 
-											_ILJitStackItemValue(stackItems[param]),
-											_IL_JIT_TYPE_VPTR, 0);
+				boxValue = _ILJitValueConvertImplicit(jitCoder->jitFunction, 
+													  _ILJitStackItemValue(stackItems[param]),
+													  _IL_JIT_TYPE_VPTR);
 				paramType = ILType_Int;
 			}
 		}
@@ -533,39 +320,47 @@ void _ILJitPackVarArgs(ILJITCoder *jitCoder,
 		{
 			/* We have to box the argument. */
 			info = ILClassFromType
-							(ILContextNextImage(_thread->process->context, 0),
+							(ILContextNextImage(jitCoder->process->context, 0),
 			 				0, paramType, 0);
 			info = ILClassResolve(info);
 			typeSize = ILSizeOfType(_thread, paramType);
 			boxObjectSize = jit_value_create_nint_constant(jitCoder->jitFunction,
-												_IL_JIT_TYPE_UINT32, typeSize);
+														   _IL_JIT_TYPE_UINT32,
+														   typeSize);
 
 			boxObject = _ILJitAllocGen(jitCoder->jitFunction, info, typeSize);
 			if(boxValue)
 			{
-				jit_insn_store_relative(jitCoder->jitFunction, boxObject, 0,
+				jit_insn_store_relative(jitCoder->jitFunction,
+										boxObject,
+										0,
 										boxValue);
 			}
 			else
 			{
-				jit_insn_memcpy(jitCoder->jitFunction, boxObject, ptr, boxObjectSize);
+				jit_insn_memcpy(jitCoder->jitFunction,
+								boxObject,
+								ptr,
+								boxObjectSize);
 			}
-			jit_insn_store_relative(jitCoder->jitFunction, arrayBase, 0,
+			jit_insn_store_relative(jitCoder->jitFunction,
+									array,
+									arrayBase,
 									boxObject);
 		}
-		arrayBase = jit_insn_add_relative(jitCoder->jitFunction,
-										  arrayBase,
-										  sizeof(void *));
+		/* Advance to the next slot in the array. */
+		arrayBase += sizeof(ILObject *);
 	}
-
-	jit_insn_branch(jitCoder->jitFunction, &label);
-	jit_insn_label(jitCoder->jitFunction, &labelException);
-	_ILJitThrowCurrentException(jitCoder);
-	jit_insn_label(jitCoder->jitFunction, &label);
 
 	/* push the array on the stack */
 	_ILJitStackPushNotNullValue(jitCoder, array);
+
+	return 1;
 }
+
+#endif	/* IL_JITC_FUNCTIONS */
+
+#ifdef IL_JITC_CODE
 
 static void JITCoder_UpConvertArg(ILCoder *coder, ILEngineStackItem *args,
 						          ILUInt32 numArgs, ILUInt32 param,
@@ -768,8 +563,6 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 											   &callSignature);
 #endif
 
-	/* TODO: create call signature for vararg calls. */	
-		
 	if(info->tailCall == 1)
 	{
 	#ifdef IL_JIT_THREAD_IN_SIGNATURE
@@ -1850,6 +1643,7 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 
 static void JITCoder_JumpMethod(ILCoder *coder, ILMethod *methodInfo)
 {
+	/* TODO */
 }
 
 static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,

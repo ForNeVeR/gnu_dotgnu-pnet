@@ -18,7 +18,28 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef IL_JITC_CODE
+#ifdef	IL_JITC_DECLARATIONS
+
+/*
+ * Declaration of the engine internal exceptions.
+ */
+#define _IL_JIT_OK						0
+#define _IL_JIT_OUT_OF_MEMORY			1
+#define _IL_JIT_INVALID_CAST			2
+#define _IL_JIT_INDEX_OUT_OF_RANGE		3
+#define _IL_JIT_MISSING_METHOD			4
+#define _IL_JIT_DLL_NOT_FOUND			5
+#define _IL_JIT_ENTRYPOINT_NOT_FOUND	6
+
+/*
+ * Emit the code to throw a system exception.
+ */
+static void _ILJitThrowSystem(ILJitFunction jitFunction,
+							  ILUInt32 exception);
+
+#endif	/* IL_JITC_DECLARATIONS */
+
+#ifdef	IL_JITC_FUNCTIONS
 
 /*
  * Find the "stackTrace" field within "System.Exception" and then set.
@@ -52,7 +73,8 @@ static void _ILJitFindAndSetStackTrace(ILJITCoder *jitCoder, ILJitValue exceptio
 /*
  * Emit the code to throw a system exception.
  */
-static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception)
+static void _ILJitThrowSystem(ILJitFunction jitFunction,
+							  ILUInt32 exception)
 {
 	static const char * const exceptionClasses[] = {
 		"Ok",
@@ -68,7 +90,7 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception)
 
 	if(exception == _IL_JIT_OUT_OF_MEMORY)
 	{
-		jit_insn_call_native(jitCoder->jitFunction,
+		jit_insn_call_native(jitFunction,
 							 "ILRuntimeExceptionThrowOutOfMemory",
 							 ILRuntimeExceptionThrowOutOfMemory,
 							 _ILJitSignature_ILRuntimeExceptionThrowOutOfMemory,
@@ -98,10 +120,10 @@ static void _ILJitThrowSystem(ILJITCoder *jitCoder, ILUInt32 exception)
 				return;
 			}
 		}
-		info = jit_value_create_nint_constant(jitCoder->jitFunction,
+		info = jit_value_create_nint_constant(jitFunction,
 											  _IL_JIT_TYPE_VPTR,
 											  (jit_nint)classInfo);
-		jit_insn_call_native(jitCoder->jitFunction,
+		jit_insn_call_native(jitFunction,
 							 "ILRuntimeExceptionThrowClass",
 							 ILRuntimeExceptionThrowClass,
 							 _ILJitSignature_ILRuntimeExceptionThrowClass,
@@ -227,6 +249,9 @@ static void _ILJitPropagateThreadAbort(ILJITCoder *jitCoder,
 	jit_insn_label(jitCoder->jitFunction, &label);
 }
 
+#endif	/* IL_JITC_FUNCTIONS */
+
+#ifdef IL_JITC_CODE
 
 /*
  * Set up exception handling for the current method.

@@ -128,7 +128,7 @@ internal class XmlFragmentTextWriter : XmlTextWriter
 				if( haveStandalone ) {
 					start += " standalone=\"" + standalone;
 				}
-				start += "\"?>";
+				start += "?>";
 				
 				writer.Write( start );
 				writeState = System.Xml.WriteState.Prolog;

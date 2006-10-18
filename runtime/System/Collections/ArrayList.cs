@@ -262,35 +262,13 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 	// Add the contents of a collection as a range.
 	public virtual void AddRange(ICollection c)
 			{
-				int cCount;
-				IEnumerator enumerator;
-				if(c == null)
-				{
-					throw new ArgumentNullException("c");
-				}
-				cCount = c.Count;
-				if((count + cCount) > store.Length)
-				{
-					Realloc(cCount, count);
-				}
-				enumerator = c.GetEnumerator();
-				
-				if(enumerator.MoveNext())
-				{
-					++generation;
-					do
-					{
-						store[count++] = enumerator.Current;
-					}
-					while(enumerator.MoveNext());
-				}
+				// use nsert range to ensure the SyncRoot check
+				this.InsertRange( count, c );
 			}
 
 	// Insert the contents of a collection as a range.
 	public virtual void InsertRange(int index, ICollection c)
 			{
-				int cCount;
-				IEnumerator enumerator;
 				if(c == null)
 				{
 					throw new ArgumentNullException("c");
@@ -300,25 +278,26 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 					throw new ArgumentOutOfRangeException
 						("index", _("ArgRange_Array"));
 				}
-				cCount = c.Count;
-				Realloc(cCount, index);
-				enumerator = c.GetEnumerator();
+				int cCount = c.Count;
 				
-				if(c.SyncRoot == this && (c is ICloneable))
-				{
-					c = (ICollection)((ICloneable)c).Clone();
-				}
-				
-				if(enumerator.MoveNext())
-				{
-					++generation;
-					do
+				if( cCount > 0 ) {
+					if((count + cCount) > store.Length)
 					{
-						store[index++] = enumerator.Current;
+						Realloc(cCount, count);
 					}
-					while(enumerator.MoveNext());
+					if( index < this.count ) {
+						Array.Copy( this.store, index, this.store, index+cCount, this.count - index ); 
+					}
+					if( c.SyncRoot == this.SyncRoot ) {
+						Array.Copy( this.store, 0, this.store, index, index );
+						Array.Copy( this.store, index+cCount, this.store, 2*index, this.count - index );
+					}
+					else {
+						c.CopyTo( this.store, index );
+					}
+					this.count += cCount;
+					++generation;
 				}
-				count += cCount;
 			}
 
 	// Remove a range of elements from an array list.

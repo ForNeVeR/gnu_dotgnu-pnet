@@ -1,5 +1,9 @@
 2006-10-18  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
+	* runtime/System/Collections/ArrayList.cs: fixed AddRange of self.
+
+2006-10-18  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
 	* runtime/System/Double.cs: fixed formatting NaN and Infinity values.
 
 2006-10-17  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>

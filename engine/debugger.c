@@ -991,6 +991,9 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
 	ILWatch *watch;
 	ILType *type;
 	char *str;
+	char ch[8];
+	int len;
+	int j;
 
 	/* Current thread and method */
 	thread = debugger->dbthread->execThread;
@@ -1009,6 +1012,7 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
 	}
 	else
 	{
+		signature = 0;
 		num = 0;
 	}
 
@@ -1027,16 +1031,94 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
 		/* TODO: dump local variable name */
 		fprintf(stream, "<LocalVariable Name=\"var%d\" Value=\"", i);
 
-		/* TODO: dump any type and dump string in utf8 */
 		type = ILTypeGetLocal(signature, current);
-		if(ILTypeIsStringClass(type))
+
+		switch((unsigned long)type)
 		{
-			str = ILStringToAnsi(thread, *((ILString **)(watch->addr)));
-			DumpString(str, stream);
-		}
-		else
-		{
-			fprintf(stream, "%d", *((int *)(watch->addr)));
+			case (unsigned long)ILType_Boolean:
+			{
+				if(*((ILBool *)(watch->addr)) != 0)
+				{
+					fputs("true", stream);
+				}
+				else
+				{
+					fputs("false", stream);
+				}
+			}
+			break;
+			case (unsigned long)ILType_Int8:
+			{
+				fprintf(stream, "%d", *((ILInt8 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_UInt8:
+			{
+				fprintf(stream, "%u", *((ILUInt8 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_Int16:
+			{
+				fprintf(stream, "%hd", *((ILInt16 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_UInt16:
+			{
+				fprintf(stream, "%hu", *((ILUInt16 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_Int32:
+			{
+				fprintf(stream, "%d", *((ILInt32 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_UInt32:
+			{
+				fprintf(stream, "%u", *((ILUInt32 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_Int64:
+			{
+				fprintf(stream, "%lld", *((ILInt64 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_UInt64:
+			{
+				fprintf(stream, "%llu", *((ILUInt64 *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_Float32:
+			{
+				fprintf(stream, "%f", *((ILFloat *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_Float64:
+			{
+				fprintf(stream, "%f", *((ILDouble *)(watch->addr)));
+			}
+			break;
+			case (unsigned long)ILType_Char:
+			{
+				len = ILUTF8WriteChar(ch, *((ILUInt16 *)(watch->addr)));
+				for(j = 0; j < len; j++)
+				{
+					putc(ch[j], stream);
+				}
+			}
+			break;
+			default:
+			{
+				if(ILTypeIsStringClass(type))
+				{
+					str = ILStringToUTF8(thread, *((ILString **)(watch->addr)));
+					DumpString(str, stream);
+				}
+				else
+				{
+					fprintf(stream, "%p", *((void **)(watch->addr)));
+				}
+			}
+			break;
 		}
 		fputs("\" >", stream);
 

@@ -1,3 +1,8 @@
+2006-09-17  Radek Polak <psonek2@seznam.cz>
+
+	* engine/debugger.c: show_locals can handle all primitive types,
+	strings and chars are dumped in utf8.
+
 2006-10-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add signature for allocating simple arrays. Return and

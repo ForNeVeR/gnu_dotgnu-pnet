@@ -1,4 +1,11 @@
-2006-09-17  Radek Polak <psonek2@seznam.cz>
+2006-10-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_array.c: Change the allocation scheme for the arrays. Use
+	atomic allocation for arrays which elements are either primitive types but
+	no TypedRef, no reference types and value types which do not contain any
+	reference types.
+
+2006-10-17  Radek Polak <psonek2@seznam.cz>
 
 	* engine/debugger.c: show_locals can handle all primitive types,
 	strings and chars are dumped in utf8.

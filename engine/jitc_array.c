@@ -26,6 +26,20 @@
 #define _IL_JIT_SARRAY_HEADERSIZE	sizeof(System_Array)
 
 /*
+ * Check if the elementtype e needs to be scanned by the GC.
+ *
+ * Use the following conservative check if you encounter any problems with
+ * objects prematurely collected.
+ *
+ * 		((ILType_IsPrimitive(e) &&
+ *		   (e) != ILType_TypedRef))
+ */
+#define _IL_JIT_ARRAY_TYPE_NEEDS_GC(e, c) \
+	(!(ILType_IsPrimitive((e)) && ((e) != ILType_TypedRef)) || \
+	 (ILTypeIsReference(e)) || \
+	 (ILType_IsValueType((e)) && (c)->managedInstance))
+
+/*
  * Validate the array index.
  */
 #define JITC_START_CHECK_ARRAY_INDEX(jitCoder, length, index) \
@@ -213,9 +227,7 @@ static ILJitValue _ILJitSArrayNewWithConstantSize(ILJitFunction jitFunction,
 											 (jit_nint)arrayClass);
 	args[1] = arraySize;
 
-	/* if(!(classPrivate->managedInstance)) */
-	if(ILType_IsPrimitive(elementType) &&
-	   elementType != ILType_TypedRef)
+	if(!_IL_JIT_ARRAY_TYPE_NEEDS_GC(elementType, classPrivate))
 	{
 		newArray = jit_insn_call_native(jitFunction,
 										"_ILJitAllocAtomic",
@@ -348,9 +360,7 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
 												 (jit_nint)arrayClass);
 		args[1] = jit_insn_add(jitCoder->jitFunction, arraySize, headerSize);
 
-		/* if(!(classPrivate->managedInstance)) */
-		if(ILType_IsPrimitive(elementType) &&
-		   elementType != ILType_TypedRef)
+		if(!_IL_JIT_ARRAY_TYPE_NEEDS_GC(elementType, classPrivate))
 		{
 			newArray = jit_insn_call_native(jitCoder->jitFunction,
 											"_ILJitAllocAtomic",
@@ -384,9 +394,7 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
 												 _IL_JIT_TYPE_UINT32,
 												 elementSize);
 
-		/* if(!(classPrivate->managedInstance)) */
-		if(ILType_IsPrimitive(elementType) &&
-		   elementType != ILType_TypedRef)
+		if(!_IL_JIT_ARRAY_TYPE_NEEDS_GC(elementType, classPrivate))
 		{
 			newArray = jit_insn_call_native(jitCoder->jitFunction,
 											"_ILJitSArrayAllocAtomic",

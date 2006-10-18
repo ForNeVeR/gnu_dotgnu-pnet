@@ -112,6 +112,20 @@ public struct Double : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
+				if( IsNaN( value_ ) ) {
+					NumberFormatInfo nfi = NumberFormatInfo.GetInstance(provider);
+					return nfi.NaNSymbol;
+				}
+				else if( IsInfinity( value_ ) ) {
+					NumberFormatInfo nfi = NumberFormatInfo.GetInstance(provider);
+					if( IsPositiveInfinity( value_ ) ) {
+						return nfi.PositiveInfinitySymbol;
+					}
+					else {
+						return nfi.NegativeInfinitySymbol;
+					}
+				}
+				
 				if (format == null) format = "G";
 				return
 					Formatter.CreateFormatter(format).Format(this, provider);

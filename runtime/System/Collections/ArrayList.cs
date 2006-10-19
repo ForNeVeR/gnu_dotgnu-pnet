@@ -53,36 +53,13 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 	// Construct an array list from the contents of a collection.
 	public ArrayList(ICollection c)
 			{
-				IEnumerator enumerator;
-				int index;
 				if(c == null)
 				{
 					throw new ArgumentNullException("c");
 				}
-#if !ECMA_COMPAT
-				Array chkArray = c as Array;
-				if (chkArray != null)
-				{
-					if(chkArray.Rank != 1)
-					{
-						throw new RankException(_("Arg_RankMustBe1"));
-					}
-					// now we can use this information to use Array.Copy
-					count = chkArray.Length;
-					store = new Object[count];
-					Array.Copy(chkArray, 0, store, 0, count);
-					generation = 0;
-					return;
-				}
-#endif
-				count = c.Count;
-				store = new Object [count];
-				enumerator = c.GetEnumerator();
-				for(index = 0; enumerator.MoveNext(); ++index)
-				{
-					store[index] = enumerator.Current;
-				}
-				generation = 0;
+				count = 0;
+				store = new Object[c.Count];
+				this.InsertRange( count, c );
 			}
 
 	// Reallocate the array to accomodate "n" new entries at "index".
@@ -661,28 +638,20 @@ public class ArrayList : ICloneable, ICollection, IEnumerable, IList
 	// Set a range of array list elements to the members of a collection.
 	public virtual void SetRange(int index, ICollection c)
 			{
-				int count;
-				IEnumerator enumerator;
 				if(c == null)
 				{
 					throw new ArgumentNullException("c");
 				}
-				if(index < 0)
-				{
+				int cCount = c.Count;
+				if( (index < 0) || (index > (this.count - cCount ) ) ) {
 					throw new ArgumentOutOfRangeException
-						("index", _("ArgRange_Array"));
+							("index", _("ArgRange_Array"));
 				}
-				count = c.Count;
-				if((this.count - index) < count)
-				{
-					throw new ArgumentOutOfRangeException(_("Arg_InvalidArrayRange"));
+				
+				if( cCount > 0 ) {
+					c.CopyTo( this.store, index );
+					++generation;
 				}
-				enumerator = c.GetEnumerator();
-				while(enumerator.MoveNext())
-				{
-					store[index++] = enumerator.Current;
-				}
-				++generation;
 			}
 
 	// Inner version of "Sort".

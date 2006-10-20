@@ -1,3 +1,8 @@
+2006-10-20  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Drawing.Win32/Win32.cs: Set the correct calling convention in all
+	method pinvokes. Enable name mangling where possible.
+
 2006-10-20  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Xml/XmlTextWriter.cs: always write the namespace prefix.

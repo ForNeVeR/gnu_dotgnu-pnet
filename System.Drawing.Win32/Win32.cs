@@ -795,373 +795,373 @@ internal class Api
 
 	public delegate void TimerProc(IntPtr hwnd, uint uMsg, uint idEvent, uint dwTime);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
 	public static extern int RegisterClassA(ref WNDCLASS wc);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", EntryPoint="DefWindowProc", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern int DefWindowProcA(IntPtr hwnd, int msg, int wParam, int lParam);
 		
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern void PostQuitMessage(int nExitCode);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", EntryPoint="GetMessage", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern int GetMessageA(out MSG msg, IntPtr hwnd, int minFilter, int maxFilter);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", EntryPoint="PeekMessage", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool PeekMessageA(out MSG lpMsg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax, PeekMessageType wRemoveMsg );
 	
-	[DllImport("user32",CharSet=CharSet.Ansi)] //ANSI
+	[DllImport("user32", EntryPoint="DispatchMessage", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern int DispatchMessageA(ref MSG msg);
 	
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool TranslateMessage(ref MSG msg);
 
-	[DllImport("gdi32")] //ANSI
+	[DllImport("gdi32", EntryPoint="TextOut", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool TextOutA(IntPtr hdc, int x, int y, string textstring, int charCount);
 
-	[DllImport("gdi32")] //ANSI
+	[DllImport("gdi32", EntryPoint="ExtTextOut", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ExtTextOutA( IntPtr hdc, int X, int Y, uint fuOptions, IntPtr lprc, String lpString, uint cbCount,IntPtr lpDx);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr BeginPaint(IntPtr hwnd, ref PAINTSTRUCT ps);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool EndPaint (IntPtr hwnd, ref PAINTSTRUCT ps);
 		
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GetClientRect(IntPtr hwnd, out RECT rect);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int GetClipBox(IntPtr hdc, out RECT lprc);
 
-	[DllImport("user32")] 
-	public extern static System.IntPtr GetDC(System.IntPtr hwnd); 
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] 
+	public extern static System.IntPtr GetDC(System.IntPtr hwnd);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int ReleaseDC(IntPtr hwnd, IntPtr hDC);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", EntryPoint="CreateWindowEx", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern IntPtr CreateWindowExA(WindowsExtendedStyle dwExStyle, string lpszClassName, string lpszWindowName, WindowStyle style, int x, int y, int width, int height, IntPtr hWndParent, IntPtr hMenu, IntPtr hInst, IntPtr pvParam);
 	
-	[DllImport("kernel32")] //ANSI
+	[DllImport("kernel32", EntryPoint="GetModuleHandle", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern IntPtr GetModuleHandleA(string modName);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetWindowPos( IntPtr hwnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowsPosFlags uFlags );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetWindowPos( IntPtr hwnd, SetWindowsPosPosition hWndInsertAfter, int X, int Y, int cx, int cy, SetWindowsPosFlags uFlags );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ShowWindow(IntPtr hwnd, ShowWindowCommand nCmdShow );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool UpdateWindow(IntPtr hwnd);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool LineTo(IntPtr hdc, int nXEnd, int nYEnd);
 	
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool MoveToEx(IntPtr hdc, int X, int Y, IntPtr lpPoint);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetPixel(IntPtr hdc, int X, int Y, int crColor );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Polygon( IntPtr hdc, POINT[] lpPoints, int nCount);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetPolyFillMode( IntPtr hdc, int iPolyFillMode );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr SelectObject(IntPtr hdc, IntPtr hgdiobj);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool DeleteObject(IntPtr hObject);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreatePen(int fnPenStyle, int nWidth, int crColor);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateBrushIndirect(ref LOGBRUSH lplb);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreatePatternBrush(IntPtr hbmp);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", EntryPoint="PostMessage", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool PostMessageA(IntPtr hwnd, WindowsMessages Msg, int wParam, int lParam);
 
-  	[DllImport("user32")] //ANSI
+  	[DllImport("user32", EntryPoint="SendMessage", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)]  //Auto
 	public static extern int SendMessageA( IntPtr hWnd, WindowsMessages Msg, int wParam, IntPtr lParam);
 
-	[DllImport("user32")]
+	[DllImport("user32", EntryPoint="RegisterWindowMessage", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)]	// Auto
 	public static extern WindowsMessages RegisterWindowMessageA (string msgName);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int GetSystemMetrics (SystemMetricsType nIndex);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out RECT pvParam, uint fWinIni );
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out int pvParam, uint fWinIni );
 		
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, [MarshalAs(UnmanagedType.Bool)] out bool pvParam, uint fWinIni );
 		
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(uint uiAction, uint uiParam, ref NONCLIENTMETRICS pvParam,uint fWinIni);
 
 	//Get font information
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GetTextMetricsA( IntPtr hdc, out TEXTMETRIC lptm);
 
 	//Measure size and width of text
-	[DllImport("gdi32")] //ANSI
+	[DllImport("gdi32", EntryPoint="GetTextExtentPoint32", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern int GetTextExtentPoint32A(IntPtr hdc, string str, int len, out SIZE size);
 	
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr GetStockObject( StockObjectType fnObject );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetBkMode(IntPtr hdc, BackGroundModeType iBkMode);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int FillRect(IntPtr hDC, ref RECT lprc, IntPtr hbr);
 
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", EntryPoint="SetWindowText", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetWindowTextA( IntPtr hWnd, string lpString);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GetWindowRect( IntPtr hWnd, out RECT lpRect );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool InvalidateRect(IntPtr hWnd, ref RECT hRgn, [MarshalAs(UnmanagedType.Bool)] bool bErase);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool InvalidateRect(IntPtr hWnd, IntPtr hRgn, [MarshalAs(UnmanagedType.Bool)] bool bErase);
 	
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool TrackMouseEvent( ref TRACKMOUSEEVENT lpEventTrack);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr SetCursor( IntPtr hCursor);
 		
-	[DllImport("user32")] //ANSI
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
 	public static extern IntPtr LoadCursorA( IntPtr hInstance, CursorName lpCursorName);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool DestroyWindow( IntPtr hWnd );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr GetDesktopWindow();
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr GetForegroundWindow();
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr GetFocus();
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool CloseWindow(IntPtr hWnd);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public extern static int GetSysColor(int nIndex);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Arc( IntPtr hdc, int nLeftRect,int nTopRect, int nRightRect, int nBottomRect, int nXStartArc, int nYStartArc, int nXEndArc, int nYEndArc );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Pie( IntPtr hdc, int nLeftRect,int nTopRect, int nRightRect, int nBottomRect, int nXRadial1, int nYRadial1, int nXRadial2, int nYRadial2 );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool Ellipse( IntPtr hdc, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr SetTextColor( IntPtr hdc, int crColor);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetBkColor( IntPtr hdc,int crColor);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool IsWindowVisible( IntPtr hWnd);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateBitmap( int nWidth, int nHeight, uint cPlanes, uint cBitsPerPel, byte[] lpvBits);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateDIBitmap( IntPtr hdc, byte[] lpbmih, uint fdwInit, byte[] lpbInit, byte[] lpbmi, uint fuUsage);
 	
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex, WindowStyle dwNewLong);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex, WindowsExtendedStyle dwNewLong);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int GetWindowLongA( IntPtr hWnd, SetWindowLongType nIndex);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool RedrawWindow( IntPtr hWnd, IntPtr lprcUpdate, IntPtr hrgnUpdate, RedrawWindowFlags flags);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool AdjustWindowRectEx(ref RECT lpRect, WindowStyle dwStyle, [MarshalAs(UnmanagedType.Bool)] bool bMenu, WindowsExtendedStyle dwExStyle);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern short GetKeyState( VirtualKeyType nVirtKey );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateRectRgn(int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 	
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SetRectRgn(IntPtr hrgn, int nLeftRect, int nTopRect, int nRightRect, int nBottomRect);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int CombineRgn( IntPtr hrgnDest, IntPtr hrgnSrc1, IntPtr hrgnSrc2, RegionCombineMode fnCombineMode);
 		
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int ExtSelectClipRgn( IntPtr hdc, IntPtr hrgn, RegionCombineMode fnMode );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int GetClipRgn( IntPtr hdc, IntPtr hrgn );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SelectClipRgn(IntPtr hdc, IntPtr hrgn);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int OffsetRgn( IntPtr hrgn, int nXOffset, int nYOffset );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int GetObject( IntPtr hgdiobj, int cbBuffer, out LOGFONT lpvObject );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateFontIndirectA(ref LOGFONT lf);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern uint SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, TimerProc lpTimerFunc);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern uint SetTimer(IntPtr hwnd, uint nIDEvent, uint uElapse, IntPtr lpTimerFunc);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool KillTimer(IntPtr hwnd, uint uIDEvent);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ScreenToClient( IntPtr hWnd, ref POINT lpPoint );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool ClientToScreen( IntPtr hWnd, ref POINT lpPoint );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr SetParent( IntPtr hWndChild, IntPtr hWndNewParent );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr SetFocus( IntPtr hWnd );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr SetCapture( IntPtr hWnd );
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr GetCapture();
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr ReleaseCapture();
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr WindowFromPoint( POINT Point);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateCompatibleBitmap( IntPtr hdc, int nWidth, int nHeight);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetDIBits( IntPtr hdc, IntPtr hbmp, uint uStartScan, uint cScanLines, ref byte lpvBits, byte[] lpbmi, DibColorTableType fuColorUse);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SetDIBitsToDevice( IntPtr hdc, int XDest, int YDest, uint dwWidth, uint dwHeight, int XSrc, int YSrc, uint uStartScan, uint cScanLines, ref byte lpvBits, byte[] lpbmi, DibColorTableType fuColorUse);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int BitBlt (IntPtr hdcDest, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, RopType dwRop);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateCompatibleDC( IntPtr hdc);
 
-	[DllImport("kernel32")]
+	[DllImport("kernel32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr GlobalLock( IntPtr hMem);
 
-	[DllImport("kernel32")]
+	[DllImport("kernel32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool GlobalUnlock(IntPtr hMem);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int SaveDC( IntPtr hdc );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool RestoreDC( IntPtr hdc, int nSavedDC );
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr ExtCreateRegion( IntPtr lpXform, uint nCount, ref byte lpRgnData);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	public static extern uint GetRegionData( IntPtr hRgn, uint dwCount, ref byte lpRgnData);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateIcon( IntPtr hInstance, int nWidth, int nHeight, byte cPlanes, byte cBitsPixel, ref byte lpbANDbits, ref byte lpbXORbits);
 
-	[DllImport("user32")]
+	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr CreateIconIndirect(ref ICONINFO piconinfo);
 
-	[DllImport("gdi32")]
+	[DllImport("gdi32", CallingConvention = CallingConvention.Winapi)]
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool DeleteDC(IntPtr hdc);
 	
-	[DllImport("kernel32")]
+	[DllImport("kernel32", CallingConvention = CallingConvention.Winapi)]
 	public static extern uint GetLastError();
 	
-	[DllImport("kernel32")]
+	[DllImport("kernel32", CallingConvention = CallingConvention.Winapi)]
 	public static extern uint SetLastError(uint errorCode);
 
 	// Retrieves Windows version
 	// To obtain e.g. the major version:
 	// windowsMajorVer = GetVersion() & 0xFF;
-	[DllImport("kernel32.dll")]
+	[DllImport("kernel32.dll", CallingConvention = CallingConvention.Winapi)]
 	public extern static uint GetVersion();
 }//Api
 

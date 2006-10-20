@@ -1,3 +1,7 @@
+2006-10-20  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Xml/XmlTextWriter.cs: always write the namespace prefix.
+
 2006-10-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Collections/ArrayList.cs: 

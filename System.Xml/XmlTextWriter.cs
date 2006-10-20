@@ -1588,16 +1588,14 @@ public class XmlTextWriter : XmlWriter
 				{
 					// We need to associate a prefix with a namespace.
 					String currMapping = LookupPrefix(ns);
+					
 					if(currMapping == prefix)
 					{
-						// The prefix is already mapped to this URI.
-						if(prefix != currPrefix)
-						{
-							writer.Write(prefix);
-							writer.Write(':');
-							scopeShown = true;
-						}
+						// always write prefix
+						writer.Write(prefix);
+						writer.Write(':');
 						writer.Write(localName);
+						scopeShown = true;
 					}
 					else
 					{

@@ -3487,6 +3487,44 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 							name = ILMethod_Name(method);
 						}
 
+					#ifdef IL_WIN32_PLATFORM
+
+						if(!(pinv->member.attributes & IL_META_PINVOKE_NO_MANGLE))
+						{
+							/* We have to append an A or W to the function */
+							/* name depending on the characterset used. */
+							/* On Windows we have only either Ansi or Utf16 */
+							int nameLength = strlen(name);
+							ILUInt32 charSetUsed = ILPInvokeGetCharSet(pinv, method);
+							char newName[nameLength + 2];
+
+							strcpy(newName, name);
+							if(charSetUsed == IL_META_MARSHAL_UTF16_STRING)
+							{
+								newName[nameLength] = 'W';
+							}
+							else
+							{
+								newName[nameLength] = 'A';
+							}
+							newName[nameLength + 1] = '\0';
+
+							/* Look up the method within the module */
+							fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, newName);
+						}
+						if(!fnInfo.func)
+						{
+							/* Look up the method within the module */
+							fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+						}
+
+						if(!(fnInfo.func))
+						{
+							fnInfo.func = _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND;
+						}
+
+					#else	/* !IL_WIN32_PLATFORM */
+
 						/* Look up the method within the module */
 						fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
 
@@ -3494,6 +3532,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 						{
 							fnInfo.func = _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND;
 						}
+					#endif	/* !IL_WIN32_PLATFORM */
 					}
 					else
 					{

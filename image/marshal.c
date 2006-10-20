@@ -19,6 +19,9 @@
  */
 
 #include "program.h"
+#ifdef IL_WIN32_PLATFORM
+#include <windows.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -26,10 +29,18 @@ extern	"C" {
 
 #ifdef IL_CONFIG_PINVOKE
 
+#ifdef IL_WIN32_PLATFORM
 /*
- * Determine the character set to use for strings.
+ * The information returned by GetVersion on the box we're running on.
  */
-static ILUInt32 StringCharSet(ILPInvoke *pinvoke, ILMethod *method)
+static DWORD _ILPInvokeWindowsVersion = 0;
+
+#endif
+
+/*
+ * Determine the character set to use when marshalling this pinvoke or method.
+ */
+ILUInt32 ILPInvokeGetCharSet(ILPInvoke *pinvoke, ILMethod *method)
 {
 	/* Check the PInvoke record for character set information */
 	if(pinvoke)
@@ -37,7 +48,6 @@ static ILUInt32 StringCharSet(ILPInvoke *pinvoke, ILMethod *method)
 		switch(pinvoke->member.attributes & IL_META_PINVOKE_CHAR_SET_MASK)
 		{
 			case IL_META_PINVOKE_CHAR_SET_ANSI:
-			case IL_META_PINVOKE_CHAR_SET_AUTO:
 			{
 				return IL_META_MARSHAL_ANSI_STRING;
 			}
@@ -45,23 +55,84 @@ static ILUInt32 StringCharSet(ILPInvoke *pinvoke, ILMethod *method)
 	
 			case IL_META_PINVOKE_CHAR_SET_UNICODE:
 			{
+			#ifdef IL_WIN32_PLATFORM
+				return IL_META_MARSHAL_UTF16_STRING;
+			#else
 				return IL_META_MARSHAL_UTF8_STRING;
+			#endif
+			}
+			/* Not reached */
+
+			case IL_META_PINVOKE_CHAR_SET_AUTO:
+			{
+			#ifdef IL_WIN32_PLATFORM
+				if(!_ILPInvokeWindowsVersion)
+				{
+					_ILPInvokeWindowsVersion = GetVersion();
+				}
+				if(_ILPInvokeWindowsVersion & 0xC0000000)
+				{
+					/* Windows 9x and less. */
+					return IL_META_MARSHAL_ANSI_STRING;
+				}
+				else
+				{
+					return IL_META_MARSHAL_UTF16_STRING;
+				}
+			#else
+				return IL_META_MARSHAL_ANSI_STRING;
+			#endif
 			}
 			/* Not reached */
 		}
 	}
 
 	/* Check the class for character set information */
-	if(method && (method->member.owner->attributes &
-						IL_META_TYPEDEF_STRING_FORMAT_MASK) ==
-			IL_META_TYPEDEF_UNICODE_CLASS)
+	if(method)
 	{
-		return IL_META_MARSHAL_UTF8_STRING;
+		switch(method->member.owner->attributes & 
+				IL_META_TYPEDEF_STRING_FORMAT_MASK)
+		{
+			case IL_META_TYPEDEF_ANSI_CLASS:
+			{
+				return IL_META_MARSHAL_ANSI_STRING;
+			}
+			/* Not reached */
+
+			case IL_META_TYPEDEF_UNICODE_CLASS:
+			{
+			#ifdef IL_WIN32_PLATFORM
+				return IL_META_MARSHAL_UTF16_STRING;
+			#else
+				return IL_META_MARSHAL_UTF8_STRING;
+			#endif
+			}
+			/* Not reached */
+
+			case IL_META_TYPEDEF_AUTO_CLASS:
+			{
+			#ifdef IL_WIN32_PLATFORM
+				if(!_ILPInvokeWindowsVersion)
+				{
+					_ILPInvokeWindowsVersion = GetVersion();
+				}
+				if(_ILPInvokeWindowsVersion & 0xC0000000)
+				{
+					/* Windows 9x and less. */
+					return IL_META_MARSHAL_ANSI_STRING;
+				}
+				else
+				{
+					return IL_META_MARSHAL_UTF16_STRING;
+				}
+			#else
+				return IL_META_MARSHAL_ANSI_STRING;
+			#endif
+			}
+			/* Not reached */
+		}
 	}
-	else
-	{
-		return IL_META_MARSHAL_ANSI_STRING;
-	}
+	return IL_META_MARSHAL_ANSI_STRING;
 }
 
 /*
@@ -165,11 +236,19 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 		/* Value string type */
 		if(nativeTypeCode == IL_META_NATIVETYPE_LPWSTR)
 		{
+		#ifdef IL_WIN32_PLATFORM
 			return IL_META_MARSHAL_UTF16_STRING;
+		#else
+			return IL_META_MARSHAL_UTF8_STRING;
+		#endif
+		}
+		else if(nativeTypeCode == IL_META_NATIVETYPE_LPSTR)
+		{
+			return IL_META_MARSHAL_ANSI_STRING;
 		}
 		else
 		{
-			return StringCharSet(pinvoke, method);
+			return ILPInvokeGetCharSet(pinvoke, method);
 		}
 	}
 	else if(ILTypeIsDelegateSubClass(type))
@@ -182,13 +261,25 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 		if(ILTypeIsStringClass(ILTypeGetElemType(type)))
 		{
 			/* Array of strings, passed as "char **" */
-			if(StringCharSet(pinvoke, method) == IL_META_MARSHAL_ANSI_STRING)
+			switch(ILPInvokeGetCharSet(pinvoke, method))
 			{
-				return IL_META_MARSHAL_ANSI_ARRAY;
-			}
-			else
-			{
-				return IL_META_MARSHAL_UTF8_ARRAY;
+				case IL_META_MARSHAL_UTF8_STRING:
+				{
+					return IL_META_MARSHAL_UTF8_ARRAY;
+				}
+				/* not reached */
+	
+				case IL_META_MARSHAL_UTF16_STRING:
+				{
+					return IL_META_MARSHAL_UTF16_ARRAY;
+				}
+				/* not reached */
+
+				default:
+				{
+					return IL_META_MARSHAL_ANSI_ARRAY;
+				}
+				/* not reached */
 			}
 		}
 		else
@@ -205,14 +296,27 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 		if(ILType_IsSimpleArray(ILType_Ref(type)) &&
 		   ILTypeIsStringClass(ILTypeGetElemType(ILType_Ref(type))))
 		{
-			if(StringCharSet(pinvoke, method) == IL_META_MARSHAL_ANSI_STRING)
+			switch(ILPInvokeGetCharSet(pinvoke, method))
 			{
-				return IL_META_MARSHAL_REF_ANSI_ARRAY;
+				case IL_META_MARSHAL_UTF8_STRING:
+				{
+					return IL_META_MARSHAL_REF_UTF8_ARRAY;
+				}
+				/* not reached */
+	
+				case IL_META_MARSHAL_UTF16_STRING:
+				{
+					return IL_META_MARSHAL_REF_UTF16_ARRAY;
+				}
+				/* not reached */
+
+				default:
+				{
+					return IL_META_MARSHAL_REF_ANSI_ARRAY;
+				}
+				/* not reached */
 			}
-			else
-			{
-				return IL_META_MARSHAL_REF_UTF8_ARRAY;
-			}
+			return IL_META_MARSHAL_REF_ANSI_ARRAY;
 		}
 	}
 

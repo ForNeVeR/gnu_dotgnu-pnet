@@ -1532,6 +1532,11 @@ ILPInvoke *ILPInvokeFind(ILMethod *method);
 ILPInvoke *ILPInvokeFindField(ILField *field);
 
 /*
+ * Determine the character set to use when marshalling this pinvoke or method.
+ */
+ILUInt32 ILPInvokeGetCharSet(ILPInvoke *pinvoke, ILMethod *method);
+
+/*
  * Get the marshal conversion type for a method parameter.
  * If "param" is 0, then report about the return type.
  */

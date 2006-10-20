@@ -294,8 +294,40 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 					name = ILMethod_Name(method);
 				}
 
+			#ifdef IL_WIN32_PLATFORM
+
+				if(!(pinv->member.attributes & IL_META_PINVOKE_NO_MANGLE))
+				{
+					/* We have to append an A or W to the function */
+					/* name depending on the characterset used. */
+					/* On Windows we have only either Ansi or Utf16 */
+					int nameLength = strlen(name);
+					ILUInt32 charSetUsed = ILPInvokeGetCharSet(pinv, method);
+					char newName[nameLength + 2];
+
+					strcpy(newName, name);
+					if(charSetUsed == IL_META_MARSHAL_UTF16_STRING)
+					{
+						newName[nameLength] = 'W';
+					}
+					else
+					{
+						newName[nameLength] = 'A';
+					}
+					newName[nameLength + 1] = '\0';
+
+					/* Look up the method within the module */
+					fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, newName);
+				}
+				if(!fnInfo.func)
+				{
+					/* Look up the method within the module */
+					fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+				}
+			#else	/* !IL_WIN32_PLATFORM */
 				/* Look up the method within the module */
 				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+			#endif	/* !IL_WIN32_PLATFORM */
 			#else /* !IL_CONFIG_PINVOKE */
 				METADATA_UNLOCK(thread);
 				*errorCode = IL_CONVERT_NOT_IMPLEMENTED;

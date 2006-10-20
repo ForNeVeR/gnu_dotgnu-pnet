@@ -1,3 +1,17 @@
+2006-10-20  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_meta.h, include/il_program.h, image/marshal.c: Add
+	ILPInvokeGetCharSet in image/marshal.c to get the characterset used to
+	marshal a method or struct. On a Windows platform the automatic
+	characterset depends on the current windows version (GetVersion()).
+	For Windows 9x and older the ansi characterset is used and for all
+	NT versions utf16.
+
+	* engine/convert.c, engine/jitc.c: Add name mangling  for the method name
+	on Windows platforms if ExactSpelling = false in the DllImportAttribute.
+	This allows using unicode versions of functions on NT and the ansi versions
+	on older systems.
+
 2006-10-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_array.c: Change the allocation scheme for the arrays. Use

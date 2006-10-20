@@ -550,6 +550,8 @@ extern	"C" {
 #define	IL_META_MARSHAL_CUSTOM					0x0008
 #define	IL_META_MARSHAL_ANSI_ARRAY				0x0009
 #define	IL_META_MARSHAL_UTF8_ARRAY				0x000A
+#define	IL_META_MARSHAL_UTF16_ARRAY				0x000B
+#define	IL_META_MARSHAL_REF_UTF16_ARRAY			0x000C
 
 /*
  * Control data structure for reading from the metadata section.

@@ -253,4 +253,17 @@ public class TestXmlTextReader : TestCase
 		AssertEquals("ReadElementStringOnEmpyElement (3)", String.Empty, xr.ReadElementString());
 		AssertEquals("ReadElementStringOnEmpyElement (4)", XmlNodeType.EndElement, xr.NodeType);
 	}
+		// Test the Depth property.
+	public void TestXmlTextReaderDepth()
+			{
+				Reset(new StringReader("<node attr=\"1\" />"));
+				AssertEquals("Depth (1)", 0, xr.Depth);
+				AssertEquals("Depth (2)", XmlNodeType.Element, xr.MoveToContent());
+				AssertEquals("Depth (3)", 0, xr.Depth);
+				AssertEquals("Depth (4)", true, xr.MoveToFirstAttribute());
+				AssertEquals("Depth (5)", 1, xr.Depth);
+				AssertEquals("Depth (6)", false, xr.Read());
+				AssertEquals("Depth (7)", 0, xr.Depth);
+				Clear();
+			}
 }; // class TestXmlTextReader

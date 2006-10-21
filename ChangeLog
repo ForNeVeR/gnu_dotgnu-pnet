@@ -1,3 +1,11 @@
+2006-10-21  Radek Polak <psonek2@seznam.cz>
+
+	* System.Xml/XmlTextReader.cs: reset current node when end of document
+	is reached. Without this Depth property was 1 even when whole document
+	was read.
+
+	* tests/System.Xml/TestXmlTextReader.cs: test for Depth property.
+
 2006-10-20  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Drawing.Win32/Win32.cs: Set the correct calling convention in all

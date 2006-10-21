@@ -1357,6 +1357,9 @@ public class XmlTextReader : XmlReader
 						Error(/* TODO */);
 					}
 
+					// reset to default state (depth=0 and etc...)
+					nodes.Reset();
+
 					// return false if there are no nodes left to read
 					return false;
 				}

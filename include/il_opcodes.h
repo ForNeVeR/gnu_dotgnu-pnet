@@ -321,10 +321,10 @@
 #define	IL_PREFIX_OP_VOLATILE				0x13
 #define	IL_PREFIX_OP_TAIL					0x14
 #define	IL_PREFIX_OP_INITOBJ				0x15
-#define	IL_PREFIX_OP_ANN_LIVE				0x16
+#define	IL_PREFIX_OP_CONSTRAINED			0x16
 #define	IL_PREFIX_OP_CPBLK					0x17
 #define	IL_PREFIX_OP_INITBLK				0x18
-#define	IL_PREFIX_OP_ANN_REF				0x19
+#define	IL_PREFIX_OP_NO						0x19
 #define	IL_PREFIX_OP_RETHROW				0x1A
 
 #define	IL_PREFIX_OP_UNUSED_PREFIX_1B		0x1B		/* !! */
@@ -332,13 +332,21 @@
 #define	IL_PREFIX_OP_SIZEOF					0x1C
 #define	IL_PREFIX_OP_REFANYTYPE				0x1D
 
-#define	IL_PREFIX_OP_UNUSED_PREFIX_1E		0x1E		/* !! */
+#define	IL_PREFIX_OP_READONLY				0x1E
 #define	IL_PREFIX_OP_UNUSED_PREFIX_1F		0x1F
 #define	IL_PREFIX_OP_UNUSED_PREFIX_20		0x20
 #define	IL_PREFIX_OP_UNUSED_PREFIX_21		0x21
 
 #define	IL_PREFIX_OP_ANN_DATA				0x22
 #define	IL_PREFIX_OP_ANN_ARG				0x23		/* !! - not defined */
+
+/*
+ * Valid values for tne IL_PREFIX_OP_NO opcode.
+ * They may be ored together.
+ */
+#define IL_PREFIX_OP_NO_TYPECHECK			0x01
+#define IL_PREFIX_OP_NO_RANGECHECK			0x02
+#define IL_PREFIX_OP_NO_NULLCHECK			0x04
 
 /*
  * Information about an opcode.

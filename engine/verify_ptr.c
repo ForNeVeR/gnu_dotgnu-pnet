@@ -184,13 +184,16 @@ static ILType *GetTypeToken(ILMethod *method, unsigned char *pc)
 ILType *elemType;
 ILClass *classInfo;
 ILType *classType;
+ILBool isReadOnly;
 
 #else /* IL_VERIFY_CODE */
 
 #define	VERIFY_LDIND(name,type,engineType)	\
 case IL_OP_LDIND_##name: \
 { \
-	if(STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T) \
+	if(STK_UNARY == ILEngineType_M || \
+	   STK_UNARY == ILEngineType_CM || \
+	   STK_UNARY == ILEngineType_T) \
 	{ \
 		if(unsafeAllowed || \
 		   PtrCompatible(stack[stackSize - 1].typeInfo, (type))) \
@@ -329,7 +332,9 @@ VERIFY_STIND(R8, ILType_Float64, ILEngineType_F);
 case IL_OP_LDIND_REF:
 {
 	/* Load an object reference from a pointer */
-	if(STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T)
+	if(STK_UNARY == ILEngineType_M ||
+	   STK_UNARY == ILEngineType_CM ||
+	   STK_UNARY == ILEngineType_T)
 	{
 		if(IsObjectRef(stack[stackSize - 1].typeInfo))
 		{
@@ -406,7 +411,9 @@ case IL_OP_LDOBJ:
 	/* Load a value type from a pointer */
 	classInfo = GetValueTypeToken(method, pc);
 	classType = (classInfo ? ILClassToType(classInfo) : 0);
-	if(STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T)
+	if(STK_UNARY == ILEngineType_M ||
+	   STK_UNARY == ILEngineType_CM ||
+	   STK_UNARY == ILEngineType_T)
 	{
 		if(classInfo &&
 		   ILTypeIdentical(stack[stackSize - 1].typeInfo, classType))
@@ -553,6 +560,86 @@ case IL_OP_PREFIX + IL_PREFIX_OP_VOLATILE:
 }
 break;
 
+case IL_OP_PREFIX + IL_PREFIX_OP_NO:
+{
+	/* Process a "no" prefix for pointer access */
+	if(unsafeAllowed)
+	{
+		/* The no prefix is allowed in unsafe code only. */
+		if(pc[2] & IL_PREFIX_OP_NO_TYPECHECK)
+		{
+			if(!(pc[3] == IL_OP_LDELEMA || pc[3] == IL_OP_LDELEM     ||
+				 pc[3] == IL_OP_STELEM  || pc[3] == IL_OP_CASTCLASS  ||
+				 pc[3] == IL_OP_UNBOX))
+			{
+				VERIFY_INSN_ERROR();
+			}
+		}
+		if(pc[2] & IL_PREFIX_OP_NO_RANGECHECK)
+		{
+			if(!(pc[3] == IL_OP_LDELEMA   || pc[3] == IL_OP_LDELEM_I1  ||
+				 pc[3] == IL_OP_LDELEM_U1 || pc[3] == IL_OP_LDELEM_I2  ||
+				 pc[3] == IL_OP_LDELEM_U2 || pc[3] == IL_OP_LDELEM_I4  ||
+				 pc[3] == IL_OP_LDELEM_U4 || pc[3] == IL_OP_LDELEM_I8  ||
+				 pc[3] == IL_OP_LDELEM_I  || pc[3] == IL_OP_LDELEM_R4  ||
+				 pc[3] == IL_OP_LDELEM_R8 || pc[3] == IL_OP_LDELEM_REF ||
+				 pc[3] == IL_OP_STELEM_I  || pc[3] == IL_OP_STELEM_I1  ||
+				 pc[3] == IL_OP_STELEM_I2 || pc[3] == IL_OP_STELEM_I4  ||
+				 pc[3] == IL_OP_STELEM_I8 || pc[3] == IL_OP_STELEM_R4  ||
+				 pc[3] == IL_OP_STELEM_R8 || pc[3] == IL_OP_STELEM_REF))
+			{
+				VERIFY_INSN_ERROR();
+			}
+
+		}
+		if(pc[2] & IL_PREFIX_OP_NO_RANGECHECK)
+		{
+			if(!(pc[3] == IL_OP_LDFLD      || pc[3] == IL_OP_STFLD      ||
+				 pc[3] == IL_OP_CALLVIRT   || pc[3] == IL_OP_LDELEMA    ||
+				 pc[3] == IL_OP_LDELEM_I1  || pc[3] == IL_OP_LDELEM_U1  ||
+				 pc[3] == IL_OP_LDELEM_I2  || pc[3] == IL_OP_LDELEM_U2  ||
+				 pc[3] == IL_OP_LDELEM_I4  || pc[3] == IL_OP_LDELEM_U4  ||
+				 pc[3] == IL_OP_LDELEM_I8  || pc[3] == IL_OP_LDELEM_I   ||
+				 pc[3] == IL_OP_LDELEM_R4  || pc[3] == IL_OP_LDELEM_R8  ||
+				 pc[3] == IL_OP_LDELEM_REF || pc[3] == IL_OP_STELEM_I   ||
+				 pc[3] == IL_OP_STELEM_I1  || pc[3] == IL_OP_STELEM_I2  ||
+				 pc[3] == IL_OP_STELEM_I4  || pc[3] == IL_OP_STELEM_I8  ||
+				 pc[3] == IL_OP_STELEM_R4  || pc[3] == IL_OP_STELEM_R8  ||
+				 pc[3] == IL_OP_STELEM_REF ||
+				 (pc[3] == IL_OP_PREFIX    && pc[4] == IL_PREFIX_OP_LDVIRTFTN)))
+			{
+				VERIFY_INSN_ERROR();
+			}
+		}
+		if(pc[2] & ~(IL_PREFIX_OP_NO_TYPECHECK | IL_PREFIX_OP_NO_RANGECHECK |
+					 IL_PREFIX_OP_NO_RANGECHECK))
+		{
+				VERIFY_INSN_ERROR();
+		}
+		/* TODO: Handle this opcode in the coder. */
+	}
+	else
+	{
+		VERIFY_INSN_ERROR();
+	}
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_READONLY:
+{
+	/* Process a "readonly" prefix for array  access */
+	if(pc[2] == IL_OP_LDELEMA)
+	{
+		/* TODO: Handle this in the ldelema instruction so that a */
+		/* controlled-mutability managed pointer. */
+		isReadOnly = 1;
+	}
+	else
+	{
+		VERIFY_INSN_ERROR();
+	}
+}
+
 case IL_OP_NEWARR:
 {
 	/* Create a new array */
@@ -653,21 +740,35 @@ case IL_OP_LDELEMA:
 	   (elemType = ArrayElementType(stack[stackSize - 2].typeInfo)) != 0)
 	{
 		classType = GetTypeToken(method, pc);
-		if(classType &&
-		   (elemType == ILType_Void || ILTypeIdentical(elemType, classType)))
+		if(!isReadOnly)
 		{
-			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, classType);
-			stack[stackSize - 2].engineType = ILEngineType_M;
-			stack[stackSize - 2].typeInfo = classType;
-			--stackSize;
+			if(classType &&
+			   (elemType == ILType_Void || ILTypeIdentical(elemType, classType)))
+			{
+				ILCoderArrayAccess(coder, opcode, STK_BINARY_2, classType);
+				stack[stackSize - 2].engineType = ILEngineType_M;
+				stack[stackSize - 2].typeInfo = classType;
+				--stackSize;
+			}
+			else
+			{
+				/* The ECMA instruction specification says that this instruction
+				   should throw a run-time exception if the type is incorrect,
+				   rather than bailing out during method verification */
+				ThrowSystem("System", "ArrayTypeMismatchException");
+			}
 		}
 		else
 		{
-			/* The ECMA instruction specification says that this instruction
-			   should throw a run-time exception if the type is incorrect,
-			   rather than bailing out during method verification */
-			ThrowSystem("System", "ArrayTypeMismatchException");
+			/* Perform no type check in this case. */
+			/* But push an controlled-mutability managed pointer on the stack. */
+			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, classType);
+			stack[stackSize - 2].engineType = ILEngineType_CM;
+			stack[stackSize - 2].typeInfo = classType;
+			--stackSize;
 		}
+		/* And reset the readonly prefix. */
+		isReadOnly = 0;
 	}
 	else
 	{

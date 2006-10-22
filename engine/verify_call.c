@@ -675,7 +675,8 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 					/* The "this" parameter must be a pointer */
 					paramType = ILClassToType(owner);
 					if(item->engineType == ILEngineType_T ||
-					   item->engineType == ILEngineType_M)
+					   item->engineType == ILEngineType_M ||
+					   item->engineType == ILEngineType_CM)
 					{
 						if(!ILTypeIdentical(item->typeInfo, paramType))
 						{
@@ -953,6 +954,13 @@ static ILInt32 MatchSignature(ILCoder *coder, ILEngineStackItem *stack,
 				{
 					return -1;
 				}
+			}
+			break;
+
+			case ILEngineType_CM:
+			{
+				/* Controlled-mutability managed pointers are not allowed here. */
+				return -1;
 			}
 			break;
 		}

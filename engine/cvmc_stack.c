@@ -35,6 +35,7 @@ static ILUInt32 ComputeStackSize(ILCoder *coder, ILEngineStackItem *stack,
 		{
 			case ILEngineType_I4:
 			case ILEngineType_M:
+			case ILEngineType_CM:
 			case ILEngineType_T:
 			case ILEngineType_O:
 			{

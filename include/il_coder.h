@@ -48,16 +48,17 @@ typedef struct _tagILCoderClass ILCoderClass;
  */
 typedef enum
 {
-	ILEngineType_I4,
-	ILEngineType_I8,
-	ILEngineType_I,
-	ILEngineType_F,
-	ILEngineType_M,
-	ILEngineType_O,
-	ILEngineType_T,
-	ILEngineType_MV,
-	ILEngineType_Invalid,
-	ILEngineType_TypedRef,
+	ILEngineType_I4,		/* Int32 value. */
+	ILEngineType_I8,		/* Int64 value. */
+	ILEngineType_I,			/* Native integer. */
+	ILEngineType_F,			/* Native float. */
+	ILEngineType_M,			/* Managed reference. */
+	ILEngineType_O,			/* Object reference. */
+	ILEngineType_T,			/* Typed reference. */
+	ILEngineType_MV,		/* structure or value type. */
+	ILEngineType_Invalid,	/* Invalid. Used for void return values. */
+	ILEngineType_TypedRef,	/* TypeRef structure. */
+	ILEngineType_CM			/* Controlled-mutability managed pointer. */
 
 } ILEngineType;
 #define	ILEngineType_ValidTypes	8

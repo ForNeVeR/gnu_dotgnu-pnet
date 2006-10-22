@@ -207,11 +207,20 @@ static ILType *GetSystemValueType(ILMethod *method, const char *name)
 ILField *fieldInfo;
 ILMethod *methodInfo;
 ILProgramItem *item;
+ILClass *stackItemClass;
 
 #else /* IL_VERIFY_CODE */
 
 #define	IsCPPointer(type,typeInfo,classInfo)	\
 			((((type) == ILEngineType_M || (type) == ILEngineType_T) && \
+			  ILTypeIdentical(typeInfo, ILClassToType(classInfo))) || \
+			 (unsafeAllowed && \
+			  ((type) == ILEngineType_I || (type) == ILEngineType_I4)))
+
+#define	IsCPSrcPointer(type,typeInfo,classInfo)	\
+			((((type) == ILEngineType_M || \
+			   (type) == ILEngineType_CM || \
+			   (type) == ILEngineType_T) && \
 			  ILTypeIdentical(typeInfo, ILClassToType(classInfo))) || \
 			 (unsafeAllowed && \
 			  ((type) == ILEngineType_I || (type) == ILEngineType_I4)))
@@ -222,7 +231,7 @@ case IL_OP_CPOBJ:
 	classInfo = GetValueTypeToken(method, pc);
 	if(classInfo &&
 	   IsCPPointer(STK_BINARY_1, stack[stackSize - 2].typeInfo, classInfo) &&
-	   IsCPPointer(STK_BINARY_2, stack[stackSize - 1].typeInfo, classInfo))
+	   IsCPSrcPointer(STK_BINARY_2, stack[stackSize - 1].typeInfo, classInfo))
 	{
 		ILCoderCopyObject(coder, STK_BINARY_1, STK_BINARY_2, classInfo);
 		stackSize -= 2;
@@ -330,6 +339,58 @@ case IL_OP_UNBOX:
 }
 break;
 
+case IL_OP_UNBOX_ANY:
+{
+	classInfo = GetClassToken(method, pc);
+
+	/* Unbox a value from an object */
+	if(classInfo && STK_UNARY == ILEngineType_O)
+	{
+		classType = ILClassToType(classInfo);
+		if(ILType_IsClass(classType))
+		{
+			/* Cast the value to the required type first.  This takes
+			   care of throwing the "InvalidCastException" if the value
+			   is not of the correct class */
+			if(!IsSubClass(stack[stackSize - 1].typeInfo, classInfo))
+			{
+				ILCoderCastClass(coder, classInfo, 1);
+			}
+			stack[stackSize - 1].typeInfo = classType;
+		}
+		else
+		{
+	   		if(!(AssignCompatible(method, &(stack[stackSize - 1]),
+								  classType,
+								  unsafeAllowed)))
+			{
+				/* To throw the InvalitCastException in this case. */
+				ILCoderCastClass(coder, classInfo, 1);
+			}
+			/* Unbox the object to produce a managed pointer */
+			stackItemClass = ILClassFromType(ILProgramItem_Image(method),
+											 0,
+											 stack[stackSize - 1].typeInfo, 0);
+			if(!stackItemClass)
+			{
+				ThrowSystem("System", "TypeLoadException");
+			}
+			/* First get the pointer to the value */
+			ILCoderUnbox(coder, stackItemClass);
+			stack[stackSize - 1].engineType = ILEngineType_M;
+			/* We have to dereference the value in this case. */
+			ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, stackItemClass);
+			stack[stackSize - 1].engineType = TypeToEngineType(classType);
+			stack[stackSize - 1].typeInfo = classType;
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
 case IL_OP_LDFLD:
 {
 	/* Load the contents of an object field.  Note: according to the
@@ -367,6 +428,7 @@ case IL_OP_LDFLD:
 		}
 		else if(!unsafeAllowed &&
 				(STK_UNARY == ILEngineType_M ||
+				 STK_UNARY == ILEngineType_CM ||
 				 STK_UNARY == ILEngineType_T))
 		{
 			/* Accessing a field within a pointer to a managed value */
@@ -418,6 +480,7 @@ case IL_OP_LDFLD:
 				(STK_UNARY == ILEngineType_I ||
 				 STK_UNARY == ILEngineType_I4 ||
 				 STK_UNARY == ILEngineType_M ||
+				 STK_UNARY == ILEngineType_CM ||
 				 STK_UNARY == ILEngineType_T))
 		{
 			/* Accessing a field within an unmanaged pointer.
@@ -481,6 +544,7 @@ case IL_OP_LDFLDA:
 			}
 		}
 		else if(STK_UNARY == ILEngineType_M ||
+				STK_UNARY == ILEngineType_CM ||
 				STK_UNARY == ILEngineType_T)
 		{
 			/* Accessing a field within a pointer to a managed value */
@@ -587,6 +651,7 @@ case IL_OP_STFLD:
 		}
 		else if(!unsafeAllowed &&
 		        (STK_BINARY_1 == ILEngineType_M ||
+				 STK_BINARY_1 == ILEngineType_CM ||
 				 STK_BINARY_1 == ILEngineType_T))
 		{
 			/* Accessing a field within a pointer to a managed value */
@@ -617,6 +682,7 @@ case IL_OP_STFLD:
 				(STK_BINARY_1 == ILEngineType_I ||
 				 STK_BINARY_1 == ILEngineType_I4 ||
 				 STK_BINARY_1 == ILEngineType_M ||
+				 STK_BINARY_1 == ILEngineType_CM ||
 				 STK_BINARY_1 == ILEngineType_T))
 		{
 			/* Accessing a field within an unmanaged pointer.

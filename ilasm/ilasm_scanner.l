@@ -665,10 +665,10 @@ SIGN			[+-]
 "volatile."				{ OPCODE_NONE_P(VOLATILE); }
 "volatile"				{ OPCODE_NONE_P(VOLATILE); }	/* Alias */
 "xor"					{ OPCODE_NONE(XOR); }
+"readonly."				{ OPCODE_NONE_P(READONLY); }
+"readonly"				{ OPCODE_NONE_P(READONLY); }	/* Alias */
 
 "ann.dead"				{ OPCODE_VAR(ANN_DEAD); }	/* Local var opcodes */
-"ann.live"				{ OPCODE_VAR_P(ANN_LIVE); }
-"ann.ref"				{ OPCODE_VAR_P(ANN_REF); }
 "ann.ref.s"				{ OPCODE_VAR(ANN_REF_S); }
 "ldarg"					{ OPCODE_VAR_P(LDARG); }
 "ldarg.s"				{ OPCODE_VAR(LDARG_S); }
@@ -696,6 +696,10 @@ SIGN			[+-]
 "unaligned."			{ yylval.opcode = 0xFE00 | IL_PREFIX_OP_UNALIGNED;
 						  return I_INT; }
 "unaligned"				{ yylval.opcode = 0xFE00 | IL_PREFIX_OP_UNALIGNED;
+						  return I_INT; }	/* Alias */
+"no."					{ yylval.opcode = 0xFE00 | IL_PREFIX_OP_NO;
+						  return I_INT; }
+"no"					{ yylval.opcode = 0xFE00 | IL_PREFIX_OP_NO;
 						  return I_INT; }	/* Alias */
 
 "ann.data"				{ OPCODE_BRANCH_P(ANN_DATA); } /* Branch opcodes */
@@ -766,6 +770,8 @@ SIGN			[+-]
 "sizeof"				{ OPCODE_TYPE_P(SIZEOF); }
 "stobj"					{ OPCODE_TYPE(STOBJ); }
 "unbox"					{ OPCODE_TYPE(UNBOX); }
+"constrained."			{ OPCODE_TYPE_P(CONSTRAINED); }
+"constrained"			{ OPCODE_TYPE_P(CONSTRAINED); } /* Alias */
 
 "ldstr"					{ yylval.opcode = IL_OP_LDSTR;	/* String opcodes */
 						  return I_STRING; }

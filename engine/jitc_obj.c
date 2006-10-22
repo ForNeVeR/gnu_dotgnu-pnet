@@ -340,9 +340,22 @@ static void JITCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 	}
 #endif
 	_ILJitStackPop(jitCoder, ptr);
-	value = _ILJitLoadField(jitCoder,
-							&ptr,
-							fieldType, field->offset, 1);
+	if(ptrType == ILEngineType_MV)
+	{
+		/* We load a field from a valuetype on the stack. */
+		value = jit_insn_address_of(jitCoder->jitFunction,
+									_ILJitStackItemValue(ptr));
+		_ILJitStackItemSetValue(ptr, value);
+		value = _ILJitLoadField(jitCoder,
+								&ptr,
+								fieldType, field->offset, 0);
+	}
+	else
+	{
+		value = _ILJitLoadField(jitCoder,
+								&ptr,
+								fieldType, field->offset, 1);
+	}
 	_ILJitStackPushValue(jitCoder, value);
 }
 

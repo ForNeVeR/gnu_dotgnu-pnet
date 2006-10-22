@@ -700,6 +700,7 @@ restart:
 	result = 0;
 	labelList = 0;
 	hasRethrow = 0;
+	isReadOnly = 0;
 
 	/* Initialize the memory allocator that is used for temporary
 	   allocation during bytecode verification */

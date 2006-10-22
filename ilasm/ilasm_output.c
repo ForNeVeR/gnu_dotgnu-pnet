@@ -358,21 +358,8 @@ void ILAsmOutVar(ILInt32 opcode, ILInt64 num)
 	switch(opcode)
 	{
 		case IL_OP_ANN_DEAD:
-		case 0xFE00 | IL_PREFIX_OP_ANN_LIVE:
 		{
 			OutLongVar(opcode, 0, 0, num);
-		}
-		break;
-
-		case 0xFE00 | IL_PREFIX_OP_ANN_REF:
-		{
-			OutLongVar(opcode, IL_OP_ANN_REF_S, 0, num);
-		}
-		break;
-
-		case IL_OP_ANN_REF_S:
-		{
-			OutShortVar(0xFE00 | IL_PREFIX_OP_ANN_REF, opcode, 0, num);
 		}
 		break;
 

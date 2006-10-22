@@ -495,6 +495,7 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 		break;
 
 		case ILEngineType_M:
+		case ILEngineType_CM:
 		case ILEngineType_O:
 		case ILEngineType_T:
 		case ILEngineType_I4:

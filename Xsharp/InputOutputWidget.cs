@@ -681,12 +681,16 @@ public class InputOutputWidget : InputOnlyWidget
 				if(region != null)
 				{
 					exposeRegion = null;
-					Graphics graphics = new Graphics(this);
-					graphics.exposeRegion = region;
-					graphics.SetClipRegion(region);
-					OnPaint(graphics);
-					graphics.Dispose();
-					region.Dispose();
+					// sometimes it could be that Expose is called but the handle is destroyed.
+					// so check here, if handle not null.
+					if( handle != XDrawable.Zero ) {
+						Graphics graphics = new Graphics(this);
+						graphics.exposeRegion = region;
+						graphics.SetClipRegion(region);
+						OnPaint(graphics);
+						graphics.Dispose();
+						region.Dispose();
+					}
 				}
 			}
 

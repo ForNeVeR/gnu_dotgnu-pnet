@@ -84,7 +84,7 @@ ILString *_IL_InfoMethods_GetPlatformName(ILExecThread *thread)
 ILString *_IL_InfoMethods_GetUserDomainName(ILExecThread *thread)
 {
 	/* TODO */
-	return 0;
+	return _IL_InfoMethods_GetNetBIOSMachineName(thread);
 }
 
 /*

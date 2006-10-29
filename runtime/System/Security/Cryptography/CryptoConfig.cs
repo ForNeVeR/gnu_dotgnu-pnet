@@ -291,8 +291,7 @@ public class CryptoConfig
 				}
 
 				// The algorithm does not exist.
-				throw new CryptographicException
-					(_("Crypto_NoProvider"), name);
+				return null;
 			}
 
 	// Determine the size of an OID component.

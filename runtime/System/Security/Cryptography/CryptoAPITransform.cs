@@ -320,7 +320,7 @@ public sealed class CryptoAPITransform : ICryptoTransform, IDisposable
 				{
 					throw new ArgumentNullException("outputBuffer");
 				}
-				else if(outputOffset < 0 || outputOffset > inputBuffer.Length)
+				else if(outputOffset < 0 || outputOffset > outputBuffer.Length)
 				{
 					throw new ArgumentOutOfRangeException
 						("outputOffset", _("ArgRange_Array"));

@@ -2607,7 +2607,7 @@ void _IL_Array_Clear(ILExecThread *thread, ILObject *_array,
 	/* Determine the start address of the clear */
 	if(_ILIsSArray(array))
 	{
-		if(index < 0 || index >= array->length)
+		if(index < 0)
 		{
 			ILExecThreadThrowArgRange(thread, "index", "Arg_InvalidArrayIndex");
 			return;

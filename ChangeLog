@@ -1,3 +1,8 @@
+2006-10-29  Radek Polak <psonek2@seznam.cz>
+
+	* engine/lib_array.c: fix Array.Clear() when called with empty array,
+	index=0 and count=0.
+
 2006-10-22  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvmc_call.c, engine/cvmc_stack.c: Handle the new engine type

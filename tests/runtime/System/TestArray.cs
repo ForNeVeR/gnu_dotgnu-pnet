@@ -173,6 +173,7 @@ public class TestArray : TestCase
 				{
 					// Test succeeded.
 				}
+				Array.Clear(new int[0], 0, 0);
 				Array.Clear(new int [3, 3], 0, 9);	// Indices are relative.
 				int[] array = new int [] {1, 2, 3, 5, 6};
 				try

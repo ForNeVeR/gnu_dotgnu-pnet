@@ -810,8 +810,15 @@ abstract class XmlNode : ICloneable, IEnumerable
 
 				// Perform the insert.
 				newChild.parent = this;
-				refChild = NodeList.GetPreviousSibling(refChild);
-				NodeList.GetList(this).InsertAfter(newChild, refChild);
+				if( refChild == this.FirstChild ) {
+					NodeList.GetList(this).first = newChild;
+					NodeList.GetList(newChild).nextSibling = refChild;
+					NodeList.GetList(refChild).prevSibling = newChild;
+				}
+				else {
+					refChild = NodeList.GetPreviousSibling(refChild);
+					NodeList.GetList(this).InsertAfter(newChild, refChild);
+				}
 
 				// Notify the document after the insert.
 				EmitAfter(args);

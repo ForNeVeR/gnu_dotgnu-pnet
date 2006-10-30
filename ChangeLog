@@ -1,3 +1,7 @@
+2006-10-30  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Xml/XmlNode.cs: fix for InsertBefore first node.
+
 2006-10-29  Radek Polak <psonek2@seznam.cz>
 
 	* pnetlib/runtime/System/Security/Cryptography/CryptoConfig.cs: return

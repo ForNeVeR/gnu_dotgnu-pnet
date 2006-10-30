@@ -1,3 +1,7 @@
+2006-10-26  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* Array.cs: IndexOf, LastIndexOf & Sort() not checking bounds properly.
+
 2006-10-30  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Xml/XmlNode.cs: fix for InsertBefore first node.

@@ -60,7 +60,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			{
 				if(comparer != null)
 				{
-					cmp = comparer.Compare(elem, value);
+					cmp = comparer.Compare(value, elem);
 				}
 				else if((icmp = (elem as IComparable)) != null)
 				{
@@ -910,7 +910,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
-		   startIndex > array.GetUpperBound(0))
+		   startIndex > array.GetUpperBound(0) + 1)
 		{
 			throw new ArgumentOutOfRangeException
 				("startIndex", _("Arg_InvalidArrayIndex"));
@@ -932,7 +932,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
-		   startIndex > array.GetUpperBound(0))
+		   startIndex > array.GetUpperBound(0) + 1)
 		{
 			throw new ArgumentOutOfRangeException
 				("startIndex", _("Arg_InvalidArrayIndex"));
@@ -955,9 +955,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
-		   startIndex > array.GetUpperBound(0) ||
-		   count < 0 ||
-		   count > (array.GetUpperBound(0) - startIndex + 1))
+		   startIndex + count > array.GetUpperBound(0) + 1 ||
+		   count < 0)
 		{
 			throw new ArgumentOutOfRangeException(_("Arg_InvalidArrayRange"));
 		}
@@ -978,9 +977,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new RankException(_("Arg_RankMustBe1"));
 		}
 		if(startIndex < array.GetLowerBound(0) ||
-		   startIndex > array.GetUpperBound(0) ||
-		   count < 0 ||
-		   count > (startIndex - array.GetLowerBound(0) + 1))
+		   startIndex + count > array.GetUpperBound(0) + 1 ||
+		   count < 0)
 		{
 			throw new ArgumentOutOfRangeException(_("Arg_InvalidArrayRange"));
 		}
@@ -1273,7 +1271,7 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 			throw new ArgumentOutOfRangeException
 				("length", _("ArgRange_Array"));
 		}
-		if(index > array.GetUpperBound(0) ||
+		if(index > array.GetUpperBound(0) + 1 ||
 		   length > (array.GetUpperBound(0) - index + 1))
 		{
 			throw new ArgumentException(_("Arg_InvalidArrayRange"));

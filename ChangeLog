@@ -1,3 +1,12 @@
+2006-10-26  Russell Stuart  <russell-savannah@stuart.id.au>
+
+	* lib_string.c: Make String.IndexOf("", ...) and
+	String.LastIndexOf("", ...) always match, as they do in
+	Microsoft's implementation.
+
+	* cvm_except.c: save and restore exceptHeight in
+	finally blocks.
+
 2006-10-29  Radek Polak <psonek2@seznam.cz>
 
 	* pnet/engine/lib_info.c: implement Environment.UserDomainName so that

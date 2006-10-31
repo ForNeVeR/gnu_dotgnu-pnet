@@ -438,11 +438,27 @@ namespace System.Xml.Serialization
 				}
 			}
 			
+			/*
+			Brubbel:
+			we have problems using the generator.
+			if we do not generate it no problems where there any more.
+			The problems are that the compiled generator does not work or 
+			the compiler returns an error.
+			Since we do not generate any more, we never had problems with 
+			serialization and deserialization of objects.
+			 
+			Since we have libjit the generator is no longer needed.
+			
+			Please be careful if U want to enable this.
+			*/
+			
+#if USE_GENERATOR
 			bool generate = false;
 			lock (serializerData)
 			{
 				generate = (++serializerData.UsageCount == generationThreshold);
 			}
+			
 			
 			if (generate)
 			{
@@ -456,6 +472,7 @@ namespace System.Xml.Serialization
 					GenerateSerializers (batch);
 				}
 			}
+#endif
 		}
 		
 		void GenerateSerializers (GenerationBatch batch)

@@ -1,3 +1,8 @@
+2006-10-31  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Xml/Serialization/XmlSerializer.cs: fixed serialization errors.
+	* System/CodeDom/Compiler/CodeCompiler.cs: fixed catching compiler errors.
+
 2006-10-26  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* Array.cs: IndexOf, LastIndexOf & Sort() not checking bounds properly.

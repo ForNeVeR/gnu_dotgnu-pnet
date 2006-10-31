@@ -368,22 +368,32 @@ public abstract class CodeCompiler : CodeGenerator, ICodeCompiler
 					{
 						++posn;
 					}
-					error.Line = Int32.Parse
-						(line.Substring(start, posn - start));
-					if(posn < line.Length && line[posn + 1] != ' ')
-					{
-						++posn;
-						start = posn;
-						while(posn < line.Length && line[posn] != ':')
+					try {
+						error.Line = Int32.Parse
+							(line.Substring(start, posn - start));
+						if(posn < line.Length && line[posn + 1] != ' ')
+						{
+							++posn;
+							start = posn;
+							while(posn < line.Length && line[posn] != ':')
+							{
+								++posn;
+							}
+							error.Column = Int32.Parse
+									(line.Substring(start, posn - start));
+						}
+						if(posn < line.Length)
 						{
 							++posn;
 						}
-						error.Column = Int32.Parse
-							(line.Substring(start, posn - start));
 					}
-					if(posn < line.Length)
-					{
-						++posn;
+					catch {
+						// compiler output could be XXXX: no such library.
+						// so Int32.Parse(XXXX: no such library) would throw an exception
+						error.Line = 0;
+						error.Column = 0;
+						error.ErrorText = line;
+						return error;
 					}
 				}
 

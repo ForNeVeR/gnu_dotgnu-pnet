@@ -210,9 +210,8 @@ ILInt32 ILGetTimeZoneAdjust(void)
 #if !defined(__palmos__)
 	static int initialized = 0;
 	static int isdst = 0;
-#ifdef HAVE_TM_GMTOFF
-    static long timezone = 0;
-#endif
+	static long timezone = 0;
+
 	if(!initialized)
 	{
 #ifdef IL_WIN32_PLATFORM
@@ -229,11 +228,11 @@ ILInt32 ILGetTimeZoneAdjust(void)
 			timezone = temp.Bias * 60;
 		}
 #else
+#ifdef HAVE_TM_GMTOFF
 		/* Call "localtime", which will set the global "timezone" for us */
 		time_t temp = time(0);
 		struct tm *tms = localtime(&temp);
 		isdst = tms->tm_isdst;
-#ifdef HAVE_TM_GMTOFF
 		timezone = -(tms->tm_gmtoff);
 #endif
 #endif

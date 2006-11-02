@@ -1,6 +1,11 @@
+2006-11-02  Roman I Khimov  <roman@khimov.ru>
+
+	* support/time.c: Fix ILGetTimeZoneAdjust if tm_gmtoff is not present in
+	the tm struct (Patch #5144, Klaus).
+
 2006-10-26  Russell Stuart  <russell-savannah@stuart.id.au>
 
-	* lib_string.c: Make String.IndexOf("", ...) and
+	* engine/lib_string.c: Make String.IndexOf("", ...) and
 	String.LastIndexOf("", ...) always match, as they do in
 	Microsoft's implementation.
 

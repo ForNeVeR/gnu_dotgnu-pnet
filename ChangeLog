@@ -1,3 +1,7 @@
+2006-11-03  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TextBox.cs: fixed index out of range exception.
+
 2006-10-31  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Xml/Serialization/XmlSerializer.cs: fixed serialization errors.

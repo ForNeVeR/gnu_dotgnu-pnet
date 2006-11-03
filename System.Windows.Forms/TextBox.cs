@@ -1126,25 +1126,32 @@ public class TextBox : TextBoxBase
 		if (prevLayout)
 		{
 			Region update = new Region(RectangleF.Empty);
-			int len = text.Length;
-			if (oldText.Length > len)
+			int oldLen = oldText.Length;
+			int newLen = text.Length;
+			int len    = newLen;
+					
+			if (oldLen > len)
 			{
-				len = oldText.Length;
+				len = oldLen;
 			}
 			for (int i=0;i < len;i++)
 			{
-				if (i >= oldText.Length)
+				if (i >= oldLen)
 				{
-					update.Union( layout.Items[i].bounds);
+					if( i < newLen ) update.Union( layout.Items[i].bounds);
 				}
-				else if (i >= text.Length)
+				else if (i >= newLen )
 				{
-					update.Union( oldLayout.Items[i].bounds);
+					if( i < oldLen ) update.Union( oldLayout.Items[i].bounds);
 				}
-				else if (Text[i] != oldText[i] || oldLayout.Items[i].bounds != layout.Items[i].bounds)
+				else if ( (i < oldLen && i < newLen) && (Text[i] != oldText[i] || oldLayout.Items[i].bounds != layout.Items[i].bounds ) )
 				{
-					update.Union( layout.Items[i].bounds);
-					update.Union( oldLayout.Items[i].bounds);
+					if( i < newLen ) {
+						update.Union( layout.Items[i].bounds);
+					}
+					if( i < oldLen ) {
+						update.Union( oldLayout.Items[i].bounds);
+					}
 				}
 			}
 			// Get the offset of the TextDrawArea

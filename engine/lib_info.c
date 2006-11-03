@@ -55,7 +55,13 @@ ILString *_IL_InfoMethods_GetNetBIOSMachineName(ILExecThread *thread)
 	{
 		return ILStringCreate(thread, env);
 	}
+#ifdef IL_CONFIG_NETWORKING
 	return _IL_DnsMethods_InternalGetHostName(thread);
+#else
+	ILExecThreadThrowSystem(thread, "System.NotSupportedException", 
+					"Exception_ThreadsNotSupported");
+	return 0;
+#endif /* IL_CONFIG_NETWORKING */
 }
 
 /*

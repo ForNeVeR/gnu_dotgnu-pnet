@@ -1,3 +1,8 @@
+2006-11-03  Roman I Khimov  <roman@khimov.ru>
+
+	* engine/lib_info.c: Fix build with profiles that don't support networking.
+	(Patch #5516, Klaus)
+
 2006-11-02  Roman I Khimov  <roman@khimov.ru>
 
 	* support/time.c: Fix ILGetTimeZoneAdjust if tm_gmtoff is not present in

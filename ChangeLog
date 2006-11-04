@@ -1,3 +1,10 @@
+2006-11-04  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* engine/process.c: Don't destroy the current thread before invoking the
+	finalizers if the jit is used because the thread might be needed to
+	process async. delegates invoked during the finalization process.
+	(Patch #5352, Klaus)
+
 2006-11-03  Roman I Khimov  <roman@khimov.ru>
 
 	* engine/lib_info.c: Fix build with profiles that don't support networking.

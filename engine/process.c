@@ -384,6 +384,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		ILThreadJoin(target, -1);
 	}
 	
+#ifndef IL_USE_JIT
 	/* Unregister (and destroy) the current thread if it isn't needed
 	for finalization and if it belongs to this domain. */
 	if (!mainIsFinalizer 
@@ -393,6 +394,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	{
 		ILThreadUnregisterForManagedExecution(ILThreadSelf());
 	}
+#endif
 
 	/* Invoke the finalizers -- hopefully finalizes all objects left in the
 	   process being destroyed.  Objects left lingering are orphans */

@@ -1,3 +1,11 @@
+2006-11-05  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/configure, libgc/configure.in, libgc/darwin_stop_world.c,
+	libgc/dyn_load.c, libgc/malloc.c, libgc/os_dep.c, libgc/pthread_support.c,
+	libgc/version.h, libgc/doc/README, libgc/doc/README.changes,
+	libgc/include/gc_config_macros.h, libgc/include/gc.h,
+	libgc/include/private/gcconfig.h: Update to libgc 6.8.
+
 2006-11-04  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* engine/process.c: Don't destroy the current thread before invoking the

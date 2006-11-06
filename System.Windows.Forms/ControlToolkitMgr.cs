@@ -57,7 +57,8 @@ internal class ControlToolkitManager : Control
 				);
 		}
 		
-		if(parent != null )
+		// Check parent Toolkit too, might be null in some difficult cases. 
+		if(parent != null && parent.Toolkit != null )
 		{
 			return parent.Toolkit.CreateChildWindow
 					(parent, x, y, w, h, new ControlWeakRef(control) );

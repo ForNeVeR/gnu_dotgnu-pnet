@@ -761,14 +761,22 @@ int _ILDumpCVMInsn(FILE *stream, ILMethod *currMethod, unsigned char *pc)
 
 		case CVM_OPER_FLOAT32:
 		{
+#ifdef IL_CONFIG_FP_SUPPORTED
 			fprintf(stream, "%g", (double)(IL_READ_FLOAT(pc + 1)));
+#else /* !IL_CONFIG_FP_SUPPORTED */
+			fprintf(stream, "FLOAT32 value, unsupported");
+#endif /* !IL_CONFIG_FP_SUPPORTED */
 			size = 5;
 		}
 		break;
 
 		case CVM_OPER_FLOAT64:
 		{
+#ifdef IL_CONFIG_FP_SUPPORTED
 			fprintf(stream, "%g", (double)(IL_READ_DOUBLE(pc + 1)));
+#else /* !IL_CONFIG_FP_SUPPORTED */
+			fprintf(stream, "FLOAT64 value, unsupported");
+#endif /* !IL_CONFIG_FP_SUPPORTED */
 			size = 9;
 		}
 		break;

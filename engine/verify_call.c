@@ -1243,6 +1243,10 @@ static InlineMethodInfo const InlineMethods[] = {
 	{"Char", "System", "IsWhiteSpace", "(c)Z", IL_INLINEMETHOD_IS_WHITE_SPACE},
 
 	{"Math", "System", "Abs", "(i)i", IL_INLINEMETHOD_ABS_I4},
+	{"Math", "System", "Max", "(ii)i", IL_INLINEMETHOD_MAX_I4},
+	{"Math", "System", "Min", "(ii)i", IL_INLINEMETHOD_MIN_I4},
+	{"Math", "System", "Sign", "(i)i", IL_INLINEMETHOD_SIGN_I4},
+#ifdef IL_CONFIG_FP_SUPPORTED
 	{"Math", "System", "Abs", "(f)f", IL_INLINEMETHOD_ABS_R4},
 	{"Math", "System", "Abs", "(d)d", IL_INLINEMETHOD_ABS_R8},
 	{"Math", "System", "Asin", "(d)d", IL_INLINEMETHOD_ASIN},
@@ -1256,15 +1260,12 @@ static InlineMethodInfo const InlineMethods[] = {
 	{"Math", "System", "IEEERemainder", "(dd)d", IL_INLINEMETHOD_IEEEREMAINDER},
 	{"Math", "System", "Log", "(d)d", IL_INLINEMETHOD_LOG},
 	{"Math", "System", "Log10", "(d)d", IL_INLINEMETHOD_LOG10},
-	{"Math", "System", "Max", "(ii)i", IL_INLINEMETHOD_MAX_I4},
-	{"Math", "System", "Min", "(ii)i", IL_INLINEMETHOD_MIN_I4},
 	{"Math", "System", "Max", "(ff)f", IL_INLINEMETHOD_MAX_R4},
 	{"Math", "System", "Min", "(ff)f", IL_INLINEMETHOD_MIN_R4},
 	{"Math", "System", "Max", "(dd)d", IL_INLINEMETHOD_MAX_R8},
 	{"Math", "System", "Min", "(dd)d", IL_INLINEMETHOD_MIN_R8},
 	{"Math", "System", "Pow", "(dd)d", IL_INLINEMETHOD_POW},
 	{"Math", "System", "Round", "(d)d", IL_INLINEMETHOD_ROUND},
-	{"Math", "System", "Sign", "(i)i", IL_INLINEMETHOD_SIGN_I4},
 	{"Math", "System", "Sign", "(f)i", IL_INLINEMETHOD_SIGN_R4},
 	{"Math", "System", "Sign", "(d)i", IL_INLINEMETHOD_SIGN_R8},
 	{"Math", "System", "Sin", "(d)d", IL_INLINEMETHOD_SIN},
@@ -1272,6 +1273,7 @@ static InlineMethodInfo const InlineMethods[] = {
 	{"Math", "System", "Sqrt", "(d)d", IL_INLINEMETHOD_SQRT},
 	{"Math", "System", "Tan", "(d)d", IL_INLINEMETHOD_TAN},
 	{"Math", "System", "Tanh", "(d)d", IL_INLINEMETHOD_TANH}
+#endif /* IL_CONFIG_FP_SUPPORTED */
 };
 #define	NumInlineMethods	(sizeof(InlineMethods) / sizeof(InlineMethodInfo))
 

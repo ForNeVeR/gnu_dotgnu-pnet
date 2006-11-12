@@ -19,6 +19,7 @@
  */
 
 #include "il_values.h"
+#ifdef IL_CONFIG_FP_SUPPORTED
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -145,3 +146,4 @@ int ILFloatToUInt64Ovf(ILUInt64 *result, ILNativeFloat value)
 #ifdef	__cplusplus
 };
 #endif
+#endif /* IL_CONFIG_FP_SUPPORTED */

@@ -19,6 +19,7 @@
  */
 
 #include "il_values.h"
+#ifdef IL_CONFIG_FP_SUPPORTED
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -110,3 +111,4 @@ void _ILWriteDouble(unsigned char *buf, ILDouble value)
 #ifdef	__cplusplus
 };
 #endif
+#endif /* IL_CONFIG_FP_SUPPORTED */

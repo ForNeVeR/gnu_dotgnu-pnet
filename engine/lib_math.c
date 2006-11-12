@@ -31,6 +31,8 @@
 #endif
 #endif
 
+#ifdef IL_CONFIG_FP_SUPPORTED
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -511,3 +513,4 @@ ILInt32 _IL_Double_TestInfinity(ILExecThread *thread, ILDouble d)
 #ifdef	__cplusplus
 };
 #endif
+#endif /* IL_CONFIG_FP_SUPPORTED */

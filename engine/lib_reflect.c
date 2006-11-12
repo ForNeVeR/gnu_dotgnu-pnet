@@ -2383,6 +2383,7 @@ ILObject* UnpackConstant(ILExecThread *thread,ILConstant* constant,
  			longValue = IL_READ_INT64(ptr);
  			return ILExecThreadBox(thread,type,&(longValue));
 
+#ifdef IL_CONFIG_FP_SUPPORTED
  		case IL_META_ELEMTYPE_R4:
 			if(len < 4)
 				return 0;
@@ -2394,6 +2395,15 @@ ILObject* UnpackConstant(ILExecThread *thread,ILConstant* constant,
 				return 0;
  			doubleValue =  IL_READ_DOUBLE(ptr);
  			return ILExecThreadBox(thread,type,&(doubleValue));
+
+#else /* !IL_CONFIG_FP_SUPPORTED */
+
+		case IL_META_ELEMTYPE_R4:
+		case IL_META_ELEMTYPE_R8:
+			ILExecThreadThrowSystem(thread,
+					"System.NotSupportedException", 0);
+			return 0;
+#endif /* !IL_CONFIG_FP_SUPPORTED */
 
  		case IL_META_ELEMTYPE_STRING:
 			return (ILObject *)_ILStringInternFromConstant(thread,ptr,len / 2);

@@ -69,7 +69,9 @@ VMBREAK(COP_PREFIX_##f1)
 #elif defined(IL_CVM_LOCALS)
 
 ILInt32 tempI4;
+#ifdef IL_CONFIG_FP_SUPPORTED
 ILDouble tempR8;
+#endif /* IL_CONFIG_FP_SUPPORTED */
 System_Text_StringBuilder *builder;
 
 #elif defined(IL_CVM_MAIN)
@@ -530,6 +532,126 @@ VMCASE(COP_PREFIX_IS_WHITE_SPACE):
 VMBREAK(COP_PREFIX_IS_WHITE_SPACE);
 
 /**
+ * <opcode name="abs_i4" group="Inline methods">
+ *   <operation>Compute the absolute value of an int</operation>
+ *
+ *   <format>prefix<fsep/>abs_i4</format>
+ *   <dformat>{abs_i4}</dformat>
+ *
+ *   <form name="abs_i4" code="COP_PREFIX_ABS_I4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_ABS_I4):
+{
+	tempI4 = stacktop[-1].intValue;
+	
+	if (tempI4 >= 0)
+	{
+		/* Value is ok */
+	}
+	else if (tempI4 != IL_MIN_INT32)
+	{
+		stacktop[-1].intValue = -tempI4;
+	}
+	else
+	{
+		COPY_STATE_TO_THREAD();
+		ILExecThreadThrowSystem(thread, "System.OverflowException", "Overflow_NegateTwosCompNum");
+		RESTORE_STATE_FROM_THREAD();
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_ABS_I4);
+
+/**
+ * <opcode name="min_i4" group="Inline methods">
+ *   <operation>Compute the minimum of two numbers</operation>
+ *
+ *   <format>prefix<fsep/>min_i4</format>
+ *   <dformat>{min_i4}</dformat>
+ *
+ *   <form name="min_i4" code="COP_PREFIX_MIN_I4"/>
+ *
+ *   <before>..., int</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MIN_I4):
+{
+	stacktop[-2].intValue =
+		stacktop[-1].intValue < stacktop[-2].intValue 
+			?	stacktop[-1].intValue 
+				: stacktop[-2].intValue;
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
+}
+VMBREAK(COP_PREFIX_MIN_I4);
+
+/**
+ * <opcode name="max_i4" group="Inline methods">
+ *   <operation>Compute the maximum of two numbers</operation>
+ *
+ *   <format>prefix<fsep/>max_i4</format>
+ *   <dformat>{min_i4}</dformat>
+ *
+ *   <form name="max_i4" code="COP_PREFIX_MAX_I4"/>
+ *
+ *   <before>...,  int</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_MAX_I4):
+{
+	stacktop[-2].intValue = 
+		stacktop[-1].intValue > stacktop[-2].intValue 
+			?	stacktop[-1].intValue 
+				: stacktop[-2].intValue;
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
+}
+VMBREAK(COP_PREFIX_MAX_I4);
+
+/**
+ * <opcode name="sign_i4" group="Inline methods">
+ *   <operation>Compute the sign of an int</operation>
+ *
+ *   <format>prefix<fsep/>sign_i4</format>
+ *   <dformat>{sign_i4}</dformat>
+ *
+ *   <form name="sign_i4" code="COP_PREFIX_SIGN_I4"/>
+ *
+ *   <before>..., db</before>
+ *   <after>..., result</after>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SIGN_I4):
+{
+	tempI4 = stacktop[-1].intValue;
+
+	if (tempI4 > 0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 1;
+	}
+	else if (tempI4 < 0)
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = -1;
+	}
+	else
+	{
+		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 0;
+	}
+
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+}
+VMBREAK(COP_PREFIX_SIGN_I4);
+
+#ifdef IL_CONFIG_FP_SUPPORTED
+
+/**
  * <opcode name="asin" group="Inline methods">
  *   <operation>Compute the angle whose sine is the specified number</operation>
  *
@@ -801,54 +923,6 @@ COP_PREFIX_MATH_CASE(TAN, Tan);
 COP_PREFIX_MATH_CASE(TANH, Tanh);
 
 /**
- * <opcode name="min_i4" group="Inline methods">
- *   <operation>Compute the minimum of two numbers</operation>
- *
- *   <format>prefix<fsep/>min_i4</format>
- *   <dformat>{min_i4}</dformat>
- *
- *   <form name="min_i4" code="COP_PREFIX_MIN_I4"/>
- *
- *   <before>..., int</before>
- *   <after>..., result</after>
- * </opcode>
- */
-VMCASE(COP_PREFIX_MIN_I4):
-{
-	stacktop[-2].intValue =
-		stacktop[-1].intValue < stacktop[-2].intValue 
-			?	stacktop[-1].intValue 
-				: stacktop[-2].intValue;
-
-	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
-}
-VMBREAK(COP_PREFIX_MIN_I4);
-
-/**
- * <opcode name="max_i4" group="Inline methods">
- *   <operation>Compute the maximum of two numbers</operation>
- *
- *   <format>prefix<fsep/>max_i4</format>
- *   <dformat>{min_i4}</dformat>
- *
- *   <form name="max_i4" code="COP_PREFIX_MAX_I4"/>
- *
- *   <before>...,  int</before>
- *   <after>..., result</after>
- * </opcode>
- */
-VMCASE(COP_PREFIX_MAX_I4):
-{
-	stacktop[-2].intValue = 
-		stacktop[-1].intValue > stacktop[-2].intValue 
-			?	stacktop[-1].intValue 
-				: stacktop[-2].intValue;
-
-	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
-}
-VMBREAK(COP_PREFIX_MAX_I4);
-
-/**
  * <opcode name="min_r4" group="Inline methods">
  *   <operation>Compute the minimum of two numbers</operation>
  *
@@ -945,40 +1019,6 @@ VMCASE(COP_PREFIX_MAX_R8):
 VMBREAK(COP_PREFIX_MAX_R8);
 
 /**
- * <opcode name="sign_i4" group="Inline methods">
- *   <operation>Compute the sign of an int</operation>
- *
- *   <format>prefix<fsep/>sign_i4</format>
- *   <dformat>{sign_i4}</dformat>
- *
- *   <form name="sign_i4" code="COP_PREFIX_SIGN_I4"/>
- *
- *   <before>..., db</before>
- *   <after>..., result</after>
- * </opcode>
- */
-VMCASE(COP_PREFIX_SIGN_I4):
-{
-	tempI4 = stacktop[-1].intValue;
-
-	if (tempI4 > 0)
-	{
-		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 1;
-	}
-	else if (tempI4 < 0)
-	{
-		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = -1;
-	}
-	else
-	{
-		stacktop[-CVM_WORDS_PER_NATIVE_FLOAT].intValue = 0;
-	}
-
-	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
-}
-VMBREAK(COP_PREFIX_SIGN_I4);
-
-/**
  * <opcode name="sign_r4" group="Inline methods">
  *   <operation>Compute the sign of a float</operation>
  *
@@ -1047,42 +1087,6 @@ VMCASE(COP_PREFIX_SIGN_R8):
 VMBREAK(COP_PREFIX_SIGN_R8);
 
 /**
- * <opcode name="abs_i4" group="Inline methods">
- *   <operation>Compute the absolute value of an int</operation>
- *
- *   <format>prefix<fsep/>abs_i4</format>
- *   <dformat>{abs_i4}</dformat>
- *
- *   <form name="abs_i4" code="COP_PREFIX_ABS_I4"/>
- *
- *   <before>..., db</before>
- *   <after>..., result</after>
- * </opcode>
- */
-VMCASE(COP_PREFIX_ABS_I4):
-{
-	tempI4 = stacktop[-1].intValue;
-	
-	if (tempI4 >= 0)
-	{
-		/* Value is ok */
-	}
-	else if (tempI4 != IL_MIN_INT32)
-	{
-		stacktop[-1].intValue = -tempI4;
-	}
-	else
-	{
-		COPY_STATE_TO_THREAD();
-		ILExecThreadThrowSystem(thread, "System.OverflowException", "Overflow_NegateTwosCompNum");
-		RESTORE_STATE_FROM_THREAD();
-	}
-
-	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
-}
-VMBREAK(COP_PREFIX_ABS_I4);
-
-/**
  * <opcode name="abs_r4" group="Inline methods">
  *   <operation>Compute the absolute value of a float</operation>
  *
@@ -1133,5 +1137,47 @@ VMCASE(COP_PREFIX_ABS_R8):
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
 VMBREAK(COP_PREFIX_ABS_R8);
+
+#else /* !IL_CONFIG_FP_SUPPORTED */
+/*
+ * Stub out floating-point instructions.
+ */
+
+VMCASE(COP_PREFIX_ABS_R4):
+VMCASE(COP_PREFIX_ABS_R8):
+VMCASE(COP_PREFIX_ASIN):
+VMCASE(COP_PREFIX_ATAN):
+VMCASE(COP_PREFIX_ATAN2):
+VMCASE(COP_PREFIX_CEILING):
+VMCASE(COP_PREFIX_COS):
+VMCASE(COP_PREFIX_COSH):
+VMCASE(COP_PREFIX_EXP):
+VMCASE(COP_PREFIX_FLOOR):
+VMCASE(COP_PREFIX_IEEEREMAINDER):
+VMCASE(COP_PREFIX_LOG):
+VMCASE(COP_PREFIX_LOG10):
+VMCASE(COP_PREFIX_MIN_R4):
+VMCASE(COP_PREFIX_MAX_R4):
+VMCASE(COP_PREFIX_MIN_R8):
+VMCASE(COP_PREFIX_MAX_R8):
+VMCASE(COP_PREFIX_POW):
+VMCASE(COP_PREFIX_ROUND):
+VMCASE(COP_PREFIX_SIGN_R4):
+VMCASE(COP_PREFIX_SIGN_R8):
+VMCASE(COP_PREFIX_SIN):
+VMCASE(COP_PREFIX_SINH):
+VMCASE(COP_PREFIX_SQRT):
+VMCASE(COP_PREFIX_TAN):
+VMCASE(COP_PREFIX_TANH):
+{
+	COPY_STATE_TO_THREAD();
+	stacktop[0].ptrValue =
+		_ILSystemException(thread, "System.NotSupportedException");
+	stacktop += 1;
+	goto throwException;
+}
+/* Not reached */
+
+#endif /* IL_CONFIG_FP_SUPPORTED */
 
 #endif /* IL_CVM_PREFIX */

@@ -33,6 +33,7 @@
 #include <ieeefp.h>
 #endif
 #endif
+#ifdef IL_CONFIG_FP_SUPPORTED
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -94,3 +95,4 @@ int ILNativeFloatIsInf(ILNativeFloat value)
 #ifdef	__cplusplus
 };
 #endif
+#endif /* IL_CONFIG_FP_SUPPORTED */

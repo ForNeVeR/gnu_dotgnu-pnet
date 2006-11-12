@@ -22,6 +22,7 @@
 #ifdef HAVE_MATH_H
 #include <math.h>
 #endif
+#ifdef IL_CONFIG_FP_SUPPORTED
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -40,3 +41,4 @@ ILNativeFloat ILNativeFloatRem(ILNativeFloat value1, ILNativeFloat value2)
 #ifdef	__cplusplus
 };
 #endif
+#endif /* IL_CONFIG_FP_SUPPORTED */

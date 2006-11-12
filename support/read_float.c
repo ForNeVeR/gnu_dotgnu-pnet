@@ -19,6 +19,7 @@
  */
 
 #include "il_values.h"
+#ifdef IL_CONFIG_FP_SUPPORTED
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -107,3 +108,4 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf)
 #ifdef	__cplusplus
 };
 #endif
+#endif /* IL_CONFIG_FP_SUPPORTED */

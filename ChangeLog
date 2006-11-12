@@ -1,3 +1,15 @@
+2006-11-12    Roman I Khimov  <roman@khimov.ru>
+
+	* engine/cvm_inline.c, engine/verify_call.c: Fix build witd profiles that
+	don't have floating point support. Replaced the
+	System.NotImplementedException with a System.NotSupportedException.
+	(Patch #5518, Klaus)
+
+	* engine/cvm_dasm.c, engine/lib_math.c, engine/lib_reflect.c,
+	support/cvt_float.c, support/read_float.c, support/rem_float.c,
+	support/test_float.c, support/write_float.c: Remove functions not needed
+	without FP support. (Patch #5536, Klaus)
+
 2006-11-05  Klaus Treichel  <ktreichel@web.de>
 
 	* libgc/configure, libgc/configure.in, libgc/darwin_stop_world.c,

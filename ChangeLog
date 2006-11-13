@@ -1,3 +1,7 @@
+2006-11-13  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Drawing2D/GraphicsPath.cs: fixed Reset to clear points.
+
 2006-11-06  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/ControlToolkitMgr.cs: fixed null ref exception.

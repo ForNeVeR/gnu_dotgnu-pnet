@@ -713,6 +713,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	// Reset this path.
 	public void Reset()
 			{
+				pathPoints = new PointF[0]; // reset path points
 				actualFigure = null;
 				pathFigures.Clear();
 				needPenBrush = false;

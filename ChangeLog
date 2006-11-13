@@ -1,4 +1,10 @@
-2006-11-12    Roman I Khimov  <roman@khimov.ru>
+2006-11-13  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_inline.c, engine/lib_reflect.c: Change the
+	NotSupportedException back to the NotImplementedException. (It's better to
+	read the ECMA specs first ;).)
+
+2006-11-12  Roman I Khimov  <roman@khimov.ru>
 
 	* engine/cvm_inline.c, engine/verify_call.c: Fix build witd profiles that
 	don't have floating point support. Replaced the

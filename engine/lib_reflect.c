@@ -2401,7 +2401,7 @@ ILObject* UnpackConstant(ILExecThread *thread,ILConstant* constant,
 		case IL_META_ELEMTYPE_R4:
 		case IL_META_ELEMTYPE_R8:
 			ILExecThreadThrowSystem(thread,
-					"System.NotSupportedException", 0);
+					"System.NotImplementedException", 0);
 			return 0;
 #endif /* !IL_CONFIG_FP_SUPPORTED */
 

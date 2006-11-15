@@ -1138,19 +1138,23 @@ public class TextBox : TextBoxBase
 			{
 				if (i >= oldLen)
 				{
-					if( i < newLen ) update.Union( layout.Items[i].bounds);
+					if( i < newLen && i < layout.Items.Length ) update.Union( layout.Items[i].bounds);
 				}
 				else if (i >= newLen )
 				{
-					if( i < oldLen ) update.Union( oldLayout.Items[i].bounds);
+					if( i < oldLen && i < oldLayout.Items.Length ) update.Union( oldLayout.Items[i].bounds);
 				}
 				else if ( (i < oldLen && i < newLen) && (Text[i] != oldText[i] || oldLayout.Items[i].bounds != layout.Items[i].bounds ) )
 				{
 					if( i < newLen ) {
-						update.Union( layout.Items[i].bounds);
+						if( i < layout.Items.Length ) {
+							update.Union( layout.Items[i].bounds);
+						}
 					}
 					if( i < oldLen ) {
-						update.Union( oldLayout.Items[i].bounds);
+						if( i < oldLayout.Items.Length ) {
+							update.Union( oldLayout.Items[i].bounds);
+						}
 					}
 				}
 			}

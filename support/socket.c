@@ -33,6 +33,7 @@
 #define	HAVE_SETSOCKOPT		1
 #define	HAVE_GETSOCKOPT		1
 #else
+#include <fcntl.h>
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
@@ -370,6 +371,8 @@ int ILSysIOAddressFamilySupported(ILInt32 af)
 
 ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 {
+	int iSocket = 0;
+
 #ifdef IL_WIN32_NATIVE
 	_ILWinSockInit();
 #endif
@@ -422,7 +425,9 @@ ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 		break;
 	}
 	
-	return (ILSysIOHandle)(ILNativeInt)(socket(domain, type, protocol));
+	iSocket = socket(domain, type, protocol);
+	if( iSocket >= 0 ) fcntl( iSocket, F_SETFD, FD_CLOEXEC );	
+	return (ILSysIOHandle)(ILNativeInt)(iSocket);
 }
 
 int ILSysIOSocketBind(ILSysIOHandle sockfd, unsigned char *addr,

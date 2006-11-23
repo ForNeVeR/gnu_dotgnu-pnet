@@ -1,3 +1,7 @@
+2006-11-23  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* support/socket.c: fixed that socket gets closed if app was killed.
+
 2006-11-13  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_inline.c, engine/lib_reflect.c: Change the

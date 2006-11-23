@@ -55,7 +55,13 @@ int XNextEventWithTimeout(Display *dpy, XEvent *event, int timeout)
 	/* If there was activity on the connection, then read the event */
 	if(result > 0)
 	{
-		XNextEvent(dpy, event);
+		if( XPending( dpy ) <= 0 ) {
+			// printf( "??? XPending<=0 ???" );
+			result = 0; // no event is here to process, even select told that there should be an event
+		}
+		else {
+			XNextEvent(dpy, event);
+		}
 	}
 
 	/* Return the final result to the caller */

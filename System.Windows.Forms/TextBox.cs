@@ -1125,42 +1125,42 @@ public class TextBox : TextBoxBase
 		SetScrollBarPositions();
 		if (prevLayout)
 		{
-			Region update = new Region(RectangleF.Empty);
-			int oldLen = oldText.Length;
-			int newLen = text.Length;
-			int len    = newLen;
-					
-			if (oldLen > len)
-			{
-				len = oldLen;
-			}
-			for (int i=0;i < len;i++)
-			{
-				if (i >= oldLen)
+			try {
+				Region update = new Region(RectangleF.Empty);
+				int oldLen = oldText.Length;
+				int newLen = text.Length;
+				int len    = newLen;
+						
+				if (oldLen > len)
 				{
-					if( i < newLen && i < layout.Items.Length ) update.Union( layout.Items[i].bounds);
+					len = oldLen;
 				}
-				else if (i >= newLen )
+				for (int i=0;i < len;i++)
 				{
-					if( i < oldLen && i < oldLayout.Items.Length ) update.Union( oldLayout.Items[i].bounds);
-				}
-				else if ( (i < oldLen && i < newLen) && (Text[i] != oldText[i] || oldLayout.Items[i].bounds != layout.Items[i].bounds ) )
-				{
-					if( i < newLen ) {
-						if( i < layout.Items.Length ) {
+					if (i >= oldLen)
+					{
+						if( i < newLen ) update.Union( layout.Items[i].bounds);
+					}
+					else if (i >= newLen )
+					{
+						if( i < oldLen ) update.Union( oldLayout.Items[i].bounds);
+					}
+					else if ( (i < oldLen && i < newLen) && (Text[i] != oldText[i] || oldLayout.Items[i].bounds != layout.Items[i].bounds ) )
+					{
+						if( i < newLen ) {
 							update.Union( layout.Items[i].bounds);
 						}
-					}
-					if( i < oldLen ) {
-						if( i < oldLayout.Items.Length ) {
+						if( i < oldLen ) {
 							update.Union( oldLayout.Items[i].bounds);
 						}
 					}
 				}
+				// Get the offset of the TextDrawArea
+				update.Translate( - XViewOffset, - YViewOffset);
+				AddUpdate(update);
 			}
-			// Get the offset of the TextDrawArea
-			update.Translate( - XViewOffset, - YViewOffset);
-			AddUpdate(update);
+			catch {	// ignore exceptions here, because in some cases this could happen
+			}
 		}
 	}
 

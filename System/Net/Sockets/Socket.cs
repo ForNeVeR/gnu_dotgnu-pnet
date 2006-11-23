@@ -58,41 +58,58 @@ public class Socket : IDisposable
 				{
 					throw new SocketException(Errno.EINVAL);
 				}
-				if(socketType == SocketType.Stream)
-				{
-					if(protocolType == ProtocolType.Unspecified)
-					{
-						if(addressFamily == AddressFamily.InterNetwork ||
-						   addressFamily == AddressFamily.InterNetworkV6)
+				
+				switch( socketType ) {
+					
+					case SocketType.Stream :
+						if(protocolType == ProtocolType.Unspecified)
 						{
-							protocolType = ProtocolType.Tcp;
+							if(addressFamily == AddressFamily.InterNetwork ||
+												  addressFamily == AddressFamily.InterNetworkV6)
+							{
+								protocolType = ProtocolType.Tcp;
+							}
 						}
-					}
-					else if(protocolType != ProtocolType.Tcp)
-					{
-						throw new SocketException(Errno.EPROTONOSUPPORT);
-					}
-				}
-				else if(socketType == SocketType.Dgram)
-				{
-					if(protocolType == ProtocolType.Unspecified)
-					{
-						if(addressFamily == AddressFamily.InterNetwork ||
-						   addressFamily == AddressFamily.InterNetworkV6)
+						else if(protocolType != ProtocolType.Tcp)
 						{
-							protocolType = ProtocolType.Udp;
+							throw new SocketException(Errno.EPROTONOSUPPORT);
 						}
-					}
-					else if(protocolType != ProtocolType.Udp)
-					{
+						break;
+					
+					case SocketType.Dgram :
+						if(protocolType == ProtocolType.Unspecified)
+						{
+							if(addressFamily == AddressFamily.InterNetwork ||
+												  addressFamily == AddressFamily.InterNetworkV6)
+							{
+								protocolType = ProtocolType.Udp;
+							}
+						}
+						else if(protocolType != ProtocolType.Udp)
+						{
+							throw new SocketException(Errno.EPROTONOSUPPORT);
+						}
+						break;
+					
+					case SocketType.Raw:
+						if(protocolType == ProtocolType.Unspecified)
+						{
+							if(addressFamily == AddressFamily.InterNetwork ||
+												  addressFamily == AddressFamily.InterNetworkV6)
+							{
+								protocolType = ProtocolType.Raw;
+							}
+						}
+					break;
+					
+					case 	SocketType.Rdm : case SocketType.Seqpacket :
+						break;
+						
+					default: 
 						throw new SocketException(Errno.EPROTONOSUPPORT);
-					}
+						break;
 				}
-				else
-				{
-					throw new SocketException(Errno.ESOCKTNOSUPPORT);
-				}
-
+				
 				// Initialize the local state.
 				this.handle = InvalidHandle;
 				this.family = addressFamily;

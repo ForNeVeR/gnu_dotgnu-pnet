@@ -684,12 +684,16 @@ public class InputOutputWidget : InputOnlyWidget
 					// sometimes it could be that Expose is called but the handle is destroyed.
 					// so check here, if handle not null.
 					if( handle != XDrawable.Zero ) {
-						Graphics graphics = new Graphics(this);
-						graphics.exposeRegion = region;
-						graphics.SetClipRegion(region);
-						OnPaint(graphics);
-						graphics.Dispose();
-						region.Dispose();
+						try {
+							Graphics graphics = new Graphics(this);
+							graphics.exposeRegion = region;
+							graphics.SetClipRegion(region);
+							OnPaint(graphics);
+							graphics.Dispose();
+							region.Dispose();
+						}
+						catch( XInvalidOperationException ) { // irgnore Widget disposed exception
+						}
 					}
 				}
 			}

@@ -33,7 +33,9 @@
 #define	HAVE_SETSOCKOPT		1
 #define	HAVE_GETSOCKOPT		1
 #else
+#ifdef HAVE_FCNTL_H
 #include <fcntl.h>
+#endif
 #if TIME_WITH_SYS_TIME
 	#include <sys/time.h>
     #include <time.h>
@@ -426,7 +428,9 @@ ILSysIOHandle ILSysIOSocket(ILInt32 domain, ILInt32 type, ILInt32 protocol)
 	}
 	
 	iSocket = socket(domain, type, protocol);
-	if( iSocket >= 0 ) fcntl( iSocket, F_SETFD, FD_CLOEXEC );	
+#ifdef HAVE_FCNTL
+	if( iSocket >= 0 ) fcntl( iSocket, F_SETFD, FD_CLOEXEC );
+#endif
 	return (ILSysIOHandle)(ILNativeInt)(iSocket);
 }
 

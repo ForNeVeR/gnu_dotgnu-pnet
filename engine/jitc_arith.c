@@ -166,9 +166,9 @@ static void JITCoder_Binary(ILCoder *coder, int opcode,
 			AdjustMixedBinary(jitCoder, 0,
 							  &(_ILJitStackItemValue(value1)),
 							  &(_ILJitStackItemValue(value2)));
-			result = jit_insn_rem_ieee(jitCoder->jitFunction,
-									   _ILJitStackItemValue(value1),
-									   _ILJitStackItemValue(value2));
+			result = jit_insn_rem(jitCoder->jitFunction,
+								  _ILJitStackItemValue(value1),
+								  _ILJitStackItemValue(value2));
 		}
 		break;
 
@@ -177,9 +177,9 @@ static void JITCoder_Binary(ILCoder *coder, int opcode,
 			AdjustMixedBinary(jitCoder, 1,
 							  &(_ILJitStackItemValue(value1)),
 							  &(_ILJitStackItemValue(value2)));
-			result = jit_insn_rem_ieee(jitCoder->jitFunction,
-									   _ILJitStackItemValue(value1),
-									   _ILJitStackItemValue(value2));
+			result = jit_insn_rem(jitCoder->jitFunction,
+								  _ILJitStackItemValue(value1),
+								  _ILJitStackItemValue(value2));
 		}
 		break;
 

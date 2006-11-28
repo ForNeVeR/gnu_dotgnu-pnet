@@ -490,11 +490,10 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		ILJitStackItem *args = _ILJitStackItemGetAndPop(jitCoder, argCount);
 
-		returnValue = (*inlineFunc)(jitCoder, methodInfo, info, args, argCount);
-
-		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
+		if(!((*inlineFunc)(jitCoder, methodInfo, info, args, argCount)))
 		{
-			_ILJitStackPushValue(jitCoder, returnValue);
+			/* Failure on inlining the function. */
+			/* TODO: we have to handle this somehow. */
 		}
 		return;
 	}

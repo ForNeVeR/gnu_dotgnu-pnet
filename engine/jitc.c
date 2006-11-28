@@ -316,9 +316,18 @@ typedef struct _tagILJITCoder ILJITCoder;
 /*
  * Prototype for inlining functioncalls.
  *
- * ILJitValue func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitStackItem *, ILInt32)
+ * On entry of the function the args are allready popped off the evaluation
+ * stack. The args pointer points to the first arg (the one at the lowest
+ * stack position).
+ * The function is responsible to push the result value on the stack if the
+ * return type is not void.
+ *
+ * The function has to return 0 on failure. Any other value will be treated as
+ * success.
+ *
+ * int func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitStackItem *, ILInt32)
  */
-typedef ILJitValue (*ILJitInlineFunc)(ILJITCoder *jitCoder,
+typedef int (*ILJitInlineFunc)(ILJITCoder *jitCoder,
 									  ILMethod *method,
 									  ILCoderMethodInfo *methodInfo,
 									  ILJitStackItem *args,

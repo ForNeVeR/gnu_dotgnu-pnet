@@ -72,32 +72,34 @@ static ILJitValue _ILJitSObjectArrayCreate(ILJitFunction jitFunction,
 										   ILUInt32 numElements);
 
 /*
- * Get an array element at the specified indexes from a complex array.
+ * Inline function to get an array element at the specified indexes from a
+ * complex array.
  */
-static ILJitValue _ILJitMArrayGet(ILJITCoder *jitCoder,
-								  ILMethod *method,
-								  ILCoderMethodInfo *methodInfo,
-								  ILJitStackItem *args,
-								  ILInt32 numArgs);
+static int _ILJitMArrayGet(ILJITCoder *jitCoder,
+						   ILMethod *method,
+						   ILCoderMethodInfo *methodInfo,
+						   ILJitStackItem *args,
+						   ILInt32 numArgs);
 
 /*
- * Get the address of an array element at the specified indexes in a complex
- * array.
+ * Inline function to get the address of an array element at the specified
+ * indexes in a complex array.
  */
-static ILJitValue _ILJitMArrayAddress(ILJITCoder *jitCoder,
+static int _ILJitMArrayAddress(ILJITCoder *jitCoder,
 									  ILMethod *method,
 									  ILCoderMethodInfo *methodInfo,
 									  ILJitStackItem *args,
 									  ILInt32 numArgs);
 
 /*
- * Set an array element at the specified indexes in a complex array.
+ * Inline function to set an array element at the specified indexes in a
+ * complex array.
  */
-static ILJitValue _ILJitMArraySet(ILJITCoder *jitCoder,
-								  ILMethod *method,
-								  ILCoderMethodInfo *methodInfo,
-								  ILJitStackItem *args,
-								  ILInt32 numArgs);
+static int _ILJitMArraySet(ILJITCoder *jitCoder,
+						   ILMethod *method,
+						   ILCoderMethodInfo *methodInfo,
+						   ILJitStackItem *args,
+						   ILInt32 numArgs);
 
 #endif	/* IL_JITC_DECLARATIONS */
 
@@ -526,7 +528,7 @@ static ILJitValue _ILJitMarrayGetBase(ILJITCoder *jitCoder,
 /*
  * Get an array element at the specified indexes from a complex array.
  */
-static ILJitValue _ILJitMArrayGet(ILJITCoder *jitCoder,
+static int _ILJitMArrayGet(ILJITCoder *jitCoder,
 								  ILMethod *method,
 								  ILCoderMethodInfo *methodInfo,
 								  ILJitStackItem *args,
@@ -535,6 +537,7 @@ static ILJitValue _ILJitMArrayGet(ILJITCoder *jitCoder,
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
 	ILJitValue array = _ILJitStackItemValue(args[0]);
 	ILJitValue arrayBase;
+	ILJitValue returnValue;
 	ILJitType signature;
 	ILJitType arrayType;
 	ILJitValue index;
@@ -546,25 +549,33 @@ static ILJitValue _ILJitMArrayGet(ILJITCoder *jitCoder,
 		{
 			return 0;
 		}
-		jitFunction = ILJitFunctionFromILMethod(method);
+		if(!(jitFunction = ILJitFunctionFromILMethod(method)))
+		{
+			return 0;
+		}
 	}
 
-	signature = jit_function_get_signature(jitFunction);
+	if(!(signature = jit_function_get_signature(jitFunction)))
+	{
+		return 0;
+	}
 	arrayType = jit_type_get_return(signature);
 	index = _ILJitMArrayCalcIndex(jitCoder, array, &(args[1]), numArgs - 1);
 	arrayBase = _ILJitMarrayGetBase(jitCoder, array);
-	return jit_insn_load_elem(jitCoder->jitFunction, arrayBase, index, arrayType);
+	returnValue = jit_insn_load_elem(jitCoder->jitFunction, arrayBase, index, arrayType);
+	_ILJitStackPushValue(jitCoder, returnValue);
+	return 1;
 }
 
 /*
  * Get the address of an array element at the specified indexes in a complex
  * array.
  */
-static ILJitValue _ILJitMArrayAddress(ILJITCoder *jitCoder,
-									  ILMethod *method,
-									  ILCoderMethodInfo *methodInfo,
-									  ILJitStackItem *args,
-									  ILInt32 numArgs)
+static int _ILJitMArrayAddress(ILJITCoder *jitCoder,
+							   ILMethod *method,
+							   ILCoderMethodInfo *methodInfo,
+							   ILJitStackItem *args,
+							   ILInt32 numArgs)
 {
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
 	ILJitValue array = _ILJitStackItemValue(args[0]);
@@ -574,6 +585,7 @@ static ILJitValue _ILJitMArrayAddress(ILJITCoder *jitCoder,
 	ILJitType signature;
 	ILJitType arrayType;
 	ILJitValue index;
+	ILJitValue returnValue;
 
 	if(!jitFunction)
 	{
@@ -582,28 +594,36 @@ static ILJitValue _ILJitMArrayAddress(ILJITCoder *jitCoder,
 		{
 			return 0;
 		}
-		jitFunction = ILJitFunctionFromILMethod(method);
+		if(!(jitFunction = ILJitFunctionFromILMethod(method)))
+		{
+			return 0;
+		}
 	}
 
-	signature = jit_function_get_signature(jitFunction);
+	if(!(signature = jit_function_get_signature(jitFunction)))
+	{
+		return 0;
+	}
 	arrayType = _ILJitGetReturnType(elementType, 
 									((ILClassPrivate *)arrayClass->userData)->process);
 	index = _ILJitMArrayCalcIndex(jitCoder, array, &(args[1]), numArgs - 1);
 	arrayBase = _ILJitMarrayGetBase(jitCoder, array);
-	return jit_insn_load_elem_address(jitCoder->jitFunction,
-									  arrayBase,
-									  index,
-									  arrayType);
+	returnValue = jit_insn_load_elem_address(jitCoder->jitFunction,
+											 arrayBase,
+											 index,
+											 arrayType);
+	_ILJitStackPushNotNullValue(jitCoder, returnValue);
+	return 1;
 }
 
 /*
  * Set an array element at the specified indexes in a complex array.
  */
-static ILJitValue _ILJitMArraySet(ILJITCoder *jitCoder,
-								  ILMethod *method,
-								  ILCoderMethodInfo *methodInfo,
-								  ILJitStackItem *args,
-								  ILInt32 numArgs)
+static int _ILJitMArraySet(ILJITCoder *jitCoder,
+						   ILMethod *method,
+						   ILCoderMethodInfo *methodInfo,
+						   ILJitStackItem *args,
+						   ILInt32 numArgs)
 {
 	ILJitFunction jitFunction = ILJitFunctionFromILMethod(method);
 	ILJitValue array = _ILJitStackItemValue(args[0]);
@@ -620,10 +640,16 @@ static ILJitValue _ILJitMArraySet(ILJITCoder *jitCoder,
 		{
 			return 0;
 		}
-		jitFunction = ILJitFunctionFromILMethod(method);
+		if(!(jitFunction = ILJitFunctionFromILMethod(method)))
+		{
+			return 0;
+		}
 	}
 
-	signature = jit_function_get_signature(jitFunction);
+	if(!(signature = jit_function_get_signature(jitFunction)))
+	{
+		return 0;
+	}
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	arrayType = jit_type_get_param(signature, numArgs);
 #else
@@ -634,7 +660,7 @@ static ILJitValue _ILJitMArraySet(ILJITCoder *jitCoder,
 	value = _ILJitValueConvertImplicit(jitCoder->jitFunction, value, arrayType);
 	jit_insn_store_elem(jitCoder->jitFunction, arrayBase, index, value);
 	/* We have no return value in this case. */
-	return 0;
+	return 1;
 }
 
 /*

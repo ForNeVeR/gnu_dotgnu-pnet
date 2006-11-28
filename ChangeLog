@@ -1,3 +1,16 @@
+2006-11-28  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.h: Add System.Array and System.Math to the classes handled
+	internal.
+
+	* engine/jitc.c: Change the prototype for inlineing internalcalls.
+
+	* engine/jitc_array.c: Handle the changed prototype for inlineing and do
+	more errorchecking.
+
+	* engine/jitc_call.c: Handle the changed prototype for inlineing
+	internalcalls.
+
 2006-11-27  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_arith.c: Use the jit_insn_rem instead of jit_insn_rem_ieee

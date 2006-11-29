@@ -1,3 +1,11 @@
+2006-11-29  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Add inlineing of System.Math methods.
+
+	* engine/jitc_math.c: added.
+
+	* engine/Makefile.am: Add jitc_math.c to the jitc sources.
+
 2006-11-28  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.h: Add System.Array and System.Math to the classes handled

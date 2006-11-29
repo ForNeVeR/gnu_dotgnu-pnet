@@ -26,6 +26,7 @@ JITC_INCLUDES = jitc.h \
 				jitc_except.c \
 				jitc_labels.c \
 				jitc_locals.c \
+				jitc_math.c \
 				jitc_obj.c \
 				jitc_pinvoke.c \
 				jitc_profile.c \

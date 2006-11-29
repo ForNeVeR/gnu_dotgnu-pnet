@@ -311,6 +311,7 @@ typedef struct _tagILJITCoder ILJITCoder;
 #include "jitc_array.c"
 #include "jitc_call.c"
 #include "jitc_delegate.c"
+#include "jitc_math.c"
 #undef	IL_JITC_DECLARATIONS
 
 /*
@@ -3420,6 +3421,133 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 				}
 			}
 			break;
+
+			case IL_JIT_TYPEKIND_SYSTEM_MATH:
+			{
+				ILType *signature = ILMethod_Signature(method);
+				ILType *returnType;
+
+				if(!signature)
+				{
+					break;
+				}
+				if(!(returnType = ILTypeGetEnumType(ILTypeGetParam(signature, 0))))
+				{
+					break;
+				}
+
+				if(ILType_IsPrimitive(returnType))
+				{
+					if(!strcmp(ILMethod_Name(method), "Abs"))
+					{
+						inlineFunc = _ILJitSystemMathAbs;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Acos"))
+					{
+						inlineFunc = _ILJitSystemMathAcos;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Asin"))
+					{
+						inlineFunc = _ILJitSystemMathAsin;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Atan"))
+					{
+						inlineFunc = _ILJitSystemMathAtan;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Atan2"))
+					{
+						inlineFunc = _ILJitSystemMathAtan2;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Ceiling"))
+					{
+						inlineFunc = _ILJitSystemMathCeiling;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Cos"))
+					{
+						inlineFunc = _ILJitSystemMathCos;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Cosh"))
+					{
+						inlineFunc = _ILJitSystemMathCosh;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Exp"))
+					{
+						inlineFunc = _ILJitSystemMathExp;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Floor"))
+					{
+						inlineFunc = _ILJitSystemMathFloor;
+					}
+					else if(!strcmp(ILMethod_Name(method), "IEEERemainder"))
+					{
+						inlineFunc = _ILJitSystemMathIEEERemainder;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Log"))
+					{
+						ILUInt32 num = ILTypeNumParams(signature);
+
+						if(num == 1)
+						{
+							inlineFunc = _ILJitSystemMathLog;
+						}
+					}
+					else if(!strcmp(ILMethod_Name(method), "Log10"))
+					{
+						inlineFunc = _ILJitSystemMathLog10;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Max"))
+					{
+						inlineFunc = _ILJitSystemMathMax;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Min"))
+					{
+						inlineFunc = _ILJitSystemMathMin;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Pow"))
+					{
+						inlineFunc = _ILJitSystemMathPow;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Sign"))
+					{
+						ILUInt32 num = ILTypeNumParams(signature);
+
+						if(num == 1)
+						{
+							ILType *argType;
+
+							if(!(argType = ILTypeGetParam(signature, 1)))
+							{
+								break;
+							}
+							if(ILType_IsPrimitive(argType))
+							{
+								inlineFunc = _ILJitSystemMathSign;
+							}
+						}
+					}
+					else if(!strcmp(ILMethod_Name(method), "Sin"))
+					{
+						inlineFunc = _ILJitSystemMathSin;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Sinh"))
+					{
+						inlineFunc = _ILJitSystemMathSinh;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Sqrt"))
+					{
+						inlineFunc = _ILJitSystemMathSqrt;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Tan"))
+					{
+						inlineFunc = _ILJitSystemMathTan;
+					}
+					else if(!strcmp(ILMethod_Name(method), "Tanh"))
+					{
+						inlineFunc = _ILJitSystemMathTanh;
+					}
+				}
+			}
+			break;
 		}
 	}
 
@@ -3941,7 +4069,7 @@ int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process)
 	{
 		ILType *type = ILClassToType(classPrivate->classInfo);
 
-		/* When it's a runtime object check if it has to be handled special. */
+		/* If it's a runtime object check if it has to be handled special. */
 		if(process->context->systemImage == classPrivate->classInfo->programItem.image)
 		{
 			jitType = _ILJitTypeSpecials(classPrivate->classInfo->className);
@@ -3973,6 +4101,24 @@ int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process)
 		else if(ILType_IsArray(type))
 		{
 			classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_ARRAY;
+		}
+		else if(process->context->systemImage == classPrivate->classInfo->programItem.image)
+		{
+			if(ILClass_Namespace(classPrivate->classInfo))
+			{
+				/* Check for classes in the System namespace which have inline methods. */
+				if(!strcmp(ILClass_Namespace(classPrivate->classInfo), "System"))
+				{
+					if(!strcmp(ILClass_Name(classPrivate->classInfo), "Array"))
+					{
+						classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_SYSTEM_ARRAY;
+					}
+					else if(!strcmp(ILClass_Name(classPrivate->classInfo), "Math"))
+					{
+						classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_SYSTEM_MATH;
+					}
+				}
+			}
 		}
 	}
 	else
@@ -4196,6 +4342,7 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 #include "jitc_except.c"
 #include "jitc_call.c"
 #include "jitc_delegate.c"
+#include "jitc_math.c"
 #undef	IL_JITC_FUNCTIONS
 
 /*

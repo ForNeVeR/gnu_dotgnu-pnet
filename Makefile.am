@@ -23,6 +23,7 @@ SUBDIRS = . $(LIBGC_DIR) $(LIBFFI_DIR) include coremul support image engine
 
 endif
 
+DIST_SUBDIRS = $(SUBDIRS)
 EXTRA_DIST = config-ml.in
 
 

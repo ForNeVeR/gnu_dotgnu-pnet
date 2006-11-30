@@ -1,3 +1,8 @@
+2006-11-30  Klaus Treichel  <ktreichel@web.de>
+
+	* Makefile.am: Set DIST_SUBDIRS to SUBDIRS to fix make distclean if pnet
+	is built with jit.
+
 2006-11-29  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Add inlineing of System.Math methods.

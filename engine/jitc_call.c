@@ -596,6 +596,38 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		else
 #endif
 		{
+		#ifdef _IL_JIT_ENABLE_INLINE
+			if(_ILJitMethodIsInlineable(jitCoder, methodInfo))
+			{
+				/* Get the pointer to the args on the stack. */
+				ILJitStackItem *args = _ILJitStackItemGetTop(jitCoder, -1);
+
+			#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+				if (jitCoder->flags & IL_CODER_FLAG_STATS)
+				{
+					ILMutexLock(globalTraceMutex);
+					fprintf(stdout,
+							"Inline Method: %s.%s\n", 
+							ILClass_Name(ILMethod_Owner(methodInfo)),
+							ILMethod_Name(methodInfo));
+					ILMutexUnlock(globalTraceMutex);
+				}
+			#endif
+				if(!_ILJitCoderInlineMethod(jitCoder,
+											methodInfo,
+											0,
+											args,
+											argCount))
+				{
+					printf("Inlining failed!\n");
+				}
+				if(destroyCallSignature && callSignature)
+				{
+					jit_type_free(callSignature);
+				}
+				return;
+			}
+		#endif /* _IL_JIT_ENABLE_INLINE */
 		#ifdef IL_JIT_THREAD_IN_SIGNATURE
 			returnValue = jit_insn_call(jitCoder->jitFunction, methodName,
 										jitFunction, 0,
@@ -1669,6 +1701,31 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 								 (jit_nint) jitCoder->currentMethod);
 	}
 #endif
+
+#ifdef	_IL_JIT_ENABLE_INLINE
+	if(jitCoder->currentInlineContext)
+	{
+		if(jitCoder->currentInlineContext->returnValue)
+		{
+			/* Pop the return value ans store it in the returnvalue for the */
+			/* inlined function. */
+			ILJitType returnType = jit_value_get_type(jitCoder->currentInlineContext->returnValue);
+			_ILJitStackItemNew(value);
+
+			_ILJitStackPop(jitCoder, value);
+			jit_insn_store(jitCoder->jitFunction,
+						   jitCoder->currentInlineContext->returnValue,
+						   _ILJitValueConvertImplicit(jitCoder->jitFunction,
+													  _ILJitStackItemValue(value),
+													  returnType));
+		}
+		/* And jump to the end of the inlined function. */
+		jit_insn_branch(jitCoder->jitFunction, 
+						&(jitCoder->currentInlineContext->returnLabel));
+
+		return;
+	}
+#endif	/* _IL_JIT_ENABLE_INLINE */
 
 	if(engineType == ILEngineType_Invalid)
 	{

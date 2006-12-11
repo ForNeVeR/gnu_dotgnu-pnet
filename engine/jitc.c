@@ -63,14 +63,14 @@ extern	"C" {
 /* #define _IL_JIT_OPTIMIZE_LOCALS 1 */
 
 /*
- * To enable null check optimizations uncomment the following define.
- */
-/* #define _IL_JIT_OPTIMIZE_NULLCHECKS 1 */
-
-/*
  * To defer the initialization of the locals uncomment the following define.
  */
 /* #define _IL_JIT_OPTIMIZE_INIT_LOCALS 1 */
+
+/*
+ * To enable method inlining uncomment the following define.
+ */
+/* #define _IL_JIT_ENABLE_INLINE 1 */
 
 #ifdef _IL_JIT_DUMP_FUNCTION
 #ifndef _IL_JIT_ENABLE_DEBUG
@@ -306,6 +306,7 @@ typedef struct _tagILJITCoder ILJITCoder;
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
+#include "jitc_inline.c"
 #include "jitc_except.c"
 #include "jitc_alloc.c"
 #include "jitc_array.c"
@@ -346,11 +347,15 @@ struct _tagILJitMethodInfo
 	ILJitInlineFunc inlineFunc;		/* Function for inlining. */
 };
 
-#define _IL_JIT_IMPL_DEFAULT		0x0
-#define _IL_JIT_IMPL_INTERNAL		0x1
-#define _IL_JIT_IMPL_INTERNALALLOC	0x2
-#define _IL_JIT_IMPL_INTERNALMASK	0x3
-#define _IL_JIT_IMPL_PINVOKE		0x4
+#define _IL_JIT_IMPL_DEFAULT		0x000
+#define _IL_JIT_IMPL_INTERNAL		0x001
+#define _IL_JIT_IMPL_INTERNALALLOC	0x002
+#define _IL_JIT_IMPL_INTERNALMASK	0x003
+#define _IL_JIT_IMPL_PINVOKE		0x004
+#define _IL_JIT_IMPL_MASK			0x0FF
+#define _IL_JIT_IMPL_NOINLINE		0x100
+#define _IL_JIT_IMPL_INLINE			0x200
+#define _IL_JIT_IMPL_INLINE_MASK	0x300
 
 /* Error codes stored in fnInfo.func in case a library or method was not */
 /* found */
@@ -382,6 +387,7 @@ struct _tagILJITCoder
 	ILMemPool		methodPool;
 
 #define	IL_JITC_CODER_INSTANCE
+#include "jitc_inline.c"
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
@@ -2437,6 +2443,7 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 #endif
 
 #define IL_JITC_CODER_INIT
+	#include "jitc_inline.c"
 	#include "jitc_locals.c"
 	#include "jitc_stack.c"
 	#include "jitc_labels.c"
@@ -2634,6 +2641,7 @@ static void JITCoder_Destroy(ILCoder *_coder)
 	ILJITCoder *coder = _ILCoderToILJITCoder(_coder);
 
 #define IL_JITC_CODER_DESTROY
+#include "jitc_inline.c"
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
@@ -4337,6 +4345,7 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
+#include "jitc_inline.c"
 #include "jitc_alloc.c"
 #include "jitc_array.c"
 #include "jitc_except.c"

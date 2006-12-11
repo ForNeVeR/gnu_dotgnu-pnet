@@ -87,6 +87,21 @@ struct _tagILJITLabel
 static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
 {
 	int coderStackHeight = _ILJitStackHeight(coder);
+#ifdef	_IL_JIT_ENABLE_INLINE
+	int coderStackBase;
+
+	if(coder->currentInlineContext)
+	{
+		coderStackBase = coder->currentInlineContext->stackBase;
+		coderStackHeight -= coderStackBase;
+	}
+	else
+	{
+		coderStackBase = 0;
+	}
+#else	/* !_IL_JIT_ENABLE_INLINE */
+	int coderStackBase = 0;
+#endif	/* !_IL_JIT_ENABLE_INLINE */
 
 	if(((label->labelType & (_IL_JIT_LABEL_NORMAL |
 							 _IL_JIT_LABEL_STARTCATCH)) != 0) &&
@@ -102,7 +117,7 @@ static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
 		/* Now save the current stack state. */
 		for(current = 0; current < coderStackHeight; current++)
 		{
-			ILJitStackItem *stackItem = _ILJitStackItemGet(coder, current);
+			ILJitStackItem *stackItem = _ILJitStackItemGet(coder, coderStackBase + current);
 
 			stack[current] = _ILJitStackItemValue(*stackItem);
 			if(jit_value_is_constant(_ILJitStackItemValue(*stackItem)))
@@ -115,12 +130,14 @@ static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
 				jit_insn_store(coder->jitFunction, temp, _ILJitStackItemValue(*stackItem));
 				/* Now replace the constant with the new temporary. */
 				stack[current] = temp;
+				_ILJitStackItemSetValue(*stackItem, temp);
 			}
 			else if(_ILJitStackItemNeedsDupOnLabel(*stackItem))
 			{
 				ILJitValue temp = jit_insn_dup(coder->jitFunction,
 											   _ILJitStackItemValue(*stackItem));
 				stack[current] = temp;
+				_ILJitStackItemSetValue(*stackItem, temp);
 			}
 		}
 		label->jitStack = stack;
@@ -135,6 +152,21 @@ static int _ILJitLabelSaveStack(ILJITCoder *coder, ILJITLabel *label)
 static int _ILJitLabelMergeStack(ILJITCoder *coder, ILJITLabel *label)
 {
 	int coderStackHeight = _ILJitStackHeight(coder);
+#ifdef	_IL_JIT_ENABLE_INLINE
+	int coderStackBase;
+
+	if(coder->currentInlineContext)
+	{
+		coderStackBase = coder->currentInlineContext->stackBase;
+		coderStackHeight -= coderStackBase;
+	}
+	else
+	{
+		coderStackBase = 0;
+	}
+#else	/* !_IL_JIT_ENABLE_INLINE */
+	int coderStackBase = 0;
+#endif	/* !_IL_JIT_ENABLE_INLINE */
 
 	if(label->labelType & (_IL_JIT_LABEL_NORMAL | _IL_JIT_LABEL_STARTCATCH))
 	{
@@ -151,7 +183,7 @@ static int _ILJitLabelMergeStack(ILJITCoder *coder, ILJITLabel *label)
 			/* Now save the current stack state. */
 			for(current = 0; current < coderStackHeight; current++)
 			{
-				ILJitStackItem *stackItem = _ILJitStackItemGet(coder, current);
+				ILJitStackItem *stackItem = _ILJitStackItemGet(coder, coderStackBase + current);
 
 				if(_ILJitStackItemValue(*stackItem) != label->jitStack[current])
 				{
@@ -172,6 +204,21 @@ static int _ILJitLabelMergeStack(ILJITCoder *coder, ILJITLabel *label)
 static void _ILJitLabelRestoreStack(ILJITCoder *coder, ILJITLabel *label)
 {
 	int coderStackHeight = _ILJitStackHeight(coder);
+#ifdef	_IL_JIT_ENABLE_INLINE
+	int coderStackBase;
+
+	if(coder->currentInlineContext)
+	{
+		coderStackBase = coder->currentInlineContext->stackBase;
+		coderStackHeight -= coderStackBase;
+	}
+	else
+	{
+		coderStackBase = 0;
+	}
+#else	/* !_IL_JIT_ENABLE_INLINE */
+	int coderStackBase = 0;
+#endif	/* !_IL_JIT_ENABLE_INLINE */
 
 	/* Verify that the stack sizes match. */
 	if(coderStackHeight != label->stackSize)
@@ -186,12 +233,12 @@ static void _ILJitLabelRestoreStack(ILJITCoder *coder, ILJITLabel *label)
 		/* Now restore the stack state. */
 		for(current = 0; current < coderStackHeight; current++)
 		{
-			ILJitStackItem *stackItem = _ILJitStackItemGet(coder, current);
+			ILJitStackItem *stackItem = _ILJitStackItemGet(coder, coderStackBase + current);
 
 			_ILJitStackItemInitWithValue(*stackItem, label->jitStack[current]);
 		}
 	}
-	coder->stackTop = label->stackSize;
+	coder->stackTop = coderStackBase + label->stackSize;
 }
 
 /*
@@ -200,7 +247,20 @@ static void _ILJitLabelRestoreStack(ILJITCoder *coder, ILJITLabel *label)
  */
 static ILJITLabel *_ILJitLabelFind(ILJITCoder *coder, ILUInt32 address)
 {
+#ifdef	_IL_JIT_ENABLE_INLINE
 	ILJITLabel *label = coder->labelList;
+
+	if(coder->currentInlineContext)
+	{
+		label = coder->currentInlineContext->labelList;
+	}
+	else
+	{
+		label = coder->labelList;
+	}
+#else	/* !_IL_JIT_ENABLE_INLINE */
+	ILJITLabel *label = coder->labelList;
+#endif	/* !_IL_JIT_ENABLE_INLINE */
 
 	while(label != 0)
 	{
@@ -225,7 +285,18 @@ static ILJITLabel *_ILJitLabelGet(ILJITCoder *coder, ILUInt32 address,
 ;
 	if(!label)
 	{
+	#ifdef	_IL_JIT_ENABLE_INLINE
+		if(coder->currentInlineContext)
+		{
+			label = ILMemPoolAlloc(&(coder->currentInlineContext->labelPool), ILJITLabel);
+		}
+		else
+		{
+			label = ILMemPoolAlloc(&(coder->labelPool), ILJITLabel);
+		}
+	#else	/* !_IL_JIT_ENABLE_INLINE */
 		label = ILMemPoolAlloc(&(coder->labelPool), ILJITLabel);
+	#endif	/* !_IL_JIT_ENABLE_INLINE */
 		if(label)
 		{
 			label->stackSize = 0;
@@ -238,8 +309,23 @@ static ILJITLabel *_ILJitLabelGet(ILJITCoder *coder, ILUInt32 address,
 				coder->labelOutOfMemory = 1;
 				return 0;
 			}
+		#ifdef	_IL_JIT_ENABLE_INLINE
+			if(coder->currentInlineContext)
+			{
+				label->next = coder->currentInlineContext->labelList;
+				coder->currentInlineContext->labelList = label;
+				_ILJitLocalSlotsHandleProtectedValues(coder,
+													  coder->currentInlineContext);
+			}
+			else
+			{
+				label->next = coder->labelList;
+				coder->labelList = label;
+			}
+		#else	/* !_IL_JIT_ENABLE_INLINE */
 			label->next = coder->labelList;
 			coder->labelList = label;
+		#endif	/* !_IL_JIT_ENABLE_INLINE */
 #ifdef _IL_JIT_OPTIMIZE_INIT_LOCALS
 			if((coder->localsInitialized == 0) && (address != 0))
 			{
@@ -270,4 +356,26 @@ static ILJITLabel *_ILJitLabelGet(ILJITCoder *coder, ILUInt32 address,
 }
 
 #endif /* IL_JITC_FUNCTIONS */
+
+#ifdef	IL_JITC_INLINE_CONTEXT_INSTANCE
+
+	/* Handle the labels. */
+	ILMemPool		labelPool;
+	ILJITLabel     *labelList;
+
+#endif	/* IL_JITC_INLINE_CONTEXT_INSTANCE */
+
+#ifdef	IL_JITC_INLINE_CONTEXT_INIT
+
+	/* Init the label stuff. */
+	ILMemPoolInit(&(inlineContext->labelPool), sizeof(ILJITLabel), 8);
+	inlineContext->labelList = 0;
+
+#endif	/* IL_JITC_INLINE_CONTEXT_INIT */
+
+#ifdef	IL_JITC_INLINE_CONTEXT_DESTROY
+
+	ILMemPoolDestroy(&(inlineContext->labelPool));
+
+#endif	/* IL_JITC_INLINE_CONTEXT_DESTROY */
 

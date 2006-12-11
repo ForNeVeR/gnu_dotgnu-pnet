@@ -255,7 +255,7 @@ typedef ILJitValue ILJitStackItem;
 	do { \
 		(s).flags = (_ILJitParamFlags(coder, n) | _IL_JIT_VALUE_COPYOF); \
 		(s).value = _ILJitParamValue(coder, n); \
-		(s).refValue = &(_ILJitParamGet(coder, n)); \
+		(s).refValue = (_ILJitParamGet(coder, n)); \
 	} while(0)
 
 /*
@@ -407,7 +407,7 @@ typedef ILJitValue ILJitStackItem;
 		ILJitStackItem *__stackValue = _ILJitStackItemGetTop(coder, -1); \
 		__stackValue->flags = (_ILJitParamFlags(coder, n) | _IL_JIT_VALUE_COPYOF); \
 		__stackValue->value = _ILJitParamValue(coder, n); \
-		__stackValue->refValue = &(_ILJitParamGet(coder, n)); \
+		__stackValue->refValue = (_ILJitParamGet(coder, n)); \
 		JITC_ADJUST((coder), 1); \
 	} while(0)
 
@@ -419,7 +419,7 @@ typedef ILJitValue ILJitStackItem;
 		ILJitStackItem *__stackValue = _ILJitStackItemGetTop(coder, -1); \
 		__stackValue->flags = (_IL_JIT_VALUE_NULLCHECKED | _IL_JIT_VALUE_POINTER_TO); \
 		__stackValue->value = _ILJitParamGetPointerTo(coder, n); \
-		__stackValue->refValue = &(_ILJitParamGet(coder, n)); \
+		__stackValue->refValue = (_ILJitParamGet(coder, n)); \
 		JITC_ADJUST((coder), 1); \
 	} while(0)
 
@@ -431,7 +431,7 @@ typedef ILJitValue ILJitStackItem;
 		_ILJitStackItemNew(__value) ; \
 		ILJitLocalSlot *__refValue; \
 		_ILJitStackPop(coder, __value); \
-		__refValue = &(_ILJitParamGet(coder, n)); \
+		__refValue = (_ILJitParamGet(coder, n)); \
 		_ILJitStackDupLocal(coder, __refValue); \
 		if(__value.flags & _IL_JIT_VALUE_NULLCHECKED) \
 		{ \
@@ -451,7 +451,7 @@ typedef ILJitValue ILJitStackItem;
 		ILJitStackItem *__stackValue = _ILJitStackItemGetTop(coder, -1); \
 		__stackValue->flags = (_ILJitLocalFlags(coder, n) | _IL_JIT_VALUE_COPYOF); \
 		__stackValue->value = _ILJitLocalValue(coder, n); \
-		__stackValue->refValue = &(_ILJitLocalGet(coder, n)); \
+		__stackValue->refValue = (_ILJitLocalGet(coder, n)); \
 		JITC_ADJUST((coder), 1); \
 	} while(0)
 
@@ -463,7 +463,7 @@ typedef ILJitValue ILJitStackItem;
 		ILJitStackItem *__stackValue = _ILJitStackItemGetTop(coder, -1); \
 		__stackValue->flags = (_IL_JIT_VALUE_NULLCHECKED | _IL_JIT_VALUE_POINTER_TO); \
 		__stackValue->value = _ILJitLocalGetPointerTo(coder, n); \
-		__stackValue->refValue = &(_ILJitLocalGet(coder, n)); \
+		__stackValue->refValue = (_ILJitLocalGet(coder, n)); \
 		JITC_ADJUST((coder), 1); \
 	} while(0)
 
@@ -476,7 +476,7 @@ typedef ILJitValue ILJitStackItem;
 		_ILJitStackItemNew(__value); \
 		ILJitLocalSlot *__refValue; \
 		_ILJitStackPop(coder, __value); \
-		__refValue = &(_ILJitLocalGet(coder, n)); \
+		__refValue = (_ILJitLocalGet(coder, n)); \
 		__refValue->flags |= _IL_JIT_VALUE_INITIALIZED; \
 		_ILJitStackDupLocal(coder, __refValue); \
 		if(__value.flags & _IL_JIT_VALUE_NULLCHECKED) \
@@ -756,6 +756,12 @@ static void JITCoder_StackRefresh(ILCoder *coder, ILEngineStackItem *stack,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
+#ifdef	_IL_JIT_ENABLE_INLINE
+	if(jitCoder->currentInlineContext)
+	{
+		stackSize += jitCoder->currentInlineContext->stackBase;
+	}
+#endif	/* _IL_JIT_ENABLE_INLINE */
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (jitCoder->flags & IL_CODER_FLAG_STATS)
 	{

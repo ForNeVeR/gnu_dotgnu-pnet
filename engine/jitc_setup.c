@@ -32,6 +32,16 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	ILDebugger *debugger;
 #endif
 
+#ifdef	_IL_JIT_ENABLE_INLINE
+	if(coder->currentInlineContext)
+	{
+		int neededStackHeight = coder->currentInlineContext->stackBase + code->maxStack + 2;
+
+		ALLOC_STACK(coder, neededStackHeight);
+		return 1;
+	}
+#endif	/* _IL_JIT_ENABLE_INLINE */
+
 	/* Record the current jitted function. */
 	coder->jitFunction = ILJitFunctionFromILMethod(method);
 	/* Record the current method. */
@@ -191,6 +201,13 @@ static int JITCoder_Finish(ILCoder *_coder)
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	char *methodName = _ILJitFunctionGetMethodName(jitCoder->jitFunction);
 #endif
+
+#ifdef	_IL_JIT_ENABLE_INLINE
+	if(jitCoder->currentInlineContext)
+	{
+		return IL_CODER_END_OK;
+	}
+#endif	/* _IL_JIT_ENABLE_INLINE */
 
 	/* Destroy the mem stack for the label stackstates. */
 	ILMemStackDestroy(&(jitCoder->stackStates));

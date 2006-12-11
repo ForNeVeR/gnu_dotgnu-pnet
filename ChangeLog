@@ -1,3 +1,30 @@
+2006-12-11  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/Makefile.am: Add jitc_inline.c to the jit coder sources.
+
+	* engine/jitc.c: Add method implementation flags needed for inlining and
+	include jitc_inline.c where needed.
+
+	* engine/jitc_branch.c: Remove the #ifdef _IL_JIT_OPTIMIZE_NULLCHECK and
+	#endif around the _ILJitValuesResetNullChecked in JITCoder_Label because
+	the macro is defined now how it's needed for the configuration.
+
+	* engine/jitc_call.c: Add support for inlining methods in
+	JITCoder_CallMethod. Store the value to return in the inline context and
+	jump to the end of the inlined function if returning from an inlined method
+	in JITCoder_ReturnInsn.
+
+	* engine/jitc_labels.c: Add support for labels in inlined methods.
+
+	* engine/jitc_locals.c: Add support for locals and args in inlined methods.
+
+	* engine/jitc_setup.c: Add support for inlined methods in the setup and
+	finish functions of the jit coder.
+
+	*engine/jitc_stack.c: Add support for inlining methods.
+
+	*engine/jitc_inline.c: Added
+
 2006-11-30  Klaus Treichel  <ktreichel@web.de>
 
 	* Makefile.am: Set DIST_SUBDIRS to SUBDIRS to fix make distclean if pnet

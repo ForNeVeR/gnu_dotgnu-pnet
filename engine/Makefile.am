@@ -24,6 +24,7 @@ JITC_INCLUDES = jitc.h \
 				jitc_delegate.c \
 				jitc_diag.c \
 				jitc_except.c \
+				jitc_inline.c \
 				jitc_labels.c \
 				jitc_locals.c \
 				jitc_math.c \

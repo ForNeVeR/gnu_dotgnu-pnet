@@ -44,6 +44,13 @@ struct _tagILJitLocalSlots
 	int				maxSlots;	/* Number of allocated slots. */
 };
 
+/*
+ * Initialize all not yet initialized values in the local slots to 0.
+ * Returns 0 on failure.
+ */
+static int _ILJitLocalSlotsInitLocals(ILJITCoder *jitCoder,
+									  ILJitLocalSlots *localSlots);
+
 #define _ILJitLocalSlotsInit(s) \
 	do { \
 		(s).slots = 0;		\
@@ -67,12 +74,104 @@ struct _tagILJitLocalSlots
  */
 #define _IL_JIT_VALUE_NULLCHECKED 	0x00000001
 #define _IL_JIT_VALUE_INITIALIZED 	0x00000002
+#define _IL_JIT_VALUE_PROTECT	 	0x00000004
+#define _IL_JIT_VALUE_LOCAL_MASK 	0x000000FF
 
 /*
  * additional flags used on the evaluation stack.
  */
 #define _IL_JIT_VALUE_COPYOF		0x00000100	/* complete copy of the local/arg value */
 #define _IL_JIT_VALUE_POINTER_TO	0x00000200	/* pointer to the local/arg value */
+
+/*
+ * Set flags for the given local slot.
+ */
+#define _ILJitLocalSlotSetFlags(s, f)	((s).flags |= (f))
+
+/*
+ * Reset flags for the given local slot.
+ */
+#define _ILJitLocalSlotResetFlags(s, f) ((s).flags &= ~(f))
+
+/*
+ * Get a specific slot from a ILJitLocalSlots structure.
+ */
+#define _ILJitLocalSlotFromSlots(localSlots, n)	((localSlots).slots[(n)])
+
+/*
+ * Set flags for all values in the given local slots.
+ */
+#define _ILJitLocalSlotsSetFlags(s, f)	\
+	do { \
+		ILInt32 __current; \
+		for(__current = 0; __current < (s).numSlots; __current++) \
+		{ \
+			_ILJitLocalSlotSetFlags(_ILJitLocalSlotFromSlots(s, __current), f); \
+		} \
+	} while (0)
+
+/*
+ * Reset flags for all values in the given local slots.
+ */
+#define _ILJitLocalSlotsResetFlags(s, f)	\
+	do { \
+		ILInt32 __current; \
+		for(__current = 0; __current < (s).numSlots; __current++) \
+		{ \
+			_ILJitLocalSlotResetFlags(_ILJitLocalSlotFromSlots(s, __current), f); \
+		} \
+	} while (0)
+
+/*
+ * Set flags for all argument / local values in the jit coder.
+ */
+#define _ILJitCoderLocalsSetFlags(c, f)	\
+	do { \
+		_ILJitLocalSlotsSetFlags((c)->jitParams, f); \
+		_ILJitLocalSlotsSetFlags((c)->jitLocals, f); \
+	} while (0)
+	
+/*
+ * Reset flags for all argument / local values in the jit coder.
+ */
+#define _ILJitCoderLocalsResetFlags(c, f)	\
+	do { \
+		_ILJitLocalSlotsResetFlags((c)->jitParams, f); \
+		_ILJitLocalSlotsResetFlags((c)->jitLocals, f); \
+	} while (0)
+
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+
+#define _ILJitValuesResetNullChecked(c)	\
+	_ILJitCoderLocalsResetFlags(c, _IL_JIT_VALUE_NULLCHECKED)
+
+#else
+
+#define _ILJitValuesResetNullChecked(c)
+
+#endif	/* _IL_JIT_OPTIMIZE_LOCALS */
+
+#ifdef	_IL_JIT_ENABLE_INLINE
+
+/*
+ * Set flags for all argument / local values in the inline context.
+ */
+#define _ILJitInlineContextLocalsSetFlags(c, f)	\
+	do { \
+		_ILJitLocalSlotsSetFlags((c)->jitParams, f); \
+		_ILJitLocalSlotsSetFlags((c)->jitLocals, f); \
+	} while (0)
+	
+/*
+ * Reset flags for all argument / local values in the inline context.
+ */
+#define _ILJitInlineContextLocalsResetFlags(c, f)	\
+	do { \
+		_ILJitLocalSlotsResetFlags((c)->jitParams, f); \
+		_ILJitLocalSlotsResetFlags((c)->jitLocals, f); \
+	} while (0)
+
+#endif	/* _IL_JIT_ENABLE_INLINE */
 
 /*
  * Allocate enough space for "n" slots.
@@ -97,42 +196,97 @@ struct _tagILJitLocalSlots
 /*
  * Get the slot for a local value.
  */
-#define _ILJitLocalGet(coder, n) ((coder)->jitLocals.slots[(n)])
+#ifdef	_IL_JIT_ENABLE_INLINE
+#define _ILJitLocalGet(coder, n) \
+	({ \
+		ILJitLocalSlot *localSlot; \
+		if((coder)->currentInlineContext) \
+		{ \
+			localSlot = &_ILJitLocalSlotFromSlots((coder)->currentInlineContext->jitLocals, (n)); \
+		} \
+		else \
+		{ \
+			localSlot = &_ILJitLocalSlotFromSlots((coder)->jitLocals, (n)); \
+		} \
+		localSlot; \
+	})
+
+#else
+#define _ILJitLocalGet(coder, n) (&_ILJitLocalSlotFromSlots((coder)->jitLocals, (n)))
+#endif
 
 /*
  * Access the flags member of a local slot.
  */
-#define _ILJitLocalFlags(coder, n) _ILJitLocalGet((coder), (n)).flags
+#define _ILJitLocalFlags(coder, n) _ILJitLocalGet((coder), (n))->flags
 
 /*
  * Access the ptrToValue member of a locals slot.
  */
-#define _ILJitLocalPointer(coder, n) _ILJitLocalGet((coder), (n)).refValue
+#define _ILJitLocalPointer(coder, n) _ILJitLocalGet((coder), (n))->refValue
 
 /*
  * Access the value member of a locals slot.
  */
-#define _ILJitLocalValue(coder, n) _ILJitLocalGet((coder), (n)).value
+#define _ILJitLocalValue(coder, n) _ILJitLocalGet((coder), (n))->value
 
 /*
  * Get the slot for a param value.
  */
-#define _ILJitParamGet(coder, n) ((coder)->jitParams.slots[(n)])
+#ifdef	_IL_JIT_ENABLE_INLINE
+#define _ILJitParamGet(coder, n) \
+	({ \
+		ILJitLocalSlot *localSlot; \
+		if((coder)->currentInlineContext) \
+		{ \
+			localSlot = &_ILJitLocalSlotFromSlots((coder)->currentInlineContext->jitParams, (n)); \
+		} \
+		else \
+		{ \
+			localSlot = &_ILJitLocalSlotFromSlots((coder)->jitParams, (n)); \
+		} \
+		localSlot; \
+	})
+
+#else
+#define _ILJitParamGet(coder, n) (&_ILJitLocalSlotFromSlots((coder)->jitParams, (n)))
+#endif
 
 /*
  * Access the flags member of a local slot.
  */
-#define _ILJitParamFlags(coder, n) _ILJitParamGet((coder), (n)).flags
+#define _ILJitParamFlags(coder, n) _ILJitParamGet((coder), (n))->flags
 
 /*
  * Access the ptrToValue member of a locals slot.
  */
-#define _ILJitParamPointer(coder, n) _ILJitParamGet((coder), (n)).refValue
+#define _ILJitParamPointer(coder, n) _ILJitParamGet((coder), (n))->refValue
 
 /*
  * Access the value member of a locals slot.
  */
-#define _ILJitParamValue(coder, n) _ILJitParamGet((coder), (n)).value
+#define _ILJitParamValue(coder, n) _ILJitParamGet((coder), (n))->value
+
+#ifdef	_IL_JIT_ENABLE_INLINE
+
+/*
+ * Create a new jit_value_t with the type of the existing jit_value_t in the
+ * local slot and replace the existing one with the new one.
+ * Clear the protect flag afterwards.
+ */
+static int _ILJitLocalSlotNewValue(ILJITCoder *jitCoder,
+                                   ILJitLocalSlot *localSlot);
+
+/*
+ * Duplicate the jit_value_t in a local slot and clear the protect flag.
+ */
+static int _ILJitLocalSlotDupValue(ILJITCoder *jitCoder,
+                                   ILJitLocalSlot *localSlot);
+
+#define _ILJitLocalsInitInlineContext(coder, inlineContext) \
+		_ILJitLocalSlotsInitLocals((coder), &((inlineContext)->jitLocals))
+
+#endif	/* _IL_JIT_ENABLE_INLINE */
 
 #endif /* IL_JITC_DECLARATIONS */
 
@@ -161,9 +315,9 @@ struct _tagILJitLocalSlots
 
 #ifdef	IL_JITC_CODER_DESTROY
 
-	_ILJitLocalSlotsDestroy(coder->jitLocals)
+	_ILJitLocalSlotsDestroy(coder->jitLocals);
 
-	_ILJitLocalSlotsDestroy(coder->jitParams)
+	_ILJitLocalSlotsDestroy(coder->jitParams);
 
 #endif	/* IL_JITC_CODER_DESTROY */
 
@@ -176,7 +330,7 @@ struct _tagILJitLocalSlots
 static ILJitValue _ILJitLocalGetPointerTo(ILJITCoder *coder,
 										  ILUInt32 localNum)
 {
-	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, localNum);
+	ILJitLocalSlot *slot = _ILJitLocalGet(coder, localNum);
 
 	/*
 	if(!slot->refValue)
@@ -195,8 +349,17 @@ static ILJitValue _ILJitLocalGetPointerTo(ILJITCoder *coder,
 static ILJitValue _ILJitParamGetPointerTo(ILJITCoder *coder,
 										  ILUInt32 paramNum)
 {
-	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
+	ILJitLocalSlot *slot = _ILJitParamGet(coder, paramNum);
 
+#ifdef	_IL_JIT_ENABLE_INLINE
+	if(slot->flags & _IL_JIT_VALUE_PROTECT)
+	{
+		if(!(_ILJitLocalSlotDupValue(coder, slot)))
+		{
+			return 0;
+		}
+	}
+#endif
 	/*
 	if(!slot->refValue)
 	{	
@@ -259,33 +422,53 @@ static int _ILJitLocalInit(ILJITCoder *coder, ILJitLocalSlot *slot)
 }
 
 /*
+ * Initialize all not yet initialized values in the local slots to 0.
+ * Returns 0 on failure.
+ */
+static int _ILJitLocalSlotsInitLocals(ILJITCoder *jitCoder,
+									  ILJitLocalSlots *localSlots)
+{
+	ILUInt32 num = localSlots->numSlots;
+
+	if(num > 0)
+	{
+		ILUInt32 current;
+		ILJitLocalSlot *slot;
+
+		for(current = 0; current < num; ++current)
+		{
+			slot = &_ILJitLocalSlotFromSlots(*localSlots, current);
+
+			if(!_ILJitLocalInit(jitCoder, slot))
+			{
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+/*
  * Initialize the not yet initialized local values to 0 and move the
  * initialization sequence to the start of the function.
  */
 static int _ILJitLocalsInit(ILJITCoder *coder)
 {
 	ILUInt32 num = coder->jitLocals.numSlots;
-	ILUInt32 current;
 
 	if(num > 0)
 	{
 		jit_label_t startLabel = jit_label_undefined;
 		jit_label_t endLabel = jit_label_undefined;
-		ILJitLocalSlot *slot;
 
 		if(!jit_insn_label(coder->jitFunction, &startLabel))
 		{
 			return 0;
 		}
 
-		for(current = 0; current < num; ++current)
+		if(!_ILJitLocalSlotsInitLocals(coder, &(coder->jitLocals)))
 		{
-			slot = &_ILJitLocalGet(coder, current);
-
-			if(!_ILJitLocalInit(coder, slot))
-			{
-				return 0;
-			}
+			return 0;
 		}
 
 		if(!jit_insn_label(coder->jitFunction, &endLabel))
@@ -305,81 +488,105 @@ static int _ILJitLocalsInit(ILJITCoder *coder)
  * Create the slots for the declared local variables.
  * Returns zero if out of memory.
  */
-static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
+static int _ILJitLocalSlotsCreateLocals(ILJITCoder *jitCoder,
+										ILJitLocalSlots *localSlots,
+										ILStandAloneSig *localVarSig)
 {
-	ILType *signature;
-	ILType *type;
-	ILJitType jitType;
-	ILUInt32 num;
-	ILUInt32 current;
-#ifdef IL_DEBUGGER
-	jit_value_t data1;
-	jit_value_t data2;
-#endif
-
 	if(localVarSig)
 	{
+		ILType *signature;
+		ILType *type;
+		ILJitType jitType;
+		ILUInt32 num;
+		ILUInt32 current;
+
 		/* Determine the number of locals to allocate */
-		signature = ILStandAloneSigGetType(localVarSig);
-		num = ILTypeNumLocals(signature);
-
-		/* Allocate the "jitLocals" array for the variables */
-		_ILJitLocalsAlloc(coder->jitLocals, num);
-
-		/* Set the offsets for each of the local variables */
-		for(current = 0; current < num; ++current)
-		{
-			ILJitLocalSlot *local = &_ILJitLocalGet(coder, current);
-
-			type = ILTypeGetLocal(signature, current);
-
-			if(!(jitType = _ILJitGetLocalsType(type, coder->process)))
-			{
-				return 0;
-			}
-			if(!(local->value = jit_value_create(coder->jitFunction, jitType)))
-			{
-				return 0;
-			}
-			local->refValue = 0;
-
-#ifdef IL_DEBUGGER
-			/* Notify debugger about address of local variable */
-			if(coder->markBreakpoints)
-			{
-				/* Make the variable accessible for debugger */
-				jit_value_set_volatile(local->value);
-				jit_value_set_addressable(local->value);
-
-				/* Report address of the variable to debugger */
-				data1 = jit_value_create_nint_constant(coder->jitFunction,
-				 							jit_type_nint,
-											JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR);
-
-				data2 = jit_insn_address_of(coder->jitFunction,	local->value);
-				jit_insn_mark_breakpoint_variable
-											(coder->jitFunction, data1, data2);
-			}
-#endif
-
-			local->flags = 0;
-		}
-		/* Record the number of used locals in the coder. */
-		coder->jitLocals.numSlots = num;
-
-#ifndef _IL_JIT_OPTIMIZE_INIT_LOCALS
-		/* Initialize the locals. */
-		if(!_ILJitLocalsInit(coder))
+		if(!(signature = ILStandAloneSigGetType(localVarSig)))
 		{
 			return 0;
 		}
-#endif
+		num = ILTypeNumLocals(signature);
+
+		/* Allocate the "jitLocals" array for the variables */
+		_ILJitLocalsAlloc(*localSlots, num);
+
+		/* Create the jit values for the local variables */
+		for(current = 0; current < num; ++current)
+		{
+			ILJitLocalSlot *local = &_ILJitLocalSlotFromSlots(*localSlots, current);
+
+			if(!(type = ILTypeGetLocal(signature, current)))
+			{
+				return 0;
+			}
+			if(!(jitType = _ILJitGetLocalsType(type, jitCoder->process)))
+			{
+				return 0;
+			}
+			if(!(local->value = jit_value_create(jitCoder->jitFunction, jitType)))
+			{
+				return 0;
+			}
+			local->flags = 0;
+			local->refValue = 0;
+		}
+		/* Record the number of used locals in the local slots. */
+		localSlots->numSlots = num;
 	}
 	else
 	{
 		/* Set the number of used locals to 0. */
-		coder->jitLocals.numSlots = 0;
+		localSlots->numSlots = 0;
 	}
+	return 1;
+}
+
+/*
+ * Create the slots for the declared local variables.
+ * Returns zero if out of memory.
+ */
+static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
+{
+	if(!_ILJitLocalSlotsCreateLocals(coder, &(coder->jitLocals), localVarSig))
+	{
+		return 0;
+	}
+
+#ifdef IL_DEBUGGER
+	if(coder->markBreakpoints)
+	{
+		ILUInt32 current;
+		jit_value_t data1;
+		jit_value_t data2;
+
+		/* Set the offsets for each of the local variables */
+		for(current = 0; current < coder->jitLocals.numSlots; ++current)
+		{
+			ILJitLocalSlot *local = &_ILJitLocalSlotFromSlots(coder->jitLocals, current);
+
+			/* Notify debugger about address of local variable */
+			/* Make the variable accessible for debugger */
+			jit_value_set_volatile(local->value);
+			jit_value_set_addressable(local->value);
+
+			/* Report address of the variable to debugger */
+			data1 = jit_value_create_nint_constant(coder->jitFunction,
+				 								   jit_type_nint,
+												   JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR);
+
+			data2 = jit_insn_address_of(coder->jitFunction,	local->value);
+			jit_insn_mark_breakpoint_variable(coder->jitFunction, data1, data2);
+		}
+	}
+#endif
+
+#ifndef _IL_JIT_OPTIMIZE_INIT_LOCALS
+	/* Initialize the locals. */
+	if(!_ILJitLocalsInit(coder))
+	{
+		return 0;
+	}
+#endif
 
 	return 1;
 }
@@ -408,7 +615,7 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 
 			for(current = 1; current < numParams; ++current)
 			{
-				param = &_ILJitParamGet(coder, current - 1);
+				param = _ILJitParamGet(coder, current - 1);
 
 				param->value = jit_value_get_param(coder->jitFunction, current);
 				param->flags = 0;
@@ -450,7 +657,7 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
  */
 static ILJitValue _ILJitLocalGetValue(ILJITCoder *coder, ILUInt32 localNum)
 {
-	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, localNum);
+	ILJitLocalSlot *slot = _ILJitLocalGet(coder, localNum);
 
 	if((slot->flags & _IL_JIT_VALUE_INITIALIZED) == 0)
 	{
@@ -468,7 +675,7 @@ static ILJitValue _ILJitLocalGetValue(ILJITCoder *coder, ILUInt32 localNum)
 static void _ILJitLocalStoreValue(ILJITCoder *coder, ILUInt32 localNum,
 													 ILJitValue value)
 {
-	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, localNum);
+	ILJitLocalSlot *slot = _ILJitLocalGet(coder, localNum);
 
 	jit_insn_store(coder->jitFunction, slot->value, 
 				   _ILJitValueConvertImplicit(coder->jitFunction,
@@ -488,7 +695,7 @@ static void _ILJitLocalStoreNotNullValue(ILJITCoder *coder,
 										 ILUInt32 paramNum,
 										 ILJitValue value)
 {
-	ILJitLocalSlot *slot = &_ILJitLocalGet(coder, paramNum);
+	ILJitLocalSlot *slot = _ILJitLocalGet(coder, paramNum);
 
 	jit_insn_store(coder->jitFunction, slot->value,
 				   _ILJitValueConvertImplicit(coder->jitFunction,
@@ -505,7 +712,7 @@ static void _ILJitLocalStoreNotNullValue(ILJITCoder *coder,
  */
 static ILJitValue _ILJitParamGetValue(ILJITCoder *coder, ILUInt32 paramNum)
 {
-	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
+	ILJitLocalSlot *slot = _ILJitParamGet(coder, paramNum);
 
 	return slot->value;
 }
@@ -516,8 +723,17 @@ static ILJitValue _ILJitParamGetValue(ILJITCoder *coder, ILUInt32 paramNum)
 static void _ILJitParamStoreValue(ILJITCoder *coder, ILUInt32 paramNum,
 													 ILJitValue value)
 {
-	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
+	ILJitLocalSlot *slot = _ILJitParamGet(coder, paramNum);
 
+#ifdef	_IL_JIT_ENABLE_INLINE
+	if(slot->flags & _IL_JIT_VALUE_PROTECT)
+	{
+		if(!(_ILJitLocalSlotNewValue(coder, slot)))
+		{
+			return;
+		}
+	}
+#endif
 	jit_insn_store(coder->jitFunction, slot->value,
 				   _ILJitValueConvertImplicit(coder->jitFunction,
 											  value,
@@ -535,8 +751,17 @@ static void _ILJitParamStoreNotNullValue(ILJITCoder *coder,
 										 ILUInt32 paramNum,
 										 ILJitValue value)
 {
-	ILJitLocalSlot *slot = &_ILJitParamGet(coder, paramNum);
+	ILJitLocalSlot *slot = _ILJitParamGet(coder, paramNum);
 
+#ifdef	_IL_JIT_ENABLE_INLINE
+	if(slot->flags & _IL_JIT_VALUE_PROTECT)
+	{
+		if(!(_ILJitLocalSlotNewValue(coder, slot)))
+		{
+			return;
+		}
+	}
+#endif	/* _IL_JIT_ENABLE_INLINE */
 	jit_insn_store(coder->jitFunction, slot->value,
 				   _ILJitValueConvertImplicit(coder->jitFunction,
 											  value,
@@ -545,151 +770,186 @@ static void _ILJitParamStoreNotNullValue(ILJITCoder *coder,
 	slot->flags |= _IL_JIT_VALUE_NULLCHECKED;
 }
 
-#endif
+#endif	/* _IL_JIT_OPTIMIZE_LOCALS */
+
+#ifdef	_IL_JIT_ENABLE_INLINE
 
 /*
- * Check if the given value is a parameter or local.
- * Returns 1 if the value is either a param or local value or pointer to
- * a param or local otherwise 0.
+ * Create a new jit_value_t with the type of the existing jit_value_t in the
+ * local slot and replace the existing one with the new one.
+ * Clear the protect flag afterwards.
  */
-static ILInt32 _ILJitValueIsArgOrLocal(ILJITCoder *coder, ILJitValue value)
+static int _ILJitLocalSlotNewValue(ILJITCoder *jitCoder,
+                                   ILJitLocalSlot *localSlot)
+{
+	ILJitType type;
+	ILJitValue value;
+
+	if(!(type = jit_value_get_type(localSlot->value)))
+	{
+		return 0;
+	}
+	if(!(value = jit_value_create(jitCoder->jitFunction, type)))
+	{
+		return 0;
+	}
+	localSlot->value = value;
+	localSlot->refValue = 0;
+	localSlot->flags &= ~_IL_JIT_VALUE_PROTECT;
+	return 1;
+}
+
+/*
+ * Duplicate the jit_value_t in a local slot and clear the protect flag.
+ */
+static int _ILJitLocalSlotDupValue(ILJITCoder *jitCoder,
+                                   ILJitLocalSlot *localSlot)
+{
+	ILJitType type;
+	ILJitValue value;
+
+	if(!(type = jit_value_get_type(localSlot->value)))
+	{
+		return 0;
+	}
+	if(!(value = jit_value_create(jitCoder->jitFunction, type)))
+	{
+		return 0;
+	}
+	if(!(jit_insn_store(jitCoder->jitFunction, value, localSlot->value)))
+	{
+		return 0;
+	}
+	localSlot->value = value;
+	localSlot->refValue = 0;
+	localSlot->flags &= ~_IL_JIT_VALUE_PROTECT;
+	return 1;
+}
+
+/*
+ * Duplicate all values in an inline context that are marked to protect.
+ * This has to be done for example before if branch or a branch target is
+ * emitted.
+ */
+static int _ILJitLocalSlotsHandleProtectedValues(ILJITCoder *jitCoder,
+												 ILJITCoderInlineContext *inlineContext)
+{
+	ILJitLocalSlot *slot;
+	ILInt32 current;
+
+	for(current = 0; current < inlineContext->jitParams.numSlots; current++)
+	{
+		slot = &_ILJitLocalSlotFromSlots(inlineContext->jitParams, current);
+
+		if(slot->flags & _IL_JIT_VALUE_PROTECT)
+		{
+			if(!(_ILJitLocalSlotDupValue(jitCoder, slot)))
+			{
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+/*
+ * Setup the arguments for an inlined function.
+ */
+static int _ILJitLocalSlotsSetupInlineArgs(ILJITCoder *jitCoder,
+										   ILJITCoderInlineContext *inlineContext,
+										   ILJitValue this,
+										   ILJitStackItem *args,
+										   ILInt32 numArgs)
 {
 	ILInt32 current;
-	ILJitLocalSlot *slot = 0;
+	ILInt32 currentArg;
 
-	for(current = 0; current < coder->jitLocals.numSlots; ++current)
+	if(this)
 	{
-		slot = &_ILJitLocalGet(coder, current);
+		ILJitLocalSlot *arg;
 
-		if(slot->value == value)
-		{
-			return 1;
-		}
+		_ILJitLocalsAlloc(inlineContext->jitParams, numArgs + 1);
+
+		arg = &_ILJitLocalSlotFromSlots(inlineContext->jitParams, 0);
+
+		arg->value = this;
+		arg->refValue = 0;
+		arg->flags = _IL_JIT_VALUE_NULLCHECKED;
+
+		current = 1;
+	}
+	else
+	{
+		_ILJitLocalsAlloc(inlineContext->jitParams, numArgs);
+		current = 0;
 	}
 
-	for(current = 0; current < coder->jitParams.numSlots; ++current)
+	for(currentArg = 0; currentArg < numArgs; currentArg++)
 	{
-		slot = &_ILJitParamGet(coder, current);
+		ILJitLocalSlot *arg = &_ILJitLocalSlotFromSlots(inlineContext->jitParams,
+														currentArg);
 
-		if(slot->value == value)
+		arg->value = _ILJitStackItemValue(args[currentArg]);
+		arg->refValue = 0;
+#ifdef _IL_JIT_OPTIMIZE_LOCALS
+		if(jit_value_is_constant(arg->value))
 		{
-			return 1;
+			arg->flags = ((args[currentArg].flags & _IL_JIT_VALUE_LOCAL_MASK) | _IL_JIT_VALUE_PROTECT);
 		}
-	}
-
-	return 0;
-}
-
-#ifdef _IL_JIT_OPTIMIZE_NULLCHECKS
-
-#define _ILJitValuesResetNullChecked(coder) \
-		_ILJitValuesSetFlags((coder), 0, _IL_JIT_VALUE_NULLCHECKED)
+		else if(args[currentArg].flags & _IL_JIT_VALUE_COPYOF)
+		{
+			arg->flags = ((args[currentArg].flags & _IL_JIT_VALUE_LOCAL_MASK) | _IL_JIT_VALUE_PROTECT);
+		}
+		else
+		{
+			arg->flags = (args[currentArg].flags & _IL_JIT_VALUE_LOCAL_MASK);
+		}
+#else
+		if(jit_value_is_constant(arg->value))
+		{
+			arg->flags = _IL_JIT_VALUE_PROTECT;
+		}
+		else
+		{
+			arg->flags = 0;
+		}
 #endif
-
-/*
- * Find the slot for the given value.
- * Returns the slot with the value when found otherwise 0.
- */
-static ILJitLocalSlot *_ILJitValueFindSlot(ILJITCoder *coder, ILJitValue value)
-{
-	ILInt32 current;
-	ILJitLocalSlot *slot = 0;
-
-	for(current = 0; current < coder->jitLocals.numSlots; ++current)
-	{
-		slot = &_ILJitLocalGet(coder, current);
-
-		if(slot->value == value)
-		{
-			return slot;
-		}
+		/* TODO: look at the bug that happens without this. */
+		_ILJitLocalSlotDupValue(jitCoder, arg);
+		current++;
 	}
-
-	for(current = 0; current < coder->jitParams.numSlots; ++current)
-	{
-		slot = &_ILJitParamGet(coder, current);
-
-		if(slot->value == value)
-		{
-			return slot;
-		}
-	}
-	return 0;
+	return 1;
 }
 
-/*
- * Set or reset flags for the given value.
- */
-static void _ILJitValueSetFlags(ILJITCoder *coder, ILJitValue value,
-								ILUInt32 setFlags, ILUInt32 resetFlags)
-{
-	ILJitLocalSlot *slot = _ILJitValueFindSlot(coder, value);
-
-	if(slot)
-	{
-		slot->flags |= setFlags;
-		slot->flags &= ~resetFlags;
-	}
-}
-
-/*
- * Set or reset flags for all locals / parameters.
- */
-static void _ILJitValuesSetFlags(ILJITCoder *coder,
-								 ILUInt32 setFlags, ILUInt32 resetFlags)
-{
-
-	ILInt32 current;
-	ILJitLocalSlot *slot = 0;
-
-	for(current = 0; current < coder->jitLocals.numSlots; ++current)
-	{
-		slot = &_ILJitLocalGet(coder, current);
-
-		slot->flags |= setFlags;
-		slot->flags &= ~resetFlags;
-	}
-
-	for(current = 0; current < coder->jitParams.numSlots; ++current)
-	{
-		slot = &_ILJitParamGet(coder, current);
-
-		slot->flags |= setFlags;
-		slot->flags &= ~resetFlags;
-	}
-}
-
-/*
- * Throw a NullReferenceException if address.is 0.
- */
-static void _ILJitCheckNull(ILJITCoder *coder, ILJitValue address)
-{
-#ifdef _IL_JIT_OPTIMIZE_NULLCHECKS
-	ILJitLocalSlot *slot = 0;
-#endif
-
-	if(jit_value_is_constant(address))
-	{
-		/* We assume that the type of the constant is a pointer type. */
-		if(jit_value_get_nint_constant(address) != 0)
-		{
-			/* We don't have to do a null check for a non null constant. */
-			return;
-		}
-	}
-#ifdef _IL_JIT_OPTIMIZE_NULLCHECKS
-	if((slot = _ILJitValueFindSlot(coder, address)))
-	{
-		if((slot->flags & _IL_JIT_VALUE_NULLCHECKED) == 0)
-		{
-			jit_insn_check_null(coder->jitFunction, address);
-			slot->flags |= _IL_JIT_VALUE_NULLCHECKED;
-		}
-		return;
-	}
-#endif
-	jit_insn_check_null(coder->jitFunction, address);
-}
+#endif	/* _IL_JIT_ENABLE_INLINE */
 
 #endif /* IL_JITC_FUNCTIONS */
+
+#ifdef	IL_JITC_INLINE_CONTEXT_INSTANCE
+
+	/* Members to manage the fixed arguments. */
+	ILJitLocalSlots	jitParams;
+
+	/* Members to manage the local variables. */
+	ILJitLocalSlots jitLocals;
+
+#endif	/* IL_JITC_INLINE_CONTEXT_INSTANCE */
+
+#ifdef	IL_JITC_INLINE_CONTEXT_INIT
+
+	/* Initialize the parameter management. */
+	_ILJitLocalSlotsInit(inlineContext->jitParams)
+
+	/* Initialize the locals management. */
+	_ILJitLocalSlotsInit(inlineContext->jitLocals)
+
+#endif	/* IL_JITC_INLINE_CONTEXT_INIT */
+
+#ifdef	IL_JITC_INLINE_CONTEXT_DESTROY
+
+	_ILJitLocalSlotsDestroy(inlineContext->jitLocals)
+
+	_ILJitLocalSlotsDestroy(inlineContext->jitParams)
+
+#endif	/* IL_JITC_INLINE_CONTEXT_DESTROY */
 

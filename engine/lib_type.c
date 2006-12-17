@@ -921,7 +921,7 @@ System_Array *_IL_ClrType_GetInterfaces(ILExecThread *thread,
 	}
 
 	/* Shorten the array to its final length and return */
-	array->length = count;
+	ArrayLength(array) = count;
 	return array;
 #else
 	_ILClrNotImplemented(thread);
@@ -1894,14 +1894,14 @@ static int ParameterTypeMatch(ILExecThread *thread, ILImage *image,
 	ILType *typeInfo;
 
 	/* Check the number of parameters */
-	if(ILTypeNumParams(signature) != types->length)
+	if(ILTypeNumParams(signature) != ArrayLength(types))
 	{
 		return 0;
 	}
 
 	/* Scan the parameters and check for matches */
 	items = (ILObject **)ArrayToBuffer(types);
-	for(paramNum = 0; paramNum < types->length; ++paramNum)
+	for(paramNum = 0; paramNum < ArrayLength(types); ++paramNum)
 	{
 		if(items[paramNum] == 0 && !needExact)
 		{
@@ -2347,7 +2347,7 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 	{
 		return 0;
 	}
-	array->length = 4;
+	ArrayLength(array) = 4;
 
 	/* Convert the type into an ILClass structure */
 	classInfo = _ILGetClrClass(thread, _this);
@@ -2411,19 +2411,19 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 			{
 				return 0;
 			}
-			if(numFound >= array->length)
+			if(numFound >= ArrayLength(array))
 			{
 				newArray = (System_Array *)_ILEngineAlloc
 						(thread, arrayClass,
 					     sizeof(System_Array) +
-						 	sizeof(void *) * (array->length + 4));
+						 	sizeof(void *) * (ArrayLength(array) + 4));
 				if(!newArray)
 				{
 					return 0;
 				}
 				ILMemCpy(ArrayToBuffer(newArray), ArrayToBuffer(array),
-						 sizeof(void *) * array->length);
-				newArray->length = array->length + 4;
+						 sizeof(void *) * ArrayLength(array));
+				ArrayLength(newArray) = ArrayLength(array) + 4;
 				array = newArray;
 			}
 			((void **)ArrayToBuffer(array))[numFound++] = foundObject;
@@ -2479,19 +2479,19 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 					{
 						return 0;
 					}
-					if(numFound >= array->length)
+					if(numFound >= ArrayLength(array))
 					{
 						newArray = (System_Array *)_ILEngineAlloc
 								(thread, arrayClass,
 							     sizeof(System_Array) +
-								 	sizeof(void *) * (array->length + 4));
+								 	sizeof(void *) * (ArrayLength(array) + 4));
 						if(!newArray)
 						{
 							return 0;
 						}
 						ILMemCpy(ArrayToBuffer(newArray), ArrayToBuffer(array),
-								 sizeof(void *) * array->length);
-						newArray->length = array->length + 4;
+								 sizeof(void *) * ArrayLength(array));
+						ArrayLength(newArray) = ArrayLength(array) + 4;
 						array = newArray;
 					}
 					((void **)ArrayToBuffer(array))[numFound++] = foundObject;
@@ -2506,7 +2506,7 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 	      (bindingAttrs & (ILInt32)BF_DeclaredOnly) == 0);
 
 	/* Truncate the array to its actual length and return it */
-	array->length = numFound;
+	ArrayLength(array) = numFound;
 	return (ILObject *)array;
 #else
 	_ILClrNotImplemented(thread);

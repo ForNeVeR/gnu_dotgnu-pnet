@@ -124,7 +124,7 @@ static System_Array *_ILJitSArrayAlloc(ILClass *arrayClass,
 		return (System_Array *)0;
 	}
 	ptr = (System_Array *)_ILJitAlloc(arrayClass, (ILUInt32)totalSize);
-	ptr->length = numElements;
+	ArrayLength(ptr) = numElements;
 	return ptr;
 }
 
@@ -147,7 +147,7 @@ static System_Array *_ILJitSArrayAllocAtomic(ILClass *arrayClass,
 		return (System_Array *)0;
 	}
 	ptr = (System_Array *)_ILJitAllocAtomic(arrayClass, (ILUInt32)totalSize);
-	ptr->length = numElements;
+	ArrayLength(ptr) = numElements;
 	return ptr;
 }
 
@@ -249,7 +249,7 @@ static ILJitValue _ILJitSArrayNewWithConstantSize(ILJitFunction jitFunction,
 	/* Set the length in the array. */
 	jit_insn_store_relative(jitFunction,
 							newArray, 
-							offsetof(System_Array, length),
+							offsetof(SArrayHeader, length),
 							arrayLength);
 	return newArray;
 }
@@ -678,7 +678,9 @@ static ILJitValue GetArrayLength(ILJITCoder *coder, ILJitValue array)
 {
 	ILJitValue len;
 
-	len = jit_insn_load_relative(coder->jitFunction, array, 0,
+	len = jit_insn_load_relative(coder->jitFunction,
+								 array,
+								 offsetof(SArrayHeader, length),
 								 _IL_JIT_TYPE_INT32);
 	return len;
 }

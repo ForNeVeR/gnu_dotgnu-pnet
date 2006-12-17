@@ -582,7 +582,7 @@ ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread *_thread,
 			context->encrypt = (SymCryptFunc)ILDES3Process;
 			context->decrypt = (SymCryptFunc)ILDES3Process;
 			ILDES3Init(&(((DES3Context *)context)->des3),
-					   ArrayToBuffer(key), (int)(key->length * 8), 0);
+					   ArrayToBuffer(key), (int)(ArrayLength(key) * 8), 0);
 			return (ILNativeInt)context;
 		}
 		/* Not reached */
@@ -600,7 +600,7 @@ ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread *_thread,
 			context->encrypt = (SymCryptFunc)ILRC2Encrypt;
 			context->decrypt = (SymCryptFunc)ILRC2Decrypt;
 			ILRC2Init(&(((RC2Context *)context)->rc2),
-					  ArrayToBuffer(key), (int)(key->length * 8));
+					  ArrayToBuffer(key), (int)(ArrayLength(key) * 8));
 			return (ILNativeInt)context;
 		}
 		/* Not reached */
@@ -618,7 +618,7 @@ ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread *_thread,
 			context->encrypt = (SymCryptFunc)ILAESEncrypt;
 			context->decrypt = (SymCryptFunc)ILAESDecrypt;
 			ILAESInit(&(((AESContext *)context)->aes),
-					  ArrayToBuffer(key), (int)(key->length * 8));
+					  ArrayToBuffer(key), (int)(ArrayLength(key) * 8));
 			return (ILNativeInt)context;
 		}
 		/* Not reached */
@@ -672,7 +672,7 @@ ILNativeInt _IL_CryptoMethods_DecryptCreate(ILExecThread *_thread,
 			context->encrypt = (SymCryptFunc)ILDES3Process;
 			context->decrypt = (SymCryptFunc)ILDES3Process;
 			ILDES3Init(&(((DES3Context *)context)->des3),
-					   ArrayToBuffer(key), (int)(key->length * 8), 1);
+					   ArrayToBuffer(key), (int)(ArrayLength(key) * 8), 1);
 			return (ILNativeInt)context;
 		}
 		/* Not reached */
@@ -743,7 +743,7 @@ static int ByteArraysToBigNums(ILExecThread *_thread,
 	if(x)
 	{
 		*xbig = ILBigNumFromBytes((unsigned char *)(ArrayToBuffer(x)),
-								  x->length);
+								  ArrayLength(x));
 		if(!(*xbig))
 		{
 			ILExecThreadThrowOutOfMemory(_thread);
@@ -757,7 +757,7 @@ static int ByteArraysToBigNums(ILExecThread *_thread,
 	if(y)
 	{
 		*ybig = ILBigNumFromBytes((unsigned char *)(ArrayToBuffer(y)),
-								  y->length);
+								  ArrayLength(y));
 		if(!(*ybig))
 		{
 			if(x)
@@ -775,7 +775,7 @@ static int ByteArraysToBigNums(ILExecThread *_thread,
 	if(z)
 	{
 		*zbig = ILBigNumFromBytes((unsigned char *)(ArrayToBuffer(z)),
-								  z->length);
+								  ArrayLength(z));
 		if(!(*zbig))
 		{
 			if(x)

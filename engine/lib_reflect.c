@@ -1581,7 +1581,7 @@ ILObject *_IL_Assembly_LoadFromBytes(ILExecThread *thread,
 	   to be able to modify the IL binary after we have loaded it.
 	   Or worse, have the garbage collector throw the "bytes" array away */
 	loadError = ILImageLoadFromMemory(ArrayToBuffer(bytes),
-									  (unsigned long)(long)(bytes->length),
+									  (unsigned long)(long)(ArrayLength(bytes)),
 									  thread->process->context,
 									  &image, IL_LOADFLAG_FORCE_32BIT, 0);
 	if(loadError == 0)
@@ -2852,7 +2852,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 	numParams = (ILInt32)ILTypeNumParams(signature);
 	if(numParams == 0)
 	{
-		if(parameters && parameters->length != 0)
+		if(parameters && ArrayLength(parameters) != 0)
 		{
 			ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
 			return 0;
@@ -2860,7 +2860,7 @@ static ILObject *InvokeMethod(ILExecThread *thread, ILMethod *method,
 	}
 	else
 	{
-		if(!parameters || parameters->length != numParams)
+		if(!parameters || ArrayLength(parameters) != numParams)
 		{
 			ILExecThreadThrowSystem(thread, "System.ArgumentException", 0);
 			return 0;

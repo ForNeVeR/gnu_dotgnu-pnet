@@ -463,7 +463,7 @@ System_Array *_IL_StackFrame_GetExceptionStackTrace(ILExecThread *thread)
 	{
 		return 0;
 	}
-	((System_Array *)array)->length = num;
+	ArrayLength(array) = num;
 
 	/* Fill the array with the packed stack data */
 	data = (PackedStackFrame *)ArrayToBuffer(array);

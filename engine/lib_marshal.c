@@ -485,7 +485,7 @@ ILNativeInt _IL_Marshal_UnsafeAddrOfPinnedArrayElement(ILExecThread *_thread,
 
 	if(UnmanagedOK(_thread) && arr && index >= 0 &&
 	   _ILIsSArray((System_Array *)arr) &&
-	   index < ((System_Array *)arr)->length)
+	   index < ArrayLength(arr))
 	{
 		type = ILClassGetSynType(GetObjectClass(arr));
 		type = ILTypeGetEnumType(ILType_ElemType(type));

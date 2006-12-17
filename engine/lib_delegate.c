@@ -117,7 +117,7 @@ void _IL_AsyncResult_SetOutParams(ILExecThread *_thread, ILObject *del,
 
 	paramcount = ILTypeNumParams(invokeSignature);
 
-	if (args->length < paramcount || outParams->length < paramcount)
+	if (ArrayLength(args) < paramcount || ArrayLength(outParams) < paramcount)
 	{
 		return;
 	}
@@ -136,7 +136,7 @@ void _IL_AsyncResult_SetOutParams(ILExecThread *_thread, ILObject *del,
 		{
 			paramType = ILType_Ref(paramType);
 
-			if (j >= outParams->length)
+			if (j >= ArrayLength(outParams))
 			{
 				break;
 			}

@@ -136,7 +136,7 @@ void _IL_RuntimeHelpers_InitializeArray(ILExecThread *thread,
 	if(_ILIsSArray(array))
 	{
 		buffer = ArrayToBuffer(array);
-		maxSize = (ILUInt32)(array->length * elemSize);
+		maxSize = (ILUInt32)(ArrayLength(array) * elemSize);
 	}
 #ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 	else if(_ILIsMArray(array))

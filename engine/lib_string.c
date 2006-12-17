@@ -71,7 +71,7 @@ System_String *_IL_String_ctor_acii(ILExecThread *thread,
 								  "ArgRange_Array");
 		return 0;
 	}
-	if(length < 0 || (value->length - startIndex) < length)
+	if(length < 0 || (ArrayLength(value) - startIndex) < length)
 	{
 		ILExecThreadThrowArgRange(thread, "length",
 								  "ArgRange_Array");
@@ -109,7 +109,7 @@ System_String *_IL_String_ctor_ac(ILExecThread *thread, System_Array *value)
 	   indicates that the empty string should be constructed */
 	if(value)
 	{
-		length = value->length;
+		length = ArrayLength(value);
 	}
 	else
 	{
@@ -879,7 +879,7 @@ ILInt32 _IL_String_IndexOfAny(ILExecThread *thread,
 
 	/* Get the start and extent of the "anyOf" array */
 	anyBuf = ArrayToBuffer(anyOf);
-	anyLength = anyOf->length;
+	anyLength = ArrayLength(anyOf);
 	if(!anyLength)
 	{
 		/* Bail out because there is nothing to find */
@@ -985,7 +985,7 @@ ILInt32 _IL_String_LastIndexOfAny(ILExecThread *thread,
 
 	/* Get the start and extent of the "anyOf" array */
 	anyBuf = ArrayToBuffer(anyOf);
-	anyLength = anyOf->length;
+	anyLength = ArrayLength(anyOf);
 	if(!anyLength)
 	{
 		/* Bail out because there is nothing to find */
@@ -1436,7 +1436,7 @@ static IL_INLINE int IsCharMatch(System_Array *trimChars, ILUInt16 ch)
 {
 	if(trimChars)
 	{
-		ILInt32 len = trimChars->length;
+		ILInt32 len = ArrayLength(trimChars);
 		ILUInt16 *buf = (ILUInt16 *)(ArrayToBuffer(trimChars));
 		while(len > 0)
 		{

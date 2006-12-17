@@ -657,14 +657,14 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 			return 0;
 		}
 	}
-	args = (char **)ILCalloc(argv->length + 1, sizeof(char *));
+	args = (char **)ILCalloc(ArrayLength(argv) + 1, sizeof(char *));
 	if(!args)
 	{
 		ILExecThreadThrowOutOfMemory(_thread);
 		return 0;
 	}
 	argc = 0;
-	while(argc < argv->length)
+	while(argc < ArrayLength(argv))
 	{
 		ansi = ILStringToAnsi
 			(_thread, ((ILString **)ArrayToBuffer(argv))[argc]);
@@ -687,14 +687,14 @@ ILBool _IL_Process_StartProcess(ILExecThread *_thread,
 	/* Convert the environment */
 	if(envVars)
 	{
-		newEnviron = (char **)ILCalloc(envVars->length + 1, sizeof(char *));
+		newEnviron = (char **)ILCalloc(ArrayLength(envVars) + 1, sizeof(char *));
 		if(!newEnviron)
 		{
 			ILExecThreadThrowOutOfMemory(_thread);
 			FreeStringList(args, argc);
 			return 0;
 		}
-		while(varNum < (int)(envVars->length))
+		while(varNum < (int)(ArrayLength(envVars)))
 		{
 			ansi = ILStringToAnsi
 				(_thread, ((ILString **)ArrayToBuffer(envVars))[varNum]);

@@ -306,7 +306,7 @@ void ILExecThreadPrintException(ILExecThread *thread)
 	if(stackTrace)
 	{
 		frames = (PackedStackFrame *)ArrayToBuffer(stackTrace);
-		length = ((System_Array *)stackTrace)->length;
+		length = ArrayLength(stackTrace);
 		for(posn = 0; posn < length; ++posn)
 		{
 			method = frames[posn].method;

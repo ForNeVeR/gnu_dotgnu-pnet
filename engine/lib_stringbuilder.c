@@ -313,11 +313,11 @@ ILObject * _IL_StringBuilder_Append_ac(ILExecThread * _thread,
 {
 	if(value)
 	{
-		if(value->length > 0)
+		if(ArrayLength(value) > 0)
 		{
 			return Append(_thread, (System_Text_StringBuilder *)_this,
 							(ILInt16 *)ArrayToBuffer(value),
-							value->length);
+							ArrayLength(value));
 		}
 	}
 	return _this;
@@ -333,7 +333,7 @@ ILObject * _IL_StringBuilder_Append_acii(ILExecThread * _thread,
 {
 	if(value)
 	{
-		if(startIndex < 0 || startIndex > value->length)
+		if(startIndex < 0 || startIndex > ArrayLength(value))
 		{
 			ILExecThreadThrowArgRange(_thread,
 									 "startIndex",
@@ -342,7 +342,7 @@ ILObject * _IL_StringBuilder_Append_acii(ILExecThread * _thread,
 		}
 		else
 		{
-			if(length < 0 || (value->length - startIndex) < length)
+			if(length < 0 || (ArrayLength(value) - startIndex) < length)
 			{
 				ILExecThreadThrowArgRange(_thread,
 										 "length",
@@ -557,15 +557,15 @@ ILObject * _IL_StringBuilder_Insert_iac(ILExecThread * _thread,
 {
 	if(value)
 	{
-		if(value->length)
+		if(ArrayLength(value))
 		{
 			if(Insert(_thread, (System_Text_StringBuilder *)_this,
 							index,
-							value->length))
+							ArrayLength(value)))
 			{
 				ILMemCpy(StringToBuffer(BuildString(_this)) + index,
 						ArrayToBuffer(value),
-						sizeof(ILUInt16) * value->length);
+						sizeof(ILUInt16) * ArrayLength(value));
 	
 			}
 			else
@@ -590,14 +590,14 @@ ILObject * _IL_StringBuilder_Insert_iacii(ILExecThread * _thread,
 {
 	if(value)
 	{
-		if(startIndex < 0 || startIndex > value->length)
+		if(startIndex < 0 || startIndex > ArrayLength(value))
 		{
 			ILExecThreadThrowArgRange(_thread,
 									 "startIndex",
 									 "ArgRange_Array");
 			return 0;
 		}
-		if((value->length - startIndex) < length)
+		if((ArrayLength(value) - startIndex) < length)
 		{
 			ILExecThreadThrowArgRange(_thread,
 									 "length",

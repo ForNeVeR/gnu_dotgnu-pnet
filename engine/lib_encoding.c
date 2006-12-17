@@ -62,7 +62,7 @@ ILInt32 _IL_DefaultEncoding_InternalGetBytes_aciiaBi
 		(((ILUInt16 *)ArrayToBuffer(chars)) + charIndex,
 		 (unsigned long)charCount,
 		 ((ILUInt8 *)ArrayToBuffer(bytes)) + byteIndex,
-		 (unsigned long)(bytes->length - byteIndex));
+		 (unsigned long)(ArrayLength(bytes) - byteIndex));
 }
 
 /*
@@ -79,7 +79,7 @@ ILInt32 _IL_DefaultEncoding_InternalGetBytes_StringiiaBi
 		(StringToBuffer(s) + charIndex,
 		 (unsigned long)charCount,
 		 ((ILUInt8 *)ArrayToBuffer(bytes)) + byteIndex,
-		 (unsigned long)(bytes->length - byteIndex));
+		 (unsigned long)(ArrayLength(bytes) - byteIndex));
 }
 
 /*
@@ -107,7 +107,7 @@ ILInt32 _IL_DefaultEncoding_InternalGetChars
 		(((ILUInt8 *)ArrayToBuffer(bytes)) + byteIndex,
 		 (unsigned long)byteCount,
 		 ((ILUInt16 *)ArrayToBuffer(chars)) + charIndex,
-		 (unsigned long)(chars->length - charIndex));
+		 (unsigned long)(ArrayLength(chars) - charIndex));
 }
 
 /*

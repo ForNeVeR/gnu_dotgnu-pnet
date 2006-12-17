@@ -235,7 +235,7 @@ void _IL_ArgIterator_End(ILExecThread *_thread, void *_this)
 	ArgIterator *iter = (ArgIterator *)_this;
 	if(iter->un.argIter.args)
 	{
-		iter->un.argIter.posn = iter->un.argIter.args->length;
+		iter->un.argIter.posn = ArrayLength(iter->un.argIter.args);
 	}
 }
 
@@ -250,7 +250,7 @@ ILTypedRef _IL_ArgIterator_GetNextArg_(ILExecThread *_thread, void *_this)
 	ILClass *classInfo;
 
 	if(iter->un.argIter.args &&
-	   iter->un.argIter.posn < iter->un.argIter.args->length)
+	   iter->un.argIter.posn < ArrayLength(iter->un.argIter.args))
 	{
 		/* Extract the next object and unpack it */
 		object = &(((ILObject **)ArrayToBuffer(iter->un.argIter.args))
@@ -425,7 +425,7 @@ void _IL_ArgIterator_GetNextArgType(ILExecThread *_thread,
 	ILObject *object;
 
 	if(iter->un.argIter.args &&
-	   iter->un.argIter.posn < iter->un.argIter.args->length)
+	   iter->un.argIter.posn < ArrayLength(iter->un.argIter.args))
 	{
 		/* Extract the next object and determine its type */
 		object = ((ILObject **)ArrayToBuffer(iter->un.argIter.args))
@@ -458,7 +458,7 @@ ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread *_thread,
 	ArgIterator *iter = (ArgIterator *)_this;
 	if(iter->un.argIter.args)
 	{
-		return iter->un.argIter.args->length - iter->un.argIter.posn;
+		return ArrayLength(iter->un.argIter.args) - iter->un.argIter.posn;
 	}
 	else
 	{
@@ -485,7 +485,7 @@ ILTypedRef _IL_TypedReference_ClrMakeTypedReference(ILExecThread *_thread,
 	offset = 0;
 
 	/* Resolve the fields within the object, level by level */
-	for(index = 0; index < flds->length; ++index)
+	for(index = 0; index < ArrayLength(flds); ++index)
 	{
 		field = *((ILField **)(((ILObject **)(ArrayToBuffer(flds)))[index]));
 		if(!field)
@@ -503,7 +503,7 @@ ILTypedRef _IL_TypedReference_ClrMakeTypedReference(ILExecThread *_thread,
 			 0, ILField_Type(field), 0);
 		classInfo = ILClassResolve(classInfo);
 		if(!classInfo ||
-		   (index < (flds->length - 1) && !ILClassIsValueType(classInfo)))
+		   (index < (ArrayLength(flds) - 1) && !ILClassIsValueType(classInfo)))
 		{
 			ILExecThreadThrowSystem
 				(_thread, "System.ArgumentException",

@@ -24,7 +24,7 @@ static IL_INLINE int CkArrayStoreI8(CVMWord *posn, void *tempptr,
 									ILUInt32 valueSize, ILUInt32 elemSize)
 {
 	ILUInt64 index = ReadULong(posn);
-	if(index < (ILUInt64)(ILUInt32)(((System_Array *)tempptr)->length))
+	if(index < (ILUInt64)(ILUInt32)(ArrayLength(tempptr)))
 	{
 		/* Convert the array pointer into an element pointer.
 		   Note: this assumes that the array can never be
@@ -1226,7 +1226,7 @@ VMCASE(COP_##name): \
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue)) \
 	{ \
 		if(stacktop[-1].uintValue < \
-				((ILUInt32)(((System_Array *)tempptr)->length))) \
+				((ILUInt32)(ArrayLength(tempptr)))) \
 		{ \
 			stacktop[-2].intValue = \
 				(ILInt32)(((type *)(ArrayToBuffer(tempptr))) \
@@ -1420,7 +1420,7 @@ VMCASE(COP_PREAD_ELEM):
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue))
 	{
 		if(stacktop[-1].uintValue <
-				((ILUInt32)(((System_Array *)tempptr)->length)))
+				((ILUInt32)(ArrayLength(tempptr))))
 		{
 			stacktop[-2].ptrValue =
 				((void **)(ArrayToBuffer(tempptr)))[stacktop[-1].uintValue];
@@ -1442,7 +1442,7 @@ VMCASE(COP_##name): \
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-3].ptrValue)) \
 	{ \
 		if(stacktop[-2].uintValue < \
-				((ILUInt32)(((System_Array *)tempptr)->length))) \
+				((ILUInt32)(ArrayLength(tempptr)))) \
 		{ \
 			((type *)(ArrayToBuffer(tempptr)))[stacktop[-2].uintValue] = \
 					(type)(stacktop[-1].intValue); \
@@ -1578,7 +1578,7 @@ VMCASE(COP_PWRITE_ELEM):
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-3].ptrValue))
 	{
 		if(stacktop[-2].uintValue <
-				((ILUInt32)(((System_Array *)tempptr)->length)))
+				((ILUInt32)(ArrayLength(tempptr))))
 		{
 			((void **)(ArrayToBuffer(tempptr)))[stacktop[-2].uintValue] =
 					stacktop[-1].ptrValue;
@@ -1635,7 +1635,7 @@ VMCASE(COP_CKARRAY_LOAD_I4):
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue))
 	{
 		if(stacktop[-1].uintValue <
-				((ILUInt32)(((System_Array *)tempptr)->length)))
+				((ILUInt32)(ArrayLength(tempptr))))
 		{
 			/* Adjust the pointer to address the first array element */
 			stacktop[-2].ptrValue = (void *)(((unsigned char *)tempptr) +
@@ -1693,7 +1693,7 @@ VMCASE(COP_CKARRAY_LOAD_I8):
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-(CVM_WORDS_PER_LONG + 1)].ptrValue))
 	{
 		if(ReadULong(&(stacktop[-CVM_WORDS_PER_LONG])) <
-				((ILUInt64)(ILUInt32)(((System_Array *)tempptr)->length)))
+				((ILUInt64)(ILUInt32)(ArrayLength(tempptr))))
 		{
 			/* Adjust the pointer to address the first array element */
 			stacktop[-(CVM_WORDS_PER_LONG + 1)].ptrValue =
@@ -1794,10 +1794,10 @@ VMCASE(COP_ARRAY_LEN):
 	{
 	#ifdef IL_NATIVE_INT32
 		stacktop[-1].intValue =
-			((System_Array *)(stacktop[-1].ptrValue))->length;
+			ArrayLength(stacktop[-1].ptrValue);
 	#else
 		WriteLong(&(stacktop[-1]),
-				  (ILInt64)(((System_Array *)(stacktop[-1].ptrValue))->length));
+				  (ILInt64)(ArrayLength(stacktop[-1].ptrValue)));
 	#endif
 		MODIFY_PC_AND_STACK(CVM_LEN_NONE, CVM_WORDS_PER_NATIVE_INT - 1);
 	}
@@ -3000,7 +3000,7 @@ VMCASE(COP_##name): \
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue)) \
 	{ \
 		if(stacktop[-1].uintValue < \
-				((ILUInt32)(((System_Array *)tempptr)->length))) \
+				((ILUInt32)(ArrayLength(tempptr)))) \
 		{ \
 			write(&(stacktop[-2]), \
 				  read((CVMWord *)&(((type *)(ArrayToBuffer(tempptr))) \
@@ -3116,7 +3116,7 @@ VMCASE(COP_##name): \
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-(size + 2)].ptrValue)) \
 	{ \
 		if(stacktop[-(size + 1)].uintValue < \
-				((ILUInt32)(((System_Array *)tempptr)->length))) \
+				((ILUInt32)(ArrayLength(tempptr)))) \
 		{ \
 			write(((CVMWord *)&(((type *)(ArrayToBuffer(tempptr))) \
 						[stacktop[-(size + 1)].uintValue])), \

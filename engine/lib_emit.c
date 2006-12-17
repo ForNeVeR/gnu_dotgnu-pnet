@@ -284,7 +284,7 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 
 	/* write out the header */
 	buf = (unsigned char *)ArrayToBuffer(_header);
-	length = (unsigned long)_header->length;
+	length = (unsigned long)ArrayLength(_header);
 	ILWriterTextWrite(writer, buf, length);
 
 	/* get the rva of the code section */
@@ -292,7 +292,7 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 
 	/* write out the code section */
 	buf = (unsigned char *)ArrayToBuffer(_code);
-	length = (unsigned long)_code->length;
+	length = (unsigned long)ArrayLength(_code);
 	ILWriterTextWrite(writer, buf, length);
 
 	/* register token fixups for the code section */
@@ -300,7 +300,7 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 	{
 		ptrs = (ILNativeInt *)ArrayToBuffer(_codeFixupPtrs);
 		offsets = (ILInt32 *)ArrayToBuffer(_codeFixupOffsets);
-		length = (unsigned long)_codeFixupPtrs->length;
+		length = (unsigned long)ArrayLength(_codeFixupPtrs);
 		for (i = 0; i < length; ++i)
 		{
 			ILWriterSetFixup(writer, rva+offsets[i], (ILProgramItem *)ptrs[i]);
@@ -322,11 +322,11 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 
 	/* write out the exception block section */
 	eBlocks = (System_Array **)ArrayToBuffer(_exceptionBlocks);
-	len = (unsigned long)_exceptionBlocks->length;
+	len = (unsigned long)ArrayLength(_exceptionBlocks);
 	for (i = 0; i < len; ++i)
 	{
 		buf = (unsigned char *)ArrayToBuffer(eBlocks[i]);
-		length = (unsigned long)eBlocks[i]->length;
+		length = (unsigned long)ArrayLength(eBlocks[i]);
 		ILWriterTextWrite(writer, buf, length);
 	}
 
@@ -335,7 +335,7 @@ ILInt32 _IL_AssemblyBuilder_ClrWriteMethod(ILExecThread *_thread,
 	{
 		ptrs = (ILNativeInt *)ArrayToBuffer(_exceptionBlockFixupPtrs);
 		offsets = (ILInt32 *)ArrayToBuffer(_exceptionBlockFixupOffsets);
-		length = (unsigned long)_exceptionBlockFixupPtrs->length;
+		length = (unsigned long)ArrayLength(_exceptionBlockFixupPtrs);
 		for (i = 0; i < length; ++i)
 		{
 			ILWriterSetFixup(writer, rva+offsets[i], (ILProgramItem *)ptrs[i]);
@@ -400,7 +400,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAttributeCreate
 		}
 		ILAttributeSetType(attr, ILToProgramItem(member));
 		if(!ILAttributeSetValue(attr, ArrayToBuffer(blob),
-								(unsigned long)(long)(blob->length)))
+								(unsigned long)(long)(ArrayLength(blob))))
 		{
 			return 0;
 		}
@@ -689,7 +689,7 @@ void _IL_FieldBuilder_ClrFieldSetMarshal(ILExecThread *_thread,
 	owner = (ILProgramItem *)item;
 	image = ILProgramItem_Image(owner);
 	blob = (ILUInt8 *)ArrayToBuffer(data);
-	length = (unsigned long)data->length;
+	length = (unsigned long)ArrayLength(data);
 	if (!(marshal = ILFieldMarshalCreate(image, 0, owner)))
 	{
 		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));

@@ -78,7 +78,7 @@ ILBool _IL_SocketMethods_Bind(ILExecThread *_thread, ILNativeInt handle,
 	return (ILBool)(ILSysIOSocketBind
 				((ILSysIOHandle)handle,
 				 (unsigned char *)ArrayToBuffer(addr),
-				 addr->length));
+				 ArrayLength(addr)));
 }
 
 /*
@@ -110,7 +110,7 @@ ILBool _IL_SocketMethods_Accept(ILExecThread *_thread, ILNativeInt handle,
 	*newHandle = (ILNativeInt)(ILSysIOSocketAccept
 					((ILSysIOHandle)handle,
 				     (unsigned char *)ArrayToBuffer(addrReturn),
-				     addrReturn->length));
+				     ArrayLength(addrReturn)));
 
 	return (*newHandle != (ILNativeInt)ILSysIOHandle_Invalid);
 }
@@ -124,7 +124,7 @@ ILBool _IL_SocketMethods_Connect(ILExecThread *_thread, ILNativeInt handle,
 	return (ILBool)(ILSysIOSocketConnect
 				((ILSysIOHandle)handle,
 				 (unsigned char *)ArrayToBuffer(addr),
-				 addr->length));
+				 ArrayLength(addr)));
 }
 
 /*
@@ -157,7 +157,7 @@ ILInt32 _IL_SocketMethods_ReceiveFrom(ILExecThread *_thread,
 			     ((ILUInt8 *)(ArrayToBuffer(buffer))) + offset,
 				 size, flags,
 				 (unsigned char *)ArrayToBuffer(addrReturn),
-				 addrReturn->length);
+				 ArrayLength(addrReturn));
 }
 
 /*
@@ -188,7 +188,7 @@ ILInt32 _IL_SocketMethods_SendTo(ILExecThread *_thread, ILNativeInt handle,
 			     ((ILUInt8 *)(ArrayToBuffer(buffer))) + offset,
 				 size, flags,
 				 (unsigned char *)ArrayToBuffer(addr),
-				 addr->length);
+				 ArrayLength(addr));
 }
 
 ILBool _IL_SocketMethods_Close(ILExecThread *_thread, ILNativeInt handle)
@@ -208,11 +208,11 @@ ILInt32 _IL_SocketMethods_Select(ILExecThread *_thread,
 {
 	return ILSysIOSocketSelect
 		((readarray ? (ILSysIOHandle **)(ArrayToBuffer(readarray)) : 0),
-		 (readarray ? readarray->length : 0),
+		 (readarray ? ArrayLength(readarray) : 0),
 		 (writearray ? (ILSysIOHandle **)(ArrayToBuffer(writearray)) : 0),
-		 (writearray ? writearray->length : 0),
+		 (writearray ? ArrayLength(writearray) : 0),
 		 (errorarray ? (ILSysIOHandle **)(ArrayToBuffer(errorarray)) : 0),
-		 (errorarray ? errorarray->length : 0), timeout);
+		 (errorarray ? ArrayLength(errorarray) : 0), timeout);
 }
 
 /*
@@ -244,7 +244,7 @@ ILBool _IL_SocketMethods_GetSockName(ILExecThread * _thread,
 	return (ILBool)ILSysIOSocketGetName
 			((ILSysIOHandle)handle,
 			 (unsigned char *)ArrayToBuffer(addrReturn),
-			 addrReturn->length);
+			 ArrayLength(addrReturn));
 }
 
 /*
@@ -325,8 +325,8 @@ ILBool _IL_SocketMethods_SetMulticastOption(ILExecThread *_thread,
 {
 	return (ILSysIOSocketSetMulticast
 				((ILSysIOHandle)handle, af, name,
-				 (unsigned char *)ArrayToBuffer(group), group->length,
-				 (unsigned char *)ArrayToBuffer(mcint), mcint->length) != 0);
+				 (unsigned char *)ArrayToBuffer(group), ArrayLength(group),
+				 (unsigned char *)ArrayToBuffer(mcint), ArrayLength(mcint)) != 0);
 }
 
 /*
@@ -341,8 +341,8 @@ ILBool _IL_SocketMethods_GetMulticastOption(ILExecThread *_thread,
 {
 	return (ILSysIOSocketGetMulticast
 				((ILSysIOHandle)handle, af, name,
-				 (unsigned char *)ArrayToBuffer(group), group->length,
-				 (unsigned char *)ArrayToBuffer(mcint), mcint->length) != 0);
+				 (unsigned char *)ArrayToBuffer(group), ArrayLength(group),
+				 (unsigned char *)ArrayToBuffer(mcint), ArrayLength(mcint)) != 0);
 }
 
 ILBool _IL_SocketMethods_DiscoverIrDADevices(ILExecThread *_thread,
@@ -351,7 +351,7 @@ ILBool _IL_SocketMethods_DiscoverIrDADevices(ILExecThread *_thread,
 {
 	return (ILSysIODiscoverIrDADevices
 				((ILSysIOHandle)handle,
-				 (unsigned char *)ArrayToBuffer(buf), buf->length) != 0);
+				 (unsigned char *)ArrayToBuffer(buf), ArrayLength(buf)) != 0);
 }
 
 /*

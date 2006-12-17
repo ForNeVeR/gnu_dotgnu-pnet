@@ -225,7 +225,7 @@ static void *RefArrayToC(ILExecThread *thread, void *ref,
 	{
 		array = (System_Array *)ref;
 	}
-	result = ILGCAlloc(sizeof(void *) * (array->length + 2));
+	result = ILGCAlloc(sizeof(void *) * (ArrayLength(array) + 2));
 	if(!result)
 	{
 		ILExecThreadThrowOutOfMemory(thread);
@@ -237,7 +237,7 @@ static void *RefArrayToC(ILExecThread *thread, void *ref,
 
 	/* Copy the array elements */
 	newArray = &(((void **)result)[1]);
-	for(index = 0; index < array->length; ++index)
+	for(index = 0; index < ArrayLength(array); ++index)
 	{
 		*newArray = (void *)((*conv)
 			(thread, ((ILString **)(ArrayToBuffer(array)))[index]));

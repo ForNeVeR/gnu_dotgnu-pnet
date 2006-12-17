@@ -183,7 +183,7 @@ System_Array *_ILJitGetExceptionStackTrace(ILExecThread *thread)
 		{
 			return 0;
 		}
-		((System_Array *)array)->length = num;
+		ArrayLength(array) = num;
 
 		/* Fill the array with the packed stack data */
 		data = (PackedStackFrame *)ArrayToBuffer(array);

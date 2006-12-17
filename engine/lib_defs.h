@@ -181,12 +181,20 @@ typedef struct
 
 /*
  * Internal structure of an array header, padded to the best alignment.
+ * TODO: We can enable the rank once the changed structure can be fixed
+ * in the unroller.
  */
+typedef struct
+{
+	/* ILInt32			rank; */		/* Allways 0 for simple arrays. */
+	ILInt32			length;
+} SArrayHeader;
+
 typedef union
 {
-	ILInt32			length;
+	SArrayHeader	__header;
 #if !defined(__i386) && !defined(__i386__)
-	unsigned char	pad[IL_BEST_ALIGNMENT];
+	unsigned char	pad[(sizeof(SArrayHeader) & ~(IL_BEST_ALIGNMENT - 1)) + IL_BEST_ALIGNMENT];
 #endif
 
 } System_Array;
@@ -195,6 +203,11 @@ typedef union
  * Convert an array object pointer into a pointer to the first item.
  */
 #define	ArrayToBuffer(array)	((void *)(((System_Array *)(array)) + 1))
+
+/*
+ * Get the length (number of elements) in a simple array.
+ */
+#define ArrayLength(array)		(((System_Array *)(array))->__header.length)
 
 /*
  * Determine if an array inherits from "$Synthetic.SArray".

@@ -961,7 +961,7 @@ ILBool _IL_WaitHandle_InternalWaitAll(ILExecThread *_thread,
 	handles = (ILWaitHandle **)ArrayToBuffer(waitHandles);
 
 	/* Perform the wait */
-	result = ILWaitAll(handles, (ILUInt32)(waitHandles->length), timeout);
+	result = ILWaitAll(handles, (ILUInt32)(ArrayLength(waitHandles)), timeout);
 
 	if (result == IL_WAIT_TIMEOUT)
 	{
@@ -1000,7 +1000,7 @@ ILInt32 _IL_WaitHandle_InternalWaitAny(ILExecThread *_thread,
 	handles = (ILWaitHandle **)ArrayToBuffer(waitHandles);
 
 	/* Perform the wait */
-	result = ILWaitAny(handles, (ILUInt32)(waitHandles->length), timeout);
+	result = ILWaitAny(handles, (ILUInt32)(ArrayLength(waitHandles)), timeout);
 
 	if (result == IL_WAIT_TIMEOUT)
 	{

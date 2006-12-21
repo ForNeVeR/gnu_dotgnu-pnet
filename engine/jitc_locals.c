@@ -633,7 +633,7 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 
 			for(current = 0; current < numParams; ++current)
 			{
-				param = &_ILJitParamGet(coder, current);
+				param = _ILJitParamGet(coder, current);
 
 				param->value = jit_value_get_param(coder->jitFunction, current);
 				param->flags = 0;

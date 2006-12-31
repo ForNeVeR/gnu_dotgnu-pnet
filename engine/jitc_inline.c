@@ -187,6 +187,13 @@ static int _ILJitMethodIsInlineable(ILJITCoder *jitCoder, ILMethod *method)
 			ILMethodCode code;
 			ILException *exceptions;
 
+			/* Check if the method is marked not inlineable. */
+			if(method->implementAttrs & IL_META_METHODIMPL_NO_INLINING)
+			{
+				jitMethodInfo->implementationType |= _IL_JIT_IMPL_NOINLINE;
+				return 0;
+			}
+
 			/* Check if the method is syncronized. */
 			if(ILMethod_IsSynchronized(method))
 			{

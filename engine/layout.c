@@ -20,6 +20,9 @@
 
 #include "engine_private.h"
 #include "il_opcodes.h"
+#ifdef	IL_USE_TYPED_ALLOCATION
+#include "lib_defs.h"
+#endif	/* IL_USE_TYPED_ALLOCATION */
 #if defined(HAVE_LIBFFI)
 #include "ffi.h"
 #else
@@ -55,6 +58,468 @@ typedef struct
  * Forward declaration.
  */
 static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout);
+
+#ifdef	IL_USE_TYPED_ALLOCATION
+/*
+ * Define offsetof macro if not present.
+ */
+#ifndef offsetof
+#define offsetof(struct_type, member) \
+          (size_t) &(((struct_type *)0)->member)
+#endif
+
+#define ILGCWordSize 		(8 * sizeof(ILNativeUInt))
+#define ILGCGetBit(b, i)	(((b)[(i) / ILGCWordSize] >> ((i) % ILGCWordSize)) & 1)
+#define ILGCSetBit(b, i)	((b)[(i) / ILGCWordSize] |= ((ILNativeUInt)1 << ((i) % ILGCWordSize)))
+#define ILGCWordLen(l)		((l) / sizeof(ILNativeUInt))
+#define ILGCWordOffset(l)	((l) / sizeof(ILNativeUInt))
+#define ILGCBitmapSize(l)	((ILGCWordLen(l) + ILGCWordSize - 1) / ILGCWordSize)
+
+#ifndef IL_CONFIG_USE_THIN_LOCKS
+/*
+ * The type desctiptor used for objects not containing any object references to
+ * be scanned by the gc.
+ */
+static ILNativeInt _ILGCObjectHeaderTypeDescriptor = 0;
+#endif	/* !IL_CONFIG_USE_THIN_LOCKS */
+
+/*
+ * Inner function which does the real work.
+ */
+static int _ILGCBuildTypeDescriptor(ILClass *classInfo,
+								  ILNativeUInt bitmap[],
+								  ILNativeUInt checkBitmap[],
+								  ILInt32 classOffset);
+
+/*
+ * Check if the location occupied by a type not checked by the garbage collector
+ * is allso used by a value to be checked by the garbage collector.
+ * If there is this kind of overlapping return 0.
+ * This macro is for types with sizes <= the size of a native pointer.
+ */
+#define ILGCClearBitShort(b, cb, o, s) \
+	do { \
+		ILInt32 __startOffset = ILGCWordOffset(o); \
+		ILInt32 __endOffset = ILGCWordOffset((o) + (s) - 1); \
+		\
+		if(ILGCGetBit(cb, __startOffset)) \
+		{ \
+			if(ILGCGetBit(b, __startOffset)) \
+			{ \
+				return 0; \
+			} \
+		} \
+		else \
+		{ \
+			ILGCSetBit(cb, __startOffset); \
+		} \
+		if(__endOffset > __startOffset) \
+		{ \
+			if(ILGCGetBit(cb, __endOffset)) \
+			{ \
+				if(ILGCGetBit(b, __endOffset)) \
+				{ \
+					return 0; \
+				} \
+			} \
+			else \
+			{ \
+				ILGCSetBit(cb, __endOffset); \
+			} \
+		} \
+	} while(0)
+
+/*
+ * Check if the location occupied by a type not checked by the garbage collector
+ * is allso used by a value to be checked by the garbage collector.
+ * If there is this kind of overlapping return 0.
+ * This macro is for types with sizes > the size of a native pointer.
+ */
+#define ILGCClearBitLong(b, cb, o, s) \
+	do { \
+		ILInt32 __offset = (o); \
+		ILInt32 __gcOffset = ILGCWordOffset(o); \
+		ILInt32 __size = (s); \
+		\
+		while(__size > 0) \
+		{ \
+			if(ILGCGetBit(cb, __gcOffset)) \
+			{ \
+				if(ILGCGetBit(b, __gcOffset)) \
+				{ \
+					return 0; \
+				} \
+			} \
+			else \
+			{ \
+				ILGCSetBit(cb, __gcOffset); \
+			} \
+			if(__size > sizeof(ILNativeUInt)) \
+			{ \
+				__size -= sizeof(ILNativeUInt); \
+				__offset += sizeof(ILNativeUInt); \
+				__gcOffset++; \
+			} \
+			else \
+			{ \
+				if(__gcOffset != ILGCWordOffset(__offset + __size - 1)) \
+				{ \
+					__offset += __size - 1; \
+					__size = 1; \
+					__gcOffset++; \
+				} \
+				else \
+				{ \
+					__size = 0; \
+				} \
+			} \
+		} \
+	} while(0)
+
+/*
+ * Set the bit for the pointer location in the bitmap and check if the same
+ * location is used by a non reference type.
+ * If there is this kind of overlapping return 0.
+ * This implemetation needs pointers at correct alligned offsets.
+ */
+#define ILGCSetBitShort(b, cb, o, s) \
+	do { \
+		ILInt32 __startOffset = ILGCWordOffset(o); \
+		\
+		if(ILGCGetBit(cb, __startOffset)) \
+		{ \
+			if(!ILGCGetBit(b, __startOffset)) \
+			{ \
+				return 0; \
+			} \
+		} \
+		else \
+		{ \
+			ILGCSetBit(cb, __startOffset); \
+			ILGCSetBit(b, __startOffset); \
+		} \
+	} while(0)
+
+/*
+ * Fill the type descriptor with the type information.
+ */
+static int _ILGCBuildTypeDescriptorForType(ILType *type,
+										 ILNativeUInt bitmap[],
+										 ILNativeUInt checkBitmap[],
+										 ILInt32 offset)
+{
+	type = ILTypeStripPrefixes(type);
+	if(ILType_IsPrimitive(type))
+	{
+		switch(ILType_ToElement(type))
+		{
+			case IL_META_ELEMTYPE_BOOLEAN:
+			case IL_META_ELEMTYPE_I1:
+			case IL_META_ELEMTYPE_U1:
+			{
+				ILGCClearBitShort(bitmap, checkBitmap, offset, 1);
+				return 1;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_I2:
+			case IL_META_ELEMTYPE_U2:
+			{
+				ILGCClearBitShort(bitmap, checkBitmap, offset, 2);
+				return 1;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I4:
+			case IL_META_ELEMTYPE_U4:
+		#ifdef IL_NATIVE_INT32
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif	/* IL_NATIVE_INT32 */
+			{
+				ILGCClearBitShort(bitmap, checkBitmap, offset, sizeof(ILInt32));
+				return 1;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_I8:
+			case IL_META_ELEMTYPE_U8:
+		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
+			case IL_META_ELEMTYPE_U:
+		#endif	/* IL_NATIVE_INT64 */
+			{
+			#ifdef IL_NATIVE_INT32
+				ILGCClearBitLong(bitmap, checkBitmap, offset, sizeof(ILInt64));
+				return 1;
+			#else	/* !IL_NATIVE_INT32 */
+				ILGCClearBitShort(bitmap, checkBitmap, offset, sizeof(ILInt64));
+				return 1;
+			#endif	/* !IL_NATIVE_INT32 */
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R4:
+			{
+			#if defined(HAVE_LIBFFI)
+				ILGCClearBitLong(bitmap, checkBitmap, offset, ffi_type_float.size);
+			#else
+				ILGCClearBitLong(bitmap, checkBitmap, offset, sizeof(ILFloat));
+			#endif
+				return 1;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R8:
+			{
+			#if defined(HAVE_LIBFFI)
+				ILGCClearBitLong(bitmap, checkBitmap, offset, ffi_type_double.size);
+			#else
+				ILGCClearBitLong(bitmap, checkBitmap, offset, sizeof(ILDouble));
+			#endif
+				return 1;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_R:
+			{
+			#if defined(HAVE_LIBFFI)
+				#ifdef IL_NATIVE_FLOAT
+					ILGCClearBitLong(bitmap, checkBitmap, offset, ffi_type_longdouble.size);
+				#else
+					ILGCClearBitLong(bitmap, checkBitmap, offset, ffi_type_double.size);
+				#endif
+			#else
+				ILGCClearBitLong(bitmap, checkBitmap, offset, sizeof(ILNativeFloat));
+			#endif
+				return 1;
+			}
+			break;
+
+			case IL_META_ELEMTYPE_TYPEDBYREF:
+			{
+				ILGCClearBitShort(bitmap, checkBitmap, offset + offsetof(ILTypedRef, type), sizeof(ILNativeUInt));
+				ILGCSetBitShort(bitmap, checkBitmap, offset + offsetof(ILTypedRef, value), sizeof(ILNativeUInt));
+				return 1;
+			}
+			break;
+
+			default: return 0;
+		}
+	}
+	else if(ILType_IsValueType(type))
+	{
+		/* Lay out a value type by getting the full size and alignment
+		   of the class that underlies the value type */
+		ILClass *classInfo = ILClassResolve(ILType_ToValueType(type));
+		ILType *synType = ILClassGetSynType(classInfo);
+		if(synType == 0)
+		{
+			return _ILGCBuildTypeDescriptor(classInfo,
+										  bitmap,
+										  checkBitmap,
+										  offset);
+		}
+		else
+		{
+			return _ILGCBuildTypeDescriptorForType(ILTypeStripPrefixes(synType),
+												 bitmap,
+												 checkBitmap,
+												 offset);
+		}
+	}
+	else
+	{
+		/* Everything else is laid out as a pointer */
+		if(ILTypeIsReference(ILTypeStripPrefixes(type)))
+		{
+			ILGCSetBitShort(bitmap, checkBitmap, offset, sizeof(ILNativeUInt));
+		}
+		else
+		{
+			ILGCClearBitShort(bitmap, checkBitmap, offset, sizeof(ILNativeUInt));
+		}
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Inner function which does the real work.
+ */
+static int _ILGCBuildTypeDescriptor(ILClass *classInfo,
+								  ILNativeUInt bitmap[],
+								  ILNativeUInt checkBitmap[],
+								  ILInt32 classOffset)
+{
+	ILField *field = 0;
+
+	/* Fill the bitmap with the parent information first. */
+	if(classInfo->parent)
+	{
+		/* Use "ILClassGetParent" to resolve cross-image links */
+		ILClass *parent = ILClassGetParent(classInfo);
+
+		if(!_ILGCBuildTypeDescriptor(parent, bitmap, checkBitmap, classOffset))
+		{
+			return 0;
+		}
+	}
+
+	/* Now fill the bitmaps. */
+	while((field = (ILField *)ILClassNextMemberByKind
+			(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if((field->member.attributes & IL_META_FIELDDEF_STATIC) == 0)
+		{
+			ILType *fieldType = field->member.signature;
+
+			if(!(_ILGCBuildTypeDescriptorForType(fieldType,
+												 bitmap,
+												 checkBitmap,
+												 classOffset + field->offset)))
+			{
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
+/*
+ * Build the type descriptor used by the garbage collector to check which words
+ * in the object have to be scanned.
+ */
+int ILGCBuildTypeDescriptor(ILClassPrivate *classPrivate,
+							ILInt32 isManagedInstance)
+{
+	ILClass *classInfo = classPrivate->classInfo;
+	ILInt32 classSize = classPrivate->size;
+	ILInt32 bitmapSize = ILGCBitmapSize(classSize + IL_OBJECT_HEADER_SIZE);
+	ILNativeUInt bitmap[bitmapSize];
+	ILNativeUInt checkBitmap[bitmapSize];
+	ILInt32 current;
+
+	/* Clear the bitmaps first. */
+	for(current = 0; current < bitmapSize; current++)
+	{
+		bitmap[current] = 0;
+		checkBitmap[current] = 0;
+	}
+
+	if(isManagedInstance)
+	{
+	#ifndef IL_CONFIG_USE_THIN_LOCKS
+		/* Mark the location of the lock word to be traced by the gc. */
+		ILGCSetBitShort(bitmap, checkBitmap, offsetof(ILObjectHeader, lockWord), sizeof(ILNativeUInt));
+	#endif	/* !IL_CONFIG_USE_THIN_LOCKS */
+
+		/* Fill the bitmap with the parent information first. */
+		if(classInfo->parent)
+		{
+			/* Use "ILClassGetParent" to resolve cross-image links */
+			ILClass *parent = ILClassGetParent(classInfo);
+
+			if(!_ILGCBuildTypeDescriptor(parent, bitmap, checkBitmap, IL_OBJECT_HEADER_SIZE))
+			{
+				return 0;
+			}
+		}
+
+		/* And now add the information of the current type. */
+		if(!_ILGCBuildTypeDescriptor(classInfo, bitmap, checkBitmap, IL_OBJECT_HEADER_SIZE))
+		{
+			return 0;
+		}
+
+
+		/* For debugging purposes only. */
+		/*
+		for(current = 0; current < bitmapSize; current++)
+		{
+			printf("%i; %x\n", current, bitmap[current]);
+		}
+		printf("\n");
+		*/
+
+		if(!(classPrivate->gcTypeDescriptor = 
+				ILGCCreateTypeDescriptor(bitmap, ILGCWordLen(classSize + IL_OBJECT_HEADER_SIZE))))
+		{
+			return 0;
+		}
+	}
+	else
+	{
+	#ifdef IL_CONFIG_USE_THIN_LOCKS
+		classPrivate->gcTypeDescriptor = 0;
+	#else	/* !IL_CONFIG_USE_THIN_LOCKS */
+		if(_ILGCObjectHeaderTypeDescriptor == 0)
+		{
+			/* Mark the location of the lock word to be traced by the gc. */
+			ILGCSetBitShort(bitmap, checkBitmap, offsetof(ILObjectHeader, lockWord), sizeof(ILNativeUInt));
+
+			if(!(_ILGCObjectHeaderTypeDescriptor = 
+					ILGCCreateTypeDescriptor(bitmap, ILGCWordLen(IL_OBJECT_HEADER_SIZE))))
+			{
+				return 0;
+			}
+		}
+		classPrivate->gcTypeDescriptor = _ILGCObjectHeaderTypeDescriptor;
+	#endif	/* !IL_CONFIG_USE_THIN_LOCKS */
+	}
+	return 1;
+}
+
+/*
+ * Build the type descriptor used by the garbage collector to check which words
+ * in the object have to be scanned for the block holding the static fields of
+ * the class..
+ */
+ILNativeUInt ILGCBuildStaticTypeDescriptor(ILClass *classInfo,
+										   ILInt32 isManagedStatic)
+{
+	if(isManagedStatic)
+	{
+		ILClassPrivate *classPrivate = (ILClassPrivate *)(classInfo->userData);
+		ILInt32 staticSize = classPrivate->staticSize;
+		ILInt32 bitmapSize = ILGCBitmapSize(staticSize);
+		ILField *field = 0;
+		ILNativeUInt bitmap[bitmapSize];
+		ILNativeUInt checkBitmap[bitmapSize];
+		ILInt32 current;
+
+		/* Clear the bitmaps first. */
+		for(current = 0; current < bitmapSize; current++)
+		{
+			bitmap[current] = 0;
+			checkBitmap[current] = 0;
+		}
+
+		while((field = (ILField *)ILClassNextMemberByKind
+				(classInfo, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if((field->member.attributes & IL_META_FIELDDEF_STATIC) != 0 &&
+			   (field->member.attributes & IL_META_FIELDDEF_LITERAL) == 0 &&
+			   (field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0 &&
+			   (ILFieldIsThreadStatic(field) == 0))
+			{
+				ILType *fieldType = field->member.signature;
+
+				if(!(_ILGCBuildTypeDescriptorForType(fieldType,
+													 bitmap,
+													 checkBitmap,
+													 field->offset)))
+				{
+					return 0;
+				}
+			}
+		}
+		return ILGCCreateTypeDescriptor(bitmap, ILGCWordLen(staticSize));
+	}
+	return 0;
+}
+#endif	/* IL_USE_TYPED_ALLOCATION */
 
 /*
  * Get the layout information for a type.  Returns zero
@@ -888,6 +1353,14 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	}
 #endif
 	classPrivate->inLayout = 0;
+
+#ifdef	IL_USE_TYPED_ALLOCATION
+	if(!ILGCBuildTypeDescriptor(classPrivate, layout->managedInstance))
+	{
+		info->userData = 0;
+		return 0;
+	}
+#endif	/* IL_USE_TYPED_ALLOCATION */
 
 	/* Allocate the static fields.  We must do this after the
 	   regular fields because some of the statics may be instances

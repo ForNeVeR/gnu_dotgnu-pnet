@@ -324,11 +324,8 @@ ILInt32 _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			 				0, paramType, 0);
 			info = ILClassResolve(info);
 			typeSize = ILSizeOfType(_thread, paramType);
-			boxObjectSize = jit_value_create_nint_constant(jitCoder->jitFunction,
-														   _IL_JIT_TYPE_UINT32,
-														   typeSize);
 
-			boxObject = _ILJitAllocGen(jitCoder->jitFunction, info, typeSize);
+			boxObject = _ILJitAllocObjectGen(jitCoder->jitFunction, info);
 			if(boxValue)
 			{
 				jit_insn_store_relative(jitCoder->jitFunction,
@@ -338,6 +335,11 @@ ILInt32 _ILJitPackVarArgs(ILJITCoder *jitCoder,
 			}
 			else
 			{
+				boxObjectSize =
+					jit_value_create_nint_constant(jitCoder->jitFunction,
+												   _IL_JIT_TYPE_UINT32,
+												   typeSize);
+
 				jit_insn_memcpy(jitCoder->jitFunction,
 								boxObject,
 								ptr,

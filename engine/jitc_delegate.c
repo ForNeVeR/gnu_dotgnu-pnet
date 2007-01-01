@@ -179,17 +179,19 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 			 				0, paramType, 0);
 			info = ILClassResolve(info);
 			typeSize = ILSizeOfType(_thread, paramType);
-			boxObjectSize = jit_value_create_nint_constant(jitFunction,
-														   _IL_JIT_TYPE_UINT32,
-														   typeSize);
 
-			boxObject = _ILJitAllocGen(jitFunction, info, typeSize);
+			boxObject = _ILJitAllocObjectGen(jitFunction, info);
 			if(boxValue)
 			{
 				jit_insn_store_relative(jitFunction, boxObject, 0, boxValue);
 			}
 			else
 			{
+				boxObjectSize =
+					jit_value_create_nint_constant(jitFunction,
+												   _IL_JIT_TYPE_UINT32,
+												   typeSize);
+
 				jit_insn_memcpy(jitFunction, boxObject, ptr, boxObjectSize);
 			}
 			jit_insn_store_relative(jitFunction,

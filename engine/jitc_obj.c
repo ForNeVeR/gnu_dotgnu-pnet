@@ -32,19 +32,32 @@ static ILJitValue _ILJitGetClassStaticArea(ILJitFunction func,
 
 	if(!classStaticData)
 	{
-		ILExecThread *thread = ILExecThreadCurrent();
+		ILClassPrivate *classPrivate = (ILClassPrivate *)(classInfo->userData);
 
-		if(((ILClassPrivate *)(classInfo->userData))->managedStatic)
+		if(classPrivate->managedStatic)
 		{
-			classStaticData = _ILEngineAlloc(thread, 0,
-			   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+		#ifdef	IL_USE_TYPED_ALLOCATION
+			ILNativeInt staticTypeDescriptor =
+				ILGCBuildStaticTypeDescriptor(classInfo, classPrivate->managedStatic);
+
+			if(staticTypeDescriptor)
+			{
+				classStaticData = ILGCAllocExplicitlyTyped(classPrivate->staticSize,
+														   staticTypeDescriptor);
+			}
+			else
+			{
+				classStaticData = ILGCAlloc(classPrivate->staticSize);
+			}
+		#else	/* !IL_USE_TYPED_ALLOCATION */
+			classStaticData = ILGCAlloc(classPrivate->staticSize);
+		#endif	/* !IL_USE_TYPED_ALLOCATION */
 		}
 		else
 		{
-			/* There are no managed fields in the static area,
-		   	so use atomic allocation */
-			classStaticData = _ILEngineAllocAtomic(thread, 0,
-			   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+			/* There are no managed fields in the static area, so use atomic
+			   allocation */
+			classStaticData = ILGCAllocAtomic(classPrivate->staticSize);
 		}
 		if(!classStaticData)
 		{
@@ -52,7 +65,7 @@ static ILJitValue _ILJitGetClassStaticArea(ILJitFunction func,
 		}
 		else
 		{
-			((ILClassPrivate *)(classInfo->userData))->staticData = classStaticData;
+			classPrivate->staticData = classStaticData;
 		}
 	}
 	return jit_value_create_nint_constant(func, _IL_JIT_TYPE_VPTR,
@@ -965,8 +978,8 @@ static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	jitValueType = jit_value_get_type(_ILJitStackItemValue(stackItem));
 
 	/* Allocate memory */
-	newObj = _ILJitAllocGen(jitCoder->jitFunction,
-							boxClass, jit_type_get_size(jitType));
+	newObj = _ILJitAllocObjectGen(jitCoder->jitFunction,
+								  boxClass);
 	
 	/* If the smallerType is smaller then the initiale type then convert to it. */
 	if(jitValueType != jitType)

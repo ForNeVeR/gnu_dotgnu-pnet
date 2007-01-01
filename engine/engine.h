@@ -714,6 +714,23 @@ ILUInt32 _ILLayoutClassReturn(ILExecProcess *process, ILClass *info,
  */
 int _ILLayoutAlreadyDone(ILClass *info);
 
+#ifdef	IL_USE_TYPED_ALLOCATION
+/*
+ * Build the type descriptor used by the garbage collector to check which words
+ * in the object have to be scanned.
+ */
+int ILGCBuildTypeDescriptor(ILClassPrivate *classPrivate,
+							ILInt32 isManagedInstance);
+
+/*
+ * Build the type descriptor used by the garbage collector to check which words
+ * in the object have to be scanned for the block holding the static fields of
+ * the class..
+ */
+ILNativeUInt ILGCBuildStaticTypeDescriptor(ILClass *classInfo,
+										   ILInt32 isManagedStatic);
+#endif	/* IL_USE_TYPED_ALLOCATION */
+
 /*
  * Verify the contents of a method.
  */

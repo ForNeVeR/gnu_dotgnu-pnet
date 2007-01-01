@@ -125,6 +125,13 @@ static ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size);
  */
 static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size);
 
+#ifdef	IL_USE_TYPED_ALLOCATION
+/*
+ * Allocate memory for an object with a gc typedescriptor..
+ */
+static ILObject *_ILJitAllocTyped(ILClass *classInfo);
+#endif	/* IL_USE_TYPED_ALLOCATION */
+
 /*
  * Definition of signatures of internal functions used by jitted code.
  * They have to be kept in sync with the corresponding engine funcions.
@@ -139,6 +146,13 @@ static ILJitType _ILJitSignature_ILExecThreadCurrent = 0;
  * ILObject *_ILJitAlloc(ILClass *classInfo, ILUInt32 size)
  */
 static ILJitType _ILJitSignature_ILJitAlloc = 0;
+
+#ifdef	IL_USE_TYPED_ALLOCATION
+/*
+ * ILObject *_ILJitAllocTyped(ILClass *classInfo);
+ */
+static ILJitType _ILJitSignature_ILJitAllocTyped = 0;
+#endif	/* IL_USE_TYPED_ALLOCATION */
 
 /*
  * System_Array *_ILJitSArrayAlloc(ILClass *arrayClass,
@@ -2166,6 +2180,16 @@ int ILJitInit()
 	{
 		return 0;
 	}
+
+#ifdef	IL_USE_TYPED_ALLOCATION
+	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILJitAllocTyped = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+#endif	/* IL_USE_TYPED_ALLOCATION */
 
 	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_UINT32;

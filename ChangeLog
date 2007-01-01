@@ -1,3 +1,30 @@
+2006-01-01  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.h: Add prototypes for the helper functions to create the
+	type descriptors for a class.
+
+	* engine/jitc.c: Add the forward declaration and libjit signature for the
+	new function _ILJitAllocTyped.
+
+	* engine/jitc_alloc.c: Add the new function _ILJitAllocTyped for typed
+	allocation of objects and call this one in _ILJitAllocObjectGen if typed
+	allocation is enabled.
+
+	* engine/jitc_call.c: Use _ILJitAllocObjectGen instead of _ILJitAllocGen
+	for boxing varargs.
+
+	* engine/jitc_delegate.c: Use _ILJitAllocObjectGen instead of _ILJitAllocGen
+	for boxing delegate arguments in asynchonous calls.
+
+	* engine/jitc_obj.c: Use typed allocation to allocate the class' static
+	area if typed allocation is enabled.
+	Use _ILJitAllocObjectGen instead of _ILJitAllocGen to allocate the object
+	in BoxSmaller.
+	
+	* engine/layout.c: Add the generation of type descriptors if typed
+	allocation is enabled. Create the type descriptor for a class during layout
+	if typed allocation is enabled.
+
 2006-12-31  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add the --enable-typedalloc option to use typed allocation

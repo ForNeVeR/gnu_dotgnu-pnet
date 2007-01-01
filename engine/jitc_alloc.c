@@ -122,6 +122,44 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size)
 	return obj;
 }
 
+#ifdef	IL_USE_TYPED_ALLOCATION
+/*
+ * Allocate memory for an object that contains object references.
+ */
+static ILObject *_ILJitAllocTyped(ILClass *classInfo)
+{
+	ILClassPrivate *classPrivate = (ILClassPrivate *)(classInfo->userData);
+	void *ptr;
+	ILObject *obj;
+	
+	/* Allocate memory from the heap */
+	ptr = ILGCAllocExplicitlyTyped(classPrivate->size + IL_OBJECT_HEADER_SIZE,
+								   classPrivate->gcTypeDescriptor);
+
+	if(!ptr)
+	{
+		/* Throw an "OutOfMemoryException" */
+		ILRuntimeExceptionThrowOutOfMemory();
+	}
+
+	obj = GetObjectFromGcBase(ptr);
+
+	/* Set the class into the block */
+	SetObjectClassPrivate(obj, classPrivate);
+
+	/* Attach a finalizer to the object if the class has
+	a non-trival finalizer method attached to it */
+	if(classPrivate->hasFinalizer)
+	{
+		ILGCRegisterFinalizer(ptr, _ILFinalizeObject,
+							  classPrivate->process->finalizationContext);
+	}
+
+	/* Return a pointer to the object */
+	return obj;
+}
+#endif	/* IL_USE_TYPED_ALLOCATION */
+
 /*
  * Generate the code to allocate the memory for an object with the given size.
  * Returns the ILJitValue with the pointer to the new object.
@@ -174,6 +212,10 @@ static ILJitValue _ILJitAllocGen(ILJitFunction jitFunction,
 static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction,
 									   ILClass *classInfo)
 {
+#ifdef	IL_USE_TYPED_ALLOCATION
+	ILJitValue args[1];
+#endif
+
 	/* Make sure the class has been layouted. */
 	if(!(classInfo->userData) || 
 	   (((ILClassPrivate *)(classInfo->userData))->inLayout))
@@ -183,8 +225,22 @@ static ILJitValue _ILJitAllocObjectGen(ILJitFunction jitFunction,
 			return (ILJitValue)0;
 		}
 	}
+
+#ifdef	IL_USE_TYPED_ALLOCATION
+	/* We call the alloc function. */
+	/* They thow an out of memory exception so we don't need to care. */
+	args[0] = jit_value_create_nint_constant(jitFunction,
+											 _IL_JIT_TYPE_VPTR,
+											 (jit_nint)classInfo);
+	return jit_insn_call_native(jitFunction,
+								"_ILJitAllocTyped",
+								_ILJitAllocTyped,
+								_ILJitSignature_ILJitAllocTyped,
+				 				args, 1, 0);
+#else	/* !IL_USE_TYPED_ALLOCATION */
 	return _ILJitAllocGen(jitFunction, classInfo,
 						  ((ILClassPrivate *)(classInfo->userData))->size);
+#endif	/* !IL_USE_TYPED_ALLOCATION */
 }
 
 #endif	/* IL_JITC_FUNCTIONS */

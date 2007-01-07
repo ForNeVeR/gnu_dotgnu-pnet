@@ -283,8 +283,68 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 	}
 }
 
+#ifdef	IL_USE_TYPED_ALLOCATION
+ILObject *_ILEngineAllocTyped(ILExecThread *thread, ILClass *classInfo)
+{
+	void *ptr;
+	ILObject *obj;
+	ILClassPrivate *classPrivate;
+
+	classInfo = ILClassResolve(classInfo);
+
+	/* Make sure the class has been initialized before we start */
+	if(!InitializeClass(thread, classInfo))
+	{
+		return 0;
+	}
+
+	classPrivate = (ILClassPrivate *)(classInfo->userData);
+
+#ifdef IL_CONFIG_USE_THIN_LOCKS
+	/* Allocate memory from the heap */
+	if(classPrivate->gcTypeDescriptor)
+	{
+		ptr = ILGCAllocExplicitlyTyped(classPrivate->size + IL_OBJECT_HEADER_SIZE,
+									   classPrivate->gcTypeDescriptor);
+	}
+	else
+	{
+		/* In case we use thin locks we don't have a type descriptor for */
+		/* classes not containing any managed fields. */
+		ptr = ILGCAllocAtomic(classPrivate->size + IL_OBJECT_HEADER_SIZE);
+	}
+#else
+	ptr = ILGCAllocExplicitlyTyped(classPrivate->size + IL_OBJECT_HEADER_SIZE,
+								   classPrivate->gcTypeDescriptor);
+#endif
+	if(!ptr)
+	{
+		/* Throw an "OutOfMemoryException" */
+		thread->thrownException = thread->process->outOfMemoryObject;
+		return 0;
+	}
+		
+	obj = GetObjectFromGcBase(ptr);
+
+	SetObjectClassPrivate(obj, classPrivate);
+		
+	/* Attach a finalizer to the object if the class has
+	   a non-trival finalizer method attached to it */
+	if(classPrivate->hasFinalizer)
+	{
+		ILGCRegisterFinalizer(ptr, _ILFinalizeObject, thread->process->finalizationContext);
+	}
+
+	/* Return a pointer to the object */
+	return obj;
+}
+#endif	/* IL_USE_TYPED_ALLOCATION */
+
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)
 {
+#ifdef	IL_USE_TYPED_ALLOCATION
+	return _ILEngineAllocTyped(thread, classInfo);
+#else	/* !IL_USE_TYPED_ALLOCATION */
 	classInfo = ILClassResolve(classInfo);
 
 	if(!InitializeClass(thread, classInfo))
@@ -304,6 +364,7 @@ ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo)
 				(thread, classInfo,
 				 ((ILClassPrivate *)(classInfo->userData))->size);
 	}
+#endif	/* !IL_USE_TYPED_ALLOCATION */
 }
 
 #ifdef	__cplusplus

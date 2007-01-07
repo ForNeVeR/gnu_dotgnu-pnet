@@ -2499,9 +2499,26 @@ VMCASE(COP_GET_STATIC):
 	COPY_STATE_TO_THREAD();
 	if(((ILClassPrivate *)(classInfo->userData))->managedStatic)
 	{
+	#ifdef	IL_USE_TYPED_ALLOCATION
+		ILNativeInt staticTypeDescriptor =
+			ILGCBuildStaticTypeDescriptor(classInfo, 1);
+
+		if(staticTypeDescriptor)
+		{
+			((ILClassPrivate *)(classInfo->userData))->staticData =
+				ILGCAllocExplicitlyTyped(((ILClassPrivate *)(classInfo->userData))->staticSize,
+										 staticTypeDescriptor);
+		}
+		else
+		{
+			((ILClassPrivate *)(classInfo->userData))->staticData =
+				ILGCAlloc(((ILClassPrivate *)(classInfo->userData))->staticSize);
+		}
+	#else	/* !IL_USE_TYPED_ALLOCATION */
 		((ILClassPrivate *)(classInfo->userData))->staticData =
 			_ILEngineAlloc(thread, 0,
 			   ((ILClassPrivate *)(classInfo->userData))->staticSize);
+	#endif	/* !IL_USE_TYPED_ALLOCATION */
 	}
 	else
 	{

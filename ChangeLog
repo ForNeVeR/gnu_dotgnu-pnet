@@ -1,3 +1,15 @@
+2006-01-07  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/heap.c: Add _ILEngineAllocTyped to allocate memory for objects
+	with type information if typed allocation is enabled and use this function
+	for object allocation.
+
+	* engine/cvm_ptr.c: Allocate the memory for the class' static area with
+	typed allocation if it is enabled.
+
+	* engine/jitc_alloc.c: Handle the case for thin locks correctly where no
+	type descriptor is available if thin locks are used.
+
 2006-01-01  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h: Add prototypes for the helper functions to create the

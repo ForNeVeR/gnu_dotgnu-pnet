@@ -132,9 +132,23 @@ static ILObject *_ILJitAllocTyped(ILClass *classInfo)
 	void *ptr;
 	ILObject *obj;
 	
+#ifdef IL_CONFIG_USE_THIN_LOCKS
 	/* Allocate memory from the heap */
+	if(classPrivate->gcTypeDescriptor)
+	{
+		ptr = ILGCAllocExplicitlyTyped(classPrivate->size + IL_OBJECT_HEADER_SIZE,
+									   classPrivate->gcTypeDescriptor);
+	}
+	else
+	{
+		/* In case we use thin locks we don't have a type descriptor for */
+		/* classes not containing any managed fields. */
+		ptr = ILGCAllocAtomic(classPrivate->size + IL_OBJECT_HEADER_SIZE);
+	}
+#else	/* !IL_CONFIG_USE_THIN_LOCKS */
 	ptr = ILGCAllocExplicitlyTyped(classPrivate->size + IL_OBJECT_HEADER_SIZE,
 								   classPrivate->gcTypeDescriptor);
+#endif	/* !IL_CONFIG_USE_THIN_LOCKS */
 
 	if(!ptr)
 	{

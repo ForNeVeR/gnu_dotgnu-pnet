@@ -1,4 +1,9 @@
-2006-01-16  Klaus Treichel  <ktreichel@web.de>
+2007-01-16  Radek Polak  <psonek2@seznam.cz>
+
+	* libgc/include/gc.h: Patch for compiling with uclibc which does not
+	have execinfo.h.
+
+2007-01-16  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_coder.h: Add the functions runCCtors to execute the queued
 	cctors during generating the current method and runCCtor to run one class

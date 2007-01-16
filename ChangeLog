@@ -1,3 +1,55 @@
+2006-01-16  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_coder.h: Add the functions runCCtors to execute the queued
+	cctors during generating the current method and runCCtor to run one class
+	initializerand the helper macros for the new slots.
+
+	* image/program.h: Add the new system internal attribute
+	IL_META_TYPEDEF_CCTOR_RUNNING to the type attributes to detect is a cctor
+	is allready executing and to avoid to execute it recursively.
+
+	* engine/cctormgr.c, engine/cctormgr.h: Added new manager functions for
+	running the class initializers. This one makes sure that initializers are
+	executed only once and methods relying on the execution of a class
+	initializer in a different thread wait for it's completition.
+
+	* engine/convert.c: Acquire the metadata lock during generation of a method
+	with the jit coder. Call the new coder method RunCCtors after a method was
+	successfully generated.
+
+	* engine/cvmc.c: Add the cctor manager to the cvm coder class and add the
+	new coder functions for running the cctors.
+
+	* engine/cvmc_call.c: Replace the inline call to the cctor with queueing
+	the execution of the cctor in the cctor manager.
+
+	* engine/cvmc_obj.c: Replace the inline call to the cctor with queueing
+	the execution of the cctor in the cctor manager.
+
+	* engine/cvmc_setup.c: Remove the cctor once instruction for static
+	constructors.
+
+	* engine/engine.h: Add the decalaration of the new function _ILLookupClass.
+
+	* engine/lib_helpers.c: Use une new coder function for running the cctors
+	in _IL_RuntimeHelpers_RunClassConstructor.
+
+	* engine/lookup.c: Add the function _ILLookupClass to find a class by name
+	without laying out the class and use this function in LookupClass.
+
+	* engine/null_coder.c: Add the stubs Coder_RunCCtors and Coder_RunCCtor for
+	 the new coder functions.
+
+	* engine/jitc.c, engine/jitc_array.c, engine/jitc_call.c,
+	engine/jitc_delegate.c, engine/jitc_except.c, engine/jitc_obj.c,
+	engine/jitc_pinvoke.c,, engine/jitc_setup.c: Add support for the cctor
+	manager. Replace function calls acquiring metadata locks with the non
+	locking ones. (ILSizeOfType -> _ILSizeOfTypeLocked, ...) to avoid
+	deadlocks.
+
+	* engine/Makefile.am: Add the new files cctormgr.c and cctormgr.h to the
+	engine sources.
+
 2006-01-07  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/heap.c: Add _ILEngineAllocTyped to allocate memory for objects

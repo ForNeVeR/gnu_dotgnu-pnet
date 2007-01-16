@@ -279,14 +279,6 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	/* Set the number of arguments, which initialize's the method's frame */
 	CVM_OUT_WIDE(COP_SET_NUM_ARGS, ctx->numArgWords);
 
-	/* Is this a static constructor? */
-	if(ILMethod_IsStaticConstructor(method))
-	{
-		/* Output a "cctor_once" instruction to ensure that this
-		   method's body can only be executed once */
-		CVM_OUT_NONE(COP_CCTOR_ONCE);
-	}
-
 	/* If this is a constructor, then back-patch the push down size,
 	   which is one less than the number of argument words */
 	if(isConstructor)

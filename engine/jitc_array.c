@@ -202,7 +202,7 @@ static ILJitValue _ILJitSArrayNewWithConstantSize(ILJitFunction jitFunction,
 	}
 
 	/* Get the size of one array element. */
-	elementSize = ILSizeOfType(thread, elementType);
+	elementSize = _ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elementType);
 
 	totalSize = (((ILUInt64)elementSize) * ((ILUInt64)length)) + _IL_JIT_SARRAY_HEADERSIZE;
 	if(totalSize > (ILUInt64)IL_MAX_INT32)
@@ -302,7 +302,7 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
 		elementType = ILType_ElemType(ILClassGetSynType(arrayClass));
 
 		/* Get the size of one array element. */
-		elementSize = ILSizeOfType(thread, elementType);
+		elementSize = _ILSizeOfTypeLocked(jitCoder->process, elementType);
 
 		elementClass = ILClassFromType(ILProgramItem_Image(arrayClass),
 									   0, elementType, 0);

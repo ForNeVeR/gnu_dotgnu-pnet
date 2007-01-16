@@ -89,7 +89,9 @@ EXTRA_libILEngine_a_SOURCES = $(CVM_INCLUDES) \
 BUILT_SOURCES = gen_marshal.c \
 				gen_marshal.h
 
-libILEngine_a_SOURCES = cvm.c \
+libILEngine_a_SOURCES = cctormgr.c \
+						cctormgr.h \
+						cvm.c \
 						box.c \
 						call.c \
 						convert.c \

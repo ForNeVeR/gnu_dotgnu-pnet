@@ -178,7 +178,7 @@ static ILJitValue _ILJitPackDelegateArgs(ILJitFunction jitFunction,
 							(ILContextNextImage(_thread->process->context, 0),
 			 				0, paramType, 0);
 			info = ILClassResolve(info);
-			typeSize = ILSizeOfType(_thread, paramType);
+			typeSize = _ILSizeOfTypeLocked(_ILExecThreadProcess(_thread), paramType);
 
 			boxObject = _ILJitAllocObjectGen(jitFunction, info);
 			if(boxValue)
@@ -252,7 +252,7 @@ static int _ILJitUnpackDelegateArgs(ILJitFunction jitFunction,
 		{
 			ILJitType jitType = _ILJitGetReturnType(paramType, _ILExecThreadProcess(_thread));
 
-			ILUInt32 typeSize = ILSizeOfType(_thread, paramType);
+			ILUInt32 typeSize = _ILSizeOfTypeLocked(_ILExecThreadProcess(_thread), paramType);
 			ILJitValue boxObjectSize = jit_value_create_nint_constant(jitFunction,
 																	  _IL_JIT_TYPE_UINT32,
 																	  typeSize);

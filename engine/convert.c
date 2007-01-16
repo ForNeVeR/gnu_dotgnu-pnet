@@ -36,7 +36,24 @@ extern	"C" {
 #define	IL_CONVERT_TYPE_INIT		5
 #define	IL_CONVERT_DLL_NOT_FOUND	6
 
+/*
+ * Acquire and release the metadata lock, while suppressing finalizers
+ * during the execution of "ConvertMethod".
+ */
+#define	METADATA_WRLOCK(thread)	\
+			do { \
+				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
+				ILGCDisableFinalizers(0); \
+			} while (0)
+#define	METADATA_UNLOCK(thread)	\
+			do { \
+				ILGCEnableFinalizers(); \
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
+				ILGCInvokeFinalizers(0); \
+			} while (0)
+
 #ifdef IL_USE_JIT
+
 /*
  * Inner version of "_ILConvertMethod", which detects the type of
  * exception to throw, but does not throw it.
@@ -70,17 +87,18 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	   method is written in IL or not */
 	if(code.code)
 	{
-		/* Disable the finalizers so that the coder will not be called resursively. */
-		ILGCDisableFinalizers(0);
+		/* We need the metadata write lock */
+		METADATA_WRLOCK(thread);
 		/* Use the bytecode verifier and coder to convert the method */
 		if(!_ILVerify(coder, &start, method, &code,
 					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
 		{
-			ILGCEnableFinalizers();
+			METADATA_UNLOCK(thread);
 			*errorCode = IL_CONVERT_VERIFY_FAILED;
 			return 0;
 		}
-		ILGCEnableFinalizers();
+		/* Run the needed cctors and unlock the metadata too */
+		ILCoderRunCCtors(coder);
 	}
 	else
 	{
@@ -146,22 +164,6 @@ static void *LocateExternalModule(ILExecProcess *process, const char *name,
 }
 
 #endif /* IL_CONFIG_PINVOKE */
-
-/*
- * Acquire and release the metadata lock, while suppressing finalizers
- * during the execution of "ConvertMethod".
- */
-#define	METADATA_WRLOCK(thread)	\
-			do { \
-				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
-				ILGCDisableFinalizers(0); \
-			} while (0)
-#define	METADATA_UNLOCK(thread)	\
-			do { \
-				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
-				ILGCInvokeFinalizers(0); \
-			} while (0)
 
 /*
  * Inner version of "_ILConvertMethod", which detects the type of
@@ -506,7 +508,8 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	ILThreadAtomicStart();
 	method->userData = (void *)start;
 	ILThreadAtomicEnd();
-	METADATA_UNLOCK(thread);
+	/* Run the needed cctors and unlock the metadata too */
+	ILCoderRunCCtors(coder);
 	*errorCode = IL_CONVERT_OK;
 	return start;
 }

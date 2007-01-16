@@ -270,29 +270,9 @@ void _IL_RuntimeHelpers_RunClassConstructor(ILExecThread *thread, void *type)
 #else
 	ILClass *classInfo = *((ILClass **)type);
 #endif
-	ILMethod *method;
-	if(classInfo)
-	{
-		/* Locate the static constructor within the class */
-		IL_METADATA_RDLOCK(_ILExecThreadProcess(thread));
-		method = 0;
-		while((method = (ILMethod *)ILClassNextMemberByKind
-			(classInfo, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
-		{
-			if(ILMethod_IsStaticConstructor(method))
-			{
-				break;
-			}
-		}
-		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
+	ILCoder *coder = _ILExecThreadProcess(thread)->coder;
 
-		/* Call the static constructor if we found it.  The method
-		   itself contains instructions that prevent multiple calls */
-		if(method)
-		{
-			ILExecThreadCall(thread, method, (void *)0);
-		}
-	}
+	ILCoderRunCCtor(coder, classInfo);
 }
 
 ILInt32 _IL_RuntimeHelpers_InternalOffsetToStringData(ILExecThread *thread)

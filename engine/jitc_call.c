@@ -323,7 +323,7 @@ ILInt32 _ILJitPackVarArgs(ILJITCoder *jitCoder,
 							(ILContextNextImage(jitCoder->process->context, 0),
 			 				0, paramType, 0);
 			info = ILClassResolve(info);
-			typeSize = ILSizeOfType(_thread, paramType);
+			typeSize = _ILSizeOfTypeLocked(jitCoder->process, paramType);
 
 			boxObject = _ILJitAllocObjectGen(jitCoder->jitFunction, info);
 			if(boxValue)
@@ -480,8 +480,13 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+#ifdef IL_JIT_ENABLE_CCTORMGR
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
+#else	/* !IL_JIT_ENABLE_CCTORMGR */
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 0);
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	methodName = _ILJitFunctionGetMethodName(jitFunction);
@@ -822,8 +827,13 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	type = ILType_FromClass(classInfo);
 	synType = ILClassGetSynType(classInfo);
 
+#ifdef IL_JIT_ENABLE_CCTORMGR
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
+#else	/* !IL_JIT_ENABLE_CCTORMGR */
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 	/* Check if the function is implemented in the engine. */
 	if((internalType = _ILJitFunctionIsInternal(jitCoder, methodInfo, &fnInfo, 1)))

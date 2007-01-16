@@ -99,8 +99,9 @@ static void _ILJitThrowSystem(ILJitFunction jitFunction,
 	}
 	if(exception > 0)
 	{
-		ILClass *classInfo = ILExecThreadLookupClass(_thread,
-													 exceptionClasses[exception]);
+		ILClass *classInfo = _ILLookupClass(_ILExecThreadProcess(_thread),
+											exceptionClasses[exception],
+											strlen(exceptionClasses[exception]));
 		ILJitValue info;
 		if(!classInfo)
 		{

@@ -1228,10 +1228,10 @@ static ILJitValue MarshalValue(jit_function_t function, ILJitValue in, ILType *t
 		    thread = ILExecThreadCurrent();
 		    srcElemSize = jit_value_create_nint_constant(function,
 			    						_IL_JIT_TYPE_INT32,
-									(jit_nint)(ILSizeOfType(thread, elemType)));
+									(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
 		    newElemSize = jit_value_create_nint_constant(function,
 									_IL_JIT_TYPE_INT32,
-								    	(jit_nint)(ILSizeOfType(thread, elemType)));
+								    	(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
 		    newArraySize = jit_insn_mul(function, arraySize, newElemSize);
 		    args[0] = newArraySize;
 		    jit_insn_store(function, newArray, jit_insn_call_native(function, "ILGCAllocAtomic",
@@ -1290,7 +1290,7 @@ static ILJitValue MarshalStruct(jit_function_t function, ILJitValue inAddress, I
 {
         ILClass *classInfo = ILClassResolve(ILType_ToValueType(structureILType));
 	ILExecThread *thread = ILExecThreadCurrent();
-        unsigned int structSize = ILSizeOfType(thread, structureILType);
+        unsigned int structSize = _ILSizeOfTypeLocked(_ILExecThreadProcess(thread), structureILType);
 	ILField *field = 0;
 	ILType *type;
 
@@ -1650,7 +1650,7 @@ static ILJitValue MarshalReturnStruct(jit_function_t function, ILJitValue inAddr
 {
     ILClass *classInfo = ILClassResolve(ILType_ToValueType(structureILType));
     ILExecThread *thread = ILExecThreadCurrent();
-    unsigned int structSize = ILSizeOfType(thread, structureILType);
+    unsigned int structSize = _ILSizeOfTypeLocked(_ILExecThreadProcess(thread), structureILType);
     ILField *field = 0;
     ILJitValue newStruct = 0;
     ILType *type;
@@ -1947,10 +1947,10 @@ static void MarshalByRefValue(jit_function_t function, ILJitValue in, ILType *ty
 			    thread = ILExecThreadCurrent();
 			    srcElemSize = jit_value_create_nint_constant(function,
 					    					_IL_JIT_TYPE_INT32,
-										(jit_nint)(ILSizeOfType(thread, elemType)));			    
+										(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
 			    newElemSize = jit_value_create_nint_constant(function,
 										_IL_JIT_TYPE_INT32,
-									    	(jit_nint)(ILSizeOfType(thread, elemType)));
+									    	(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
 			    newArray = jit_insn_add_relative(function, outAddressValue, (jit_nint)(sizeof(ILUInt32)));
 			    jit_insn_branch_if(function,
 						jit_insn_eq(function, arraySize,
@@ -2806,6 +2806,8 @@ static ILJitValue MarshalDelegateValue(jit_function_t function, ILJitValue in, I
 
 	    if(ILType_IsSimpleArray(type))
 	    {
+				ILExecThread *thread = ILExecThreadCurrent();
+
 			    srcArray = in;
 			    if(addressKind==MARSHAL_ITEM_OF_STRUCTURE || addressKind==MARSHAL_ITEM_OF_ARRAY)
 				    srcArray = jit_insn_load_relative(function, srcArray, offset, _IL_JIT_TYPE_VPTR);
@@ -2818,11 +2820,11 @@ static ILJitValue MarshalDelegateValue(jit_function_t function, ILJitValue in, I
 			    arraySize = jit_insn_load_relative(function, srcArray, 0, _IL_JIT_TYPE_UINT32);
 			    srcElemSize = jit_value_create_nint_constant(function,
 				    					    _IL_JIT_TYPE_INT32,
-									    (jit_nint)(ILSizeOfType(ILExecThreadCurrent(),
+									    (jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread),
 												    elemType)));
 			    newElemSize = jit_value_create_nint_constant(function,
 									    _IL_JIT_TYPE_INT32,
-									    (jit_nint)(ILSizeOfType(ILExecThreadCurrent(),
+									    (jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread),
 												    elemType)));
 			    newArraySize = jit_insn_mul(function, arraySize, newElemSize);
 			    newArraySize = jit_insn_add_relative(function, newArraySize, (jit_nint)(sizeof(ILUInt32)));
@@ -2889,8 +2891,9 @@ static ILJitValue MarshalDelegateValue(jit_function_t function, ILJitValue in, I
 ILJitValue MarshalDelegateStruct(jit_function_t function, ILJitValue inAddress, ILType *structureILType,
 				    ILUInt32 marshalType, ILJitValue outAddress, jit_nint offset, unsigned int addressKind)
 {
+	ILExecThread *thread = ILExecThreadCurrent();
     ILClass *classInfo = ILClassResolve(ILType_ToValueType(structureILType));
-    unsigned int structSize = ILSizeOfType(ILExecThreadCurrent(), structureILType);
+    unsigned int structSize = _ILSizeOfTypeLocked(_ILExecThreadProcess(thread), structureILType);
     ILField *field = 0;
     ILType *type;
     ILJitType structType;
@@ -3266,8 +3269,9 @@ static ILJitValue MarshalDelegateReturnStruct(jit_function_t function, ILJitValu
 						    ILUInt32 marshalType, ILJitValue outAddress, jit_nint offset,
 						    unsigned int addressKind)
 {
-        ILClass *classInfo = ILClassResolve(ILType_ToValueType(structureILType));
-        unsigned int structSize = ILSizeOfType(ILExecThreadCurrent(), structureILType);
+	ILExecThread *thread = ILExecThreadCurrent();
+	ILClass *classInfo = ILClassResolve(ILType_ToValueType(structureILType));
+	unsigned int structSize = _ILSizeOfTypeLocked(_ILExecThreadProcess(thread), structureILType);
 	ILField *field = 0;
 	ILType *type;
 
@@ -3604,10 +3608,10 @@ static void MarshalDelegateByRefValue(jit_function_t function, ILJitValue in, IL
 			    arraySize = jit_insn_load_relative(function, srcArray, 0, _IL_JIT_TYPE_UINT32);
 			    srcElemSize = jit_value_create_nint_constant(function,
 				    						_IL_JIT_TYPE_INT32,
-										(jit_nint)(ILSizeOfType(thread, elemType)));
+										(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
 			    newElemSize = jit_value_create_nint_constant(function,
 										_IL_JIT_TYPE_INT32,
-									    	(jit_nint)(ILSizeOfType(thread, elemType)));
+									    	(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
 
 			    jit_insn_branch_if(function,
 						jit_insn_eq(function, arraySize,

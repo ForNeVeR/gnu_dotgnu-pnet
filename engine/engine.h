@@ -830,6 +830,13 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info);
 int _ILGetInternalDelegate(ILMethod *method, int *isCtor,  ILInternalInfo *info);
 
 /*
+ * Look up a class name that is length-specified.
+ */
+ILClass *_ILLookupClass(ILExecProcess *process,
+						const char *className,
+						int classNameLen);
+
+/*
  * Look up an interface method.  Returns NULL if not found.
  */
 ILMethod *_ILLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,

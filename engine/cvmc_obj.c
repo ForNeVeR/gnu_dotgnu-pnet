@@ -321,10 +321,6 @@ static void CVMCoder_LoadThisField(ILCoder *coder, ILField *field,
 				 fieldType, field->offset, 1);
 }
 
-/* Forward declaration: defined in "cvmc_call.c" */
-static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
-								  int isCtor);
-
 #ifdef IL_CONFIG_PINVOKE
 
 /*
@@ -391,9 +387,10 @@ static void CVMCoder_LoadStaticField(ILCoder *coder, ILField *field,
 #endif
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
-		/* Call the static constructor if necessary */
 		classInfo = ILField_Owner(field);
-		CallStaticConstructor(coder, classInfo, 1);
+
+		/* Queue the cctor to run. */
+		ILCCtorMgr_OnStaticFieldAccess(&(((ILCVMCoder *)coder)->cctorMgr), field);
 
 		/* Regular or thread-static field? */
 		if(!ILFieldIsThreadStatic(field))
@@ -477,9 +474,10 @@ static void CVMCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 	}
 #endif
 
-	/* Call the static constructor if necessary */
 	classInfo = ILField_Owner(field);
-	CallStaticConstructor(coder, classInfo, 1);
+
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnStaticFieldAccess(&(((ILCVMCoder *)coder)->cctorMgr), field);
 
 	/* Regular or RVA field? */
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
@@ -822,9 +820,10 @@ static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
 	ILPInvoke *pinvoke;
 #endif
 
-	/* Call the static constructor if necessary */
 	classInfo = ILField_Owner(field);
-	CallStaticConstructor(coder, classInfo, 1);
+
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnStaticFieldAccess(&(((ILCVMCoder *)coder)->cctorMgr), field);
 
 	/* Regular or RVA field? */
 #ifdef IL_CONFIG_PINVOKE

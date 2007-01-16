@@ -24,6 +24,7 @@
 
 #ifdef IL_USE_JIT
 
+#include "cctormgr.h"
 #include "il_opcodes.h"
 #include "il_utils.h"
 #ifdef IL_DEBUGGER
@@ -71,6 +72,22 @@ extern	"C" {
  * To enable method inlining uncomment the following define.
  */
 /* #define _IL_JIT_ENABLE_INLINE 1 */
+
+/*
+ * To enable the cctor manager uncomment define the following define.
+ */
+#define IL_JIT_ENABLE_CCTORMGR
+
+/*
+ * Reenable finalizers, unlock the metadata lock and run finalizers.
+ * Must be kept in sync with convert.c
+ */
+#define	METADATA_UNLOCK(thread)	\
+			do { \
+				ILGCEnableFinalizers(); \
+				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
+				ILGCInvokeFinalizers(0); \
+			} while (0)
 
 #ifdef _IL_JIT_DUMP_FUNCTION
 #ifndef _IL_JIT_ENABLE_DEBUG
@@ -415,6 +432,9 @@ struct _tagILJITCoder
 	jit_label_t     nextBlock;
 	jit_label_t     rethrowBlock;
 
+	/* The manager for running the required cctors. */
+	ILCCtorMgr		cctorMgr;
+
 #ifndef IL_JIT_THREAD_IN_SIGNATURE
 	/* cache for the current thread. */
 	ILJitValue		thread;
@@ -491,18 +511,6 @@ static ILJitValue _ILJitCoderGetThread(ILJITCoder *jitCoder)
 		(jitTypes)->jitTypeBase = (jitType); \
 		(jitTypes)->jitTypeKind = 0; \
 	}
-
-/*
- * Acquire and release the metadata lock during layouting a class.
- */
-#define	METADATA_WRLOCK(thread)	\
-			do { \
-				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
-			} while (0)
-#define	METADATA_UNLOCK(thread)	\
-			do { \
-				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
-			} while (0)
 
 /*
  * Check if the typeKind is a floating point number.
@@ -1269,17 +1277,12 @@ static void AdjustMixedBinary(ILJITCoder *coder, int isUnsigned,
  */
 static int _LayoutClass(ILExecThread *thread, ILClass *info)
 {
-	int result = 0;
-
 	/* Check if the class is allready layouted. */
 	if((info->userData) && !(((ILClassPrivate *)(info->userData))->inLayout))
 	{
 		return 1;
 	}
-	METADATA_WRLOCK(thread);
-	result = _ILLayoutClass(_ILExecThreadProcess(thread), info);
-	METADATA_UNLOCK(thread);
-	return result; 
+	return _ILLayoutClass(_ILExecThreadProcess(thread), info);
 }
 
 /*
@@ -1956,6 +1959,7 @@ static ILUInt32 _ILJitGetSizeOfClass(ILClass *info)
 	return((ILUInt32)jit_type_get_size(classPrivate->jitTypes.jitTypeBase));
 }
 
+#ifndef IL_JIT_ENABLE_CCTORMGR
 /*
  * Call the static constructor for a class if necessary.
  */
@@ -2011,6 +2015,7 @@ static void _ILJitCallStaticConstructor(ILJITCoder *coder, ILClass *classInfo,
 		}
 	}
 }
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 /*
  * The exception handler which converts libjit inbuilt exceptions
@@ -2462,6 +2467,13 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	/* Init the current jitted function. */
 	coder->jitFunction = 0;
 
+	if(!ILCCtorMgr_Init(&(coder->cctorMgr), 10))
+	{
+		ILMemPoolDestroy(&(coder->methodPool));
+		ILFree(coder);
+		return 0;
+	}
+
 #ifndef IL_JIT_THREAD_IN_SIGNATURE
 	coder->thread = 0;
 #endif
@@ -2679,6 +2691,8 @@ static void JITCoder_Destroy(ILCoder *_coder)
 
 	ILMemPoolDestroy(&(coder->methodPool));
 
+	ILCCtorMgr_Destroy(&(coder->cctorMgr));
+
 	ILFree(coder);
 }
 
@@ -2727,6 +2741,33 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 								 (jit_nint) offset);
 	}
 #endif
+}
+
+/*
+ * Run the class initializers queued during generation of the last method.
+ */
+static ILInt32 JITCoder_RunCCtors(ILCoder *coder)
+{
+#ifdef IL_JIT_ENABLE_CCTORMGR
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	return ILCCtorMgr_RunCCtors(&(jitCoder->cctorMgr));
+#else	/* !IL_JIT_ENABLE_CCTORMGR */
+	ILExecThread *thread = ILExecThreadCurrent();
+
+	METADATA_UNLOCK(thread);
+	return 1;
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
+}
+
+/*
+ * Run the class initializer for the given class.
+ */
+static ILInt32 JITCoder_RunCCtor(ILCoder *coder, ILClass *classInfo)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	return ILCCtorMgr_RunCCtor(&(jitCoder->cctorMgr), classInfo);
 }
 
 #ifdef IL_CONFIG_PINVOKE
@@ -4507,6 +4548,7 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_CheckNull,
 	JITCoder_Convert,
 	JITCoder_ConvertCustom,
+	JITCoder_RunCCtors,
 	"sentinel"
 };
 #ifdef	__cplusplus

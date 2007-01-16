@@ -57,52 +57,6 @@ static void CVMCoder_ValueCtorArgs(ILCoder *coder, ILClass *classInfo,
 }
 
 /*
- * Call the static constructor for a class if necessary.
- */
-static void CallStaticConstructor(ILCoder *coder, ILClass *classInfo,
-								  int isCtor)
-{
-	if((classInfo->attributes & IL_META_TYPEDEF_CCTOR_ONCE) != 0)
-	{
-		/* We already know that the static constructor has been called,
-		   so there is no point outputting a call to it again */
-		return;
-	}
-	if(isCtor ||
-	   (classInfo->attributes & IL_META_TYPEDEF_BEFORE_FIELD_INIT) == 0)
-	{
-		/* We must call the static constructor before instance
-		   constructors, or before static methods when the
-		   "beforefieldinit" attribute is not present */
-		ILMethod *cctor = 0;
-		while((cctor = (ILMethod *)ILClassNextMemberByKind
-					(classInfo, (ILMember *)cctor,
-					 IL_META_MEMBERKIND_METHOD)) != 0)
-		{
-			if(ILMethod_IsStaticConstructor(cctor))
-			{
-				break;
-			}
-		}
-		if(cctor != 0)
-		{
-			/* Don't call it if we are within the constructor already */
-			if(cctor != ((ILCVMCoder *)coder)->currentMethod)
-			{
-				/* Output a call to the static constructor */
-				CVM_OUT_PTR(COP_CALL, cctor);
-			}
-		}
-		else
-		{
-			/* This class does not have a static constructor,
-			   so mark it so that we never do this test again */
-			classInfo->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
-		}
-	}
-}
-
-/*
  * Adjust the position of the stack for a call.
  */
 static void AdjustForCall(ILCoder *coder, ILCoderMethodInfo *info,
@@ -143,7 +97,8 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 								ILEngineStackItem *returnItem,
 								ILMethod *methodInfo)
 {
-	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 0);
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnCallMethod(&(((ILCVMCoder *)coder)->cctorMgr), methodInfo);
 	if(info->tailCall)
 	{
 		CVMP_OUT_PTR(COP_PREFIX_TAIL_CALL, methodInfo);
@@ -173,7 +128,8 @@ static void CVMCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 static void CVMCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 					   		  ILMethod *methodInfo)
 {
-	CallStaticConstructor(coder, ILMethod_Owner(methodInfo), 1);
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnCallMethod(&(((ILCVMCoder *)coder)->cctorMgr), methodInfo);
 	CVM_OUT_PTR(COP_CALL_CTOR, methodInfo);
 	AdjustForCall(coder, info, 0);
 	CVM_ADJUST(1);

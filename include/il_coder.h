@@ -811,6 +811,20 @@ struct _tagILCoderClass
 						  void *customName, void *customCookie);
 
 	/*
+	 * Run the cctors collected during code generation.
+	 * This function must be called after the method is compiled successfully
+	 * and before the method itself is executed.
+	 * The metadata lock must be still accuired and will be released just
+	 * before the cctors are executed.
+     */
+	ILInt32 (*runCCtors)(ILCoder *coder);
+
+	/*
+	 * Run the class initializer for the given class.
+	 */
+	ILInt32 (*runCCtor)(ILCoder *coder, ILClass *classInfo);
+
+	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
 	const char *sentinel;
@@ -1089,6 +1103,10 @@ struct _tagILCoderClass
 													(customCookie)))
 #define	ILCoderMarkEnd(coder) \
 			((*((coder)->classInfo->markEnd))((coder)))
+#define	ILCoderRunCCtors(coder) \
+			((*((coder)->classInfo->runCCtors))((coder)))
+#define	ILCoderRunCCtor(coder, classInfo) \
+			((*((coder)->classInfo->runCCtor))((coder),(classInfo)))
 
 #ifdef	__cplusplus
 };

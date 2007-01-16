@@ -418,6 +418,14 @@ static void Coder_ConvertCustom(ILCoder *coder, int opcode,
 						    	void *customName, void *customCookie)
 {
 }
+static ILInt32 Coder_RunCCtors(ILCoder *coder)
+{
+	return 1;
+}
+static ILInt32 Coder_RunCCtor(ILCoder *coder, ILClass *classInfo)
+{
+	return 1;
+}
 
 /*
  * Null coder class and instance.
@@ -528,6 +536,8 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_CheckNull,
 	Coder_Convert,
 	Coder_ConvertCustom,
+	Coder_RunCCtors,
+	Coder_RunCCtor,
 	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};

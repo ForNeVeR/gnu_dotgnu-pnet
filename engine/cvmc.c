@@ -32,6 +32,7 @@
 #include "lib_defs.h"
 #include "method_cache.h"
 #include "cvm_config.h"
+#include "cctormgr.h"
 #if defined(HAVE_LIBFFI)
 #include "ffi.h"
 #endif
@@ -91,6 +92,8 @@ struct _tagILCVMCoder
 	long			nativeArgPosn;
 	long			nativeArgHeight;
 	ILExecProcess  *process;		/* Backpointer to the owning process */
+	/* The manager for running the required cctors. */
+	ILCCtorMgr		cctorMgr;
 };
 
 /*
@@ -157,6 +160,12 @@ static ILCoder *CVMCoder_Create(ILExecProcess *process, ILUInt32 size,
 	coder->coder.classInfo = &_ILCVMCoderClass;
 	if((coder->cache = ILCacheCreate(0, cachePageSize)) == 0)
 	{
+		ILFree(coder);
+		return 0;
+	}
+	if(!ILCCtorMgr_Init(&(coder->cctorMgr), 10))
+	{
+		ILCacheDestroy(coder->cache);
 		ILFree(coder);
 		return 0;
 	}
@@ -230,6 +239,7 @@ static void CVMCoder_Destroy(ILCoder *_coder)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	ILCacheDestroy(coder->cache);
+	ILCCtorMgr_Destroy(&(coder->cctorMgr));
 	if(coder->argOffsets)
 	{
 		ILFree(coder->argOffsets);
@@ -275,6 +285,24 @@ static void CVMCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 		CVM_OUT_BREAK(IL_BREAK_DEBUG_LINE);
 	}
 #endif
+}
+
+/*
+ * Run the class initializers queued during generation of the last method.
+ */
+static ILInt32 CVMCoder_RunCCtors(ILCoder *_coder)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	return ILCCtorMgr_RunCCtors(&(coder->cctorMgr));
+}
+
+/*
+ * Run the class initializer for the given class.
+ */
+static ILInt32 CVMCoder_RunCCtor(ILCoder *_coder, ILClass *classInfo)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	return ILCCtorMgr_RunCCtor(&(coder->cctorMgr), classInfo);
 }
 
 /*
@@ -485,6 +513,8 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_CheckNull,
 	CVMCoder_Convert,
 	CVMCoder_ConvertCustom,
+	CVMCoder_RunCCtors,
+	CVMCoder_RunCCtor,
 	"sentinel"
 };
 

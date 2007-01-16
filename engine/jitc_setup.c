@@ -67,6 +67,7 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	}
 #endif
 
+#ifndef IL_JIT_ENABLE_CCTORMGR
 	if(ILMethod_IsStaticConstructor(method))
 	{
 		/* We have to take care that the method is executed only once. */
@@ -105,6 +106,7 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 		   other blocks are later moved to the function start. */
 		jit_insn_move_blocks_to_start(coder->jitFunction, startLabel, endLabel);
 	}
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 #ifdef IL_DEBUGGER
 	/* Check if this method can be debugged */
@@ -233,19 +235,25 @@ static int JITCoder_Finish(ILCoder *_coder)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+	if(!jit_function_compile(jitCoder->jitFunction))
+	{
+		return IL_CODER_END_TOO_BIG;
+	}
 #ifdef _IL_JIT_DISASSEMBLE_FUNCTION
 	if(jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
-		if(!jit_function_compile(jitCoder->jitFunction))
-		{
-			return IL_CODER_END_TOO_BIG;
-		}
 		ILMutexLock(globalTraceMutex);
 		jit_dump_function(stdout, jitCoder->jitFunction, methodName);
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
 #endif
+#ifdef IL_JIT_ENABLE_CCTORMGR
+	/* Unlock the context because we possibly have to build cctors before */
+	/* this method will be executed. (It's a hack for now.) */
+	jit_context_build_end(jitCoder->context);
+#endif	/* IL_JIT_ENABLE_CCTORMGR */
+
 	return IL_CODER_END_OK;
 }
 

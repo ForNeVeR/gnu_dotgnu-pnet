@@ -77,6 +77,33 @@ extern	"C" {
 static ILClass *LookupClass(ILExecThread *thread, const char *className,
 							int classNameLen)
 {
+	ILClass *classInfo = _ILLookupClass(_ILExecThreadProcess(thread),
+										className,
+										classNameLen);
+
+	/* Make sure that the class has been laid out */
+	if(classInfo != 0)
+	{
+		IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+		if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
+		{
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
+			return 0;
+		}
+		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
+	}
+
+	/* Return the final class structure to the caller */
+	return classInfo;
+}
+
+/*
+ * Look up a class name that is length-specified.
+ */
+ILClass *_ILLookupClass(ILExecProcess *process,
+						const char *className,
+						int classNameLen)
+{
 	int len, dot;
 	const char *name;
 	int nameLen;
@@ -119,7 +146,7 @@ static ILClass *LookupClass(ILExecThread *thread, const char *className,
 	{
 		/* Try looking in the system image first, to prevent the
 		   application from redirecting system types elsewhere */
-		image = ILContextGetSystem(thread->process->context);
+		image = ILContextGetSystem(process->context);
 		if(image)
 		{
 			classInfo = ILClassLookupLen(ILClassGlobalScope(image),
@@ -129,7 +156,7 @@ static ILClass *LookupClass(ILExecThread *thread, const char *className,
 	}
 	if(!classInfo)
 	{
-		classInfo = ILClassLookupGlobalLen(thread->process->context,
+		classInfo = ILClassLookupGlobalLen(process->context,
 									   	   name, nameLen,
 										   namespace, namespaceLen);
 	}
@@ -147,18 +174,6 @@ static ILClass *LookupClass(ILExecThread *thread, const char *className,
 		nameLen = len - dot;
 		classInfo = ILClassLookupLen(ILToProgramItem(classInfo),
 									 name, nameLen, 0, 0);
-	}
-
-	/* Make sure that the class has been laid out */
-	if(classInfo != 0)
-	{
-		IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
-		if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
-		{
-			IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
-			return 0;
-		}
-		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 	}
 
 	/* Return the final class structure to the caller */

@@ -3,6 +3,9 @@
 	* runtime/System/IO/FileStream.cs: Writing in a read/write filestream after
 	some data was read and the fileposition was changed. (Bug #18319)
 
+	* System/Net/Sockets/SocketException.cs: Pass errno to the base class
+	constructor for !ECMA_COMPAT (Bug# 18786).
+
 2007-01-16  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/runtime/System/Runtime/CompilerServices/TestCompilerServices.cs:

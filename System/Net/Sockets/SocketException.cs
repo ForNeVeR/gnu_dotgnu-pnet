@@ -71,7 +71,11 @@ public class SocketException :
 
 	// Internal constructors that are used to set correct error codes.
 	internal SocketException(Errno errno)
+#if !ECMA_COMPAT
+		: base((int)errno, DefaultMessage(null, errno))
+#else
 		: base(DefaultMessage(null, errno))
+#endif
 		{
 			this.errno = errno;
 		}

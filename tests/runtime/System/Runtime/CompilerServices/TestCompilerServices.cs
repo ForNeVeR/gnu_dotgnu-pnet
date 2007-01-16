@@ -137,6 +137,21 @@ public class TestCompilerServices : TestCase
 
 	public static int value;
 
+	private static void RunClassConstructor(RuntimeTypeHandle type)
+	{
+		RuntimeHelpers.RunClassConstructor(type);
+	}
+
+	private static void CallConstructorTestDummy()
+	{
+		ConstructorTest.Dummy();
+	}
+
+	private static void CallConstructorTest2Dummy()
+	{
+		ConstructorTest2.Dummy();
+	}
+
 	// Test the "RunClassConstructor" method in "RuntimeHelpers".
 	public void TestHelpersRunClassConstructor()
 			{
@@ -144,19 +159,17 @@ public class TestCompilerServices : TestCase
 				AssertEquals("RCC (1)", 0, value);
 
 				// Run the class constructor and re-test the value.
-				RuntimeHelpers.RunClassConstructor
-					(typeof(ConstructorTest).TypeHandle);
+				RunClassConstructor(typeof(ConstructorTest).TypeHandle);
 				AssertEquals("RCC (2)", 1, value);
 
 				// Calling a static method shouldn't cause the value
 				// to increase again.
-				ConstructorTest.Dummy();
+				CallConstructorTestDummy();
 				AssertEquals("RCC (3)", 1, value);
 
 				// Re-calling the class constructor shouldn't cause
 				// the value to increase again.
-				RuntimeHelpers.RunClassConstructor
-					(typeof(ConstructorTest).TypeHandle);
+				RunClassConstructor(typeof(ConstructorTest).TypeHandle);
 				AssertEquals("RCC (4)", 1, value);
 
 				// Reset the value.
@@ -164,13 +177,12 @@ public class TestCompilerServices : TestCase
 
 				// Call the static method in "ConstructorTest2".
 				// This should implicitly call the class constructor.
-				ConstructorTest2.Dummy();
+				CallConstructorTest2Dummy();
 				AssertEquals("RCC (5)", 1, value);
 
 				// Call the class constructor manually, which should
 				// not result in an increase of the value.
-				RuntimeHelpers.RunClassConstructor
-					(typeof(ConstructorTest2).TypeHandle);
+				RunClassConstructor(typeof(ConstructorTest2).TypeHandle);
 				AssertEquals("RCC (6)", 1, value);
 			}
 

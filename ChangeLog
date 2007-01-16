@@ -1,3 +1,9 @@
+2007-01-16  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/runtime/System/Runtime/CompilerServices/TestCompilerServices.cs:
+	Change the test for running class constructors because the execution of
+	class initializers is triggered different now.
+
 2006-11-23  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* Xsharp/XsharpSupport.c: fixed hanging app in XNextEventWithTimeout.

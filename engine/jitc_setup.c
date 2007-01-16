@@ -234,11 +234,13 @@ static int JITCoder_Finish(ILCoder *_coder)
 		jit_dump_function(stdout, jitCoder->jitFunction, methodName);
 		ILMutexUnlock(globalTraceMutex);
 	}
+#endif	/* _IL_JIT_DUMP_FUNCTION */
 #endif
 	if(!jit_function_compile(jitCoder->jitFunction))
 	{
 		return IL_CODER_END_TOO_BIG;
 	}
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 #ifdef _IL_JIT_DISASSEMBLE_FUNCTION
 	if(jitCoder->flags & IL_CODER_FLAG_STATS)
 	{
@@ -246,7 +248,7 @@ static int JITCoder_Finish(ILCoder *_coder)
 		jit_dump_function(stdout, jitCoder->jitFunction, methodName);
 		ILMutexUnlock(globalTraceMutex);
 	}
-#endif
+#endif _IL_JIT_DISASSEMBLE_FUNCTION
 #endif
 #ifdef IL_JIT_ENABLE_CCTORMGR
 	/* Unlock the context because we possibly have to build cctors before */

@@ -4549,6 +4549,7 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_Convert,
 	JITCoder_ConvertCustom,
 	JITCoder_RunCCtors,
+	JITCoder_RunCCtor,
 	"sentinel"
 };
 #ifdef	__cplusplus

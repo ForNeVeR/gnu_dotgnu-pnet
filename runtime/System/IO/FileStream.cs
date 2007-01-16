@@ -269,12 +269,6 @@ public class FileStream : Stream
 			{
 				if(canSeek)
 				{
-					if(bufferPosn < bufferLen)
-					{
-						FileMethods.Seek(handle, -bufferPosn,
-										 SeekOrigin.Current);
-						position -= bufferPosn;
-					}
 					bufferPosn = 0;
 					bufferLen = 0;
 				}
@@ -292,6 +286,7 @@ public class FileStream : Stream
 					}
 					bufferPosn = 0;
 				}
+				bufferLen = 0;
 			}
 
 	// Set up for a read.
@@ -327,6 +322,7 @@ public class FileStream : Stream
 				if(!bufferOwnedByWrite)
 				{
 					FlushReadBuffer();
+					FileMethods.Seek(handle, position, SeekOrigin.Begin);
 					bufferOwnedByWrite = true;
 				}
 			}

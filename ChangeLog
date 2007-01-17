@@ -1,3 +1,33 @@
+2007-01-17  Klaus Treichel  <ktreichel@web.de>
+
+	* System/Net/AuthenticationSchemeSelector.cs,
+	System/Net/AuthenticationSchemes.cs, System/Net/BindIPEndPoint.cs,
+	System/Net/DecompressionMethods.cs,
+	System/Net/DownloadDataCompletedEventArgs.cs,
+	System/Net/DownloadDataCompletedEventHandler.cs,
+	System/Net/DownloadProgressChangedEventArgs.cs,
+	System/Net/DownloadProgressChangedEventHandler.cs,
+	System/Net/DownloadStringCompletedEventArgs.cs,
+	System/Net/DownloadStringCompletedEventHandler.cs,
+	System/Net/FtpStatusCode.cs,
+	System/Net/HttpRequestHeader.cs,
+	System/Net/HttpResponseHeader.cs,
+	System/Net/OpenReadCompletedEventArgs.cs,
+	System/Net/OpenReadCompletedEventHandler.cs,
+	System/Net/OpenWriteCompletedEventArgs.cs,
+	System/Net/OpenWriteCompletedEventHandler.cs,
+	System/Net/UploadDataCompletedEventArgs.cs,
+	System/Net/UploadDataCompletedEventHandler.cs,
+	System/Net/UploadFileCompletedEventArgs.cs,
+	System/Net/UploadFileCompletedEventHandler.cs,
+	System/Net/UploadProgressChangedEventArgs.cs,
+	System/Net/UploadProgressChangedEventHandler.cs,
+	System/Net/UploadStringCompletedEventArgs.cs,
+	System/Net/UploadStringCompletedEventHandler.cs,
+	System/Net/UploadValuesCompletedEventArgs.cs,
+	System/Net/UploadValuesCompletedEventHandler.cs: Add .NET 2.0 enums and
+	delegates in the System.Net namespace.
+
 2007-01-16  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/IO/FileStream.cs: Writing in a read/write filestream after

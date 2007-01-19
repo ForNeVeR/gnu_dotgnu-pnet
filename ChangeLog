@@ -1,3 +1,15 @@
+2007-01-19  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvmc_call.c: Check for running a cctor too if a function pointer
+	is pushed on the stack.
+
+	* engine/jitc_call.c: Check for running a cctor too if a function pointer
+	is pushed on the stack.
+
+	* engine/ilrun.c: Use the coder's cctor running function for running the
+	cctor of the class containing the main function. This prevents this cctor
+	being executed twice.
+
 2007-01-16  Radek Polak  <psonek2@seznam.cz>
 
 	* libgc/include/gc.h: Patch for compiling with uclibc which does not

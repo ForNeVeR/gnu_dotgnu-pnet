@@ -501,6 +501,8 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 
 static void CVMCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 {
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnCallMethod(&(((ILCVMCoder *)coder)->cctorMgr), methodInfo);
 	CVMP_OUT_PTR(COP_PREFIX_LDFTN, methodInfo);
 	CVM_ADJUST(1);
 }

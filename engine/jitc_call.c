@@ -1792,6 +1792,13 @@ static void JITCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 		}
 		jitFunction = ILJitFunctionFromILMethod(methodInfo);
 	}
+#ifdef IL_JIT_ENABLE_CCTORMGR
+	/* Queue the cctor to run. */
+	ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
+#else	/* !IL_JIT_ENABLE_CCTORMGR */
+	/* Output a call to the static constructor */
+	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 #ifndef IL_JIT_FNPTR_ILMETHOD
 	/* Get the vtable pointer for the function. */
 	function = jit_function_to_vtable_pointer(jitFunction);

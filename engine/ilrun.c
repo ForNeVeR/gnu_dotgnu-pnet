@@ -158,19 +158,11 @@ static void version(void);
 static int CallStaticConstructor(ILExecThread *thread, ILMethod * method)
 {
 	ILClass *classInfo=ILMethod_Owner(method);
-	ILMethod *cctor = 0;
-	while((cctor = (ILMethod *)ILClassNextMemberByKind
-					(classInfo, (ILMember *)cctor,
-					 IL_META_MEMBERKIND_METHOD)) != 0)
+	ILCoder *coder = _ILExecThreadProcess(thread)->coder;
+
+	if(!ILCoderRunCCtor(coder, classInfo))
 	{
-		if(ILMethod_IsStaticConstructor(cctor))
-		{
-			if(ILExecThreadCall(thread, cctor, NULL))
-			{
-				/* An exception was thrown while executing the program */
-				return 1;
-			}
-		}
+		return 1;
 	}
 	return 0;
 }

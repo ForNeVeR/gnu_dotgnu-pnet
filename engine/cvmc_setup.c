@@ -1278,6 +1278,9 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 	coder->markBreakpoints = (debugger && ILDebuggerIsAssemblyWatched(debugger, method));
 #endif
 
+	/* Set the current method in the coder and queue a cctor if needed. */
+	ILCCtorMgr_SetCurrentMethod(&(coder->cctorMgr), method);
+
 	/* Generate the entry point code */
 	return CVMEntryGen(&ctx, coder, method, signature,
 					   ILMethod_IsConstructor(method), 1, start, 1);
@@ -1367,6 +1370,9 @@ static int CVMCoder_SetupExtern(ILCoder *_coder, unsigned char **start,
 	{
 		return 0;
 	}
+
+	/* Set the current method in the coder and queue a cctor if needed. */
+	ILCCtorMgr_SetCurrentMethod(&(coder->cctorMgr), method);
 
 	/* Output the body of the method */
 	CVMEntryPushLeadIn(&ctx, coder, signature, useRawCalls, isInternal, 0);

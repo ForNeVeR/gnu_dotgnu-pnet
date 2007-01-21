@@ -49,7 +49,9 @@ struct _tagILCCtorMgr
 	/* The currently compiled method. */
 	ILMethod	   *currentMethod;
 	/* Flag if the current method is a cctor. */
-	ILInt32			isStaticConstructor;
+	int				isStaticConstructor : 1;
+	/* Flag if the current method is a ctor. */
+	int				isConstructor : 1;
 
 	/* Pool for the class entries. */
 	ILMemPool		classPool;
@@ -62,6 +64,31 @@ int ILCCtorMgr_Init(ILCCtorMgr *cctorMgr,
 						   ILInt32 numCCtorEntries);
 
 void ILCCtorMgr_Destroy(ILCCtorMgr *cctorMgr);
+
+/*
+ * Set the current method to be compiled.
+ * This checks if the class initializer of the class owning the method has
+ * to be executed prior to executing the method.
+ */
+void ILCCtorMgr_SetCurrentMethod(ILCCtorMgr *cctorMgr,
+								 ILMethod *method);
+
+/*
+ * Get the current method to be compiled.
+ */
+#define ILCCtorMgr_GetCurrentMethod(cctorMgr) (cctorMgr)->currentMethod
+
+/*
+ * Check if the current method is a static constructor.
+ */
+#define ILCCtorMgr_CurrentMethodIsStaticConstructor(cctorMgr) \
+	((cctorMgr)->isStaticConstructor != 0)
+
+/*
+ * Check if the current method is a constructor.
+ */
+#define ILCCtorMgr_CurrentMethodIsConstructor(cctorMgr) \
+	((cctorMgr)->isConstructor != 0)
 
 /*
  * Call this method before any non virtual method call is done.

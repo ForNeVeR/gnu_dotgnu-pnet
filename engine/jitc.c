@@ -79,13 +79,18 @@ extern	"C" {
 #define IL_JIT_ENABLE_CCTORMGR
 
 /*
- * Reenable finalizers, unlock the metadata lock and run finalizers.
+ * Acquire and release the metadata lock, while suppressing finalizers
  * Must be kept in sync with convert.c
  */
-#define	METADATA_UNLOCK(thread)	\
+#define	METADATA_WRLOCK(process)	\
+			do { \
+				IL_METADATA_WRLOCK(process); \
+				ILGCDisableFinalizers(0); \
+			} while (0)
+#define	METADATA_UNLOCK(process)	\
 			do { \
 				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
+				IL_METADATA_UNLOCK(process); \
 				ILGCInvokeFinalizers(0); \
 			} while (0)
 
@@ -410,7 +415,9 @@ struct _tagILJITCoder
 	ILExecProcess  *process;
 	jit_context_t   context;
 
+#ifndef IL_JIT_ENABLE_CCTORMGR
 	ILMethod	   *currentMethod;
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 	int				debugEnabled;
 	int				flags;
 
@@ -2737,7 +2744,11 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 	{
 		/* Mark breakpoint that reports current ILMethod and IL offset */
 		jit_insn_mark_breakpoint(jitCoder->jitFunction,
+	#ifdef IL_JIT_ENABLE_CCTORMGR
+								 (jit_nint) ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)),
+	#else	/* !IL_JIT_ENABLE_CCTORMGR */
 								 (jit_nint) jitCoder->currentMethod,
+	#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 								 (jit_nint) offset);
 	}
 #endif
@@ -2755,7 +2766,7 @@ static ILInt32 JITCoder_RunCCtors(ILCoder *coder)
 #else	/* !IL_JIT_ENABLE_CCTORMGR */
 	ILExecThread *thread = ILExecThreadCurrent();
 
-	METADATA_UNLOCK(thread);
+	METADATA_UNLOCK(_ILExecThreadProcess(thread));
 	return 1;
 #endif	/* !IL_JIT_ENABLE_CCTORMGR */
 }
@@ -3073,11 +3084,11 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
  */
 static int _ILJitCompileInternal(ILJitFunction func)
 {
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	ILExecThread *_thread = ILExecThreadCurrent();
-	ILJITCoder *jitCoder = (ILJITCoder *)(_ILExecThreadProcess(_thread)->coder);
-#endif
 	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
+#if (!defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)) || defined(IL_JIT_ENABLE_CCTORMGR)
+	ILClassPrivate *classPrivate = (ILClassPrivate *)(ILMethod_Owner(method)->userData);
+	ILJITCoder *jitCoder = (ILJITCoder *)(classPrivate->process->coder);
+#endif
 	ILJitMethodInfo *jitMethodInfo = (ILJitMethodInfo *)(method->userData);
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
@@ -3101,6 +3112,12 @@ static int _ILJitCompileInternal(ILJitFunction func)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
+#ifdef IL_JIT_ENABLE_CCTORMGR
+	METADATA_WRLOCK(jitCoder->process);
+	jitCoder->jitFunction = func;
+	ILCCtorMgr_SetCurrentMethod(&(jitCoder->cctorMgr), method);
+#endif /* IL_JIT_ENABLE_CCTORMGR */
 
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	for(current = 1; current < numParams; ++current)

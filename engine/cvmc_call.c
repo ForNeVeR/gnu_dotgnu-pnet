@@ -97,8 +97,6 @@ static void CVMCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 								ILEngineStackItem *returnItem,
 								ILMethod *methodInfo)
 {
-	/* Queue the cctor to run. */
-	ILCCtorMgr_OnCallMethod(&(((ILCVMCoder *)coder)->cctorMgr), methodInfo);
 	if(info->tailCall)
 	{
 		CVMP_OUT_PTR(COP_PREFIX_TAIL_CALL, methodInfo);
@@ -128,8 +126,6 @@ static void CVMCoder_CallIndirect(ILCoder *coder, ILCoderMethodInfo *info,
 static void CVMCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 					   		  ILMethod *methodInfo)
 {
-	/* Queue the cctor to run. */
-	ILCCtorMgr_OnCallMethod(&(((ILCVMCoder *)coder)->cctorMgr), methodInfo);
 	CVM_OUT_PTR(COP_CALL_CTOR, methodInfo);
 	AdjustForCall(coder, info, 0);
 	CVM_ADJUST(1);
@@ -502,6 +498,9 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 static void CVMCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 	/* Queue the cctor to run. */
+	/* TODO: leave this one because the methodpointer might be used to start */
+	/* a new thread. This makes sure that the class of the thread start */
+	/* function is initialized. */
 	ILCCtorMgr_OnCallMethod(&(((ILCVMCoder *)coder)->cctorMgr), methodInfo);
 	CVMP_OUT_PTR(COP_PREFIX_LDFTN, methodInfo);
 	CVM_ADJUST(1);

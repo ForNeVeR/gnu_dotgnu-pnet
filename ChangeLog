@@ -1,5 +1,13 @@
 2007-01-21  Klaus Treichel  <ktreichel@web.de>
 
+	* engine/cctormgr.c, engine/cctormgr.h: Add the SetCurrentMethod function.
+	Use this information to optimize the queuing of classes to be initialized.
+
+	* engine/cvmc.c, engine/cvmc_call.c, engine/cvmc_setup.c, engine/jitc.c,
+	engine/jitc_call.c, engine/jitc_except.c, engine/jitc_setup.c: Set the
+	current method in the cctormanager. Move the cctor invokation from the
+	call of the method to the invokation of the method.
+
 	* engine/jitc_array.c: Fix a deadlock if the object array for varargs or
 	async delegate invokation is created and the class for the object array
 	doesn't exist yet.

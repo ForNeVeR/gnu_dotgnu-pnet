@@ -45,7 +45,11 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	/* Record the current jitted function. */
 	coder->jitFunction = ILJitFunctionFromILMethod(method);
 	/* Record the current method. */
+#ifdef IL_JIT_ENABLE_CCTORMGR
+	ILCCtorMgr_SetCurrentMethod(&(coder->cctorMgr), method);
+#else	/* !IL_JIT_ENABLE_CCTORMGR */
 	coder->currentMethod = method;
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (coder->flags & IL_CODER_FLAG_STATS)

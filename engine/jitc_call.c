@@ -480,10 +480,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-#ifdef IL_JIT_ENABLE_CCTORMGR
-	/* Queue the cctor to run. */
-	ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
+#ifndef IL_JIT_ENABLE_CCTORMGR
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 0);
 #endif	/* !IL_JIT_ENABLE_CCTORMGR */
@@ -827,10 +824,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	type = ILType_FromClass(classInfo);
 	synType = ILClassGetSynType(classInfo);
 
-#ifdef IL_JIT_ENABLE_CCTORMGR
-	/* Queue the cctor to run. */
-	ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
+#ifndef IL_JIT_ENABLE_CCTORMGR
 	/* Output a call to the static constructor */
 	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
 #endif	/* !IL_JIT_ENABLE_CCTORMGR */

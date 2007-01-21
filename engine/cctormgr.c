@@ -84,6 +84,7 @@ static int _ILCCtorMgr_RunCCtor(ILCCtorMgr *cctorMgr,
 			classInfo->attributes |= IL_META_TYPEDEF_CCTOR_RUNNING;
 			if(ILExecThreadCall(thread, cctor, 0))
 			{
+				classInfo->attributes &= ~IL_META_TYPEDEF_CCTOR_RUNNING;
 				return 0;
 			}
 		}
@@ -245,6 +246,7 @@ int ILCCtorMgr_Init(ILCCtorMgr *cctorMgr,
 		cctorMgr->thread = (ILThread *)0;;
 		cctorMgr->currentMethod = (ILMethod *)0;
 		cctorMgr->isStaticConstructor = 0;
+		cctorMgr->isConstructor = 0;
 
 		cctorMgr->lastClass = (ILClassEntry *)0;
 
@@ -276,6 +278,76 @@ void ILCCtorMgr_Destroy(ILCCtorMgr *cctorMgr)
 }
 
 /*
+ * Set the current method to be compiled.
+ * This checks if the class initializer of the class owning the method has
+ * to be executed prior to executing the method.
+ */
+void ILCCtorMgr_SetCurrentMethod(ILCCtorMgr *cctorMgr,
+								 ILMethod *method)
+{
+	if(cctorMgr)
+	{
+		if(method)
+		{
+			ILClass *methodOwner = ILMethod_Owner(method);
+
+			/* Setup the information for the current method. */
+			cctorMgr->currentMethod = method;
+			if(ILMethod_IsConstructor(method))
+			{
+				cctorMgr->isConstructor = 1;
+				cctorMgr->isStaticConstructor = 0;
+			}
+			else
+			{
+				cctorMgr->isConstructor = 0;
+				if(ILMethod_IsStaticConstructor(method))
+				{
+					cctorMgr->isStaticConstructor = 1;
+				}
+				else
+				{
+					cctorMgr->isStaticConstructor = 0;
+				}
+			}
+
+			if((methodOwner->attributes & IL_META_TYPEDEF_CCTOR_ONCE) != 0)
+			{
+				/* We already know that the static constructor has been called, */
+				return;
+			}
+
+			/* Now check if the class initializer of the method's owner */
+			/* needs to be executed first and queue the class */
+			/* if neccessairy. */
+			if((methodOwner->attributes & IL_META_TYPEDEF_BEFORE_FIELD_INIT) == 0)
+			{
+				if(ILMethod_IsStatic(method))
+				{
+					/* We have to call the cctor before calling any static method */
+					/* of this type */
+					_ILCCtorMgr_QueueClass(cctorMgr, methodOwner);
+					return;
+				}
+				if(cctorMgr->isConstructor)
+				{
+					/* We have to call the cctor before calling a */
+					/* constructor of this type. */
+					_ILCCtorMgr_QueueClass(cctorMgr, methodOwner);
+					return;
+				}
+			}
+		}
+		else
+		{
+			cctorMgr->currentMethod = (ILMethod *)0;
+			cctorMgr->isStaticConstructor = 0;
+			cctorMgr->isConstructor = 0;
+		}
+	}
+}
+
+/*
  * Call this method before any non virtual method call is done.
  * It checks if the static constructor for the method owner has to be invoked
  * before the call is done.
@@ -293,17 +365,21 @@ int ILCCtorMgr_OnCallMethod(ILCCtorMgr *cctorMgr,
 
 	if((methodOwner->attributes & IL_META_TYPEDEF_BEFORE_FIELD_INIT) == 0)
 	{
-		if(ILMethod_IsStatic(method))
+		/* We have to call the cctor before calling any static method */
+		/* or constructor of this type. */
+		if(ILMethod_IsStatic(method) || ILMethod_IsConstructor(method))
 		{
-			/* We have to call the cctor before calling any static method */
-			/* of this type */
-			return _ILCCtorMgr_QueueClass(cctorMgr, methodOwner);
+			if(cctorMgr->isStaticConstructor)
+			{
+				ILClass *cctorOwner = ILMethod_Owner(cctorMgr->currentMethod);
 
-		}
-		if(ILMethod_IsConstructor(method))
-		{
-			/* We have to call the cctor before calling a constructor of */
-			/* this type. */
+				if(cctorOwner == methodOwner)
+				{
+					/* We are in the static constructor of the class owning */
+					/* the method. So we don't need to call the cctor again. */
+					return 1;
+				}
+			}
 			return _ILCCtorMgr_QueueClass(cctorMgr, methodOwner);
 		}
 	}
@@ -330,6 +406,17 @@ int ILCCtorMgr_OnStaticFieldAccess(ILCCtorMgr *cctorMgr,
 	{
 		/* We have to call the cctor before accessing any static field */
 		/* of this type */
+		if(cctorMgr->isStaticConstructor)
+		{
+			ILClass *methodOwner = ILMethod_Owner(cctorMgr->currentMethod);
+
+			if(methodOwner == fieldOwner)
+			{
+				/* We are in the static constructor of the class owning */
+				/* the field. So we don't need to call the cctor again. */
+				return 1;
+			}
+		}
 		return _ILCCtorMgr_QueueClass(cctorMgr, fieldOwner);
 	}
 	return 1;

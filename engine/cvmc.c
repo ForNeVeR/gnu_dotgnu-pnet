@@ -82,7 +82,6 @@ struct _tagILCVMCoder
 	ILCVMLabel     *labelList;
 	int				labelOutOfMemory;
 	unsigned char  *switchStart;
-	ILMethod	   *currentMethod;
 	int				debugEnabled;
 #ifdef IL_DEBUGGER
 	/* Flag if current method can be debugged */
@@ -185,7 +184,6 @@ static ILCoder *CVMCoder_Create(ILExecProcess *process, ILUInt32 size,
 	coder->labelList = 0;
 	coder->labelOutOfMemory = 0;
 	coder->switchStart = 0;
-	coder->currentMethod = 0;
 	coder->debugEnabled = 0;
 	coder->flags = 0;
 	coder->nativeArgPosn = 0;

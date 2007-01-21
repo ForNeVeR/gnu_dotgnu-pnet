@@ -301,7 +301,11 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 	{
 		args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
 												 _IL_JIT_TYPE_VPTR,
+#ifdef IL_JIT_ENABLE_CCTORMGR
+												 (jit_nint)ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)));
+#else	/* !IL_JIT_ENABLE_CCTORMGR */
 												 (jit_nint)jitCoder->currentMethod);
+#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 		args[1] = _ILJitStackItemValue(object);
 		args[2] = classTo;
 		returnValue = jit_insn_call_native(jitCoder->jitFunction,

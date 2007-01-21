@@ -4,9 +4,10 @@
 	Use this information to optimize the queuing of classes to be initialized.
 
 	* engine/cvmc.c, engine/cvmc_call.c, engine/cvmc_setup.c, engine/jitc.c,
-	engine/jitc_call.c, engine/jitc_except.c, engine/jitc_setup.c: Set the
+	engine/jitc_call.c, engine/jitc_inline.c, engine/jitc_except.c,
 	current method in the cctormanager. Move the cctor invokation from the
-	call of the method to the invokation of the method.
+	engine/jitc_setup.c: Set the call of the method to the invokation of the
+	method.
 
 	* engine/jitc_array.c: Fix a deadlock if the object array for varargs or
 	async delegate invokation is created and the class for the object array

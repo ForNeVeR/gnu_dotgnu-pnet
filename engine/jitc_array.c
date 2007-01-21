@@ -426,19 +426,33 @@ static ILJitValue _ILJitSObjectArrayCreate(ILJitFunction jitFunction,
 										   ILJitValue thread,
 										   ILUInt32 numElements)
 {
-	ILMethod *ctor;
+	ILClass *objectClass = _ILExecThreadProcess(_thread)->objectClass;
+	ILType *objectType = ILType_FromClass(objectClass);
+	ILType *arrayType = ILTypeFindOrCreateArray(_ILExecThreadProcess(_thread)->context,
+												1, objectType);
+	ILClass *arrayClass;
 
-	/* Find the constructor for the array. */
-	ctor = ILExecThreadLookupMethod(_thread, "[oSystem.Object;", ".ctor",
-									"(Ti)V");
-	if(!ctor)
+	/* Find the object array class. */
+	if(!arrayType)
+	{
+		return 0;
+	}
+	arrayClass = ILClassFromType(ILContextNextImage(_ILExecThreadProcess(_thread)->context, 0),
+								 0, arrayType, 0);
+	if(!arrayClass)
+	{
+		return 0;
+	}
+
+	arrayClass = ILClassResolve(arrayClass);
+	if(!arrayClass)
 	{
 		return 0;
 	}
 
 	return _ILJitSArrayNewWithConstantSize(jitFunction,
 										   _thread,
-										   ILMethod_Owner(ctor),
+										   arrayClass,
 										   numElements);
 }
 

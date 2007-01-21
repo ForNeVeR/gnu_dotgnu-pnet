@@ -1,3 +1,9 @@
+2007-01-21  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_array.c: Fix a deadlock if the object array for varargs or
+	async delegate invokation is created and the class for the object array
+	doesn't exist yet.
+
 2007-01-19  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvmc_call.c: Check for running a cctor too if a function pointer

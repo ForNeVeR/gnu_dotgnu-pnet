@@ -21,7 +21,7 @@
 #ifndef	_IL_DEBUGGER_H
 #define	_IL_DEBUGGER_H
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 
 #include "il_sysio.h"
 #include "il_engine.h"
@@ -138,6 +138,6 @@ void ILDebuggerDestroy(ILDebugger *debugger);
 };
 #endif
 
-#endif	/* IL_DEBUGGER */
+#endif	/* IL_CONFIG_DEBUGGER */
 
 #endif	/* _IL_DEBUGGER_H */

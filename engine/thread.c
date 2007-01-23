@@ -661,7 +661,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	thread->threadAbortException = 0;
 	thread->abortHandlerFrame = 0;
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	thread->numWatches = 0;
 	thread->maxWatches = 0;
 #endif
@@ -724,7 +724,7 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	/* Destroy the call frame stack */
 	ILGCFreePersistent(thread->frameStack);
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	/* Destroy the watch stack */
 	if(thread->watchStack)
 	{
@@ -782,7 +782,7 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
 	}
 }
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 
 ILWatch *_ILAllocWatch(ILExecThread *thread)
 {
@@ -823,7 +823,7 @@ ILWatch *_ILAllocWatch(ILExecThread *thread)
 	return &(thread->watchStack[(thread->numWatches)]);
 }
 
-#endif	// IL_DEBUGGER
+#endif	// IL_CONFIG_DEBUGGER
 
 ILMethod *ILExecThreadStackMethod(ILExecThread *thread, unsigned long num)
 {

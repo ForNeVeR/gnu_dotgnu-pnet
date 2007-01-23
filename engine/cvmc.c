@@ -22,7 +22,7 @@
 #include "il_coder.h"
 #include "il_opcodes.h"
 #include "il_utils.h"
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 #include "debugger.h"
 #endif
 #ifndef IL_WITHOUT_TOOLS
@@ -83,7 +83,7 @@ struct _tagILCVMCoder
 	int				labelOutOfMemory;
 	unsigned char  *switchStart;
 	int				debugEnabled;
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	/* Flag if current method can be debugged */
 	int markBreakpoints;
 #endif
@@ -276,7 +276,7 @@ static ILUInt32 CVMCoder_GetNativeOffset(ILCoder *_coder, void *start,
 static void CVMCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 {
 	ILCacheMarkBytecode(&(((ILCVMCoder *)coder)->codePosn), offset);
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	/* Insert potential breakpoint */
 	if(((ILCVMCoder *)coder)->markBreakpoints)
 	{

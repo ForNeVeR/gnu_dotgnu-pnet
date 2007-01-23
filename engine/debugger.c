@@ -37,7 +37,7 @@
 #include "jitc.h"
 #endif
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 
 /*
  * Lock the debugger object.
@@ -74,13 +74,7 @@ static void ILDbOutOfMemory()
  */
 static FILE *OpenStream()
 {
-#ifdef HAVE_OPEN_MEMSTREAM
-	char *text;
-	size_t size;
-	return open_memstream(&text, &size);
-#else
 	return tmpfile();
-#endif
 }
 
 /*
@@ -157,7 +151,7 @@ static int SocketIO_Open(ILDebuggerIO *io, const char *connectionString)
 		return 0;
 	}
 	io->output = OpenStream();
-	if(io->input == 0)
+	if(io->output == 0)
 	{
 		perror("il_debugger: failed to open output stream");
 		return 0;
@@ -2495,4 +2489,4 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	return debugger;
 }
 
-#endif	/* IL_DEBUGGER */
+#endif	/* IL_CONFIG_DEBUGGER */

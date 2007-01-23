@@ -111,7 +111,7 @@ static ILCmdLineOption const options[] = {
 		"--enable-profile        or -E",
 		"Enable simple method profiling at program start."},
 #endif
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	{"-g", 'g', 0, 0, 0},
 	{"--debug",	  'g', 0,
 		"--debug                 or -g",
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
 #ifdef ENHANCED_PROFILER
 	int profilingEnabled = 0;
 #endif
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	char *debuggerConnectionString = 0;
 	ILDebugger *debugger;
 #endif
@@ -331,7 +331,7 @@ int main(int argc, char *argv[])
 			break;
 		#endif
 
-		#ifdef IL_DEBUGGER
+		#ifdef IL_CONFIG_DEBUGGER
 			case 'g':
 			{
 				if(debuggerConnectionString == 0)
@@ -425,7 +425,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	/* Extract debugger connection string from environment
 	 * if not specified on command line */
 	if(debuggerConnectionString == 0)

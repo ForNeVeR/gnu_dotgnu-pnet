@@ -1253,7 +1253,7 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 	ILCVMCoder *coder = ((ILCVMCoder *)_coder);
 	ILType *signature = ILMethod_Signature(method);
 	CVMEntryContext ctx;
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	ILDebugger *debugger;
 #endif
 
@@ -1272,7 +1272,7 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 		return 0;
 	}
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	/* Check if this method can be debugged */
 	debugger = ILDebuggerFromProcess(coder->process);
 	coder->markBreakpoints = (debugger && ILDebuggerIsAssemblyWatched(debugger, method));

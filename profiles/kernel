@@ -94,6 +94,9 @@ IL_CONFIG_FILTERED_EXCEPTIONS=n
 # Use debug line information (y/n).
 IL_CONFIG_DEBUG_LINES=n
 
+# Compile with debugger support
+IL_CONFIG_DEBUGGER=n
+
 # Use file and directory internalcalls (y/n).
 IL_CONFIG_FILESYSTEM=y
 

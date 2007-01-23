@@ -1,3 +1,18 @@
+2007-01-23  Radek Polak  <psonek2@seznam.cz>
+
+	* configure.in: Remove --with-debugger configure option.
+	
+	* profiles/compact, profiles/compact-fp, profiles/full,
+	profiles/full-tl, profiles/kernel, profiles/kernel-fp, profiles/tiny:
+	Define IL_CONFIG_DEBUGGER in profiles, where it can be useful.
+
+	* engine/cvmc.c, engine/cvmc_setup.c, engine/debugger.c,
+	engine/debugger.h, engine/dumpconfig.c, engine/engine.h,
+	engine/ilrun.c, engine/jitc.c, engine/jitc_call.c,
+	engine/jitc_locals.c, engine/jitc_setup.c, engine/thread.c,
+	include/il_debugger.h: Rename IL_DEBUGGER conditional symbol to
+	IL_CONFIG_DEBUGGER.
+
 2007-01-21  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cctormgr.c, engine/cctormgr.h: Add the SetCurrentMethod function.

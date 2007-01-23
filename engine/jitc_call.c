@@ -1698,13 +1698,17 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	}
 #endif
 
-#ifdef IL_DEBUGGER
+#ifdef IL_CONFIG_DEBUGGER
 	/* Insert potential breakpoint with method in data2 */
 	if(jitCoder->markBreakpoints)
 	{
 		jit_insn_mark_breakpoint(jitCoder->jitFunction,
 								 JIT_DEBUGGER_DATA1_METHOD_LEAVE,
+	#ifdef IL_JIT_ENABLE_CCTORMGR
+								 (jit_nint) ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)));
+	#else	/* !IL_JIT_ENABLE_CCTORMGR */
 								 (jit_nint) jitCoder->currentMethod);
+	#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 	}
 #endif
 

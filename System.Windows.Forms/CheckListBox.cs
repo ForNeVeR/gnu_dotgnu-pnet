@@ -178,11 +178,12 @@ using System.Drawing.Design;
 		{
 			get
 			{
-				return 0;
+				return base.ItemHeight;
 			}
 
 			set
 			{
+				base.ItemHeight = value;
 			}
 		}
 

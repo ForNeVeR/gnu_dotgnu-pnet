@@ -1,3 +1,8 @@
+2007-01-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	*System.Windows.Forms/CheckListBox.cs: set ItemHeight enabled.
+	*System.Windows.Forms/ListBox.cs: fixed some div by zero exceptions.
+
 2007-01-17  Klaus Treichel  <ktreichel@web.de>
 
 	* System/Net/AuthenticationSchemeSelector.cs,

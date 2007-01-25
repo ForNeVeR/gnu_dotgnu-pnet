@@ -802,8 +802,12 @@ public class ListBox : ListControl
 	[TODO]
 	public virtual int ItemHeight
 	{
-		get { return itemHeight; }
-		set { itemHeight = value; }
+		get {
+			return itemHeight; 
+		}
+		set { 
+			itemHeight = value; 
+		}
 	}
 
 	public ListBox.ObjectCollection Items
@@ -1055,7 +1059,7 @@ public class ListBox : ListControl
 	[TODO]
 	public int GetItemHeight()
 	{
-		return 0;
+		return this.ItemHeight;
 	}
 
 	public Rectangle GetItemRectangle(int index)
@@ -1321,6 +1325,8 @@ public class ListBox : ListControl
 	{
 		get
 		{
+			if( this.NumItemsPerColumn <= 0 ) return 0; // avoid div by zero
+			
 			IList data = (IList) base.dataSource;
 			double dColumnsNeeded = (double) data.Count / this.NumItemsPerColumn;
 
@@ -1555,6 +1561,8 @@ public class ListBox : ListControl
 	{
 		get
 		{
+			if( this.columnWidth <= 0 ) return 0; // avoid div by zero
+			
 			int vscrollWidth = 0;
 			if(this.vertScrollbar.Visible)
 				vscrollWidth = this.vertScrollbar.Width;
@@ -1602,7 +1610,12 @@ public class ListBox : ListControl
 	{
 		get
 		{
-			return (this.Height) / this.ItemHeight;
+			if( this.ItemHeight > 0 ) { // avoid div by zero
+				return (this.Height) / this.ItemHeight;
+			}
+			else {
+				return (this.Height) / DefaultItemHeight;
+			}
 		}
 	}
 	
@@ -1615,6 +1628,7 @@ public class ListBox : ListControl
 		
 			if(this.multiColumn)
 			{
+				if( this.NumItemsPerColumn <= 0 ) return new Rectangle(-1, -1, -1, -1); // avoid div by zero
 				int col = screenIndex / this.NumItemsPerColumn;
 				int row = screenIndex - this.NumItemsPerColumn * col;
 				
@@ -2076,6 +2090,7 @@ public class ListBox : ListControl
 			// In a multi-column listbox, only scroll by entire columns.
 			if(this.multiColumn)
 			{
+				if( this.NumItemsPerColumn <= 0 ) return; // avoid div by zero
 				col = this.FocusedItem / this.NumItemsPerColumn;
 			
 				if(this.FocusedItem >= this.topIndex + this.NumItemsVisible)
@@ -2117,11 +2132,13 @@ public class ListBox : ListControl
 			case Keys.Left:
 				if(this.multiColumn && e.KeyCode == Keys.Left)
 				{
-					int col = this.FocusedItem / this.NumItemsPerColumn;
-					int row = this.FocusedItem - this.NumItemsPerColumn * col;
-					col--;
-					this.FocusedItem = Math_Max(row,
-						row + col * this.NumItemsPerColumn);
+					if( this.NumItemsPerColumn > 0 ) { // avoid div by zero
+						int col = this.FocusedItem / this.NumItemsPerColumn;
+						int row = this.FocusedItem - this.NumItemsPerColumn * col;
+						col--;
+						this.FocusedItem = Math_Max(row,
+							row + col * this.NumItemsPerColumn);
+					}
 				}
 				else if(this.FocusedItem > 0)
 					this.FocusedItem--;
@@ -2136,13 +2153,15 @@ public class ListBox : ListControl
 			case Keys.Right:
 				if(this.multiColumn && e.KeyCode == Keys.Right)
 				{
-					int col = this.FocusedItem / this.NumItemsPerColumn;
-					int row = this.FocusedItem - this.NumItemsPerColumn * col;
-					col++;
-					if(col < this.NumDataColumns)
-					{
-						this.FocusedItem = Math_Min(maxInd,
-							row + col * this.NumItemsPerColumn);
+					if( this.NumItemsPerColumn > 0 ) { // avoid div by zero
+						int col = this.FocusedItem / this.NumItemsPerColumn;
+						int row = this.FocusedItem - this.NumItemsPerColumn * col;
+						col++;
+						if(col < this.NumDataColumns)
+						{
+							this.FocusedItem = Math_Min(maxInd,
+								row + col * this.NumItemsPerColumn);
+						}
 					}
 				}
 				else if(this.FocusedItem < maxInd)
@@ -2238,6 +2257,8 @@ public class ListBox : ListControl
 	
 		if(listArea.Contains(x, y))
 		{
+			if( this.ItemHeight <= 0 ) return -1; // avoid div by zero
+
 			y -= listArea.Top;
 			int row = y / this.ItemHeight;
 			if(this.multiColumn)
@@ -2246,6 +2267,7 @@ public class ListBox : ListControl
 					return -1;
 					
 				x -= listArea.Left;
+				if( this.columnWidth <= 0 ) return -1; // avoid div by zero
 				int col = x / this.columnWidth;
 				int ind = row + col * this.NumItemsPerColumn;
 				return ind;

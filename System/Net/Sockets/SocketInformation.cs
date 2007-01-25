@@ -1,6 +1,6 @@
 /*
- * SocketFlags.cs - Implementation of the
- *			"System.Net.Sockets.SocketFlags" class.
+ * SocketInformation.cs - Implementation of the
+ *			"System.Net.Sockets.SocketInformation" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,22 +22,40 @@
 namespace System.Net.Sockets
 {
 
-[Flags]
-public enum SocketFlags
-{
-	None				= 0x0000,
-	OutOfBand			= 0x0001,
-	Peek				= 0x0002,
-	DontRoute			= 0x0004,
-	MaxIOVectorLength	= 0x0010,
 #if CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-	Truncated			= 0x0100,
-	ControlDataTruncated= 0x0200,
-	Broadcast			= 0x0400,
-	Multicast			= 0x0800,
-#endif // CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-	Partial				= 0x8000
 
-}; // enum SocketFlags
+[Serializable]
+public struct SocketInformation
+{
+	SocketInformationOptions options;
+	byte[] protocolInformation;
+
+	public SocketInformationOptions Options
+	{
+		get
+		{
+			return options;
+		}
+		set
+		{
+			options = value;
+		}
+	}
+
+	public byte[] ProtocolInformation
+	{
+		get
+		{
+			return protocolInformation;
+		}
+		set
+		{
+			protocolInformation = value;
+		}
+	}
+	
+}; // struct SocketInformation
+
+#endif // CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Net.Sockets

@@ -36,9 +36,8 @@ public class DownloadProgressChangedEventArgs : ProgressChangedEventArgs
 	internal DownloadProgressChangedEventArgs(long bytesReceived,
 											  long totalBytesToReceive,
 											  Object userState)
-		: base((int)(bytesReceived == 0 ? 0
-			: (int)(totalBytesToReceive / bytesReceived) * 100), userState)
-				
+		: base((int)(totalBytesToReceive == 0 ? 100
+			: (int)((bytesReceived * 100) / totalBytesToReceive)), userState)
 	{
 		this.bytesReceived = bytesReceived;
 		this.totalBytesToReceive = totalBytesToReceive;

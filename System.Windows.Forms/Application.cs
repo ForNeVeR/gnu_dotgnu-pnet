@@ -28,6 +28,9 @@ using System.Threading;
 using System.Reflection;
 using System.IO;
 using System.Drawing.Toolkit;
+#if CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FORMS
+using System.Windows.Forms.VisualStyles;
+#endif // CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FORMS
 
 public sealed class Application
 {
@@ -43,6 +46,22 @@ public sealed class Application
 	// Internal state.
 	[ThreadStatic] private static InputLanguage inputLanguage;
 	private static String safeTopLevelCaptionFormat = "{0}";
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// The application wide default for the UseCompatibleTextRendering.
+	internal static bool useCompatibleTextRendering = true;
+
+	// The last value to which the UseWaitCursor of this application was set.
+	private static bool useWaitCursor = false;
+
+	// The application wide unhandled exception mode.
+	internal static UnhandledExceptionMode unhandledExceptionMode = UnhandledExceptionMode.Automatic;
+
+	// The application wide visual style state.
+	internal static VisualStyleState visualStyleState = VisualStyleState.ClientAndNonClientAreasEnabled;
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Determine if it is possible to quit this application.
 	public static bool AllowQuit
@@ -301,6 +320,145 @@ public sealed class Application
 			{
 				// We don't use message filters in this implementation.
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Run any filters for the message.
+	// Returns true if filters processed the message and false otherwise
+	[TODO]
+	public static bool FilterMessage(Message message)
+			{
+				return false;
+			}
+
+	// Get a read only collection of all currently open forms in this application.
+	[TODO]
+	public static FormCollection OpenForms
+			{
+				get
+				{
+					return null;
+				}
+			}
+
+	// Raise the Idle event
+	public static void RaiseIdle(EventArgs e)
+			{
+				if(Idle != null)
+				{
+					Idle(null, e);
+				}
+			}
+
+	// Register a callback to for checking if messages are still processed.
+	// The MessageLoop property will return false if SWF is not processing messages.
+	[TODO]
+	public static void RegisterMessageLoop(MessageLoopCallback callback)
+			{
+			}
+
+	public static bool RenderWithVisualStyles
+			{
+				get
+				{
+					// No visual styles are used.
+					return false;
+				}
+			}
+
+	// Shut down and restart the application.
+	// Throws a NotSupportedException if it's no SWF application.
+	[TODO]
+	public static void Restart()
+			{
+				throw new NotSupportedException();
+			}
+
+	// Suspend or hibernate the system or requests the system to do so.
+	// if force is true the system will be suspended immediately otherwise
+	// a suspend request is sent to every app.
+	// If disableWakeEvent is true the power state will not be restored on a
+	// wake event.
+	// Returns true if the system is being suspended, otherwise false.
+	[TODO]
+	public static bool SetSuspendState(PowerState state,
+									   bool force,
+									   bool disableWakeEvent)
+			{
+				return false;
+			}
+
+	// Instruct the application how to handle unhandled exceptions.
+	// This function must be called before the first window is created
+	// otherwise an InvalidOperationException will be thrown.
+	[TODO]
+	public static void SetUnhandledExceptionMode(UnhandledExceptionMode mode)
+			{
+				unhandledExceptionMode = mode;
+			}
+ 
+	// Instruct the application how to handle unhandled exceptions.
+	// This version allows the mode to be set thread specific.
+	// This function must be called before the first window is created
+	// otherwise an InvalidOperationException will be thrown.
+	[TODO]
+	public static void SetUnhandledExceptionMode(UnhandledExceptionMode mode,
+												 bool threadScope)
+			{
+				if(!threadScope)
+				{
+					unhandledExceptionMode = mode;
+				}
+			}
+
+	// Set the application wide default for the UseCompatibleTextRendering.
+	// This function must be called before the first window is created
+	// otherwise an InvalidOperationException will be thrown.
+	[TODO]
+	public static void SetCompatibleTextRenderingDefault(bool defaultValue)
+			{
+				useCompatibleTextRendering = defaultValue;
+			}
+
+	//  Set or reset the UseWaitCursor for all windows in this application.
+	[TODO]
+	public static bool UseWaitCursor
+			{
+				get
+				{
+					return useWaitCursor;
+				}
+				set
+				{
+					if(useWaitCursor != value)
+					{
+						// TODO
+						// Apply the property change to all open windows
+						useWaitCursor = value;
+					}
+				}
+			}
+
+	// Get or set the visual style state used.
+	public static VisualStyleState VisualStyleState
+			{
+				get
+				{
+					return visualStyleState;
+				}
+				set
+				{
+					visualStyleState = value;
+				}
+			}
+
+	// Event that occurs when the application is about to enter a modal state.
+	public static event EventHandler EnterThreadModal;
+
+	// Event that occurs when the application is about to leave a modal state.
+	public static event EventHandler LeaveThreadModal;
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Event that is raised when the application is about to exit.
 	public static event EventHandler ApplicationExit;

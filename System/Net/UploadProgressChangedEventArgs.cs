@@ -40,9 +40,8 @@ public class UploadProgressChangedEventArgs : ProgressChangedEventArgs
 											long bytesReceived,
 											long totalBytesToReceive,
 											Object userState)
-		: base((int)(bytesSent == 0 ? 0
-			: (int)(totalBytesToSend / bytesSent) * 100), userState)
-				
+		: base((int)(totalBytesToSend == 0 ? 100
+			: (int)((bytesSent * 100) / totalBytesToSend)), userState)
 	{
 		this.bytesReceived = bytesReceived;
 		this.bytesSent = bytesSent;

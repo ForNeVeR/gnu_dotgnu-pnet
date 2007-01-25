@@ -1,3 +1,28 @@
+2ßß7-01-25  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Threading/AbandonedMutexException.cs,
+	runtime/System/Threading/ContextCallback.cs,
+	runtime/System/Threading/EventResetMode.cs,
+	runtime/System/Threading/ParameterizedThreadStart.cs,
+	System/Net/ICredentialsByHost.cs, System/Net/IWebProxyScript.cs,
+	System/Net/Sockets/IOControlCode.cs,
+	System/Net/Sockets/IPPacketInformation.cs,
+	System/Net/Sockets/SocketError.cs,
+	System/Net/Sockets/SocketInformation.cs,
+	System/Net/Sockets/SocketInformationOptions.cs,
+	System/Net/Sockets/TransmitFileOptions.cs,
+	System.Windows.Forms/FormCollection.cs,
+	System.Windows.Forms/MessageLoopCallback.cs,
+	System.Windows.Forms/PowerState.cs,
+	System.Windows.Forms/UnhandledExceptionMode.cs: Add some .NET 2.0 stuff.
+
+	* System/Net/DownloadProgressChangedEventArgs.cs,
+	System/Net/UploadProgressChangedEventArgs.cs: Fix the percentage
+	calculation in the constructors.
+
+	* System/Net/Sockets/SocketFlags.cs, System.Windows.Forms/Application.cs:
+	Stub .NET 2.0 methods.
+
 2007-01-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	*System.Windows.Forms/CheckListBox.cs: set ItemHeight enabled.

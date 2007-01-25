@@ -1,6 +1,6 @@
 /*
- * SocketFlags.cs - Implementation of the
- *			"System.Net.Sockets.SocketFlags" class.
+ * TransmitFileOptions.cs - Implementation of the
+ *			"System.Net.Sockets.TransmitFileOptions" class.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -22,22 +22,19 @@
 namespace System.Net.Sockets
 {
 
-[Flags]
-public enum SocketFlags
-{
-	None				= 0x0000,
-	OutOfBand			= 0x0001,
-	Peek				= 0x0002,
-	DontRoute			= 0x0004,
-	MaxIOVectorLength	= 0x0010,
 #if CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-	Truncated			= 0x0100,
-	ControlDataTruncated= 0x0200,
-	Broadcast			= 0x0400,
-	Multicast			= 0x0800,
-#endif // CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-	Partial				= 0x8000
 
-}; // enum SocketFlags
+[Flags]
+public enum TransmitFileOptions
+{
+	UseDefaultWorkerThread	= 0x0000,
+	Disconnect				= 0x0001,
+	ReuseSocket				= 0x0002,
+	WriteBehind				= 0x0004,
+	UseSystemThread			= 0x0010,
+	UseKernelApc			= 0x0020
+}; // enum TransmitFileOptions
+
+#endif // CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Net.Sockets

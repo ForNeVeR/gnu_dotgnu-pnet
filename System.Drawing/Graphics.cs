@@ -3295,7 +3295,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					// calculate and return the bounds of the text
 					SizeF s = calculator.GetBounds
 						(out charactersFitted, out linesFilled);
-					s.Width += font.SizeInPoints*DpiX/184.8592;
+					s.Width += font.SizeInPoints*DpiX/184.8592F;
 					return s;
 				}
 				else

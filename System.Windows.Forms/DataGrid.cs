@@ -645,8 +645,8 @@ namespace System.Windows.Forms
 //					Console.WriteLine("asdasd");
 					break;
 			}
-			this.set_DataSource(dataSource);
-			this.set_DataMember(dataMember);
+			this.DataSource = dataSource;
+			this.DataMember = dataMember;
 
 //			Console.WriteLine(dataSource.GetType());
 //			Console.WriteLine(dataMember.ToString());

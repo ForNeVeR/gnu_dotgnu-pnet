@@ -20,7 +20,6 @@
 namespace System.Drawing
 {
 using System;
-using System.Windows.Forms.Themes;
 
 	public sealed class SystemIcons
 	{

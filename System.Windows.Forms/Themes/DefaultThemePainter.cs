@@ -24,6 +24,7 @@ namespace System.Windows.Forms.Themes
 {
 
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 using System.Drawing.Toolkit;
 using System.Windows.Forms;
@@ -1545,7 +1546,7 @@ public class DefaultThemePainter : IThemePainter
 				(Graphics graphics, Image image,
 				 int x, int y, Color background)
 			{
-				Imaging.ColorMatrix colorMatrix = new Imaging.ColorMatrix(new float[][] { new float[]{ 0.5f,0.5f,0.5f,0,0 },
+				ColorMatrix colorMatrix = new ColorMatrix(new float[][] { new float[]{ 0.5f,0.5f,0.5f,0,0 },
 											new float[]{ 0.5f,0.5f,0.5f,0,0 },
 											new float[]{ 0.5f,0.5f,0.5f,0,0 },
 											new float[]{ 0,0,0,1,0,0 },
@@ -1554,7 +1555,7 @@ public class DefaultThemePainter : IThemePainter
 											}
 									);
 
-				Imaging.ImageAttributes imageAttributes = new Imaging.ImageAttributes();
+				ImageAttributes imageAttributes = new ImageAttributes();
 				imageAttributes.SetColorMatrix(colorMatrix);
 				graphics.DrawImage(image,
 						new Rectangle(x, y, image.Width, image.Height),

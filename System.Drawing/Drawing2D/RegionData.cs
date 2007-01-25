@@ -955,7 +955,7 @@ public sealed class RegionData
 	private Region GetRegion( byte[] raw )
 	{
 		Int32 regtype = GetInt32( raw , 0 );
-		Region region ;
+		Region region = null;
 		switch (regtype) {
 			case REG_RECT:
 			{

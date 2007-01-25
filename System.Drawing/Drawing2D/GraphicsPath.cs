@@ -873,7 +873,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				
 			PointF[] poly= new PointF[size];
 			int z=0;
-			for(int i=0;i<fpoints.Length;i++) {
+			for(i=0;i<fpoints.Length;i++) {
 				if( null != fpoints[i] ) {
 					for(int j=0;j<fpoints[i].Length;j++) {
 						poly[z++]=fpoints[i][j];

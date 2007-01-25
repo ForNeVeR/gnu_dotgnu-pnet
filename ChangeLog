@@ -1,5 +1,17 @@
-2007-01-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
-	*Xsharp/Widget.cs: irgnore widget disposed exception
+2007-01-25  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Drawing/Drawing2D/GraphicsPath.cs,
+	System.Drawing/Drawing2D/RegionData.cs, System.Drawing/Graphics.cs,
+	System.Drawing/SystemIcons.cs, System.Windows.Forms/DataGrid.cs:
+	System.Windows.Forms/Themes/DefaultThemePainter.cs: Fix compiler
+	problems. That is double declared variable, return of unitialized
+	value, using namespace that does not exist, calling get method of
+	property, invalid name of class. All of these problems cscc cant see,
+	but other compilers show errors.
+
+2007-01-25  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/Widget.cs: ignore widget disposed exception
 
 2007-01-25  Klaus Treichel  <ktreichel@web.de>
 

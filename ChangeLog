@@ -1,4 +1,7 @@
-2ßß7-01-25  Klaus Treichel  <ktreichel@web.de>
+2007-01-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	*Xsharp/Widget.cs: irgnore widget disposed exception
+
+2007-01-25  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Threading/AbandonedMutexException.cs,
 	runtime/System/Threading/ContextCallback.cs,

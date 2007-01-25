@@ -732,24 +732,30 @@ public abstract class Widget : Drawable, ICollection, IEnumerable
 				(IntPtr display, int newX, int newY,
 				 int newWidth, int newHeight)
 			{
-				if(newX != x || newY != y)
-				{
-					if(newWidth != width || newHeight != height)
-					{
-						Xlib.XMoveResizeWindow(display, GetWidgetHandle(),
-										       newX, newY, (uint)newWidth,
-											   (uint)newHeight);
+				if( handle != XDrawable.Zero ) {
+					try {
+						if(newX != x || newY != y)
+						{
+							if(newWidth != width || newHeight != height)
+							{
+								Xlib.XMoveResizeWindow(display, GetWidgetHandle(),
+														newX, newY, (uint)newWidth,
+														(uint)newHeight);
+							}
+							else
+							{
+								Xlib.XMoveWindow(display, GetWidgetHandle(),
+												newX, newY);
+							}
+						}
+						else if(newWidth != width || newHeight != height)
+						{
+							Xlib.XResizeWindow(display, GetWidgetHandle(),
+												(uint)newWidth, (uint)newHeight);
+						}
 					}
-					else
-					{
-						Xlib.XMoveWindow(display, GetWidgetHandle(),
-										 newX, newY);
+					catch( XInvalidOperationException ) { // irgnore Widget disposed exception
 					}
-				}
-				else if(newWidth != width || newHeight != height)
-				{
-					Xlib.XResizeWindow(display, GetWidgetHandle(),
-									   (uint)newWidth, (uint)newHeight);
 				}
 			}
 

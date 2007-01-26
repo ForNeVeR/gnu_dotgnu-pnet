@@ -1496,8 +1496,24 @@ public class ListBox : ListControl
 		
 		// Set up the vertical scrollbar
 		IList data = (IList) base.dataSource;
-		if(data.Count == 0)
+		
+		int iDataCount = data.Count;
+		// cleanup all removed items in selction list
+		
+		this.suppressEvents = true;
+		
+		for( int i = 0; i < this.selectedIndices.Count; i++ ) {
+			if( this.selectedIndices[i] >= iDataCount ) {
+				this.selectedIndices.RemoveAt(i);
+			} 
+		}
+		
+		this.suppressEvents = false;
+		
+		if(iDataCount == 0) {
 			this.vertScrollbar.Visible = false;
+			// this.ClearSelected();
+		}
 		else
 		{
 			this.vertScrollbar.Maximum = data.Count;

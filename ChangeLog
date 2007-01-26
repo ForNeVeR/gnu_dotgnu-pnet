@@ -1,3 +1,7 @@
+2007-01-26  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/ListBox.cs: cleanup selection list, if items changed.
+
 2007-01-26  Radek Polak  <psonek2@seznam.cz>
 
 	* configure.in, tests/Makefile.am: Add forms test directory.

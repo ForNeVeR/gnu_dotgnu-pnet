@@ -1296,7 +1296,9 @@ public class ListBox : ListControl
 			+= new ScrollEventHandler(this.OnHScroll);
 		this.horizScrollbar.ValueChanged 
 			+= new EventHandler(this.OnHValueChanged);
+		
 		BorderStyle = BorderStyle.Fixed3D;
+		SetStyle(ControlStyles.UserPaint | ControlStyles.StandardClick, false);
 	}
 	
 	private void PositionControls()
@@ -1688,6 +1690,12 @@ public class ListBox : ListControl
 		}
 	}
 	
+	protected internal virtual void PaintItem(Graphics g, int index, string text, Font font, Brush textBrush,
+		Rectangle itemRect, StringFormat format)
+	{
+		g.DrawString(text, this.Font, textBrush, itemRect, format);
+	}
+
 	private void PaintItem(Graphics g, int dataIndex)
 	{
 		if(this.suppressDraw)
@@ -1750,7 +1758,7 @@ public class ListBox : ListControl
 			}
 			
 			// Paint the text
-			g.DrawString(s, this.Font, textBrush, itemRect, new StringFormat());
+			PaintItem(g, dataIndex, s, this.Font, textBrush, itemRect, new StringFormat());
 			
 			// Does this item have the focus rectangle?
 			if(this.FocusedItem == dataIndex)

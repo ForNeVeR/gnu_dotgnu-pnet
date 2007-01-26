@@ -604,6 +604,7 @@ Themes/WinXP/Makefile
 tests/Makefile
 tests/System/Makefile
 tests/System.Xml/Makefile
+tests/System.Windows.Forms/Makefile
 tests/runtime/Makefile
 tests/JScript/Makefile
 tests/Basic/Makefile

@@ -22,6 +22,7 @@
 namespace System.Windows.Forms
 {
 using System;
+using System.Drawing;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing.Design;
@@ -33,13 +34,15 @@ using System.Drawing.Design;
 		private CheckedItemCollection checkedItems;
 		private CheckedIndexCollection checkedIndices;
 		private bool checkOnClick;
-		private int lastSelected;
+		private int lastClicked;
+		private CheckState[] checkArray;
 
 		public event ItemCheckEventHandler ItemCheck;
 		
 		public CheckedListBox()
 		{
-			lastSelected = -1;
+			lastClicked = -1;
+			checkArray = new CheckState[0];
 		}
 
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
@@ -162,10 +165,20 @@ using System.Drawing.Design;
 			return new ObjectCollection(this);
 		}
 
-		[TODO]
 		public CheckState GetItemCheckState(int index)
 		{
-			return CheckState.Indeterminate;
+			if(index < 0 || index >= Items.Count)
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+			if(index >= checkArray.Length)
+			{
+				return CheckState.Unchecked;
+			}
+			else
+			{
+				return checkArray[index];
+			}
 		}
 
 		[TODO]
@@ -203,12 +216,11 @@ using System.Drawing.Design;
 			}
 		}
 
-		[TODO]
 		public override SelectionMode SelectionMode
 		{
 			get
 			{
-				return base.SelectionMode;
+				return SelectionMode.One;
 			}
 
 			set
@@ -227,8 +239,30 @@ using System.Drawing.Design;
 			return GetItemCheckState(index) != CheckState.Unchecked;
 		}
 
+		protected internal override void PaintItem(Graphics g, int index, string text, Font font, Brush textBrush,
+			Rectangle itemRect, StringFormat format)
+		{
+			g.DrawString(text, this.Font, textBrush, itemRect.X + itemRect.Height, itemRect.Y, format);
+			
+			Rectangle rect = new Rectangle(itemRect.X, itemRect.Y, itemRect.Height, itemRect.Height);
+			if(GetItemChecked(index))
+			{
+				ControlPaint.DrawCheckBox(g, rect, ButtonState.Checked);
+			}
+			else
+			{
+				ControlPaint.DrawCheckBox(g, rect, ButtonState.Normal);
+			}
+		}
+
 		protected override void OnClick(EventArgs e)
 		{
+			if(SelectedIndex >= 0 && (CheckOnClick || lastClicked == SelectedIndex))
+			{
+				SetItemChecked(SelectedIndex, !GetItemChecked(SelectedIndex));
+				Invalidate();
+			}
+			lastClicked = SelectedIndex;
 			base.OnClick(e);
 		}
 
@@ -242,9 +276,30 @@ using System.Drawing.Design;
 		{
 		}
 		
-		[TODO]
 		public void SetItemCheckState(int index, CheckState value)
 		{
+			if(index < 0 || index >= Items.Count)
+			{
+				throw new ArgumentException(/* TODO */);
+			}
+
+			if(value != CheckState.Checked &&
+				value != CheckState.Unchecked &&
+				value != CheckState.Indeterminate)
+			{
+				throw new InvalidEnumArgumentException(/* TODO */);
+			}
+
+			// Ensure that check array is long enough.
+			if(index >= checkArray.Length)
+			{
+				CheckState[] newArray = new CheckState[checkArray.Length + 8];
+				Array.Copy(checkArray, 0, newArray, 0, checkArray.Length);
+				checkArray = newArray;
+			}
+
+			OnItemCheck(new ItemCheckEventArgs(index, value, checkArray[index]));
+			checkArray[index] = value;
 		}
 
 		public void SetItemChecked(int index, bool value)
@@ -284,7 +339,6 @@ using System.Drawing.Design;
 		protected override void OnSelectedIndexChanged(EventArgs e)
 		{
 			base.OnSelectedIndexChanged(e);
-			lastSelected = base.SelectedIndex;
 		}
 
 #if !CONFIG_COMPACT_FORMS
@@ -302,7 +356,15 @@ using System.Drawing.Design;
 			{
 				get
 				{
-					return owner.CheckedItems.Count;
+					int result = 0;
+					for(int i = 0; i < owner.Items.Count; i++)
+					{
+						if(owner.GetItemChecked(i))
+						{
+							result++;
+						}
+					}
+					return result;
 				}
 			}
 
@@ -314,12 +376,28 @@ using System.Drawing.Design;
 				}
 			}
 
-			[TODO]
 			public int this[int index]
 			{
 				get
 				{
-					return 0;
+					if(index >= 0)
+					{
+						for(int i = 0; i < owner.Items.Count; i++)
+						{
+							if(owner.GetItemChecked(i))
+							{
+								if(index <= 0)
+								{
+									return i;
+								}
+								else
+								{
+									index--;
+								}
+							}
+						}
+					}
+					throw new IndexOutOfRangeException(index.ToString());
 				}
 			}
 
@@ -416,10 +494,21 @@ using System.Drawing.Design;
 				return items.GetEnumerator();
 			}
 
-			[TODO]
 			public int IndexOf(int index)
 			{
-				return 0;
+				int result = -1;
+				for(int i = 0; i < owner.Items.Count; i++)
+				{
+					if(owner.GetItemChecked(i))
+					{
+						result++;
+					}
+					if(index == i)
+					{
+						break;
+					}
+				}
+				return result;
 			}
 
 			int IList.IndexOf(object index)
@@ -460,21 +549,19 @@ using System.Drawing.Design;
 		{
 			private CheckedListBox owner;
 
-			[TODO]
 			public virtual int Count
 			{
 				get
 				{
-					return 0;
+					return owner.CheckedIndices.Count;
 				}
 			}
 
-			[TODO]
 			public virtual object this[int index]
 			{
 				get
 				{
-					return 0;
+					return owner.Items[owner.CheckedIndices[index]];
 				}
 
 				set
@@ -521,10 +608,21 @@ using System.Drawing.Design;
 				return IndexOf(item) != -1;
 			}
 
-			[TODO]
 			public virtual int IndexOf(object item)
 			{
-				return 0;
+				int result = -1;
+				for(int i = 0; i < owner.Items.Count; i++)
+				{
+					if(owner.GetItemChecked(i))
+					{
+						result++;
+						if(owner.Items[i] == item)
+						{
+							return result;
+						}
+					}
+				}
+				return -1;
 			}
 
 			int IList.Add(object value)
@@ -552,15 +650,22 @@ using System.Drawing.Design;
 				throw new NotSupportedException();
 			}
 
-			[TODO]
 			public virtual void CopyTo(Array dest, int index)
 			{
+				for(int i = 0; i < owner.Items.Count; i++)
+				{
+					if(owner.GetItemChecked(i))
+					{
+						dest.SetValue(owner.Items[i], index++);
+					}
+				}
 			}
 
-			[TODO]
 			public virtual IEnumerator GetEnumerator()
 			{
-				return null;
+				int[] items = new int[Count];
+				CopyTo(items, 0);
+				return items.GetEnumerator();
 			}
 
 			internal CheckedItemCollection(CheckedListBox owner) : base()

@@ -43,6 +43,7 @@ namespace FormsTest
 		private TabPage tabPage28;
 		private TabPage tabPage29;
 		private TabPage tabPage30;
+		private TabPage tabPage31;
 		private StatusBar statusBar;
 
 		// Tab1 Labels Test
@@ -452,6 +453,9 @@ namespace FormsTest
 			tabPage30 = new TabPage();
 			tabPage30.Text = "Path Tiger";
 			tabControl1.Controls.Add(tabPage30);
+			tabPage31 = new TabPage();
+			tabPage31.Text = "CheckedListBox";
+			tabControl1.Controls.Add(tabPage31);
 
 			statusBar = new StatusBar();
 			statusBar.Dock = DockStyle.Bottom;
@@ -495,6 +499,7 @@ namespace FormsTest
 			AddTrackbarTest(tabPage28);
 			AddDataGrid(tabPage29);
 			AddTiger(tabPage30);
+			AddCheckedListBox(tabPage31);
 
 			// Add the events here after the controls have been added
 			// to the pages, otherwise the events will not be raised
@@ -4506,5 +4511,14 @@ tigerData.Add( new TigerPath( p, b, @"M20.5 344.5C20.5 344.5 22 333.5 10.5 346.5
 			Console.WriteLine( "PaintTigerData={0}", (int)diff.TotalMilliseconds);
 		}
 
+		private void AddCheckedListBox(Control c)
+		{
+			CheckedListBox clb = new CheckedListBox();
+			clb.Items.Add("Row 1", true);
+			clb.Items.Add("Row 2", false);
+			clb.Items.Add("Row 3", true);
+			clb.Size = new Size(128, 128);
+			c.Controls.Add(clb);
+		}
 	}
 }

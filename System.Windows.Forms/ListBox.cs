@@ -37,6 +37,7 @@ public class ListBox : ListControl
 	private VScrollBar vertScrollbar;
 	private HScrollBar horizScrollbar;
 	private ObjectCollection internalDataSource;
+	private SolidBrush mtextBrush;
 	private SolidBrush backgroundBrush;
 	private SolidBrush disabledBrush;
 	private int focusedItem = 0;
@@ -771,6 +772,10 @@ public class ListBox : ListControl
 		set
 		{
 			base.ForeColor = value;
+			if(this.mtextBrush != null ) {
+				this.mtextBrush.Dispose();
+			} 
+			this.mtextBrush = new SolidBrush( base.ForeColor );
 		}
 	}
 
@@ -1279,6 +1284,7 @@ public class ListBox : ListControl
 		this.internalDataSource = this.CreateItemCollection();
 		base.dataSource         = this.internalDataSource;
 
+		this.mtextBrush          = new SolidBrush(SystemColors.WindowText); 
 		this.backgroundBrush     = new SolidBrush(SystemColors.Window);
 		this.disabledBrush       = new SolidBrush(SystemColors.Control);
 		this.selectedIndices     = new SelectedIndexCollection(this);
@@ -1727,7 +1733,7 @@ public class ListBox : ListControl
 		Rectangle realItemRect = this.GetItemRect(dataIndex);
 		IList data = (IList) base.dataSource;
 
-		Brush textBrush = SystemBrushes.WindowText;
+		Brush textBrush = this.mtextBrush;
 		Brush itemBackgroundBrush = this.backgroundBrush;
 
 		// Is this item selected?
@@ -1789,7 +1795,7 @@ public class ListBox : ListControl
 				else
 				{
 					backColor = this.BackColor;
-					foreColor = SystemColors.WindowText;
+					foreColor = this.ForeColor;
 				}
 				
 				realItemRect.Height--;
@@ -2141,6 +2147,16 @@ public class ListBox : ListControl
 		}
 	}
 
+	protected override bool ProcessDialogKey(Keys keyData)
+	{
+		KeyEventArgs evArgs = new KeyEventArgs( keyData ); 
+		this.OnKeyDown( evArgs  );
+		if( !evArgs.Handled ) {
+			return base.ProcessDialogKey(keyData);
+		}
+		return true;
+	}
+	
 	protected override void OnKeyDown(KeyEventArgs e)
 	{
 		bool multiEx = (this.selectionMode == SelectionMode.MultiExtended);
@@ -2149,7 +2165,7 @@ public class ListBox : ListControl
 		int maxInd = data.Count - 1;
 
 		this.DelayPaint();
-
+		
 		switch(e.KeyCode)
 		{
 			case Keys.Up:
@@ -2188,7 +2204,7 @@ public class ListBox : ListControl
 						}
 					}
 				}
-				else if(this.FocusedItem < maxInd)
+				else if(this.FocusedItem < maxInd) 
 					this.FocusedItem++;
 					
 				if(multiEx && shift)

@@ -1,3 +1,7 @@
+2007-01-29  Radek Polak  <psonek2@seznam.cz>
+
+	* tests/System.Windows.Forms/TestForms.build: Fix pnetlib build.
+
 2007-01-29  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/ListBox.cs: fixed painting with forecolor, 

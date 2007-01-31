@@ -248,5 +248,5 @@ namespace System.Xml.Xsl
  		}
 	}
 }//namespace
-#endif /* CONFIG_XPATH && CONFIG_XSL */
-#endif /* !ECMA_COMPAT */
+#endif // CONFIG_XPATH && CONFIG_XSL
+#endif // !ECMA_COMPAT

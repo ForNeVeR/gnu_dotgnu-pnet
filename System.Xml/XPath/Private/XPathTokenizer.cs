@@ -572,4 +572,4 @@ namespace System.Xml.XPath.Private
 	}
 }
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

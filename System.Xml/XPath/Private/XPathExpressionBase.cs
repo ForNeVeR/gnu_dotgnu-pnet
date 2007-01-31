@@ -240,4 +240,4 @@ internal abstract class XPathExpressionBase : XPathExpression
 }
 }//namespace
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

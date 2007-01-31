@@ -763,6 +763,6 @@ internal class XmlDocumentNavigator : XPathNavigator, IHasXmlNode
 	}
 }
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH
 
 }

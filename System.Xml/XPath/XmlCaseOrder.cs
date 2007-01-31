@@ -39,4 +39,4 @@ enum XmlCaseOrder
 }
 }//namespace
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

@@ -39,4 +39,4 @@ class XPathException : SystemException
 }
 }//namespace
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

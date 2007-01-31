@@ -41,5 +41,5 @@ namespace System.Xml.Xsl
 
 	}
 }//namespace
-#endif /* CONFIG_XSL */
-#endif /* !ECMA_COMPAT */
+#endif // CONFIG_XSL
+#endif // !ECMA_COMPAT

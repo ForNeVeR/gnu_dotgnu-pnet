@@ -139,6 +139,7 @@ namespace System.Xml.Xsl
 			{
 				return parameter;
 			}
+#if CONFIG_XPATH
 			if(parameter is XPathNavigator)
 			{
 				return parameter;
@@ -147,6 +148,7 @@ namespace System.Xml.Xsl
 			{
 				return parameter;
 			}
+#endif // CONFIG_XPATH
 			if(parameter is Int16)
 			{
 				return (double)(Int16)parameter;

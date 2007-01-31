@@ -58,4 +58,4 @@ abstract class XPathExpression
 }
 }//namespace
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

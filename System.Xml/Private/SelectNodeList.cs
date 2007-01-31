@@ -122,6 +122,6 @@ internal sealed class SelectNodeList : XmlNodeList
 			}
 }; // class SelectNodeList
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH
 
 }; // namespace System.Xml.Private

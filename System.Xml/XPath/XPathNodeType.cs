@@ -46,4 +46,4 @@ enum XPathNodeType
 }
 }//namespace
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

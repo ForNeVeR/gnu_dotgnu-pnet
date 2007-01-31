@@ -36,6 +36,6 @@ interface IXPathNavigable
 
 }; // interface IXPathNavigable
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH
 
 }; // namespace System.Xml.XPath

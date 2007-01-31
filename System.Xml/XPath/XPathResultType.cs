@@ -42,4 +42,4 @@ enum XPathResultType
 }
 }//namespace
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

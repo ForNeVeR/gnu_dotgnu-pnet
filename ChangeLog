@@ -1,3 +1,29 @@
+2007-01-31  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Xml/ConformanceLevel.cs,
+	System.Xml/Private/SelectNodeList.cs,
+	System.Xml/Private/XmlDocumentNavigator.cs,
+	System.Xml/XPath/IXPathNavigable.cs,
+	System.Xml/XPath/Private/XPathAxis.cs,
+	System.Xml/XPath/Private/XPathExpressionBase.cs,
+	System.Xml/XPath/Private/XPathIterators.cs,
+	System.Xml/XPath/Private/XPathNodes.cs,
+	System.Xml/XPath/Private/XPathTokenizer.cs,
+	System.Xml/XPath/XPathDocument.cs, System.Xml/XPath/XPathException.cs,
+	System.Xml/XPath/XPathExpression.cs,
+	System.Xml/XPath/XPathNamespaceScope.cs,
+	System.Xml/XPath/XPathNavigator.cs,
+	System.Xml/XPath/XPathNodeIterator.cs,
+	System.Xml/XPath/XPathNodeType.cs,
+	System.Xml/XPath/XPathResultType.cs, System.Xml/XPath/XmlCaseOrder.cs,
+	System.Xml/XPath/XmlDataType.cs, System.Xml/XPath/XmlSortOrder.cs,
+	System.Xml/XmlNode.cs, System.Xml/Xsl/IXsltContextFunction.cs,
+	System.Xml/Xsl/IXsltContextVariable.cs,
+	System.Xml/Xsl/XslTransform.cs, System.Xml/Xsl/XsltArgumentList.cs,
+	System.Xml/Xsl/XsltCompileException.cs, System.Xml/Xsl/XsltContext.cs,
+	System.Xml/Xsl/XsltException.cs: Fix incorrect syntax in comments
+	after #endif. Comment can be // but never /*  */.
+
 2007-01-29  Radek Polak  <psonek2@seznam.cz>
 
 	* tests/System.Windows.Forms/TestForms.build: Fix pnetlib build.

@@ -31,5 +31,5 @@ namespace System.Xml
 		Document
 	}
 }
-#endif /* CONFIG_FRAMEWORK_2_0 */
-#endif /* !ECMA_COMPAT */
+#endif // CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT

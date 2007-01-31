@@ -514,7 +514,7 @@ abstract class XmlNode : ICloneable, IEnumerable
 			{
 				return new XmlDocumentNavigator(this);
 			}
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH
 
 	// Implement the IEnumerable interface,
 	public IEnumerator GetEnumerator()
@@ -1058,7 +1058,7 @@ abstract class XmlNode : ICloneable, IEnumerable
 				return (list.Count == 0 ? null : list[0]);
 			}
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH
 
 	// Test if this implementation supports a particular DOM feature.
 	public virtual bool Supports(String feature, String version)

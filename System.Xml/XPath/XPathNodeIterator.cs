@@ -65,4 +65,4 @@ abstract class XPathNodeIterator : ICloneable
 }
 }//namespace
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

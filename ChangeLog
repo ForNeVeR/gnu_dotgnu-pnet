@@ -1,5 +1,12 @@
 2007-01-31  Radek Polak  <psonek2@seznam.cz>
 
+	* System.Xml/XmlTextReader.cs: Fix problem with reading character
+	references in attributes.
+
+	* tests/System.Xml/TestXmlTextReader.cs: Add test case for above fix.
+
+2007-01-31  Radek Polak  <psonek2@seznam.cz>
+
 	* System.Xml/ConformanceLevel.cs,
 	System.Xml/Private/SelectNodeList.cs,
 	System.Xml/Private/XmlDocumentNavigator.cs,

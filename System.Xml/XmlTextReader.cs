@@ -1035,12 +1035,31 @@ public class XmlTextReader : XmlReader
 							seg.SetInfo(true, log.ToString(textStart, textEnd));
 						}
 
+						// remeber position
+						int position = log.Length;
+
 						// move to the '&' character
 						input.NextChar();
 
-						// add a new reference segment to the list
+						// read character or entity reference
+						String name;
+						char ch;
+						if(ReadReferenceNormalize(out name, out ch))
+						{
+							// character reference (e.g. &amp;)
+							log.Length = position;
+							log.Append(ch);
+						}
+						else
+						{
+							// we leave entity refence as it is
+							log.Length = position;
+							log.Append('&');
+							log.Append(name);
+							log.Append(';');
+						}
 						seg = segments[segLen++];
-						seg.SetInfo(false, nt.Add(ReadReference()));
+						seg.SetInfo(true, log.ToString(position, log.Length - position));
 
 						// store the start index of the next segment
 						textStart = log.Length;

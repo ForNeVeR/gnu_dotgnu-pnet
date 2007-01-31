@@ -246,14 +246,15 @@ public class TestXmlTextReader : TestCase
 
 	// Test if NodeType after reading empty element with ReadElementString() is XmlNodeType.EndElement (bug #14261).
 	public void TestXmlTextReaderReadElementStringOnEmpyElement()
-	{
-		Reset(6);
-		AssertEquals("ReadElementStringOnEmpyElement (1)", XmlNodeType.Element, xr.MoveToContent());
-		AssertEquals("ReadElementStringOnEmpyElement (2)", true, xr.Read());
-		AssertEquals("ReadElementStringOnEmpyElement (3)", String.Empty, xr.ReadElementString());
-		AssertEquals("ReadElementStringOnEmpyElement (4)", XmlNodeType.EndElement, xr.NodeType);
-	}
-		// Test the Depth property.
+			{
+				Reset(6);
+				AssertEquals("ReadElementStringOnEmpyElement (1)", XmlNodeType.Element, xr.MoveToContent());
+				AssertEquals("ReadElementStringOnEmpyElement (2)", true, xr.Read());
+				AssertEquals("ReadElementStringOnEmpyElement (3)", String.Empty, xr.ReadElementString());
+				AssertEquals("ReadElementStringOnEmpyElement (4)", XmlNodeType.EndElement, xr.NodeType);
+			}
+
+	// Test the Depth property.
 	public void TestXmlTextReaderDepth()
 			{
 				Reset(new StringReader("<node attr=\"1\" />"));
@@ -265,5 +266,20 @@ public class TestXmlTextReader : TestCase
 				AssertEquals("Depth (6)", false, xr.Read());
 				AssertEquals("Depth (7)", 0, xr.Depth);
 				Clear();
+			}
+
+	// Test XML with char references &amp; and entities &xxx; in attributes.
+	public void TestXmlTextReaderCharReferenceAndEntityInAttr()
+			{
+				string xmlText = "<doc a=\"C &amp;&amp; D\" b=\"C &xxx; D\" />";
+				Reset(new StringReader(xmlText));
+				xr.MoveToContent();
+				AssertEquals("CharReferenceAndEntityInAttr (1)", "doc", xr.Name);
+				xr.MoveToFirstAttribute();
+				AssertEquals("CharReferenceAndEntityInAttr (2)", "a", xr.Name);
+				AssertEquals("CharReferenceAndEntityInAttr (3)", "C && D", xr.Value);
+				xr.MoveToNextAttribute();
+				AssertEquals("CharReferenceAndEntityInAttr (4)", "b", xr.Name);
+				AssertEquals("CharReferenceAndEntityInAttr (5)", "C &xxx; D", xr.Value);
 			}
 }; // class TestXmlTextReader

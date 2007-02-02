@@ -1,3 +1,10 @@
+2007-02-02  Radek Polak  <psonek2@seznam.cz>
+
+	* ilgac/ilgac.c: Fix problem with make uninstall in pnetlib on cygwin.
+	Problem is that uninstall wants to delete files that do not exist and
+	ilgac reports this as fatal error. Now we just silently ignore
+	attempts to delete files which do not exist.
+
 2007-01-23  Radek Polak  <psonek2@seznam.cz>
 
 	* configure.in: Remove --with-debugger configure option.

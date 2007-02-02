@@ -948,7 +948,7 @@ static int uninstallAssembly(const char *assembly, const ILUInt16 *version,
 	{
 		printf("removing %s\n", path);
 	}
-	error = ILDeleteFile(path);
+	error = DeleteFile(path);
 	if(error != 0)
 	{
 		PrintError(path, error);

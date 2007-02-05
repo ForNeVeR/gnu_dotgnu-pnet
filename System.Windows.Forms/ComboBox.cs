@@ -911,7 +911,7 @@ namespace System.Windows.Forms
 			{
 				int y = 0;
 				g.SetClip(new Rectangle(0, 0, popupDrawWidth, popup.Height));
-				for (int i = scrollbar.Value; i < Items.Count; i++)
+				for (int i = FirstDdItem; i < Items.Count; i++)
 				{
 					if (pos == -1 | i == pos)
 					{
@@ -1013,12 +1013,32 @@ namespace System.Windows.Forms
 			}
 		}
 
+		// Index of first item in the DrowpDown list
+		private int FirstDdItem
+		{
+			get
+			{
+				if(items.Count <= MaxDropDownItems)
+				{
+					return 0;
+				}
+				else if(scrollbar.Value + MaxDropDownItems < Items.Count)
+				{
+					return scrollbar.Value;
+				}
+				else
+				{
+					return Items.Count - MaxDropDownItems;
+				}
+			}
+		}
+
 		private int ItemFromY(int y)
 		{
 			if (DrawMode != DrawMode.OwnerDrawVariable)
-				return y / actualItemHeight + scrollbar.Value;
+				return y / actualItemHeight + FirstDdItem;
 			int itemY = 0;
-			for (int i = scrollbar.Value; i < Items.Count; i++)
+			for (int i = FirstDdItem; i < Items.Count; i++)
 			{
 				itemY += itemHeights[i];
 				if (y < itemY)

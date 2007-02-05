@@ -1,4 +1,8 @@
-2007-01-05  Deryk Robosson <drobosson@gmail.com>
+2007-02-05  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Windows.Forms/ComboBox.cs: Fix dropdown drawing, bug #18928.
+
+2007-02-05  Deryk Robosson  <drobosson@gmail.com>
 
 	* System.Windows.Forms/TreeNode.cs: Check if index will put us below
 	zero before referencing.

@@ -508,9 +508,12 @@ namespace System.Windows.Forms
 				{
 					Invalidate();
 				}
-				else if (expanded && children[index - 1].IsVisible)
+				else if ( index - 1 >= 0 )
 				{
-					treeView.InvalidateDown(node);
+					if (expanded && children[index - 1].IsVisible)
+					{
+						treeView.InvalidateDown(node);
+					}
 				}
 			}
 		}

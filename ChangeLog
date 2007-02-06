@@ -3,6 +3,8 @@
 	* libffi/configure.ac, libffi/configure: Remuve the testsuite from the
 	subdirs and fix the multilib support for pnet.
 
+	* depcomp: Add needed file to build libffi.
+
 2007-02-06  Robert Schwebel  <r.schwebel@pengutronix.de>
 
 	* Makefile.am, auto_gen.sh, configure.in, codegen/Makefile.am,

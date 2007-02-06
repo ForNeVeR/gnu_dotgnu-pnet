@@ -6,6 +6,7 @@ libILinclude_HEADERS = il_align.h \
 					   il_console.h \
 					   il_crypt.h \
 					   il_debug.h \
+					   il_debugger.h \
 					   il_decimal.h \
 					   il_dumpasm.h \
 					   il_engine.h \

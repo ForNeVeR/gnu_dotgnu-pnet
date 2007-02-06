@@ -22,7 +22,7 @@
  */
 %}
 
-%include %readonly "../../codegen/cg_all.tc"
+%include %readonly "cg_all.tc"
 
 %header "bf_defs.h"
 %output "bf_nodes.c"

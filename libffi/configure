@@ -1353,9 +1353,9 @@ fi;
 
 if test "$srcdir" = "."; then
   if test "$with_target_subdir" != "."; then
-    multi_basedir="$srcdir/$with_multisrctop../.."
+    multi_basedir="$srcdir/$with_multisrctop../"
   else
-    multi_basedir="$srcdir/$with_multisrctop.."
+    multi_basedir="$srcdir/$with_multisrctop"
   fi
 else
   multi_basedir="$srcdir/.."
@@ -8370,7 +8370,6 @@ do
   "include/Makefile" ) CONFIG_FILES="$CONFIG_FILES include/Makefile" ;;
   "include/ffi.h" ) CONFIG_FILES="$CONFIG_FILES include/ffi.h" ;;
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-  "testsuite/Makefile" ) CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
   "include/ffitarget.h" ) CONFIG_LINKS="$CONFIG_LINKS include/ffitarget.h:src/$TARGETDIR/ffitarget.h" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;

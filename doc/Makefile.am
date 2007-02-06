@@ -1,7 +1,10 @@
 info_TEXINFOS = pnettools.texi
 pnettools_TEXINFOS = pnetasm.texi
 CLEANFILES = pnettools.info pnettools.info-1 pnettools.info-2 \
-			 pnettools.info-3 pnettools.info-4
+			 pnettools.info-3 pnettools.info-4 \
+			 cvmdoc/cvm.xml cvmdoc/index.html
+
+EXTRA_DIST = cvmdoc.py mkcvmdoc.sh
 
 all-local: cvmdoc/index.html
 

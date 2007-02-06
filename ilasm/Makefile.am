@@ -27,6 +27,7 @@ AM_CFLAGS = -I$(top_srcdir)/include
 
 install-data-local:
 	rm -f $(DESTDIR)$(man1dir)/al.1.gz
+	$(mkdir_p) $(DESTDIR)$(man1dir)
 	$(LN_S) ilasm.1.gz $(DESTDIR)$(man1dir)/al.1.gz
 
 uninstall-local:

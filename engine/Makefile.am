@@ -100,11 +100,11 @@ libILEngine_a_SOURCES = cctormgr.c \
 						cvm_lengths.c \
 						cvmc.c \
 						debugger.c \
+						debugger.h \
 						dumpconfig.c \
 						engine.c \
 						engine.h \
 						engine_private.h \
-						gen_marshal.c \
 						heap.c \
 						int_proto.h \
 						internal.c \

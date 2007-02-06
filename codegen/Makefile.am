@@ -55,6 +55,7 @@ EXTRA_DIST = $(TREECC_INPUTS)
 
 libILCodeGen_a_SOURCES = cg_coerce.c \
 						 cg_coerce.h \
+						 cg_defs.h \
 						 cg_gen.c \
 						 cg_gen.h \
 						 cg_interface.c \
@@ -63,6 +64,7 @@ libILCodeGen_a_SOURCES = cg_coerce.c \
 						 cg_nodemap.h \
 						 cg_optable.c \
 						 cg_output.c \
+						 cg_output.h \
 						 cg_rbtree.c \
 						 cg_rbtree.h \
 						 cg_resolve.c \
@@ -74,18 +76,28 @@ libILCodeGen_a_SOURCES = cg_coerce.c \
 						 cg_varusage.c \
 						 cg_varusage.h \
 						 jv_output.c \
-						 jv_output.h \
-						 $(TREECC_SRCOUT)
+						 jv_output.h
+
+nodist_libILCodeGen_a_SOURCES = $(TREECC_SRCOUT)
 
 AM_CFLAGS = -I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/include
 
 STAMP = stamp-treecc
 
-BUILT_SOURCES = $(STAMP)
+BUILT_SOURCES = $(STAMP) $(TREECC_OUTPUT)
 
 libILCodeGen_a_DEPENDENCIES = $(STAMP)
 
+# Hack alert: if we build out of tree, copy sources to here,
+# because treecc has no option to define the output directory
+
 $(STAMP): $(TREECC_INPUTS)
-	$(TREECC) $(srcdir)/cg_all.tc && touch $@
+	if [ "`cd $(srcdir) && pwd`" != "`pwd`" ]; then \
+		cp $(srcdir)/*.tc .; \
+	fi
+	$(TREECC) cg_all.tc && touch $@
+	if [ "`cd $(srcdir) && pwd`" != "`pwd`" ]; then \
+		rm -f *.tc; \
+	fi
 
 CLEANFILES = $(TREECC_OUTPUT) $(STAMP)

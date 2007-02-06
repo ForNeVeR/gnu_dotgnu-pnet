@@ -20,6 +20,9 @@ AC_PROG_RANLIB
 AC_PROG_YACC
 AM_PROG_LEX
 
+# Tell everyone if we are crosscompiling
+AM_CONDITIONAL(CROSS_COMPILING, test $cross_compiling = yes)
+
 AC_PATH_PROG(TREECC, treecc,, ${prefix}/bin:$PATH)
 if test -z "$TREECC" ; then
     echo "treecc is required to build and can be obtained from"
@@ -28,6 +31,13 @@ if test -z "$TREECC" ; then
 fi
 TREECC_VERSION=`"$TREECC" -v | (read name version rest; echo $version)`
 AC_SUBST(TREECC_VERSION)
+
+if test x$cross_compiling = xyes ; then
+	AC_PATH_PROG(ILASM, ilasm)
+else
+	ILASM="\$(top_builddir)/ilasm/ilasm"
+fi
+AC_SUBST(ILASM)
 
 AC_PATH_PROG(SYSTEM_AR, ar)
 
@@ -679,6 +689,14 @@ else
 fi
 AM_CONDITIONAL(USING_LIBGC, test x$withgc = xyes)
 
+if test x$withffi = xyes; then
+	AC_CONFIG_SUBDIRS(libffi)
+fi
+
+if test x$withgc = xyes; then
+	AC_CONFIG_SUBDIRS(libgc)
+fi
+
 AC_OUTPUT([
 Makefile
 include/Makefile
@@ -714,67 +732,8 @@ coremul/Makefile
 samples/Makefile
 doc/Makefile
 tests/Makefile
-pnet.spec])
-
-dnl Configure libffi and libgc.  We do these manually to avoid
-dnl some issues with different versions of autotools, and so that
-dnl we can pass specific options to the packages.
-if test "x$no_recursion" != "xyes"; then
-
-	export CC
-
-	dnl Figure out how to find the source directory for directories
-	dnl under $srcdir from a subdirectory of the build tree.  This is
-	dnl	different depending on whether $srcdir is absolute or relative.
-	if echo $srcdir | grep '^[[~/]]'; then 
-		ffisrcdir=$srcdir/libffi
-		gcsrcdir=$srcdir/libgc
-	else
-		ffisrcdir=../$srcdir/libffi
-		gcsrcdir=../$srcdir/libgc
-	fi
-	if test x$withffi = xyes ; then
-		if test ! -d libffi ; then
-			mkdir libffi
-		fi
-		cd "libffi"
-		${CONFIG_SHELL-/bin/sh} ${ffisrcdir}/configure --disable-shared \
-			--enable-multilib=no \
-			--disable-dependency-tracking \
-			--host="${host}" --build="${build}" --target="${target}" \
-			--disable-fast-install --prefix="${prefix}" \
-			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \
-			--sbindir="${sbindir}" --libexecdir="${libexecdir}" \
-			--datadir="${datadir}" --sysconfdir="${sysconfdir}" \
-			--sharedstatedir="${sharedstatedir}" \
-			--localstatedir="${localstatedir}" --libdir="${libdir}/pnet" \
-			--includedir="${includedir}/pnet" \
-			--oldincludedir="${oldincludedir}/pnet" --infodir="${infodir}" \
-			--mandir="${mandir}" --srcdir="${ffisrcdir}" || exit 1
-		cd ..
-	fi
-
-	if test x$withgc = xyes ; then
-		if test ! -d libgc ; then
-			mkdir libgc
-		fi
-		cd libgc
-		${CONFIG_SHELL-/bin/sh} ${gcsrcdir}/configure \
-			--enable-threads=$THREADS --host="${host}" \
-			--build="${build}" --target="${target}" --disable-fast-install \
-			--prefix="${prefix}" \
-			--exec-prefix="${exec_prefix}" --bindir="${bindir}" \
-			--sbindir="${sbindir}" --libexecdir="${libexecdir}" \
-			--datadir="${datadir}" --sysconfdir="${sysconfdir}" \
-			--sharedstatedir="${sharedstatedir}" \
-			--localstatedir="${localstatedir}" --libdir="${libdir}/pnet" \
-			--includedir="${includedir}/pnet" \
-			--oldincludedir="${oldincludedir}/pnet" \
-			--infodir="${infodir}" --mandir="${mandir}" \
-			--srcdir="${gcsrcdir}" || exit 1
-		cd ..
-	fi
-fi
+pnet.spec
+profiles/Makefile])
 
 dnl Local variables:
 dnl tab-width: 4

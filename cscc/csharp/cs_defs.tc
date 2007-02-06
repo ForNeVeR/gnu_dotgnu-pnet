@@ -21,7 +21,7 @@
 /*
  * Inherit the common definitions.
  */
-%include %readonly "../../codegen/cg_all.tc"
+%include %readonly "cg_all.tc"
 
 /*
  * Set a new header for definitions that follow.

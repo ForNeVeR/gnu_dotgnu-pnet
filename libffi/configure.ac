@@ -5,7 +5,7 @@ AC_PREREQ(2.59)
 AC_INIT([libffi], [2.1], [http://gcc.gnu.org/bugs.html])
 AC_CONFIG_HEADERS([fficonfig.h])
 
-AM_ENABLE_MULTILIB(, ..)
+AM_ENABLE_MULTILIB(,)
 
 AC_CANONICAL_SYSTEM
 target_alias=${target_alias-$host_alias}
@@ -283,6 +283,6 @@ test -d src/$TARGETDIR || mkdir src/$TARGETDIR
 
 AC_CONFIG_LINKS(include/ffitarget.h:src/$TARGETDIR/ffitarget.h)
 
-AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile testsuite/Makefile)
+AC_CONFIG_FILES(include/Makefile include/ffi.h Makefile)
 
 AC_OUTPUT

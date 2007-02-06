@@ -18,20 +18,27 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-# Run aclocal to update the macros.
-aclocal
+banner() {
+        echo
+        TG=`echo $1 | sed -e "s,/.*/,,g"`
+        LINE=`echo $TG |sed -e "s/./-/g"`
+        echo $LINE
+        echo $TG
+        echo $LINE
+        echo
+}
 
-# Run autoheader to generate il_config.h.in.
-autoheader
+banner "running aclocal"
+aclocal --version
+aclocal || exit
 
-# Get extra options to use depending upon the automake version.
-AM_VERSION=`automake --version`
-case "$AM_VERSION" in
-    automake*1.4*) AM_FLAGS="" ;;
-                *) AM_FLAGS="--ignore-deps" ;;
-esac
+banner "running autoheader"
+autoheader || exit
 
-# Run automake and autoconf.
-automake --add-missing --copy $AM_FLAGS
+banner "running automake"
+automake --add-missing --copy --ignore-deps || exit
+
+banner "running autoconf"
 autoconf
-exit 0
+
+

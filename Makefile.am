@@ -1,29 +1,58 @@
+OPT_SUBDIRS =
+
 if USING_LIBFFI
-LIBFFI_DIR = libffi
-else
-LIBFFI_DIR = 
+OPT_SUBDIRS += libffi
 endif
-  
+
 if USING_LIBGC
-LIBGC_DIR = libgc
-else
-LIBGC_DIR = 
+OPT_SUBDIRS += libgc
 endif
 
 if PNET_TOOLS
 
-SUBDIRS = . $(LIBGC_DIR) $(LIBFFI_DIR) include support image dumpasm engine ilasm ildasm \
-		  ilalink ilsize ilnative ilheader ilfind ildd codegen cscc \
-		  resgen ilstrip ilranlib ilgac csdoc csant clrwrap samples doc tests
+OPT_SUBDIRS += dumpasm \
+			   ilasm \
+			   ildasm \
+			   ilalink \
+			   ilsize \
+			   engine \
+			   ilnative \
+			   ilheader \
+			   ilfind \
+			   ildd \
+			   codegen \
+			   cscc \
+			   resgen \
+			   ilstrip \
+			   ilranlib \
+			   ilgac \
+			   csant \
+			   clrwrap \
+			   samples \
+			   tests
+
+
+if !CROSS_COMPILING
+OPT_SUBDIRS += csdoc doc
+endif
 
 else
 
 ## We only want to build the runtime engine.
-SUBDIRS = . $(LIBGC_DIR) $(LIBFFI_DIR) include coremul support image engine
+OPT_SUBDIRS += coremul \
+			   engine
 
 endif
 
-DIST_SUBDIRS = $(SUBDIRS)
+SUBDIRS = . \
+		  include \
+		  support \
+		  image \
+		  profiles \
+		  $(OPT_SUBDIRS)
+
 EXTRA_DIST = config-ml.in
 
+MAINTAINERCLEANFILES = Makefile.in \
+					   configure
 

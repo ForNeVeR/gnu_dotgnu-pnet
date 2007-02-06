@@ -3,6 +3,7 @@ man_MANS       = resgen.1
 EXTRA_DIST     = $(man_MANS)
 
 resgen_SOURCES = resgen.c \
+				 resgen.h \
 				 resgen_binary.c \
 				 resgen_po.c \
 				 resgen_text.c \

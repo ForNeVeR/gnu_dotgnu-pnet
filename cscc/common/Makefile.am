@@ -13,6 +13,7 @@ libILCCommon_a_SOURCES = cc_compat.c \
 						 cc_main.c \
 						 cc_main.h \
 						 cc_options.c \
+						 cc_options.h \
 						 cc_preproc.c \
 						 cc_preproc.h
 

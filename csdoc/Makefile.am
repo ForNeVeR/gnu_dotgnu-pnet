@@ -6,7 +6,9 @@ EXTRA_DIST         = $(man_MANS)
 CSDOC_COMMON       = doc_destroy.c \
 					 doc_load.c \
 					 doc_main.c \
-					 doc_sort.c
+					 doc_sort.c \
+					 doc_tree.h \
+					 doc_backend.h
 
 CSDOC_LIBS         = ../dumpasm/libILDumpAsm.a ../image/libILImage.a \
 					 ../support/libILSupport.a $(GCLIBS)
@@ -29,7 +31,7 @@ csdoc2stub_LDADD   = $(CSDOC_LIBS)
 csdoc2test_SOURCES = doc_test.c $(CSDOC_COMMON)
 csdoc2test_LDADD   = $(CSDOC_LIBS)
 
-cssrc2html_SOURCES = cssrc2html.c fontcolors.c scanner.c
+cssrc2html_SOURCES = cssrc2html.c fontcolors.c scanner.c cssrc2html.h fontcolors.h tokens.h scanner.h
 
 il2doc_SOURCES     = il2doc.c
 il2doc_LDADD       = $(CSDOC_LIBS)

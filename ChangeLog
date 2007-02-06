@@ -1,3 +1,25 @@
+2007-02-06  Klaus Treichel  <ktreichel@web.de>
+
+	* libffi/configure.ac, libffi/configure: Remuve the testsuite from the
+	subdirs and fix the multilib support for pnet.
+
+2007-02-06  Robert Schwebel  <r.schwebel@pengutronix.de>
+
+	* Makefile.am, auto_gen.sh, configure.in, codegen/Makefile.am,
+	cscc/bf/Makefile.am, cscc/bf/bf_defs.tc, cscc/c/Makefile.am,
+	cscc/c/c_defs.tc, cscc/common/Makefile.am, cscc/csharp/Makefile.am,
+	cscc/csharp/cs_defs.tc, cscc/java/Makefile.am, cscc/java/java_defs.tc,
+	csdoc/Makefile.am, doc/Makefile.am, doc/mkcvmdoc.sh, engine/Makefile.am,
+	ilasm/Makefile.am, include/Makefile.am, resgen/Makefile.am,
+	samples/Makefile.am, tests/Makefile.am: Fix build system by adding missing
+	sources which have to be in the distribution and excluding built sources.
+	Enable passing all arguments to configure to the configure of libffi and
+	libgc. Pimping auto_gen.sh. Hack the out of tree build in the cscc subdirs
+	which should be replaced by adding support to specify input- and/or output
+	dir.
+
+	* profiles/Makefile.am: Added
+
 2007-02-02  Radek Polak  <psonek2@seznam.cz>
 
 	* ilgac/ilgac.c: Fix problem with make uninstall in pnetlib on cygwin.

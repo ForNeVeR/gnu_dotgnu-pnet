@@ -31,15 +31,15 @@ top_srcdir="$1"
 top_builddir="$2"
 
 # Make the output directory.
-if test ! -d "$top_srcdir/doc/cvmdoc" ; then
-	mkdir "$top_srcdir/doc/cvmdoc"
+if test ! -d "$top_builddir/doc/cvmdoc" ; then
+	mkdir "$top_builddir/doc/cvmdoc"
 fi
 
 # Create the "cvm.xml" file from the interpreter sources.
-if "$top_builddir/csdoc/src2xml" "$top_srcdir"/engine/cvm*.c >"$top_srcdir/doc/cvmdoc/cvm.xml" ; then
+if "$top_builddir/csdoc/src2xml" "$top_srcdir"/engine/cvm*.c >"$top_builddir/doc/cvmdoc/cvm.xml" ; then
 	:
 else
-	rm -f "$top_srcdir/doc/cvmdoc/cvm.xml"
+	rm -f "$top_builddir/doc/cvmdoc/cvm.xml"
 	echo "$0: src2xml failed"
 	exit 1
 fi
@@ -48,10 +48,10 @@ fi
 # Python is not present or it doesn't have sufficient modules
 # to process the XML input.  We continue in this case so that
 # the main documentation build can complete.
-if python "$top_srcdir/doc/cvmdoc.py" "$top_srcdir/doc/cvmdoc" "$top_srcdir/engine/cvm.h" <"$top_srcdir/doc/cvmdoc/cvm.xml"; then
+if python "$top_srcdir/doc/cvmdoc.py" "$top_srcdir/doc/cvmdoc" "$top_srcdir/engine/cvm.h" <"$top_builddir/doc/cvmdoc/cvm.xml"; then
 	:
 else
-	touch "$top_srcdir/doc/cvmdoc/index.html"
+	touch "$top_builddir/doc/cvmdoc/index.html"
 	echo "$0: cvmdoc.py failed - dummy CVM documentation generated"
 	echo "$0: this error is not serious and can be safely ignored"
 	exit 0

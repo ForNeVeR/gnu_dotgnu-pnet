@@ -863,6 +863,11 @@ internal abstract class DrawingWindow : IToolkitWindow
 			if (toolkit.windows[to] == toWindow)
 				break;
 		}
+		if(to == toolkit.windowCount)
+		{
+			to--;
+		}
+
 		if (from == to + 1 || from == to)
 			return;
 		DrawingWindow[] move = new DrawingWindow[16];

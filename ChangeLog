@@ -10,7 +10,7 @@
 2007-02-05  Deryk Robosson  <drobosson@gmail.com>
 
 	* System.Windows.Forms/TreeNode.cs: Check if index will put us below
-	zero before referencing.
+	zero before referencing. (bug #18929)
 
 2007-01-31  Radek Polak  <psonek2@seznam.cz>
 

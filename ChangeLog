@@ -1,3 +1,7 @@
+2007-02-09  Radek Polak  <psonek2@seznam.cz>
+
+	* pnet/engine/debugger.c: Make show_dasm command work with jit coder.
+
 2007-02-06  Klaus Treichel  <ktreichel@web.de>
 
 	* libffi/configure.ac, libffi/configure: Remuve the testsuite from the

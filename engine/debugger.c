@@ -486,11 +486,16 @@ static void DumpMethod(FILE *stream, ILMethod *method, int indent)
  * Dump position of execution.
  */
 void DumpExecPosition(FILE *stream, ILMethod *method,
-							ILUInt32 offset, const char *sourceFile,
+							ILUInt32 offset, void *pc, const char *sourceFile,
 							ILUInt32 line, ILUInt32 col, int indent)
 {
 	Indent(stream, indent);
-	fprintf(stream, "<ExecPosition Offset=\"%d\">\n", offset);
+	fprintf(stream, "<ExecPosition Offset=\"%d\"", offset);
+	if(pc != 0)
+	{
+		fprintf(stream, " PC=\"%p\"", pc);
+	}
+	fputs(">\n", stream);
 	DumpMethod(stream, method, indent + 2);
 	DumpLocation(stream, sourceFile, line, col, indent + 2);
 	Indent(stream, indent);
@@ -506,6 +511,7 @@ void DumpBreakpoint(FILE *stream, ILBreakpoint *breakpoint, int indent)
 	fprintf(stream, "<Breakpoint Id=\"%d\" >\n", breakpoint->id);
 	DumpExecPosition(stream, breakpoint->method,
 							breakpoint->offset,
+							0,
 							breakpoint->sourceFile,
 							breakpoint->line,
 							breakpoint->col, indent + 2);
@@ -553,7 +559,7 @@ static void DumpCallFrame(FILE *stream, ILDebugger *debugger,
 
 	/* Dump the frame */
 	DumpExecPosition(stream, frame->method,
-						offset, sourceFile,
+						offset, 0, sourceFile,
 						line, col, indent);
 }
 #endif	// IL_USE_CVM
@@ -1167,9 +1173,11 @@ void ShowPosition(ILDebugger *debugger, FILE *stream)
 	UpdateLocation(debugger);
 	DumpExecPosition(stream, debugger->dbthread->method,
 								debugger->dbthread->offset,
+								0,
 								debugger->dbthread->sourceFile,
 								debugger->dbthread->line,
-								debugger->dbthread->col, 0);
+								debugger->dbthread->col,
+								0);
 }
 
 /*
@@ -1230,6 +1238,7 @@ void ShowStackTrace(ILDebugger *debugger, FILE *stream)
 	ILUInt32 line;
 	ILUInt32 col;
 	const char *sourceFile;
+	void *pc;
 
 	/* Get jit stack trace */
 	stackTrace = debugger->dbthread->jitStackTrace;
@@ -1263,10 +1272,11 @@ void ShowStackTrace(ILDebugger *debugger, FILE *stream)
 
 				/* Read current position from debug info */
 				sourceFile = GetLocation(method, offset, &line, &col);
+				pc = jit_stack_trace_get_pc(stackTrace, current);
 
 				/* Dump the frame */
-				DumpExecPosition(stream, method, offset, sourceFile,
-																line, col, 4);
+				DumpExecPosition(stream, method, offset, pc,
+												sourceFile, line, col, 4);
 			}
 		}
 	}
@@ -1712,6 +1722,12 @@ void IsStopped(ILDebugger *debugger, FILE *stream)
  */
 void ShowDasm(ILDebugger *debugger, FILE *stream)
 {
+	char *str;
+	long pos;
+
+	/* Remeber current position before dump */
+	pos = ftell(stream);
+
 #ifdef IL_USE_JIT
 	ILJitFunction func = ILJitFunctionFromILMethod(debugger->dbthread->method);
 	jit_dump_function(stream, func, ILMethod_Name(debugger->dbthread->method));
@@ -1720,7 +1736,34 @@ void ShowDasm(ILDebugger *debugger, FILE *stream)
 	_ILDumpCVMInsn(stream, debugger->dbthread->method,
 										debugger->dbthread->execThread->pc);
 #endif
+
+	/* Read stream to memory so that we can dump with xml quoting */
+	str = ReadStream(stream);
+
+	/* Restore position */
+	fseek(stream, pos, SEEK_SET);
+
+	if(!str)
+	{
+		DumpError("Out of memory", stream);
+		return;
+	}
+
+	fputs("<Dasm>\n", stream);
+	fputs("<Text>\n", stream);
+	DumpString(str + pos, stream);
+	fputs("</Text>\n", stream);
+	fputs("</Dasm>\n", stream);
+
+	ILFree(str);
 }
+
+/* TODO we need to link against ildasm
+
+#include "../ildasm/ildasm_utils.c"
+#include "../ildasm/ildasm_attrs.c"
+#include "../ildasm/ildasm_method.c"
+*/
 
 /*
  * show_ildasm command.
@@ -1731,7 +1774,8 @@ void ShowIldasm(ILDebugger *debugger, FILE *stream)
 	ILImage *image;
 
 	image = ILClassToImage(ILMethod_Owner(debugger->dbthread->method));
-	ILDAsmDumpMethod(image, stream, debugger->dbthread->method, 0, 0); */
+	ILDAsmDumpMethod(image, stream, debugger->dbthread->method, 0, 0);
+	*/
 }
 
 /*

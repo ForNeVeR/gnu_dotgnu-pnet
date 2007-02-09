@@ -1,5 +1,5 @@
 /*
- * ildasm_data.c - Dump ".data" blocks.
+ * dump_data.c - Dump ".data" blocks.
  *
  * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
  *
@@ -18,7 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "ildasm_internal.h"
+#include "il_dumpasm.h"
+#include "il_system.h"
 
 #ifdef	__cplusplus
 extern	"C" {

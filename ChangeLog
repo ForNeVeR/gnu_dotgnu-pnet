@@ -1,5 +1,25 @@
 2007-02-09  Radek Polak  <psonek2@seznam.cz>
 
+	* dumpasm/Makefile.am, ildasm/Makefile.am, ildasm/ildasm_main.c,
+	include/il_dumpasm.h: Move all disassembler functions to dumpasm
+	library so that debugger can use it.
+
+	* ildasm/ildasm_attrs.c, ildasm/ildasm_class.c, ildasm/ildasm_data.c,
+	ildasm/ildasm_global.c, ildasm/ildasm_java.c, ildasm/ildasm_method.c,
+	ildasm/ildasm_utils.c: Moved to dumpasm directory under appropriate
+	filenames.
+
+	* dumpasm/dump_attrs.c, dumpasm/dump_class.c, dumpasm/dump_data.c,
+	dumpasm/dump_global.c, dumpasm/dump_java.c, dumpasm/dump_method.c,
+	dumpasm/dump_utils.c: New files comming from ildasm directory.
+
+	* ildasm/ildasm_internal.h: Removed this file, the definitions are now
+	in il_dumpasm.h.
+
+	* engine/debugger.c: Make show_ildasm command work.
+
+2007-02-09  Radek Polak  <psonek2@seznam.cz>
+
 	* pnet/engine/debugger.c: Make show_dasm command work with jit coder.
 
 2007-02-06  Klaus Treichel  <ktreichel@web.de>

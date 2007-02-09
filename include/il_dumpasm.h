@@ -38,6 +38,15 @@ extern	"C" {
 #define	IL_DUMP_C_TYPES				32
 
 /*
+ * Extra flags for altering the output, in addition to "IL_DUMP_xxx".
+ */
+#define	ILDASM_REAL_OFFSETS			(1 << 8)
+#define	ILDASM_SUPPRESS_PREFIX		(1 << 9)
+#define	ILDASM_NO_IL				(1 << 10)
+#define	ILDASM_INSTRUCTION_BYTES	(1 << 11)
+#define ILDASM_RESOLVE_ALL			(1 << 12)
+
+/*
  * Structure of a flag information block.  This is used when
  * dumping the contents of a flag mask.  If "mask" is zero,
  * then "flag" indicates the flag bit to be selected.  If "mask"
@@ -152,6 +161,63 @@ void ILDumpNativeType(FILE *stream, const void *type,
  * values in hexadecimal.
  */
 void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats);
+
+/*
+ * Dump a binary blob to an output stream.
+ */
+void ILDAsmDumpBinaryBlob(FILE *outstream, ILImage *image,
+						  const void *blob, ILUInt32 blobLen);
+
+/*
+ * Walk a list of tokens and call a supplied callback for each one.
+ */
+typedef void (*ILDAsmWalkFunc)(ILImage *image, FILE *outstream, int flags,
+							   unsigned long token, void *data,
+							   unsigned long refToken);
+void ILDAsmWalkTokens(ILImage *image, FILE *outstream, int flags,
+					  unsigned long tokenKind, ILDAsmWalkFunc callback,
+					  unsigned long refToken);
+
+/*
+ * Dump the contents of a method.
+ */
+void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
+					  ILMethod *method, int flags,
+					  int isEntryPoint);
+
+/*
+ * Dump the contents of a Java method.
+ */
+void ILDAsmDumpJavaMethod(ILImage *image, FILE *outstream,
+					      ILMethod *method, int flags);
+
+/*
+ * Dump custom attributes for a program item.
+ */
+void ILDAsmDumpCustomAttrs(ILImage *image, FILE *outstream, int flags,
+						   int indent, ILProgramItem *item);
+
+/*
+ * Dump global definitions such as modules, assemblies, etc.
+ */
+void ILDAsmDumpGlobal(ILImage *image, FILE *outstream, int flags);
+
+/*
+ * Dump all class definitions.
+ */
+void ILDAsmDumpClasses(ILImage *image, FILE *outstream, int flags);
+
+/*
+ * Dump the security information associated with a program item.
+ */
+void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
+						ILProgramItem *item, int flags);
+
+/*
+ * Dump the ".data" and ".tls" sections.
+ */
+void ILDAsmDumpDataSections(FILE *outstream, ILImage *image);
+
 
 #ifdef	__cplusplus
 };

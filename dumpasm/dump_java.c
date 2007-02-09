@@ -1,5 +1,5 @@
 /*
- * ildasm_java.c - Disassemble Java method contents.
+ * dump_java.c - Disassemble Java method contents.
  *
  * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
  *
@@ -18,8 +18,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "ildasm_internal.h"
+#include "il_dumpasm.h"
 #include "il_jopcodes.h"
+#include "il_system.h"
+#include "il_opcodes.h"
 
 #ifdef	__cplusplus
 extern	"C" {

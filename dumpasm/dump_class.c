@@ -1,5 +1,5 @@
 /*
- * ildasm_class.c - Disassemble class information.
+ * dump_class.c - Disassemble class information.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
@@ -18,7 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "ildasm_internal.h"
+#include "il_dumpasm.h"
+#include "il_system.h"
 
 #ifdef	__cplusplus
 extern	"C" {

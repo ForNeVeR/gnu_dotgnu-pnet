@@ -30,7 +30,6 @@
 #include "engine.h"
 #include "cvm.h"
 #include "debugger.h"
-#include "../ildasm/ildasm_internal.h"
 
 #ifdef IL_USE_JIT
 #include <jit/jit-dump.h>
@@ -1758,24 +1757,41 @@ void ShowDasm(ILDebugger *debugger, FILE *stream)
 	ILFree(str);
 }
 
-/* TODO we need to link against ildasm
-
-#include "../ildasm/ildasm_utils.c"
-#include "../ildasm/ildasm_attrs.c"
-#include "../ildasm/ildasm_method.c"
-*/
-
 /*
  * show_ildasm command.
  */
 void ShowIldasm(ILDebugger *debugger, FILE *stream)
 {
-	/* TODO we need to link against ildasm
 	ILImage *image;
+
+	char *str;
+	long pos;
+
+	/* Remeber current position before dump */
+	pos = ftell(stream);
 
 	image = ILClassToImage(ILMethod_Owner(debugger->dbthread->method));
 	ILDAsmDumpMethod(image, stream, debugger->dbthread->method, 0, 0);
-	*/
+
+	/* Read stream to memory so that we can dump with xml quoting */
+	str = ReadStream(stream);
+
+	/* Restore position */
+	fseek(stream, pos, SEEK_SET);
+
+	if(!str)
+	{
+		DumpError("Out of memory", stream);
+		return;
+	}
+
+	fputs("<ILDasm>\n", stream);
+	fputs("<Text>\n", stream);
+	DumpString(str + pos, stream);
+	fputs("</Text>\n", stream);
+	fputs("</ILDasm>\n", stream);
+
+	ILFree(str);
 }
 
 /*

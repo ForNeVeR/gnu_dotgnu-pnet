@@ -1,3 +1,11 @@
+2007-02-11  Radek Polak  <psonek2@seznam.cz>
+
+	* include/il_dumpasm.h, dumpasm/dump_method.c: Added option for
+	printing IL offsets in dumped function.
+
+	* engine/debugger.c: Dump offsets so that debugger can display
+	current position in IL disassembly.
+
 2007-02-11 Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cctormgr.c, engine/cctormgr.h: Add support for locking methods

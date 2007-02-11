@@ -1771,7 +1771,7 @@ void ShowIldasm(ILDebugger *debugger, FILE *stream)
 	pos = ftell(stream);
 
 	image = ILClassToImage(ILMethod_Owner(debugger->dbthread->method));
-	ILDAsmDumpMethod(image, stream, debugger->dbthread->method, 0, 0);
+	ILDAsmDumpMethod(image, stream, debugger->dbthread->method, 0, 0, 1);
 
 	/* Read stream to memory so that we can dump with xml quoting */
 	str = ReadStream(stream);

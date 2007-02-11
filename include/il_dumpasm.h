@@ -183,7 +183,7 @@ void ILDAsmWalkTokens(ILImage *image, FILE *outstream, int flags,
  */
 void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 					  ILMethod *method, int flags,
-					  int isEntryPoint);
+					  int isEntryPoint, int dumpOffsets);
 
 /*
  * Dump the contents of a Java method.

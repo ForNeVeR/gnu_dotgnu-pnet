@@ -306,7 +306,7 @@ static void DumpToken(ILImage *image, FILE *outstream,
 static int DumpInstructions(ILImage *image, FILE *outstream,
 							unsigned char *buf, unsigned long size,
 							unsigned long addr, ILException *clauses,
-							int flags)
+							int flags, int dumpOffsets)
 {
 	ILUInt32 *jumpPoints;
 	int result = 0;
@@ -466,6 +466,11 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 		if((jumpPoints[offset / 32] & (ILUInt32)(1L << (offset % 32))) != 0)
 		{
 			fprintf(outstream, "\t?L%lx:\n", offset + addr);
+		}
+
+		if(dumpOffsets)
+		{
+			fprintf(outstream, "%ld", offset);
 		}
 
 		/* Extract the instruction from the method input stream */
@@ -876,7 +881,7 @@ static void DumpParameterAttributes(ILImage *image, FILE *outstream,
 
 void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 					  ILMethod *method, int flags,
-					  int isEntryPoint)
+					  int isEntryPoint, int dumpOffsets)
 {
 	unsigned long addr;
 	ILMethodCode code;
@@ -926,7 +931,7 @@ void ILDAsmDumpMethod(ILImage *image, FILE *outstream,
 
 	/* Dump the instructions within the method */
 	if(!DumpInstructions(image, outstream, (unsigned char *)(code.code),
-						 code.codeLen, addr, clauses, flags))
+						 code.codeLen, addr, clauses, flags, dumpOffsets))
 	{
 		ILMethodFreeExceptions(clauses);
 		return;

@@ -418,13 +418,17 @@ static void Coder_ConvertCustom(ILCoder *coder, int opcode,
 						    	void *customName, void *customCookie)
 {
 }
-static ILInt32 Coder_RunCCtors(ILCoder *coder)
+static ILInt32 Coder_RunCCtors(ILCoder *coder, void *userData)
 {
 	return 1;
 }
 static ILInt32 Coder_RunCCtor(ILCoder *coder, ILClass *classInfo)
 {
 	return 1;
+}
+static void *Coder_HandleLockedMethod(ILCoder *coder, ILMethod *method)
+{
+	return 0;
 }
 
 /*
@@ -538,6 +542,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_ConvertCustom,
 	Coder_RunCCtors,
 	Coder_RunCCtor,
+	Coder_HandleLockedMethod,
 	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};

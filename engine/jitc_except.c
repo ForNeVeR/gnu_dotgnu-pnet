@@ -530,11 +530,7 @@ static void JITCoder_Catch(ILCoder *_coder, ILException *exception,
 														(jit_nint)classInfo);
 	ILJitValue method = jit_value_create_nint_constant(jitCoder->jitFunction,
 													   _IL_JIT_TYPE_VPTR,
-#ifdef IL_JIT_ENABLE_CCTORMGR
 													   (jit_nint)ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)));
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
-													   (jit_nint)jitCoder->currentMethod);
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 	ILJitValue nullException = jit_value_create_nint_constant(jitCoder->jitFunction,
 															  _IL_JIT_TYPE_VPTR,
 														      (jit_nint)0);

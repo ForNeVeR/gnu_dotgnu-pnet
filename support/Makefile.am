@@ -59,6 +59,7 @@ libILSupport_a_SOURCES = aes.c \
 						 regex.c \
 						 rem_float.c \
 						 ripemd160.c \
+						 semaphore.c \
 						 serial.c \
 						 sha1.c \
 						 sha256.c \

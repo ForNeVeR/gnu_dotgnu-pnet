@@ -206,6 +206,7 @@ extern pthread_mutexattr_t _ILMutexAttr;
 #define	_ILSemaphoreDestroy(sem)	(sem_destroy((sem)))
 #define	_ILSemaphoreWait(sem)		(sem_wait((sem)))
 #define	_ILSemaphorePost(sem)		(sem_post((sem)))
+int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count);
 
 /*
  * Primitive condition variable operations.

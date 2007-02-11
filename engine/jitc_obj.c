@@ -301,11 +301,7 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 	{
 		args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
 												 _IL_JIT_TYPE_VPTR,
-#ifdef IL_JIT_ENABLE_CCTORMGR
 												 (jit_nint)ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)));
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
-												 (jit_nint)jitCoder->currentMethod);
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 		args[1] = _ILJitStackItemValue(object);
 		args[2] = classTo;
 		returnValue = jit_insn_call_native(jitCoder->jitFunction,
@@ -436,13 +432,8 @@ static void JITCoder_LoadStaticField(ILCoder *coder, ILField *field,
 #endif
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
 	{
-	#ifdef IL_JIT_ENABLE_CCTORMGR
 		/* Queue the cctor to run. */
 		ILCCtorMgr_OnStaticFieldAccess(&(jitCoder->cctorMgr), field);	
-	#else	/* !IL_JIT_ENABLE_CCTORMGR */
-		/* Output a call to the static constructor */
-		_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
-	#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 		/* Regular or thread-static field? */
 		if(!ILFieldIsThreadStatic(field))
@@ -577,13 +568,8 @@ static void JITCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 	}
 #endif
 
-#ifdef IL_JIT_ENABLE_CCTORMGR
 	/* Queue the cctor to run. */
 	ILCCtorMgr_OnStaticFieldAccess(&(jitCoder->cctorMgr), field);	
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
-	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 	/* Regular or RVA field? */
 	if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_RVA) == 0)
@@ -707,13 +693,8 @@ static void JITCoder_StoreStaticField(ILCoder *coder, ILField *field,
 	/* Pop the value off the stack. */
 	_ILJitStackPop(jitCoder, stackItem);
 
-#ifdef IL_JIT_ENABLE_CCTORMGR
 	/* Queue the cctor to run. */
 	ILCCtorMgr_OnStaticFieldAccess(&(jitCoder->cctorMgr), field);	
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
-	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILField_Owner(field), 1);
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 #ifdef IL_CONFIG_PINVOKE
 	if((field->member.attributes & IL_META_FIELDDEF_PINVOKE_IMPL) != 0 &&

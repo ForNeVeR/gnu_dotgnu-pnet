@@ -1,3 +1,43 @@
+2007-02-11 Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cctormgr.c, engine/cctormgr.h: Add support for locking methods
+	that require class initializers to be executed till the class initializers
+	finished executing.
+
+	* engine/convert.c: Use the new coder functions to handle the method locks
+	for the cvm coder. Remove the execution of class initializers for the jit
+	coder because that's handled in the coder itself.
+
+	* engine/cvmc.c: Add the new arg to the cctors execution and the method to
+	handle the method locks.
+
+	* engine/cvmc_call.c: Remove the queueing of the class initializer on
+	loading a function pointer on the stack.
+
+	* engine/jitc.c: Use the new on-demand compilation feature in libjit to
+	handle the method locks. Add the new arg to the cctors execution and the
+	method to handle the method locks.
+
+	* engine/jitc_call.c, engine/jitc_except.c, engine/jitc_inline.c,
+	engine/jitc_obj.c, setup.c: Remove all conditionals if the cctor manager
+	is enabled because the other option is removed.
+
+	* engine/null_coder.c: Add the new arg to the cctors execution and the
+	method to handle the method locks.
+
+	* include/il_coder.h: Add the new arg to the cctors execution and the
+	method to handle the method locks to the coder definition.
+
+	* include/il_thread.h: Add function prototypes for semaphores.
+
+	* support/Makefile.am: Add the new file semaphores.c to the sources.
+
+	* support/pt_defs.c, support/pt_defs.h, support/no_defs.s,
+	support/win32_defs.h: Add a semaphore primitive for increasing the
+	semaphore count by more than 1.
+
+	* support/semaphore.c: Added.
+
 2007-02-09  Radek Polak  <psonek2@seznam.cz>
 
 	* dumpasm/Makefile.am, ildasm/Makefile.am, ildasm/ildasm_main.c,

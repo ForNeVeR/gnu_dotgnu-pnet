@@ -156,6 +156,10 @@ typedef CRITICAL_SECTION	_ILRWLock;
 			do { \
 				ReleaseSemaphore(*(sem), 1, NULL); \
 			} while (0)
+#define	_ILSemaphorePostMultiple(sem, count)	\
+			do { \
+				ReleaseSemaphore(*(sem), (count), NULL); \
+			} while (0)
 
 /*
  * Primitive condition variable operations.

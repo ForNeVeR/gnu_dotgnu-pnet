@@ -480,10 +480,6 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-#ifndef IL_JIT_ENABLE_CCTORMGR
-	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 0);
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	methodName = _ILJitFunctionGetMethodName(jitFunction);
@@ -516,6 +512,8 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	#endif
 
 		/* Call the engine function directly with the supplied args. */
+		/* Queue the cctor to run. */
+		ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
 	#ifdef IL_JIT_THREAD_IN_SIGNATURE
 		destroyCallSignature = _ILJitFillArguments(jitCoder,
 												   methodInfo,
@@ -824,16 +822,14 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 	type = ILType_FromClass(classInfo);
 	synType = ILClassGetSynType(classInfo);
 
-#ifndef IL_JIT_ENABLE_CCTORMGR
-	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
-
 	/* Check if the function is implemented in the engine. */
 	if((internalType = _ILJitFunctionIsInternal(jitCoder, methodInfo, &fnInfo, 1)))
 	{
 		ILJitValue thread = _ILJitCoderGetThread(jitCoder);
 
+		/* Queue the cctor to run. */
+		ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
+	
 		/* Call the engine function directly with the supplied args. */
 		if(internalType == _IL_JIT_IMPL_INTERNALALLOC)
 		{
@@ -1704,11 +1700,7 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	{
 		jit_insn_mark_breakpoint(jitCoder->jitFunction,
 								 JIT_DEBUGGER_DATA1_METHOD_LEAVE,
-	#ifdef IL_JIT_ENABLE_CCTORMGR
 								 (jit_nint) ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)));
-	#else	/* !IL_JIT_ENABLE_CCTORMGR */
-								 (jit_nint) jitCoder->currentMethod);
-	#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 	}
 #endif
 
@@ -1790,13 +1782,6 @@ static void JITCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 		}
 		jitFunction = ILJitFunctionFromILMethod(methodInfo);
 	}
-#ifdef IL_JIT_ENABLE_CCTORMGR
-	/* Queue the cctor to run. */
-	ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
-	/* Output a call to the static constructor */
-	_ILJitCallStaticConstructor(jitCoder, ILMethod_Owner(methodInfo), 1);
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 #ifndef IL_JIT_FNPTR_ILMETHOD
 	/* Get the vtable pointer for the function. */
 	function = jit_function_to_vtable_pointer(jitFunction);

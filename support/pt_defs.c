@@ -286,6 +286,28 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 	}
 }
 
+/*
+ * Increase the semaphore count by count to release count threads waiting
+ * at the semaphore.
+ */
+int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count)
+{
+	if((count > 0) && (count < IL_MAX_INT32))
+	{
+		ILUInt32 current;
+
+		for(current = 0; current < count; current++)
+		{
+			if(sem_post(sem))
+			{
+				return 0;
+			}
+		}
+		return 1;
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

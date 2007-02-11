@@ -74,11 +74,6 @@ extern	"C" {
 /* #define _IL_JIT_ENABLE_INLINE 1 */
 
 /*
- * To enable the cctor manager uncomment define the following define.
- */
-#define IL_JIT_ENABLE_CCTORMGR
-
-/*
  * Acquire and release the metadata lock, while suppressing finalizers
  * Must be kept in sync with convert.c
  */
@@ -334,6 +329,11 @@ static ILJitType _ILJitSignature_ILInterlockedIncrement = 0;
 #endif
 
 /*
+ * Handle locked methods in the jit coder.
+ */
+static void *JITCoder_HandleLockedMethod(ILCoder *coder, ILMethod *method);
+
+/*
  * Forward declaration of the JIT coder's instance block.
  */
 typedef struct _tagILJITCoder ILJITCoder;
@@ -415,9 +415,6 @@ struct _tagILJITCoder
 	ILExecProcess  *process;
 	jit_context_t   context;
 
-#ifndef IL_JIT_ENABLE_CCTORMGR
-	ILMethod	   *currentMethod;
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 	int				debugEnabled;
 	int				flags;
 
@@ -1966,64 +1963,6 @@ static ILUInt32 _ILJitGetSizeOfClass(ILClass *info)
 	return((ILUInt32)jit_type_get_size(classPrivate->jitTypes.jitTypeBase));
 }
 
-#ifndef IL_JIT_ENABLE_CCTORMGR
-/*
- * Call the static constructor for a class if necessary.
- */
-static void _ILJitCallStaticConstructor(ILJITCoder *coder, ILClass *classInfo,
-								  int isCtor)
-{
-	if((classInfo->attributes & IL_META_TYPEDEF_CCTOR_ONCE) != 0)
-	{
-		/* We already know that the static constructor has been called,
-		   so there is no point outputting a call to it again */
-		return;
-	}
-	if(isCtor ||
-	   (classInfo->attributes & IL_META_TYPEDEF_BEFORE_FIELD_INIT) == 0)
-	{
-		/* We must call the static constructor before instance
-		   constructors, or before static methods when the
-		   "beforefieldinit" attribute is not present */
-		ILMethod *cctor = 0;
-		while((cctor = (ILMethod *)ILClassNextMemberByKind
-					(classInfo, (ILMember *)cctor,
-					 IL_META_MEMBERKIND_METHOD)) != 0)
-		{
-			if(ILMethod_IsStaticConstructor(cctor))
-			{
-				break;
-			}
-		}
-		if(cctor != 0)
-		{
-			/* Don't call it if we are within the constructor already */
-			if(cctor != coder->currentMethod)
-			{
-				/* Output a call to the static constructor */
-			#ifdef IL_JIT_THREAD_IN_SIGNATURE
-				jit_value_t thread = _ILJitCoderGetThread(coder);
-
-				jit_insn_call(coder->jitFunction, "cctor",
-								ILJitFunctionFromILMethod(cctor), 0,
-								&thread, 1, 0);
-			#else
-				jit_insn_call(coder->jitFunction, "cctor",
-								ILJitFunctionFromILMethod(cctor), 0,
-								0, 0, 0);
-			#endif
-			}
-		}
-		else
-		{
-			/* This class does not have a static constructor,
-			   so mark it so that we never do this test again */
-			classInfo->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
-		}
-	}
-}
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
-
 /*
  * The exception handler which converts libjit inbuilt exceptions
  * into clr exceptions.
@@ -2120,6 +2059,123 @@ static void _ILJitThrowCurrentException(ILJITCoder *coder)
 							offsetof(ILExecThread, thrownException),
 							nullException);
 	jit_insn_throw(coder->jitFunction, thrownException);
+}
+
+/*
+ * The on demand driver function for libjit.
+ */
+static void *_ILJitOnDemandDriver(ILJitFunction func)
+{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	char *methodName = _ILJitFunctionGetMethodName(func);
+#endif
+	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
+	ILClass *info = ILMethod_Owner(method);
+	ILClassPrivate *classPrivate = (ILClassPrivate *)info->userData;
+	ILExecProcess *process = classPrivate->process;
+	ILJITCoder *jitCoder = (ILJITCoder *)process->coder;
+	void *entry_point;
+	jit_on_demand_func onDemandCompiler;
+	int result = JIT_RESULT_OK;
+	jit_context_t context = jit_function_get_context(func);
+
+	if(!context)
+	{
+		result = JIT_RESULT_COMPILE_ERROR;
+		jit_exception_builtin(result);
+	}
+
+	/* Lock the metadata. */
+	METADATA_WRLOCK(process);
+
+	/* Handle a locked method. */
+	if((entry_point = JITCoder_HandleLockedMethod(process->coder, method)))
+	{
+		/* Unlock the metadata. */
+		METADATA_UNLOCK(process);
+
+		return entry_point;
+	}
+
+	/* Set the function info in the jit coder. */
+	jitCoder->jitFunction = func;
+	ILCCtorMgr_SetCurrentMethod(&(jitCoder->cctorMgr), method);
+	jitCoder->cctorMgr.currentJitFunction = func;
+
+	/* Lock down the context. */
+	jit_context_build_start(context);
+
+	if(!(onDemandCompiler = jit_function_get_on_demand_compiler(func)))
+	{
+		result = JIT_RESULT_COMPILE_ERROR;
+
+		/* Unlock the context. */
+		jit_context_build_end(context);
+
+		/* Unlock the metadata. */
+		METADATA_UNLOCK(process);
+
+		/* And throw an exception. */
+		jit_exception_builtin(result);
+	}
+
+	if((result = (*onDemandCompiler)(func)) == JIT_RESULT_OK)
+	{
+	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	#ifdef _IL_JIT_DUMP_FUNCTION
+		if(jitCoder->flags & IL_CODER_FLAG_STATS)
+		{
+			ILMutexLock(globalTraceMutex);
+			jit_dump_function(stdout, func, methodName);
+			ILMutexUnlock(globalTraceMutex);
+		}
+	#endif	/* _IL_JIT_DUMP_FUNCTION */
+	#endif
+
+		/* Now compile the function to it's native form. */
+		if(!jit_function_compile_entry(func, &entry_point))
+		{
+			/* How are errors handled ? */
+
+			/* Unlock the context. */
+			jit_context_build_end(context);
+
+			/* Unlock the metadata. */
+			METADATA_UNLOCK(process);
+
+			/* And throw an exception. */
+			jit_exception_builtin(JIT_RESULT_OUT_OF_MEMORY);
+		}
+
+		/* Unlock the context. */
+		jit_context_build_end(context);
+
+		/* and run the queued class initializers. */
+		ILCCtorMgr_RunCCtors(&(jitCoder->cctorMgr), entry_point);
+
+	#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
+	#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
+		if(jitCoder->flags & IL_CODER_FLAG_STATS)
+		{
+			ILMutexLock(globalTraceMutex);
+			jit_dump_function(stdout, func, methodName);
+			ILMutexUnlock(globalTraceMutex);
+		}
+	#endif	/* _IL_JIT_DISASSEMBLE_FUNCTION */
+	#endif
+	}
+	else
+	{
+		/* Unlock the context. */
+		jit_context_build_end(context);
+
+		/* Unlock the metadata. */
+		METADATA_UNLOCK(process);
+
+		/* And throw an exception. */
+		jit_exception_builtin(result);
+	}
+	return entry_point;
 }
 
 /*
@@ -2447,6 +2503,7 @@ int ILJitInit()
 
 	return 1;
 }
+
 /*
  * Create a new JIT coder instance.
  */
@@ -2480,6 +2537,10 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 		ILFree(coder);
 		return 0;
 	}
+
+	/* Set the on demand compilation driver for this context. */
+	jit_context_set_on_demand_driver(coder->context,
+									 _ILJitOnDemandDriver);
 
 #ifndef IL_JIT_THREAD_IN_SIGNATURE
 	coder->thread = 0;
@@ -2744,11 +2805,7 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 	{
 		/* Mark breakpoint that reports current ILMethod and IL offset */
 		jit_insn_mark_breakpoint(jitCoder->jitFunction,
-	#ifdef IL_JIT_ENABLE_CCTORMGR
 								 (jit_nint) ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)),
-	#else	/* !IL_JIT_ENABLE_CCTORMGR */
-								 (jit_nint) jitCoder->currentMethod,
-	#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 								 (jit_nint) offset);
 	}
 #endif
@@ -2757,18 +2814,11 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 /*
  * Run the class initializers queued during generation of the last method.
  */
-static ILInt32 JITCoder_RunCCtors(ILCoder *coder)
+static ILInt32 JITCoder_RunCCtors(ILCoder *coder, void *userData)
 {
-#ifdef IL_JIT_ENABLE_CCTORMGR
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
-	return ILCCtorMgr_RunCCtors(&(jitCoder->cctorMgr));
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
-	ILExecThread *thread = ILExecThreadCurrent();
-
-	METADATA_UNLOCK(_ILExecThreadProcess(thread));
-	return 1;
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
+	return ILCCtorMgr_RunCCtors(&(jitCoder->cctorMgr), userData);;
 }
 
 /*
@@ -2779,6 +2829,16 @@ static ILInt32 JITCoder_RunCCtor(ILCoder *coder, ILClass *classInfo)
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
 	return ILCCtorMgr_RunCCtor(&(jitCoder->cctorMgr), classInfo);
+}
+
+/*
+ * Handle the method lock while running class initializers.
+ */
+static void *JITCoder_HandleLockedMethod(ILCoder *coder, ILMethod *method)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	return ILCCtorMgr_HandleLockedMethod(&(jitCoder->cctorMgr), method);
 }
 
 #ifdef IL_CONFIG_PINVOKE
@@ -3085,7 +3145,7 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 static int _ILJitCompileInternal(ILJitFunction func)
 {
 	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
-#if (!defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)) || defined(IL_JIT_ENABLE_CCTORMGR)
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	ILClassPrivate *classPrivate = (ILClassPrivate *)(ILMethod_Owner(method)->userData);
 	ILJITCoder *jitCoder = (ILJITCoder *)(classPrivate->process->coder);
 #endif
@@ -3112,12 +3172,6 @@ static int _ILJitCompileInternal(ILJitFunction func)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
-
-#ifdef IL_JIT_ENABLE_CCTORMGR
-	METADATA_WRLOCK(jitCoder->process);
-	jitCoder->jitFunction = func;
-	ILCCtorMgr_SetCurrentMethod(&(jitCoder->cctorMgr), method);
-#endif /* IL_JIT_ENABLE_CCTORMGR */
 
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	for(current = 1; current < numParams; ++current)
@@ -3146,28 +3200,6 @@ static int _ILJitCompileInternal(ILJitFunction func)
 #endif
 	jit_insn_return(func, returnValue);	
 
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-#ifdef _IL_JIT_DUMP_FUNCTION
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
-	{
-		ILMutexLock(globalTraceMutex);
-		jit_dump_function(stdout, func, methodName);
-		ILMutexUnlock(globalTraceMutex);
-	}
-#endif
-#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
-	{
-		if(!jit_function_compile(func))
-		{
-			return IL_CODER_END_TOO_BIG;
-		}
-		ILMutexLock(globalTraceMutex);
-		jit_dump_function(stdout, func, methodName);
-		ILMutexUnlock(globalTraceMutex);
-	}
-#endif
-#endif
 	return JIT_RESULT_OK;
 }
 
@@ -4567,6 +4599,7 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_ConvertCustom,
 	JITCoder_RunCCtors,
 	JITCoder_RunCCtor,
+	JITCoder_HandleLockedMethod,
 	"sentinel"
 };
 #ifdef	__cplusplus

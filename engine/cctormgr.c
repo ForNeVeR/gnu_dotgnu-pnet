@@ -26,15 +26,317 @@ extern	"C" {
 #endif
 
 /*
- * Reenable finalizers, unlock the metadata lock and run finalizers.
+ * Acquire and release the metadata lock, while suppressing finalizers
  * Must be kept in sync with convert.c
  */
-#define	METADATA_UNLOCK(thread)	\
+#define	METADATA_WRLOCK(process)	\
+			do { \
+				IL_METADATA_WRLOCK(process); \
+				ILGCDisableFinalizers(0); \
+			} while (0)
+#define	METADATA_UNLOCK(process)	\
 			do { \
 				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
+				IL_METADATA_UNLOCK(process); \
 				ILGCInvokeFinalizers(0); \
 			} while (0)
+
+/*
+ * Free an ILMethodLockEntry.
+ */
+static void _ILMethodLockEntry_Destroy(ILMethodLockPool *lockPool,
+									   ILMethodLockEntry *lockEntry)
+{
+	if(lockPool && lockEntry)
+	{
+		/* Destroy the semaphore object. */
+		ILSemaphoreDestroy(lockEntry->sem);
+
+		/* And free the memory. */
+		ILFree(lockEntry->sem);
+
+		/* Free this lock entry. */
+		ILMemPoolFree(&(lockPool->methodPool), lockEntry);
+	}
+}
+
+/*
+ * Initialize a mathod lock pool.
+ */
+static int _ILMethodLockPool_Init(ILMethodLockPool *lockPool)
+{
+	if(lockPool)
+	{
+		/* Initialize the lock mutex. */
+		if(!(lockPool->lock = ILMutexCreate()))
+		{
+			return 0;
+		}
+
+		/* Intialize the pool for the class infos. */
+		ILMemPoolInit(&(lockPool->methodPool),
+					  sizeof(ILMethodLockEntry),
+					  5);
+
+		lockPool->lastLockedMethod = 0;
+
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Destroy a mathod lock pool.
+ */
+static int _ILMethodLockPool_Destroy(ILMethodLockPool *lockPool)
+{
+	if(lockPool)
+	{
+		ILMemPoolDestroy(&(lockPool->methodPool));
+
+		if(lockPool->lock)
+		{
+			/* Destroy the lock mutex. */
+			ILMutexDestroy(lockPool->lock);
+
+			ILFree(lockPool->lock);
+		}
+	}
+	return 0;
+}
+
+/*
+ * Add a method to the lock pool.
+ * Returns 0 on failure.
+ */
+static int _ILMethodLockPool_LockMethod(ILMethodLockPool *lockPool,
+										ILMethod *method,
+										void *userData)
+{
+	if(lockPool)
+	{
+		ILExecThread *thread = ILExecThreadCurrent();
+		ILMethodLockEntry *currentLockEntry;
+
+		ILMutexLock(lockPool->lock);
+
+		if(!(currentLockEntry = ILMemPoolAlloc(&(lockPool->methodPool),
+											   ILMethodLockEntry)))
+		{
+			ILMutexUnlock(lockPool->lock);
+			return 0;
+		}
+
+		if(!(currentLockEntry->sem = ILSemaphoreCreate()))
+		{
+			ILMemPoolFree(&(lockPool->methodPool), currentLockEntry);
+			ILMutexUnlock(lockPool->lock);
+			return 0;
+		}
+		/* We are using the support thread (ILThread) here to avoid */
+		/* blocking during execution of finalizers where the ILExecThread */
+		/* for the same ILThread might change. */
+		currentLockEntry->thread = thread->supportThread;
+
+		currentLockEntry->method = method;
+		currentLockEntry->numWaitingThreads = 0;
+		currentLockEntry->userData = userData;
+		currentLockEntry->nextEntry = lockPool->lastLockedMethod;
+		lockPool->lastLockedMethod = currentLockEntry;
+
+		ILMutexUnlock(lockPool->lock);
+
+		/* Return with success. */
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Unlock a locked method.
+ */
+static void *_ILMethodLockPool_UnlockMethod(ILMethodLockPool *lockPool,
+										   ILMethod *method)
+{
+	if(lockPool)
+	{
+		ILMethodLockEntry *currentLockEntry = lockPool->lastLockedMethod;
+
+		if(currentLockEntry)
+		{
+			/* Lock the lock pool. */
+			ILMutexLock(lockPool->lock);
+
+			currentLockEntry = lockPool->lastLockedMethod;
+
+			if(currentLockEntry)
+			{
+				if(currentLockEntry->method == method)
+				{
+					lockPool->lastLockedMethod = currentLockEntry->nextEntry;
+				}
+				else
+				{
+					ILMethodLockEntry *tempLockEntry;
+
+					while(currentLockEntry)
+					{
+						if((currentLockEntry->nextEntry) &&
+						   (currentLockEntry->nextEntry->method == method))
+						{
+							tempLockEntry = currentLockEntry->nextEntry;
+							currentLockEntry->nextEntry = currentLockEntry->nextEntry->nextEntry;
+							currentLockEntry = tempLockEntry;
+							break;
+						}
+						currentLockEntry = currentLockEntry->nextEntry;
+					}
+				}				
+				if(currentLockEntry)
+				{
+					/* We found the lock entry for the given method and */
+					/* unlinked it from the list. */
+					/* So the locked method can't be found by any other */
+					/* thread now. */
+
+					void *userData = currentLockEntry->userData;
+
+					if(currentLockEntry->numWaitingThreads == 0)
+					{
+						/* There are no threads waiting for thie method. */
+						/* So we have to destroy the lock entry here. */
+
+						_ILMethodLockEntry_Destroy(lockPool, currentLockEntry);
+					}
+					else
+					{
+						/* Release all threads waiting for this method. */
+						ILSemaphorePostMultiple(currentLockEntry->sem,
+												currentLockEntry->numWaitingThreads);
+					}
+					/* Unlock the lock pool. */
+					ILMutexUnlock(lockPool->lock);
+
+					return userData;
+				}
+			}
+
+			/* Unlock the lock pool. */
+			ILMutexUnlock(lockPool->lock);
+		}
+	}
+	return 0;
+}
+
+/*
+ * Check if a method is locked and block the calling thread if the method is
+ * locked by an other thread.
+ * If the method is locked by the current thread the userData entry of the
+ * lock entry is returned.
+ * Returns 0 if the method is not locked, 
+ */
+void *ILMethodLockPool_HandleLockedMethod(ILMethodLockPool *lockPool,
+										  ILMethod *method,
+										  ILCCtorMgr *cctorMgr)
+{
+	if(lockPool)
+	{
+		ILMethodLockEntry *currentLockEntry = lockPool->lastLockedMethod;
+
+		if(currentLockEntry)
+		{
+			/* Lock the lock pool. */
+			ILMutexLock(lockPool->lock);
+
+			currentLockEntry = lockPool->lastLockedMethod;
+
+			while(currentLockEntry)
+			{
+				if(currentLockEntry->method == method)
+				{
+					break;
+				}
+				currentLockEntry = currentLockEntry->nextEntry;
+			}
+			if(currentLockEntry)
+			{
+				/* The method is locked. */
+				ILExecThread *thread = ILExecThreadCurrent();
+
+				if(currentLockEntry->thread == thread->supportThread)
+				{
+					/* The current thread locked the method. */
+
+					/* Unlock the lock pool. */
+					ILMutexUnlock(lockPool->lock);
+
+					/* And return the userData entry. */
+					return currentLockEntry->userData;
+				}
+				else if(cctorMgr->thread == thread->supportThread)
+				{
+					/* We have to run the cctors queued for this method. */
+					/* TODO */
+
+					/* Unlock the lock pool. */
+					ILMutexUnlock(lockPool->lock);
+
+					/* And return the userData entry. */
+					return currentLockEntry->userData;
+				}
+				else
+				{
+					ILExecProcess *process = ((ILClassPrivate *)(ILMethod_Owner(method)->userData))->process;
+
+					/* Increase the number of waiting threads. */
+					++(currentLockEntry->numWaitingThreads);
+
+					/* Unlock the lock pool. */
+					ILMutexUnlock(lockPool->lock);
+
+					/* Unlock the metadata. */
+					METADATA_UNLOCK(process);
+
+					/* And wait at the semaphore object. */
+					ILSemaphoreWait(currentLockEntry->sem);
+
+					/* Lock the metadata again. */
+					METADATA_WRLOCK(process);
+
+					/* Lock the lock pool again. */
+					ILMutexLock(lockPool->lock);
+
+					/* Decrease the number of waiting threads. */
+					--(currentLockEntry->numWaitingThreads);
+
+					if(currentLockEntry->numWaitingThreads == 0)
+					{
+						/* This is the last thread waiting for this method. */
+						void *userData = currentLockEntry->userData;
+
+						_ILMethodLockEntry_Destroy(lockPool, currentLockEntry);
+
+						/* Unlock the lock pool. */
+						ILMutexUnlock(lockPool->lock);
+
+						return userData;
+					}
+					else
+					{
+						/* Unlock the lock pool. */
+						ILMutexUnlock(lockPool->lock);
+
+						return currentLockEntry->userData;
+					}
+				}
+			}
+			/* Unlock the lock pool. */
+			ILMutexUnlock(lockPool->lock);
+		}
+	}
+	return 0;
+}
+
 /*
  * Get the number of queued cctors.
  */
@@ -243,8 +545,18 @@ int ILCCtorMgr_Init(ILCCtorMgr *cctorMgr,
 		{
 			return 0;
 		}
+
+		if(!_ILMethodLockPool_Init(&(cctorMgr->lockPool)))
+		{
+			ILMutexDestroy(cctorMgr->lock);
+			return 0;
+		}
+
 		cctorMgr->thread = (ILThread *)0;;
 		cctorMgr->currentMethod = (ILMethod *)0;
+	#ifdef IL_USE_JIT
+		cctorMgr->currentJitFunction = 0;
+	#endif	/* IL_USE_JIT */
 		cctorMgr->isStaticConstructor = 0;
 		cctorMgr->isConstructor = 0;
 
@@ -254,6 +566,7 @@ int ILCCtorMgr_Init(ILCCtorMgr *cctorMgr,
 		ILMemPoolInit(&(cctorMgr->classPool),
 					  sizeof(ILClassEntry),
 					  numCCtorEntries);
+
 
 		return 1;
 	}
@@ -269,12 +582,27 @@ void ILCCtorMgr_Destroy(ILCCtorMgr *cctorMgr)
 	{
 		ILMemPoolDestroy(&(cctorMgr->classPool));
 
+		_ILMethodLockPool_Destroy(&(cctorMgr->lockPool));
+
 		if(cctorMgr->lock)
 		{
 			/* Destroy the lock mutex. */
 			ILMutexDestroy(cctorMgr->lock);
 		}
 	}
+}
+
+/*
+ * Handle locked methods.
+ * Returns the userData of the locked method if the method is locked and
+ * 0 if the method isn't locked.
+ */
+void *ILCCtorMgr_HandleLockedMethod(ILCCtorMgr *cctorMgr,
+									ILMethod *method)
+{
+	return ILMethodLockPool_HandleLockedMethod(&(cctorMgr->lockPool),
+											   method,
+											   cctorMgr);
 }
 
 /*
@@ -287,6 +615,10 @@ void ILCCtorMgr_SetCurrentMethod(ILCCtorMgr *cctorMgr,
 {
 	if(cctorMgr)
 	{
+	#ifdef IL_USE_JIT
+		cctorMgr->currentJitFunction = 0;
+	#endif	/* IL_USE_JIT */
+
 		if(method)
 		{
 			ILClass *methodOwner = ILMethod_Owner(method);
@@ -476,7 +808,7 @@ int ILCCtorMgr_RunCCtor(ILCCtorMgr *cctorMgr, ILClass *classInfo)
 /*
  * Run the queued cctors.
  */
-int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr)
+int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr, void *userData)
 {
 	if(cctorMgr)
 	{
@@ -485,14 +817,29 @@ int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr)
 		if(!(cctorMgr->lastClass))
 		{
 			/* There are no cctors queued. */
-			/* So unlock the metadata. */
-			METADATA_UNLOCK(thread);
+
+			/* So store the userdata where the coder expects it to be. */
+		#ifdef IL_USE_CVM
+			cctorMgr->currentMethod->userData = userData;
+		#endif	/* IL_USE_CVM */
+		#ifdef IL_USE_JIT
+			jit_function_setup_entry(cctorMgr->currentJitFunction, userData);
+		#endif	/* IL_USE_JIT */
+
+			/* Unlock the metadata. */
+			METADATA_UNLOCK(_ILExecThreadProcess(thread));
+
 			/* and return with success. */
 			return 1;
 		}
 		else
 		{
 			int result;
+			ILMethod *currentMethod = cctorMgr->currentMethod;
+		#ifdef IL_USE_JIT
+			ILJitFunction currentJitFunction = cctorMgr->currentJitFunction;
+		#endif	/* IL_USE_JIT */
+	
 			ILInt32 numQueuedCCtors = _ILCCtorMgr_GetNumQueuedCCtors(cctorMgr);
 			ILClass *classes[numQueuedCCtors];
 			ILClassEntry *classEntry = cctorMgr->lastClass;
@@ -509,8 +856,20 @@ int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr)
 			cctorMgr->lastClass = (ILClassEntry *)0;
 			ILMemPoolClear(&(cctorMgr->classPool));
 
+			/* Lock the method. */
+			if(!_ILMethodLockPool_LockMethod(&(cctorMgr->lockPool),
+											 currentMethod,
+											 userData))
+			{
+				/* Unlock the metadata. */
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
+
+				/* and return with failure. */
+				return 0;
+			}
+
 			/* Now unlock the metadata. */
-			METADATA_UNLOCK(thread);
+			METADATA_UNLOCK(_ILExecThreadProcess(thread));
 
 			if(cctorMgr->thread == thread->supportThread)
 			{
@@ -538,6 +897,26 @@ int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr)
 				/* and unlock the cctor manager. */
 				ILMutexUnlock(cctorMgr->lock);
 			}
+
+			/* Lock the metadata again. */
+			IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+
+			/* Store the userdata where the coder expects it to be. */
+		#ifdef IL_USE_CVM
+			currentMethod->userData = userData;
+		#endif	/* IL_USE_CVM */
+		#ifdef IL_USE_JIT
+			jit_function_setup_entry(currentJitFunction, userData);
+		#endif	/* IL_USE_JIT */
+
+			/* Unlock the method. */
+			_ILMethodLockPool_UnlockMethod(&(cctorMgr->lockPool),
+										   currentMethod);
+
+
+			/* Unlock the metadata. */
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
+
 			if(!result)
 			{
 				_ILCCtorMgr_ThrowTypeInitializationException(thread);

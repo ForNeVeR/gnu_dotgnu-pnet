@@ -240,12 +240,8 @@ static int _ILJitMethodIsInlineable(ILJITCoder *jitCoder, ILMethod *method)
 
 		/* Now check if the method is allready somewhere in the currently */
 		/* inlined methods to avoid an endless recursion. */
-	#ifdef IL_JIT_ENABLE_CCTORMGR
 		if(method == ILCCtorMgr_GetCurrentMethod(&(jitCoder->cctorMgr)))
-	#else	/* !IL_JIT_ENABLE_CCTORMGR */
-		if(method == jitCoder->currentMethod)
-	#endif	/* !IL_JIT_ENABLE_CCTORMGR */
-	{
+		{
 			return 0;
 		}
 
@@ -349,7 +345,6 @@ static int _ILJitCoderInlineContextSetup(ILJITCoder *jitCoder,
 			return 0;
 		}
 
-	#ifdef IL_JIT_ENABLE_CCTORMGR
 		/* Queue the cctor to run. */
 		if(!ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), method))
 		{
@@ -357,7 +352,6 @@ static int _ILJitCoderInlineContextSetup(ILJITCoder *jitCoder,
 			_ILJitCoderInlineContextPop(jitCoder);
 			return 0;
 		}
-	#endif	/* IL_JIT_ENABLE_CCTORMGR */
 
 		ILMemPoolClear(&(inlineContext->labelPool));
 		inlineContext->labelList = 0;

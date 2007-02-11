@@ -97,6 +97,7 @@ typedef int	_ILRWLock;
 #define	_ILSemaphoreDestroy(sem)	do { ; } while (0)
 #define	_ILSemaphoreWait(sem)		do { ; } while (0)
 #define	_ILSemaphorePost(sem)		do { ; } while (0)
+#define	_ILSemaphorePostMultiple(sem, count)	do { ; } while (0)
 
 /*
  * Primitive condition variable operations.

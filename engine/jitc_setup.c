@@ -42,15 +42,6 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	}
 #endif	/* _IL_JIT_ENABLE_INLINE */
 
-	/* Record the current jitted function. */
-	coder->jitFunction = ILJitFunctionFromILMethod(method);
-	/* Record the current method. */
-#ifdef IL_JIT_ENABLE_CCTORMGR
-	ILCCtorMgr_SetCurrentMethod(&(coder->cctorMgr), method);
-#else	/* !IL_JIT_ENABLE_CCTORMGR */
-	coder->currentMethod = method;
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
-
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if (coder->flags & IL_CODER_FLAG_STATS)
 	{
@@ -70,47 +61,6 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 		_ILJitProfileIncreaseMethodCallCount(coder, method);
 	}
 #endif
-
-#ifndef IL_JIT_ENABLE_CCTORMGR
-	if(ILMethod_IsStaticConstructor(method))
-	{
-		/* We have to take care that the method is executed only once. */
-		ILClass *info;
-		ILJitValue classInfo;
-		ILJitValue cctorOnce;
-		ILJitValue attributes;
-		ILJitValue temp;
- 		jit_label_t startLabel = jit_label_undefined;
-		jit_label_t endLabel = jit_label_undefined;
-		jit_label_t label1 = jit_label_undefined;
-
-		jit_insn_label(coder->jitFunction, &startLabel);
-
-		info = ILMethod_Owner(method);
-		classInfo = jit_value_create_nint_constant(coder->jitFunction,
-										   _IL_JIT_TYPE_VPTR,
-										   (jit_nint)info);
-		cctorOnce = jit_value_create_nint_constant(coder->jitFunction,
-										   _IL_JIT_TYPE_UINT32,
-										   (jit_nint)IL_META_TYPEDEF_CCTOR_ONCE);
-		attributes = jit_insn_load_relative(coder->jitFunction,
-													   classInfo,
-													   offsetof(ILClass, attributes),
-													   _IL_JIT_TYPE_UINT32);
-		temp = jit_insn_and(coder->jitFunction, attributes, cctorOnce);
-		jit_insn_branch_if_not(coder->jitFunction, temp, &label1);
-		jit_insn_return(coder->jitFunction, 0);
-		jit_insn_label(coder->jitFunction, &label1);
-		temp = jit_insn_or(coder->jitFunction, attributes, cctorOnce);
-		jit_insn_store_relative(coder->jitFunction, classInfo,
-								offsetof(ILClass, attributes), temp);
-
-		jit_insn_label(coder->jitFunction, &endLabel);
-		/* Make sure that this check will remain very first even if any
-		   other blocks are later moved to the function start. */
-		jit_insn_move_blocks_to_start(coder->jitFunction, startLabel, endLabel);
-	}
-#endif	/* !IL_JIT_ENABLE_CCTORMGR */
 
 #ifdef IL_CONFIG_DEBUGGER
 	/* Check if this method can be debugged */
@@ -204,9 +154,6 @@ static int JITCoder_CtorOffset(ILCoder *coder)
 static int JITCoder_Finish(ILCoder *_coder)
 {
 	ILJITCoder *jitCoder = ((ILJITCoder *)_coder);
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-	char *methodName = _ILJitFunctionGetMethodName(jitCoder->jitFunction);
-#endif
 
 #ifdef	_IL_JIT_ENABLE_INLINE
 	if(jitCoder->currentInlineContext)
@@ -229,36 +176,6 @@ static int JITCoder_Finish(ILCoder *_coder)
 		return IL_CODER_END_TOO_BIG;
 	}
 	jitCoder->labelOutOfMemory = 0;
-
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-#ifdef _IL_JIT_DUMP_FUNCTION
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
-	{
-		ILMutexLock(globalTraceMutex);
-		jit_dump_function(stdout, jitCoder->jitFunction, methodName);
-		ILMutexUnlock(globalTraceMutex);
-	}
-#endif	/* _IL_JIT_DUMP_FUNCTION */
-#endif
-	if(!jit_function_compile(jitCoder->jitFunction))
-	{
-		return IL_CODER_END_TOO_BIG;
-	}
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
-#ifdef _IL_JIT_DISASSEMBLE_FUNCTION
-	if(jitCoder->flags & IL_CODER_FLAG_STATS)
-	{
-		ILMutexLock(globalTraceMutex);
-		jit_dump_function(stdout, jitCoder->jitFunction, methodName);
-		ILMutexUnlock(globalTraceMutex);
-	}
-#endif	/* _IL_JIT_DISASSEMBLE_FUNCTION */
-#endif
-#ifdef IL_JIT_ENABLE_CCTORMGR
-	/* Unlock the context because we possibly have to build cctors before */
-	/* this method will be executed. (It's a hack for now.) */
-	jit_context_build_end(jitCoder->context);
-#endif	/* IL_JIT_ENABLE_CCTORMGR */
 
 	return IL_CODER_END_OK;
 }

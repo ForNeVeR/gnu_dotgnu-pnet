@@ -288,10 +288,10 @@ static void CVMCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 /*
  * Run the class initializers queued during generation of the last method.
  */
-static ILInt32 CVMCoder_RunCCtors(ILCoder *_coder)
+static ILInt32 CVMCoder_RunCCtors(ILCoder *_coder, void *userData)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	return ILCCtorMgr_RunCCtors(&(coder->cctorMgr));
+	return ILCCtorMgr_RunCCtors(&(coder->cctorMgr), userData);
 }
 
 /*
@@ -301,6 +301,15 @@ static ILInt32 CVMCoder_RunCCtor(ILCoder *_coder, ILClass *classInfo)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	return ILCCtorMgr_RunCCtor(&(coder->cctorMgr), classInfo);
+}
+
+/*
+ * Handle the method lock while running class initializers.
+ */
+static void *CVMCoder_HandleLockedMethod(ILCoder *_coder, ILMethod *method)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	return ILCCtorMgr_HandleLockedMethod(&(coder->cctorMgr), method);
 }
 
 /*
@@ -513,6 +522,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_ConvertCustom,
 	CVMCoder_RunCCtors,
 	CVMCoder_RunCCtor,
+	CVMCoder_HandleLockedMethod,
 	"sentinel"
 };
 

@@ -497,11 +497,6 @@ static void CVMCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 
 static void CVMCoder_LoadFuncAddr(ILCoder *coder, ILMethod *methodInfo)
 {
-	/* Queue the cctor to run. */
-	/* TODO: leave this one because the methodpointer might be used to start */
-	/* a new thread. This makes sure that the class of the thread start */
-	/* function is initialized. */
-	ILCCtorMgr_OnCallMethod(&(((ILCVMCoder *)coder)->cctorMgr), methodInfo);
 	CVMP_OUT_PTR(COP_PREFIX_LDFTN, methodInfo);
 	CVM_ADJUST(1);
 }

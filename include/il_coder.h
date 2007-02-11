@@ -817,12 +817,24 @@ struct _tagILCoderClass
 	 * The metadata lock must be still accuired and will be released just
 	 * before the cctors are executed.
      */
-	ILInt32 (*runCCtors)(ILCoder *coder);
+	ILInt32 (*runCCtors)(ILCoder *coder, void *userData);
 
 	/*
 	 * Run the class initializer for the given class.
 	 */
 	ILInt32 (*runCCtor)(ILCoder *coder, ILClass *classInfo);
+
+	/*
+	 * Handle a locked method.
+	 * If the current thread holds the method lock the userData supplied when
+	 * the method was locked is returned.
+	 * If the current thread is currently executing class initializers the
+	 * cctors of the method are executed and after they are finished the
+	 * the userData supplied when the method was locked is returned.
+	 * In the other case the thread is blocked until the method is unlocked
+	 * and then the userData supplied when the method was locked is returned.
+	 */
+	void *(*handleLockedMethod)(ILCoder *coder, ILMethod *method);
 
 	/*
 	 * Sentinel string to catch missing methods in class tables.
@@ -1103,10 +1115,12 @@ struct _tagILCoderClass
 													(customCookie)))
 #define	ILCoderMarkEnd(coder) \
 			((*((coder)->classInfo->markEnd))((coder)))
-#define	ILCoderRunCCtors(coder) \
-			((*((coder)->classInfo->runCCtors))((coder)))
-#define	ILCoderRunCCtor(coder, classInfo) \
-			((*((coder)->classInfo->runCCtor))((coder),(classInfo)))
+#define	ILCoderRunCCtors(coder,userData) \
+			((*((coder)->classInfo->runCCtors))((coder), (userData)))
+#define	ILCoderRunCCtor(coder,classInfo) \
+			((*((coder)->classInfo->runCCtor))((coder), (classInfo)))
+#define ILCoderHandleLockedMethod(coder,method) \
+			(*((coder)->classInfo->handleLockedMethod))((coder), (method))
 
 #ifdef	__cplusplus
 };

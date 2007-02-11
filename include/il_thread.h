@@ -48,6 +48,7 @@ extern	"C" {
 typedef struct _tagILThread     ILThread;
 typedef struct _tagILMutex      ILMutex;
 typedef struct _tagILRWLock     ILRWLock;
+typedef struct _tagILSemaphore  ILSemaphore;
 typedef struct _tagILWaitHandle ILWaitHandle;
 
 /*
@@ -397,6 +398,34 @@ void ILRWLockWriteLock(ILRWLock *rwlock);
  * Unlock a read-write lock.
  */
 void ILRWLockUnlock(ILRWLock *rwlock);
+
+/*
+ * Create a semaphore. Note: this type of semaphore will not
+ * necessarily update the thread's "wait/sleep/join"
+ * state, so it isn't directly suitable for emulating
+ * Windows-like wait handle semaphores.
+ */
+ILSemaphore *ILSemaphoreCreate(void);
+
+/*
+ * Destroy a semaphore.
+ */
+void ILSemaphoreDestroy(ILSemaphore *sem);
+
+/*
+ * Wait on a semaphore.
+ */
+void ILSemaphoreWait(ILSemaphore *sem);
+
+/*
+ * Increase the semaphore count by 1.
+ */
+void ILSemaphorePost(ILSemaphore *sem);
+
+/*
+ * Increase the semaphore count by count.
+ */
+void ILSemaphorePostMultiple(ILSemaphore *sem, ILUInt32 count);
 
 /*
  * Close a wait handle.  Returns zero if the handle is

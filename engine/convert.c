@@ -87,18 +87,13 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	   method is written in IL or not */
 	if(code.code)
 	{
-		/* We need the metadata write lock */
-		METADATA_WRLOCK(thread);
 		/* Use the bytecode verifier and coder to convert the method */
 		if(!_ILVerify(coder, &start, method, &code,
 					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
 		{
-			METADATA_UNLOCK(thread);
 			*errorCode = IL_CONVERT_VERIFY_FAILED;
 			return 0;
 		}
-		/* Run the needed cctors and unlock the metadata too */
-		ILCoderRunCCtors(coder);
 	}
 	else
 	{
@@ -190,6 +185,14 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 
 	/* We need the metadata write lock */
 	METADATA_WRLOCK(thread);
+
+	/* Handle locked methods while cctors are executed. */
+	if((start = (unsigned char *)ILCoderHandleLockedMethod(coder, method)))
+	{
+		METADATA_UNLOCK(thread);
+		*errorCode = IL_CONVERT_OK;
+		return start;
+	}
 
 	/* Is the method already converted? */
 	if((start = (unsigned char *)(method->userData)) != 0)
@@ -504,12 +507,8 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	}
 
 	/* The method is converted now */
-	/* store the method pointer in a safe way so we can use a shortcut macro */
-	ILThreadAtomicStart();
-	method->userData = (void *)start;
-	ILThreadAtomicEnd();
 	/* Run the needed cctors and unlock the metadata too */
-	ILCoderRunCCtors(coder);
+	ILCoderRunCCtors(coder, start);
 	*errorCode = IL_CONVERT_OK;
 	return start;
 }

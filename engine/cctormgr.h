@@ -22,15 +22,18 @@
 #define	_ENGINE_CCTORMGR_H
 
 #include "engine_private.h"
-
+#ifdef IL_USE_JIT
+#include "jitc.h"
+#endif	/* IL_USE_JIT */
 
 #ifdef	__cplusplus
 extern	"C" {
 #endif
 
 /* Forward declarations. */
-typedef struct _tagILClassEntry	ILClassEntry;
-typedef struct _tagILCCtorMgr	ILCCtorMgr;
+typedef struct _tagILMethodLockEntry	ILMethodLockEntry;
+typedef struct _tagILClassEntry			ILClassEntry;
+typedef struct _tagILCCtorMgr			ILCCtorMgr;
 
 struct _tagILClassEntry
 {
@@ -38,26 +41,74 @@ struct _tagILClassEntry
 	ILClassEntry   *prevClass;	/* The previous class entry. */
 };
 
+/*
+ * Entry for one locked method.
+ */
+struct _tagILMethodLockEntry
+{
+	/* The next lock entryin the lock pool. */
+	ILMethodLockEntry  *nextEntry;;
+
+	/* The locked method. */
+	ILMethod		   *method;
+
+	/* The thread that created the method lock entry. */
+	ILThread		   *thread;
+
+	/* The semaphore where the other threads are waiting. */
+	ILSemaphore		   *sem;
+
+	/* The number of waiting threads. */
+	ILInt32				numWaitingThreads;
+
+	/* Slot for private use data. */
+	void			   *userData;
+};
+
+/*
+ * The memory pool to hold the locked methods.
+ */
+typedef struct
+{
+	/* Mutex to synchronize the access to the lock pool. */
+	ILMutex			   *lock;
+
+	/* Memory pool to hold the locked methods. */
+	ILMemPool			methodPool;
+
+
+	/* The first currently locked method in the lock pool. */
+	ILMethodLockEntry  *lastLockedMethod;
+}  ILMethodLockPool;
+
 struct _tagILCCtorMgr
 {
 	/* Mutex to synchronize the cctor execution. */
-	ILMutex		   *lock;
+	ILMutex			   *lock;
 	
 	/* The thread holding the lock. */
-	ILThread	   *thread;
+	ILThread		   *thread;
 
 	/* The currently compiled method. */
-	ILMethod	   *currentMethod;
+	ILMethod		   *currentMethod;
+
+#ifdef IL_USE_JIT
+	/* The currentty compiled jit function. */
+	ILJitFunction		currentJitFunction;
+#endif	/* IL_USE_JIT */
+
 	/* Flag if the current method is a cctor. */
-	int				isStaticConstructor : 1;
+	int					isStaticConstructor : 1;
 	/* Flag if the current method is a ctor. */
-	int				isConstructor : 1;
+	int					isConstructor : 1;
 
 	/* Pool for the class entries. */
-	ILMemPool		classPool;
+	ILMemPool			classPool;
 	/* The last classentry  in the memory pool. */
-	ILClassEntry   *lastClass;
+	ILClassEntry	   *lastClass;
 
+	/* The memory pool to hold the currently locked methods. */
+	ILMethodLockPool	lockPool;
 };
 
 int ILCCtorMgr_Init(ILCCtorMgr *cctorMgr,
@@ -65,6 +116,13 @@ int ILCCtorMgr_Init(ILCCtorMgr *cctorMgr,
 
 void ILCCtorMgr_Destroy(ILCCtorMgr *cctorMgr);
 
+/*
+ * Handle locked methods.
+ * Returns the userData of the locked method if the method is locked and
+ * 0 if the method isn't locked.
+ */
+void *ILCCtorMgr_HandleLockedMethod(ILCCtorMgr *cctorMgr,
+									ILMethod *method);
 /*
  * Set the current method to be compiled.
  * This checks if the class initializer of the class owning the method has
@@ -113,9 +171,11 @@ int ILCCtorMgr_RunCCtor(ILCCtorMgr *cctorMgr, ILClass *classInfo);
 
 /*
  * Run the queued cctors.
+ * The userData is stored in the locked function and is returned
+ * by the call to ILCCtorMgr_HandleLockedMethod.
  * Returns != 0 on success or 0 if an exception was thrown.
  */
-int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr);
+int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr, void *userData);
 
 #ifdef	__cplusplus
 };

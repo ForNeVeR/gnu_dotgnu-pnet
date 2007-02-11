@@ -131,7 +131,7 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 		{
 			ILDAsmDumpMethod(image, outstream, method, flags,
 							 (ILMethod_Token(method) ==
-							 		ILImageGetEntryPoint(image)));
+							 		ILImageGetEntryPoint(image)), 0);
 		}
 	}
 

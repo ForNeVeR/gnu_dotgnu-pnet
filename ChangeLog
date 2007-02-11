@@ -1,5 +1,9 @@
 2007-02-11  Radek Polak  <psonek2@seznam.cz>
 
+	* dumpasm/dump_class.c: Forgot to add parameter for dump offsets.
+
+2007-02-11  Radek Polak  <psonek2@seznam.cz>
+
 	* include/il_dumpasm.h, dumpasm/dump_method.c: Added option for
 	printing IL offsets in dumped function.
 

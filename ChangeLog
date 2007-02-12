@@ -1,3 +1,10 @@
+2007-02-12  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Export CC after disabling the use of the cygwin library
+	so that this is used for configuring libffi and libgc too.
+
+	* ChangeLog: Fix a typo. (Spotted by Robert Schwebel)
+
 2007-02-11  Radek Polak  <psonek2@seznam.cz>
 
 	* dumpasm/dump_class.c: Forgot to add parameter for dump offsets.
@@ -76,7 +83,7 @@
 
 2007-02-06  Klaus Treichel  <ktreichel@web.de>
 
-	* libffi/configure.ac, libffi/configure: Remuve the testsuite from the
+	* libffi/configure.ac, libffi/configure: Remove the testsuite from the
 	subdirs and fix the multilib support for pnet.
 
 	* depcomp: Add needed file to build libffi.

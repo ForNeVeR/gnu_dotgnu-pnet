@@ -58,6 +58,8 @@ AC_ARG_ENABLE(cygwin,
 esac],[cygwin=$def_cygwin])
 if test x$cygwin = xfalse ; then
   CC="$CC -mno-cygwin"
+  # to pass -mno-cygwin to configure of libffi and libgc
+  export CC
   SOCKETLIBS="-lwsock32"
   WINLIBS="-lole32"
   suppress_libm=yes

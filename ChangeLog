@@ -1,3 +1,12 @@
+2007-02-13  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_delegate.c: remove the dumps from the on demand compiler
+	functions because this is handled now in the on demand driver function.
+
+2007-02-13  Robert Schwebel  <r.schwebel@pengutronix.de>
+
+	* libtool.m4, libgc/libtool.m4: Remove auto generated files.
+
 2007-02-12  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Export CC after disabling the use of the cygwin library

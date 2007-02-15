@@ -45,6 +45,11 @@ static int _ILJitCompileMultiCastDelegateInvoke(ILJitFunction func);
 #ifdef	IL_JITC_FUNCTIONS
 
 /*
+ * The class name for the AsyncResult.
+ */
+static const char *asyncResultClassName = "System.Runtime.Remoting.Messaging.AsyncResult";
+
+/*
  * Pack the delegate invoke arguments into an "Object[]" array and return the
  * new array.
  */
@@ -483,11 +488,10 @@ static int _ILJitCompileDelegateBeginInvoke(ILJitFunction func)
 	ILType *beginInvokeSignature = ILMethod_Signature(beginInvokeMethod);
 	ILJitType jitSignature = jit_function_get_signature(func);
 	unsigned int numBeginInvokeParams = jit_type_num_params(jitSignature);
-	ILMethod *asyncResultCtor = ILExecThreadLookupMethod(_thread,
-								"System.Runtime.Remoting.Messaging.AsyncResult",
-								".ctor",
-								"(ToSystem.Delegate;[oSystem.Object;oSystem.AsyncCallback;oSystem.Object;)V");
-	ILClass *asyncResultInfo = 0;
+	ILClass *asyncResultInfo = _ILLookupClass(_ILExecThreadProcess(_thread),
+											  asyncResultClassName,
+											  strlen(asyncResultClassName));
+	ILMethod *asyncResultCtor = 0;
 	ILJitFunction jitAsyncResultCtor = 0;
 	
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
@@ -512,6 +516,17 @@ static int _ILJitCompileDelegateBeginInvoke(ILJitFunction func)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
+	/* Check if the class AsyncResult was found. */
+	if(!asyncResultInfo)
+	{
+		return JIT_RESULT_COMPILE_ERROR;
+	}
+
+	asyncResultCtor = ILExecThreadLookupMethodInClass(_thread,
+								asyncResultInfo,
+								".ctor",
+								"(ToSystem.Delegate;[oSystem.Object;oSystem.AsyncCallback;oSystem.Object;)V");
 
 	/* Check if the ctor for AsyncResult class was found. */
 	if(!asyncResultCtor)
@@ -599,10 +614,10 @@ static int _ILJitCompileDelegateEndInvoke(ILJitFunction func)
 	ILType *endInvokeSignature = ILMethod_Signature(endInvokeMethod);
 	ILJitType jitSignature = jit_function_get_signature(func);
 	unsigned int numEndInvokeParams = jit_type_num_params(jitSignature);
-	ILMethod *asyncEndInvokeMethodInfo = ILExecThreadLookupMethod(_thread,
-										"System.Runtime.Remoting.Messaging.AsyncResult",
-										"EndInvoke",
-										"(T[oSystem.Object;)oSystem.Object;");
+	ILClass *asyncResultInfo = _ILLookupClass(_ILExecThreadProcess(_thread),
+											  asyncResultClassName,
+											  strlen(asyncResultClassName));
+	ILMethod *asyncEndInvokeMethodInfo = 0;
 	ILJitValue array;         /* Array to hold the out params. */
 	ILJitValue returnObject;  /* returnvalue of the call to IAsyncResult.EndInvoke. */
 	ILJitFunction jitEndInvoke;
@@ -633,6 +648,17 @@ static int _ILJitCompileDelegateEndInvoke(ILJitFunction func)
 		ILMutexUnlock(globalTraceMutex);
 	}
 #endif
+
+	/* Check if the class AsyncResult was found. */
+	if(!asyncResultInfo)
+	{
+		return JIT_RESULT_COMPILE_ERROR;
+	}
+
+	asyncEndInvokeMethodInfo = ILExecThreadLookupMethodInClass(_thread,
+										asyncResultInfo,
+										"EndInvoke",
+										"(T[oSystem.Object;)oSystem.Object;");
 
 	/* Check if the EndInvoke Method for AsyncResult class was found. */
 	if(!asyncEndInvokeMethodInfo)

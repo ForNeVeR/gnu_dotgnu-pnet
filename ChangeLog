@@ -1,3 +1,9 @@
+2007-02.15  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_delegate.c: Fix a deadlock introduced with my last cctor
+	manager change. The functions to lookup the methods *MUST* not lock the
+	metadata.
+
 2007-02-13  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_delegate.c: remove the dumps from the on demand compiler

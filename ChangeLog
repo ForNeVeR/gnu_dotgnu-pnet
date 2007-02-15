@@ -4,6 +4,9 @@
 	manager change. The functions to lookup the methods *MUST* not lock the
 	metadata.
 
+	* engine/jitc_pinvoke.c: remove the dumps from the on demand compiler
+	function because this is handled now in the on demand driver function.
+
 2007-02-13  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_delegate.c: remove the dumps from the on demand compiler

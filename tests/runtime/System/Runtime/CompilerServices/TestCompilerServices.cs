@@ -137,16 +137,19 @@ public class TestCompilerServices : TestCase
 
 	public static int value;
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static void RunClassConstructor(RuntimeTypeHandle type)
 	{
 		RuntimeHelpers.RunClassConstructor(type);
 	}
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static void CallConstructorTestDummy()
 	{
 		ConstructorTest.Dummy();
 	}
 
+	[MethodImpl(MethodImplOptions.NoInlining)]
 	private static void CallConstructorTest2Dummy()
 	{
 		ConstructorTest2.Dummy();

@@ -42,6 +42,14 @@ extern	"C" {
 			} while (0)
 
 /*
+ * Forward declaration.
+ */
+static int _ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr,
+								 ILExecThread *thread,
+								 ILClass *classes[],
+								 ILInt32 numClasses);
+
+/*
  * Free an ILMethodLockEntry.
  */
 static void _ILMethodLockEntry_Destroy(ILMethodLockPool *lockPool,
@@ -111,7 +119,9 @@ static int _ILMethodLockPool_Destroy(ILMethodLockPool *lockPool)
  */
 static int _ILMethodLockPool_LockMethod(ILMethodLockPool *lockPool,
 										ILMethod *method,
-										void *userData)
+										void *userData,
+										ILClass *classesToInitialize[],
+										ILInt32 numClassesToInitialize)
 {
 	if(lockPool)
 	{
@@ -141,6 +151,8 @@ static int _ILMethodLockPool_LockMethod(ILMethodLockPool *lockPool,
 		currentLockEntry->method = method;
 		currentLockEntry->numWaitingThreads = 0;
 		currentLockEntry->userData = userData;
+		currentLockEntry->classesToInitialize = classesToInitialize;
+		currentLockEntry->numClassesToInitialize = numClassesToInitialize;
 		currentLockEntry->nextEntry = lockPool->lastLockedMethod;
 		lockPool->lastLockedMethod = currentLockEntry;
 
@@ -276,10 +288,14 @@ void *ILMethodLockPool_HandleLockedMethod(ILMethodLockPool *lockPool,
 				else if(cctorMgr->thread == thread->supportThread)
 				{
 					/* We have to run the cctors queued for this method. */
-					/* TODO */
-
 					/* Unlock the lock pool. */
 					ILMutexUnlock(lockPool->lock);
+
+					/* and execute the cctors queued for this method. */
+					_ILCCtorMgr_RunCCtors(cctorMgr,
+										  thread,
+										  currentLockEntry->classesToInitialize,
+										  currentLockEntry->numClassesToInitialize);
 
 					/* And return the userData entry. */
 					return currentLockEntry->userData;
@@ -859,7 +875,9 @@ int ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr, void *userData)
 			/* Lock the method. */
 			if(!_ILMethodLockPool_LockMethod(&(cctorMgr->lockPool),
 											 currentMethod,
-											 userData))
+											 userData,
+											 classes,
+											 numQueuedCCtors))
 			{
 				/* Unlock the metadata. */
 				METADATA_UNLOCK(_ILExecThreadProcess(thread));

@@ -155,18 +155,6 @@ static ILCmdLineOption const options[] = {
 static void usage(const char *progname);
 static void version(void);
 
-static int CallStaticConstructor(ILExecThread *thread, ILMethod * method)
-{
-	ILClass *classInfo=ILMethod_Owner(method);
-	ILCoder *coder = _ILExecThreadProcess(thread)->coder;
-
-	if(!ILCoderRunCCtor(coder, classInfo))
-	{
-		return 1;
-	}
-	return 0;
-}
-
 int main(int argc, char *argv[])
 {
 	char *progname = argv[0];
@@ -574,12 +562,9 @@ int main(int argc, char *argv[])
 	sawException = 0;
 	if(args != 0 && !ILExecThreadHasException(thread))
 	{
-		retval = CallStaticConstructor(thread, method);
-		sawException = retval;
 		execValue.ptrValue = args;
 		ILMemZero(&retValue, sizeof(retValue));
-		if(!sawException && ILExecThreadCallV
-				(thread, method, &retValue, &execValue))
+		if(ILExecThreadCallV(thread, method, &retValue, &execValue))
 		{
 			/* An exception was thrown while executing the program */
 			sawException = 1;

@@ -63,6 +63,12 @@ struct _tagILMethodLockEntry
 
 	/* Slot for private use data. */
 	void			   *userData;
+
+	/* The classes to initialize before this method can be executed. */
+	ILClass			   **classesToInitialize;
+
+	/* Number of classes to initialize. */
+	ILInt32				numClassesToInitialize;
 };
 
 /*

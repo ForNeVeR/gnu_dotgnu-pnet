@@ -1,4 +1,13 @@
-2007-02.15  Klaus Treichel  <ktreichel@web.de>
+2007-02-17  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cctormgr.c, engine/cctormgr.h: Handle running needed class
+	initializers for methods compiled and locked by an other thread which
+	has to be invoked by the current thread which holds the cctor lock.
+
+	* engine/ilrun.c: Remove running the class initializer for the class
+	containing main because this is handled by the engine now.
+
+2007-02-15  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_delegate.c: Fix a deadlock introduced with my last cctor
 	manager change. The functions to lookup the methods *MUST* not lock the

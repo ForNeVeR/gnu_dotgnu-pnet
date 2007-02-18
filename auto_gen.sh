@@ -28,6 +28,9 @@ banner() {
         echo
 }
 
+banner "running libtool"
+libtoolize --copy --force || exit
+
 banner "running aclocal"
 aclocal --version
 aclocal || exit
@@ -41,4 +44,9 @@ automake --add-missing --copy --ignore-deps || exit
 banner "running autoconf"
 autoconf
 
+for dir in libffi libgc; do
+        pushd $dir
+        sh auto_gen.sh
+        popd
+done
 

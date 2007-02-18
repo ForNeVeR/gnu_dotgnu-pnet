@@ -35,42 +35,46 @@ EXTRA_DIST = LICENSE ChangeLog.v1 \
 ## This section is for make and multilib madness.
 ##
 
+# FIXME RSC: find out about the reason for the stuff below. Because if
+# it is in, 'make distcheck' doesn't work any more because it looses
+# it's destdir.
+
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
-AM_MAKEFLAGS = \
-	"AR_FLAGS=$(AR_FLAGS)" \
-	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
-	"CFLAGS=$(CFLAGS)" \
-	"CXXFLAGS=$(CXXFLAGS)" \
-	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-	"INSTALL=$(INSTALL)" \
-	"INSTALL_DATA=$(INSTALL_DATA)" \
-	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
-	"JC1FLAGS=$(JC1FLAGS)" \
-	"LDFLAGS=$(LDFLAGS)" \
-	"LIBCFLAGS=$(LIBCFLAGS)" \
-	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
-	"MAKE=$(MAKE)" \
-	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-	"PICFLAG=$(PICFLAG)" \
-	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
-	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
-	"SHELL=$(SHELL)" \
-	"exec_prefix=$(exec_prefix)" \
-	"infodir=$(infodir)" \
-	"libdir=$(libdir)" \
-	"prefix=$(prefix)" \
-	"AR=$(AR)" \
-	"AS=$(AS)" \
-	"CC=$(CC)" \
-	"CXX=$(CXX)" \
-	"LD=$(LD)" \
-	"NM=$(NM)" \
-	"RANLIB=$(RANLIB)" \
-	"DESTDIR=$(DESTDIR)"
+# AM_MAKEFLAGS = \
+#	"AR_FLAGS=$(AR_FLAGS)" \
+#	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+#	"CFLAGS=$(CFLAGS)" \
+#	"CXXFLAGS=$(CXXFLAGS)" \
+#	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
+#	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+#	"INSTALL=$(INSTALL)" \
+#	"INSTALL_DATA=$(INSTALL_DATA)" \
+#	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
+#	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
+#	"JC1FLAGS=$(JC1FLAGS)" \
+#	"LDFLAGS=$(LDFLAGS)" \
+#	"LIBCFLAGS=$(LIBCFLAGS)" \
+#	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
+#	"MAKE=$(MAKE)" \
+#	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+#	"PICFLAG=$(PICFLAG)" \
+#	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+#	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
+#	"SHELL=$(SHELL)" \
+#	"exec_prefix=$(exec_prefix)" \
+#	"infodir=$(infodir)" \
+#	"libdir=$(libdir)" \
+#	"prefix=$(prefix)" \
+#	"AR=$(AR)" \
+#	"AS=$(AS)" \
+#	"CC=$(CC)" \
+#	"CXX=$(CXX)" \
+#	"LD=$(LD)" \
+#	"NM=$(NM)" \
+#	"RANLIB=$(RANLIB)" \
+#	"DESTDIR=$(DESTDIR)"
 
 MAKEOVERRIDES=
 
@@ -155,3 +159,16 @@ libffi_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
 
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 AM_CCASFLAGS = $(AM_CPPFLAGS)
+
++MAINTAINERCLEANFILES = \
+	configure \
+	Makefile.in \
+	compile \
+	install-sh \
+	config.sub \
+	mkinstalldirs \
+	missing \
+	ltmain.sh \
+	depcomp \
+	config.guess
+

@@ -179,12 +179,28 @@ EXTRA_DIST += cord/cordbscs.c cord/cordtest.c cord/de.c cord/de_win.c \
 #
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
-# :FIXME: why do we distribute this one???
-#
-EXTRA_DIST += libtool.m4
-
 #
 # :GOTCHA: GNU make rule for making .s out of .S is flawed, 
 # it will not remove dest if building fails
 .S.s:
 	if $(CPP) $< >$@ ; then :; else rm -f $@; fi
+
+MAINTAINERCLEANFILES = \
+    Makefile.in \
+    configure \
+    aclocal.m4 \
+    compile \
+    config.guess \
+    config.sub \
+    depcomp \
+    install-sh \
+    ltmain.sh \
+    mdate-sh \
+    missing \
+    libtool.m4 \
+    ltoptions.m4 \
+    ltsugar.m4 \
+    ltversion.m4 \
+    mkinstalldirs \
+    ltconfig
+

@@ -1,3 +1,20 @@
+2007-02-18  Robert Schwebel  <r.schwebel@pengutronix.de>
+
+	* auto_gen.sh: Run libtoolize as first step and run auto_gen.sh in the
+	subdirs libgc and libffi too.
+
+	* configure.in: Replace outdated AC_PROG_RANLIB by AC_PROG_LIBTOOL.
+
+	* libffi/configure.ac: Remove AM_ENABLE_MULTILIB.
+
+	* libffi/Makefile.am: Remove the setting of AM_MAKEFLAGS because it breaks
+	make distcheck. Fix make maintainer-clean by adding MAINTAINERCLEANFILES.
+
+	* libgc/Makefile.am: Don't distribute libtool.m4. Fix make
+	maintainer-clean by adding MAINTAINERCLEANFILES.
+
+	* libgc/auto_gen.sh, libffi/auto_gen.sh: Added.
+
 2007-02-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_array.c: clean up the source.

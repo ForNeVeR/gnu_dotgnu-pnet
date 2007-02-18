@@ -1,3 +1,7 @@
+2007-02-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_array.c: clean up the source.
+
 2007-02-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cctormgr.c, engine/cctormgr.h: Handle running needed class

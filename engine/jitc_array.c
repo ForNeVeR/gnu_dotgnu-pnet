@@ -272,20 +272,14 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
 	}
 	else
 	{
-		ILJitValue headerSize = jit_value_create_nint_constant(jitCoder->jitFunction,
-															   _IL_JIT_TYPE_UINT32,
-															   _IL_JIT_SARRAY_HEADERSIZE);
 		/* The array element type. */
 		ILType *elementType;
 		/* The size of one array element. */
 		ILUInt32 elementSize;
 		/* Total amount of memory needed for the array. */
-		ILJitValue arraySize;
 		ILJitValue newArray;
 		ILClass *elementClass;
 		ILClassPrivate *classPrivate;
-		ILJitValue temp;
-		jit_label_t label = jit_label_undefined;
 		ILJitValue args[3];
 
 		/* Make sure the synthetic array class is layouted. */
@@ -328,62 +322,6 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
 		}
 	#endif
 
-	#if 0
-		ILJitValue maxSize = jit_value_create_long_constant(jitCoder->jitFunction,
-															_IL_JIT_TYPE_UINT64,
-															IL_MAX_INT32);
-	
-		arraySize = jit_value_create_long_constant(jitCoder->jitFunction,
-												   _IL_JIT_TYPE_UINT64,
-												   elementSize);
-		arraySize = jit_insn_mul(jitCoder->jitFunction,
-								 arraySize,
-								 _ILJitValueConvertImplicit(jitCoder->jitFunction,
-															length,
-															_IL_JIT_TYPE_UINT64));
-
-		/* Check if the total arraysize is > IL_MAX_INT32. */
-		temp = jit_insn_gt(jitCoder->jitFunction, arraySize, maxSize);
-		jit_insn_branch_if_not(jitCoder->jitFunction, temp, &label);
-		/* And throw an OutOfMemoryException then. */
-		_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_OUT_OF_MEMORY);
-		jit_insn_label(jitCoder->jitFunction, &label);
-
-		/* Downconvert the array size to an UINT32. */
-		arraySize = _ILJitValueConvertImplicit(jitCoder->jitFunction, arraySize, _IL_JIT_TYPE_UINT32);
-
-		/* Make sure that the length has the correct type. */
-		length = _ILJitValueConvertImplicit(jitCoder->jitFunction, length, _IL_JIT_TYPE_UINT32);
-
-		/* We call the alloc functions. */
-		/* They thow an out of memory exception so we don't need to care. */
-		args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
-												 _IL_JIT_TYPE_VPTR,
-												 (jit_nint)arrayClass);
-		args[1] = jit_insn_add(jitCoder->jitFunction, arraySize, headerSize);
-
-		if(!_IL_JIT_ARRAY_TYPE_NEEDS_GC(elementType, classPrivate))
-		{
-			newArray = jit_insn_call_native(jitCoder->jitFunction,
-											"_ILJitAllocAtomic",
-											_ILJitAllocAtomic,
-											_ILJitSignature_ILJitAlloc,
-				 							args, 2, 0);
-		}
-		else
-		{
-			/* The element contains object references. */
-			newArray = jit_insn_call_native(jitCoder->jitFunction,
-											"_ILJitAlloc",
-											_ILJitAlloc,
-											_ILJitSignature_ILJitAlloc,
-				 							args, 2, 0);
-		}
-		/* Set the length in the array. */
-		jit_insn_store_relative(jitCoder->jitFunction,
-								newArray, 
-								offsetof(System_Array, length), length);
-	#else
 		/* We call the alloc functions. */
 		/* They thow an out of memory exception so we don't need to care. */
 		args[0] = jit_value_create_nint_constant(jitCoder->jitFunction,
@@ -413,7 +351,6 @@ static ILJitValue _ILJitSArrayNew(ILJITCoder *jitCoder, ILClass *arrayClass, ILJ
 											_ILJitSignature_ILJitSArrayAlloc,
 				 							args, 3, 0);
 		}
-	#endif
 		return newArray;
 	}
 }

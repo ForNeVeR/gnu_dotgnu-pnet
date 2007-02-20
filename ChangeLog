@@ -1,3 +1,11 @@
+2007-02-20  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Remove the .libs from the library search path for libjit
+	because libtool will handle this (Broke build on Msys with jit enabled).
+
+	* ilgac/ilgac.c: Fix build on systems where symlinks are not available. The
+	assembly version is ILUInt16 and not ILUInt32.
+
 2007-02-19  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Fix build on cygwin by moving the check for windows to the

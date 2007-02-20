@@ -922,7 +922,7 @@ static int uninstallAssembly(const char *assembly, const ILUInt16 *version,
 		char *path2 = BuildPath(cache, subdir, 0, assembly, extension);
 		if(ILFileExists(path2, (char **)0))
 		{
-			ILUInt32 assemblyVersion[4];
+			ILUInt16 assemblyVersion[4];
 			if(getAssemblyVersion(path2, assemblyVersion, 1, 0))
 			{
 				if(version[0] == assemblyVersion[0] &&

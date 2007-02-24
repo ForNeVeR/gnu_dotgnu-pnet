@@ -1,6 +1,7 @@
 Makefile
 Makefile.in
 .deps
+.libs
 ilrun
 ilrun_opt
 ilverify

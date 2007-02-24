@@ -319,6 +319,7 @@ ILInt32 ILSysIOWrite(ILSysIOHandle handle, const void *buf, ILInt32 size)
 		{
 			written += result;
 			size -= result;
+			buf += result;
 		}
 		else if(errno != EINTR)
 		{

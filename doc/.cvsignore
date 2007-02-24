@@ -3,3 +3,4 @@ Makefile.in
 .deps
 cvmdoc
 pnettools.info*
+texinfo.tex

@@ -1,6 +1,7 @@
 Makefile
 Makefile.in
 .deps
+.libs
 cscc
 cscc-bf
 cscc-c-s

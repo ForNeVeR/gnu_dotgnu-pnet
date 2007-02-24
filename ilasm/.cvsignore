@@ -1,6 +1,7 @@
 Makefile
 Makefile.in
 .deps
+.libs
 ilasm
 ilasm_grammar.c
 ilasm_grammar.h

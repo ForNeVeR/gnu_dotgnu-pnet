@@ -1,10 +1,13 @@
 Makefile
 Makefile.in
 .deps
+.libs
 csdoc2texi
 csdoc2html
 csdoc2stub
 csdoc2hier
 csdoc2test
 csdocvalil
+cssrc2html
+il2doc
 src2xml

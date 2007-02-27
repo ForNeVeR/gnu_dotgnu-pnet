@@ -5,6 +5,13 @@
 	* .cvsignore, libgc/.cvsignore, libffi/.cvsignore: add
 	config.guess, compile and autom4te.cache/ to the ignored files.
 
+	* config.guess, config.sub, ltmain.sh, libffi/Makefile.in,
+	libffi/aclocal.m4, libffi/configure, libffi/fficonfig.h.in,
+	libffi/include/Makefile.in, libgc/Makefile.in, libgc/aclocal.m4,
+	libgc/config.guess, libgc/config.sub, libgc/configure, libgc/ltmain.sh,
+	libgc/doc/Makefile.in, libgc/include/Makefile.in: Remove these 
+	maintainer generated files from CVS.
+
 2007-02-24  Klaus Treichel  <ktreichel@web.de>
 
 	* clrwrap/.cvsignore, csant/.cvsignore, cscc/.cvsignore,

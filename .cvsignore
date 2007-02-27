@@ -4,9 +4,12 @@ Makefile.in
 configure
 config.log
 config.cache
+config.guess
 config.status
 pnet.spec
 aclocal.m4
 confdefs.h
 madcow.log
 madcow.bak
+compile
+autom4te.cache

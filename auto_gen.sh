@@ -45,8 +45,8 @@ banner "running autoconf"
 autoconf
 
 for dir in libffi libgc; do
-        pushd $dir
-        sh auto_gen.sh
-        popd
+		TOPSRCDIR=$PWD
+		cd $TOPSRCDIR/$dir && sh auto_gen.sh;
+		cd $TOPSRCDIR
 done
 

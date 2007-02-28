@@ -150,7 +150,7 @@ public class XmlNamespaceManager : IEnumerable
 						// it cannot be in the namespace list either.
 						return false;
 					}
-					while(info != null)
+					while(info != null && info.prefix != null)
 					{
 						if(info.prefix == (Object)prefix)
 						{

@@ -1,4 +1,76 @@
 
+0.8.0 (3 March 2007)
+
+	JIT 
+	
+	* JIT_Coder opcodes implementation (Klaus Treichel, Aleksey Demakov,
+	  Kirill Kononenko)
+	* On Demand JIT Compilation (Klaus Treichel)
+	* JIT exception handling (Klaus Treichel, Kirill Kononenko)
+	* Method Inlining support (Klaus Treichel)
+	* Inlining internal calls, PInvoke and math (Klaus Treichel)
+	* Local and Thread Local variable support (Klaus Treichel)
+	* Reflection support (Klaus Treichel)
+	* Array optimisations (Klaus Treichel)
+	* Static ctor support (Klaus Treichel, Aleksey Demakov)
+	* Delegate and Async Delegate support (Klaus Treichel)
+	* Safepoints and builtin/managed Exceptions (Klaus Treichel)
+	* Null check reduction (Klaus Treichel)
+	* Finalizers and GC support (Klaus Treichel)
+	* Method and variable profiling (Klaus Treichel)
+	* Debugging and diagnostic functions (Klaus Treichel)
+
+	Runtime Engine
+
+	* New Debugger (Radek Polak)
+	* Typed allocations (Klaus Treichel)
+	* Array structure optimisations (Klaus Treichel)
+	* Static cctor manager (Klaus Treichel)
+	* Watching variables (Radek Polak)
+	* Spec fixes on String IndexOf and LastIndexOf (Russell Stuart)
+	* Array.Clear fixes (Radek Polak)
+	* Handle fixes for JIT support (Klaus Treichel)
+	* Verifier fixes (Gopal V)
+
+	Compiler & Tools
+
+	* Remove ann.live & ann.ref opcodes from ilasm (Klaus Treichel)
+	* Add readonly., no. and constrained. prefixes to ilasm (Klaus Treichel)
+	* Mcs flag support for csant (Marcus Urban)
+	* Struct constructor fixes (Kaushik Sreenivasan)
+	* ILGac fixes for win32 (Radek Polak)
+
+	Image
+
+	* Nested value type fixes (Klaus Treichel)
+	* Remove unused metadata locks (Klaus Treichel)
+	* Remove ann.live & ann.ref opcodes (Klaus Treichel)
+	* Add readonly., no. and constrained. prefixes (Klaus Treichel)
+	* Class Initializer flags for Static ctors (Klaus Treichel)
+
+
+	GC
+
+	* Import latest libgc from gcc (Rainer Groesslinger, Klaus Treichel)
+	* Weak references (Klaus Treichel)
+	* Memory leak fixes (Heiko Weiss)
+	* uClibc support (Radek Polak)
+
+	Platform
+
+	* Cygwin/win32 fixes (Yan Burman, Klaus Treichel, Radek Polak, 
+	  Roman Khirov)
+	* Timezone fixes (Roman Khirov, Peter Flaig)
+	* Profile fixes (Roman Khirov, Klaus Treichel)
+	* Socket fixes (Klaus Treichel, Heiko Weiss)
+
+	Build
+
+	* Make dist support (Robert Schwebel, Gopal V)
+	* Debian build fixes (Russell Stuart)
+	* Libffi and libgc build fixes (Klaus Treichel)
+	* Lookup paths for libjit (Klaus Treichel, Boris Manojlovic)
+	
 0.7.4 (15 January 2006)
 
 	Runtime engine:

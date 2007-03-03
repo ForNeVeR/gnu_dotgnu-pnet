@@ -1,3 +1,9 @@
+2007-03-03  Klaus Treichel  <ktreichel@web.de>
+
+	* NEWS, configure.in: update version for the "0.8.0" release.
+
+	* configure.in: update version to the new "0.8.1" development version.
+
 2007-02-27  Gopal V  <gopalv82@yahoo.com>
 
 	* auto_gen.sh: Remove bash specific pushd/popd

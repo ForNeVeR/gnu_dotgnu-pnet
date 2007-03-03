@@ -1,3 +1,130 @@
+pnetlib 0.8.0 (3 March 2007)
+
+	System.Windows.Forms and System.Drawing:
+
+	* Fix bug in timer when time was changed (Heiko Weiss).
+	* Fix null reference exceptions in TreeNode (Heiko Weiss).
+	* Fix Font height calculation (Heiko Weiss).
+	* Draw TabPage correctly when it is displayed first time (Heiko Weiss).
+	* Added functionality to draw text in graphics path (Heiko Weiss).
+	* Let Pen.DashStyle to be DashStyle.Custom and use Pen.DashPattern as
+	  dasharray (Heiko Weiss).
+	* Environment variable names in started process are now upper case
+	  (Radek Polak).
+	* Minor re-work of build-debian-packages (Russell Stuart).
+	* Fixed X-crash if dash pattern has a zero length (Heiko Weiss).
+	* Added filling arc, drawing arc path object and more (Heiko Weiss).
+	* Added a really cool sample of drawing path. You can find it in FormsTest
+	  under tab page "Path Tiger" (Heiko Weiss).
+	* Fixed changing selected text,	setting caret position and notify text
+	  changes in TextBox (Heiko Weiss).
+	* Fixed not processing mouse events if control is not enabled
+	  (Heiko Weiss).
+	* Fixed memory leak in Xsharp widgets (Heiko Weiss).
+	* Fixed closing dialog stopping Application.InnerMessageLoop if Form was
+	  shown with ShowDialog (Heiko Weiss).
+	* Handle destroyed widgets correctly (Heiko Weiss).
+	* Use OnHandleCreated instead of event in ScrollableControl (Heiko Weiss).
+	* Control disposing (Heiko Weiss).
+	* Always draw disabled textbox with gray, if backcolor not gray
+	  (Peter Flaig).
+	* Fixed bug in calculating Color.FromHSB (Peter Flaig).
+	* Fixed control removing (Heiko Weiss).
+	* Changed handling of setting control's parent to null or reparenting
+	  control (Heiko Weiss).
+	* Handle widnows creating thread safe (Heiko Weiss).
+	* Fixed control's DockStyle property (Heiko Weiss).
+	* Fixed broken MDI forms (Heiko Weiss).
+	* Fixed drawing plus and minus buttons in TreeView (Heiko Weiss).
+	* Fixed layouting issues when control is visible, but parent is not
+	  (Heiko Weiss).
+	* Fixed memory leaks by keeping week references to toolkit objects
+	  (Heiko Weiss).
+	* Fixed deadlock when using Control.Invoke() (Heiko Weiss).
+	* Fixed IndexOutOfRange exception in TabControl drawing (Radek Polak).
+	* Fixed ColorConverter.ConvertFrom() (Heiko Weiss).
+	* Fixed image drawing with graphics transformations by applying only unit
+	  conversion, instead of full device transformation, to source coordinates
+	  (Richard Baumann).
+	* Implement DrawString for scale transformation (Heiko Weiss).
+	* Implement finalizer for Xsharp Graphics object (Deryk Robosson).
+	* Fixed autoscrolling in ScrollableControl (Heiko Weiss).
+	* Various perfomance improvments (Heiko Weiss, Deryk Robosson).
+	* Implement TopIndex for ListBox and allow -1 as SelectedIndex
+	  (David Logan).
+	* Implement drawing of disabled radio button (David Logan).
+	* Cursor fixes (Heiko Weiss).
+	* Fixed bug with main menu not displaying until form is resized
+	  (Heiko Weiss).
+	* Properly call Dispose() in DataGridTableStyle (Klaus Treichel,
+	  Kirill Kononenko).
+	* Implement rotation of arcs and ellipses by drawing and filling them with
+	  graphics path (Heiko Weiss).
+	* Set the correct calling convention in all Win32 method pinvokes. Enable
+	  name mangling where possible (Klaus Treichel).
+	* Fixed problems with Expose and destroyed handle (Heiko Weiss).
+	* Some of framework 2.0 classes (Klaus Treichel).
+	* CheckedListBox implementation (Radek Polak).
+	* Implement keys navigation, fix selection and painting in ListBox
+	  (Heiko Weiss).
+	* Fix problem with inserting root tree node at the beginning
+	  (Deryk Robosson).
+
+	XML:
+
+	* Implement more iterators and namespaces in XPath (Gopal V).
+	* Implement most of XmlNodeReader functionality, except entity support
+	  (Gopal V).
+	* Fixed IsEmpty property on elements in XmlDocument (Gopal V).
+	* Fixed attribute count in XmlNodeReader (Gopal V).
+	* Enable namespaces when reading entire documents via the fragment codepath
+	  (Gopal V).
+	* Implement node order comparisons and add duplicate checks for namespaces
+	  (Gopal V).
+	* Implement union operator in XPathIterators (Gopal V).
+	* Fix InnerXml to avoid skipping over elements (Gopal V).
+	* Use correct encoding when accessing XmlDocument.OuterXml (Heiko Weiss).
+	* Allways write the namespace prefix in XmlTextWriter (Heiko Weiss).
+	* Reset current node when end of document is reached. Without this Depth
+	  property was 1 even when whole document was read (Radek Polak).
+	* Fix for InsertBefore first node (Heiko Weiss).
+	* Fix xml serializer and code dom compiler errors (Heiko Weiss).
+	* Fix problem with reading character references in attributes
+	  (Radek Polak).
+
+	Runtime:
+
+	* Fixed exception in AddMonths, if the new month has less days then the old
+	  month (Heiko Weiss).
+	* Call IComparer.Compare with (elem, value) so that the collection element
+	  is always the first argument (Gopal V, Peter Fristedt).
+	* Bluetooth serial port support (Gopal V).
+	* Fixed memory leaks in System.Collections (Heiko Weiss).
+	* Fixed bugs with formatting floats (Heiko Weiss).
+	* Fixed memory leak in MulticastDelegate (Heiko Weiss).
+	* Framework 2.0 compatibility classes for compiler services
+	  (Klaus Treichel).
+	* Fixes in number formatting (Heiko Weiss).
+	* Framework 2.0 diagnostics classes (Klaus Treichel).
+	* Fixed and optimized AddRange and constructor for ArrayList (Heiko Weiss).
+	* Fixed param checking in CryptoAPITransform, return null instead of
+	  throwing exception when crypto algorithm does not exist (Radek Polak).
+	* IndexOf, LastIndexOf & Sort() not checking bounds properly
+	  (Russell Stuart).
+	* Enable Raw, Rdm, Seqpacket socket type (Heiko Weiss).
+	* Fix writing in a read/write filestream after some data was read and the
+	  fileposition was changed (Klaus Treichel).
+	* Pass errno to SocketException class (Klaus Treichel).
+	* Framework 2.0 System.Net classes (Klaus Treichel).
+
+	DotGNU.Terminal:
+
+	* Use correct exception arguments (Deryk Robosson).
+
+	DotGNU.SLL:
+
+	* Properly dispose of the stream (Deryk Robosson).
+	* Use StringBuilder for concat operations inside a loop (Deryk Robosson).
 
 0.7.4 (15 January 2006)
 
@@ -82,7 +209,7 @@
 
 	* Throw the right exceptions in System.Xml.Nametable (Klaus Treichel).
 	* Sorting of return values from TrimMembers (Gopal V).
-	* Integrate Mono's latest regex code (Rainer Größlinger).
+	* Integrate Mono's latest regex code (Rainer GrÃ¶ÃŸlinger).
 	* Handle nested types in Type.GetMembers (Gopal V).
 	* Read correct number of bytes in BinaryRead.ReadBytes even if
 	  EOF is seen (Peter Flaig).

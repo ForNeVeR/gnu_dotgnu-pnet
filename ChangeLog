@@ -7,6 +7,8 @@
 	* System.Xml/XmlNamespaceManager.cs: Undo the last commit for the release
 	because it makes System.Xml tests fail.
 
+	* configure.in, NEWS: update version and news for the 0.8.8 release.
+
 2007-02-28  Stefan Allan  <numenyaron@yahoo.com>
 
 	* System.Xml/XmlNamespaceManager.cs: Fix scope lookup in 

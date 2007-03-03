@@ -1,3 +1,11 @@
+2007-03-03  Klaus Treichel  <ktreichel@web.de>
+
+	* tools/run_test.sh.in: Add the paths to System.Drawing.Xsharp and
+	Xsharp to the library search path to enable the tests for
+	System.Windows.Forms to be executed without having pnetlib installed.
+
+	* System.Xml/XmlNamespaceManager.cs: Undo the last commit for the release
+	because it makes System.Xml tests fail.
 
 2007-02-28  Stefan Allan  <numenyaron@yahoo.com>
 

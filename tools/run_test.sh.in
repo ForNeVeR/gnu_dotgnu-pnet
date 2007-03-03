@@ -44,6 +44,8 @@ exec "$ILRUN" -L"$TOP_BUILDDIR"/runtime \
 	-L"$TOP_BUILDDIR"/JScript \
 	-L"$TOP_BUILDDIR"/Basic \
 	-L"$TOP_BUILDDIR"/System.Drawing \
+	-L"$TOP_BUILDDIR"/System.Drawing.Xsharp \
+	-L"$TOP_BUILDDIR"/Xsharp \
 	-L"$TOP_BUILDDIR"/System.Windows.Forms \
 	-L"$TOP_BUILDDIR"/SharpZipLib \
 	-L"$TOP_BUILDDIR"/OpenSystem.Platform \

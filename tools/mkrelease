@@ -78,7 +78,9 @@ fi
 echo '$' cd pnetlib >>$LOGFILE
 echo cd pnetlib
 cd pnetlib
-call automake
+call libtoolize --force
+call aclocal
+call automake --add-missing --copy --ignore-deps
 call autoconf
 
 # Verify that the source will build cleanly.
@@ -112,7 +114,9 @@ call cvs -Q checkout pnetlib
 echo '$' cd pnetlib >>$LOGFILE
 echo cd pnetlib
 cd pnetlib
-call automake
+call libtoolize --force
+call aclocal
+call automake --add-missing --copy --ignore-deps
 call autoconf
 echo '$' cd .. >>$LOGFILE
 echo cd ..

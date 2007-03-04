@@ -1,3 +1,9 @@
+2007-03-04  Klaus Treichel  <ktreichel@web.de>
+
+	* NEWS, configure.in: update version for the "0.8.0" release.
+
+	* configure.in: update working version to "0.8.1".
+
 2006-02-20  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* minor re-work of build-debian-packages.

@@ -1,3 +1,10 @@
+2007-03-07  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/Makefile.am: Add jitc_gen.h to the jit coder includes so that the
+	file is included in the distribution tarball.
+
+	* NEWS: Add news entry for the addition of marshaling support.
+
 2007-03-03  Klaus Treichel  <ktreichel@web.de>
 
 	* NEWS, configure.in: update version for the "0.8.0" release.

@@ -9,6 +9,7 @@
 	* JIT exception handling (Klaus Treichel, Kirill Kononenko)
 	* Method Inlining support (Klaus Treichel)
 	* Inlining internal calls, PInvoke and math (Klaus Treichel)
+	* Add marshaling support (Kirill Kononenko)
 	* Local and Thread Local variable support (Klaus Treichel)
 	* Reflection support (Klaus Treichel)
 	* Array optimisations (Klaus Treichel)

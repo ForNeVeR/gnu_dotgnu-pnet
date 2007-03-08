@@ -1,3 +1,8 @@
+2007-03-08  Klaus Treichel  <ktreichel@web.de>
+
+	* tools/mkrelease: Fix the calls to libtoolize so that the libtool files
+	will be copied into the tarball instead of symlinking them.
+
 2007-03-03  Klaus Treichel  <ktreichel@web.de>
 
 	* tools/run_test.sh.in: Add the paths to System.Drawing.Xsharp and

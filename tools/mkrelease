@@ -78,7 +78,7 @@ fi
 echo '$' cd pnetlib >>$LOGFILE
 echo cd pnetlib
 cd pnetlib
-call libtoolize --force
+call libtoolize --copy --force
 call aclocal
 call automake --add-missing --copy --ignore-deps
 call autoconf
@@ -114,7 +114,7 @@ call cvs -Q checkout pnetlib
 echo '$' cd pnetlib >>$LOGFILE
 echo cd pnetlib
 cd pnetlib
-call libtoolize --force
+call libtoolize --copy --force
 call aclocal
 call automake --add-missing --copy --ignore-deps
 call autoconf

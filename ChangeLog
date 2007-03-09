@@ -1,3 +1,8 @@
+2007-03-09  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/Private/DebuggerHelper.cs: Managed helper class for
+	handling tasks, that are difficult to do in C.
+
 2007-03-08  Klaus Treichel  <ktreichel@web.de>
 
 	* tools/mkrelease: Fix the calls to libtoolize so that the libtool files

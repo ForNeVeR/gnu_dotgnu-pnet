@@ -78,13 +78,18 @@ static FILE *OpenStream()
 
 /*
  * Return contents of stream from start to current position
- * as text allocated with ILMalloc(). Return 0 on error.
+ * as text allocated with ILMalloc() terminated with 0.
+ * Returns 0 on error.
  */
 static char *ReadStream(FILE *stream)
 {
 	int len;
 	char *result;
 
+	/* Terminate the stream with 0 */
+	putc(0, stream);
+
+	/* Allocate the string and read the stream into it */
 	len = (int) ftell(stream);
 	result = (char *) ILMalloc(len);
 	if(result == 0)
@@ -373,6 +378,22 @@ static void DumpError(const char *message, FILE *stream)
 }
 
 /*
+ * Dump "out of memory" error.
+ */
+static void DumpOutOfMemoryError(FILE *stream)
+{
+	DumpError("out of memory", stream);
+}
+
+/*
+ * Dump "parameter missing" error.
+ */
+static void DumpParamMissingError(FILE *stream)
+{
+	DumpError("parameter missing", stream);
+}
+
+/*
  * Dump message to outgoing buffer.
  */
 static void DumpMessage(const char *message, FILE *stream)
@@ -575,7 +596,15 @@ ILDebuggerThreadInfo *ILDebuggerThreadInfo_Create()
 		ILDbOutOfMemory();
 	}
 	memset(result, 0, sizeof(ILDebuggerThreadInfo));
-	result->runType = IL_DEBUGGER_RUN_TYPE_STOPPED;
+
+	/* Initialize handle for recieving events from IO thread */
+	result->event = ILWaitEventCreate(0, 0);
+	if(result->event == 0)
+	{
+		ILDbOutOfMemory();
+	}
+
+	result->runType = IL_DEBUGGER_RUN_TYPE_CONTINUE;
 	return result;
 }
 
@@ -595,6 +624,10 @@ ILDebuggerThreadInfo *ILDebuggerThreadInfo_Create()
 			jit_stack_trace_free(info->jitStackTrace);
 		}
 #endif
+		if(info->event)
+		{
+			ILWaitHandleClose(info->event);
+		}
 		ILFree(info);
 		info = next;
 	}
@@ -867,7 +900,7 @@ void HandleBreakpointCommand(ILDebugger *debugger, FILE *stream, int command)
 	/* Validate and parse arguments */
 	if(debugger->argCount < 2)
 	{
-		DumpError("Parameter missing", stream);
+		DumpParamMissingError(stream);
 		return;
 	}
 	reqLine = atoi(debugger->args[1]);
@@ -964,39 +997,99 @@ void Break(ILDebugger *debugger, FILE *stream)
 }
 
 /*
- * show_locals command.
+ * Call DebuggerHelper.ExpressionToString() method for given expression.
+ * Returns result as GC allocated string.
  */
-void ShowLocals(ILDebugger *debugger, FILE *stream)
+char *DebuggerHelper_ExpressionToString(ILExecThread *thread, const char *expression)
 {
-#ifdef IL_USE_CVM
-	CVMWord *p;
-	ILExecThread *thread = debugger->dbthread->execThread;
-	fputs("<LocalVariables>\n",stream);
-	for(p = thread->frame; p < thread->stackTop; p++)
-	{
-		fprintf(stream, "  <LocalVariable Value=\"%d\" />\n", p->intValue);
-	}
-	fputs("</LocalVariables>",stream);
-#endif
+	ILString *str;
+	char *result;
 
+	str = ILStringCreateUTF8(thread, expression);
+	if(!str)
+	{
+		return 0;
+	}
+
+	ILExecThreadCallNamed(thread, "System.Private.DebuggerHelper",
+					"ExpressionToString", "(oSystem.String;)oSystem.String;",
+					&str, str);
+
+	result = ILStringToUTF8(thread, str);
+	return result;
+}
+
+/*
+ * Call DebuggerHelper.ClearLocals() method.
+ */
+void DebuggerHelper_ClearLocals(ILExecThread *thread)
+{
+	ILExecThreadCallNamed(thread, "System.Private.DebuggerHelper",
+					"ClearLocals", "()V", (void *)0);
+}
+
+/*
+ * Call DebuggerHelper.AddLocal() method.
+ */
+void DebuggerHelper_AddLocal(ILExecThread *thread, const char *name,
+							 ILType *type, void *ptr)
+{
+	ILString *str;
+	ILObject *obj;
+	ILObject *clrType;
+
+	str = ILStringCreateUTF8(thread, name);
+
+	if(ILType_IsPrimitive(type) || ILType_IsValueType(type)) 
+	{
+		obj = ILExecThreadBox(thread, type, ptr);
+	}
+	else
+	{
+		obj = *(ILObject **)(ptr);
+	}
+
+	clrType = _ILGetClrTypeForILType(thread, type);
+
+	ILExecThreadCallNamed(thread, "System.Private.DebuggerHelper",
+					"AddLocal", "(oSystem.String;oSystem.Type;oSystem.Object;)V",
+					(void *)0, str, clrType, obj);
+
+}
+
+/*
+ * Call DebuggerHelper.ShowLocals() method.
+ * Returns result as GC allocated string.
+ */
+char *DebuggerHelper_ShowLocals(ILExecThread *thread)
+{
+	char *result;
+	ILString *str;
+
+	ILExecThreadCallNamed(thread, "System.Private.DebuggerHelper",
+					"ShowLocals", "()oSystem.String;",
+					&str);
+
+	result = ILStringToUTF8(thread, str);
+	return result;
+}
+
+/*
+ * Update locals in DebuggerHelper class.
+ */
+static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method)
+{
 #ifdef IL_USE_JIT
-	ILExecThread *thread;
-	ILMethod *method;
 	ILMethodCode code;
 	ILType *signature;
 	ILUInt32 num;
 	ILUInt32 current;
 	ILUInt32 i;
-	ILWatch *watch;
+	ILLocalWatch *local;
 	ILType *type;
-	char *str;
-	char ch[8];
-	int len;
-	int j;
 
-	/* Current thread and method */
-	thread = debugger->dbthread->execThread;
-	method = debugger->dbthread->method;
+	/* Clear locals in helper class */
+	DebuggerHelper_ClearLocals(thread);
 
 	/* Get local variables info */
 	if(!ILMethodGetCode(method, &code))
@@ -1015,125 +1108,210 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
 		num = 0;
 	}
 
-	fputs("<LocalVariables>\n", stream);
-
-	/* Dump local variables in current frame */
+	/* Add local variables in current frame */
 	current = 0;
 	for(i = 0; i < thread->numWatches && num > 0; i++)
 	{
-		watch = &(thread->watchStack[i]);
-		if(watch->frame != thread->frame)
+		local = &(thread->watchStack[i]);
+
+		/* Skip variables that are not in current frame */
+		if(local->frame != thread->frame)
 		{
-			continue;	/* Skip if variable is not in current frame */
+			continue;
 		}
-
-		/* TODO: dump local variable name */
-		fprintf(stream, "<LocalVariable Name=\"var%d\" Value=\"", i);
-
 		type = ILTypeGetLocal(signature, current);
 
-		switch((unsigned long)type)
-		{
-			case (unsigned long)ILType_Boolean:
-			{
-				if(*((ILBool *)(watch->addr)) != 0)
-				{
-					fputs("true", stream);
-				}
-				else
-				{
-					fputs("false", stream);
-				}
-			}
-			break;
-			case (unsigned long)ILType_Int8:
-			{
-				fprintf(stream, "%d", *((ILInt8 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_UInt8:
-			{
-				fprintf(stream, "%u", *((ILUInt8 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_Int16:
-			{
-				fprintf(stream, "%hd", *((ILInt16 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_UInt16:
-			{
-				fprintf(stream, "%hu", *((ILUInt16 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_Int32:
-			{
-				fprintf(stream, "%d", *((ILInt32 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_UInt32:
-			{
-				fprintf(stream, "%u", *((ILUInt32 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_Int64:
-			{
-				fprintf(stream, "%lld", *((ILInt64 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_UInt64:
-			{
-				fprintf(stream, "%llu", *((ILUInt64 *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_Float32:
-			{
-				fprintf(stream, "%f", *((ILFloat *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_Float64:
-			{
-				fprintf(stream, "%f", *((ILDouble *)(watch->addr)));
-			}
-			break;
-			case (unsigned long)ILType_Char:
-			{
-				len = ILUTF8WriteChar(ch, *((ILUInt16 *)(watch->addr)));
-				for(j = 0; j < len; j++)
-				{
-					putc(ch[j], stream);
-				}
-			}
-			break;
-			default:
-			{
-				if(ILTypeIsStringClass(type))
-				{
-					str = ILStringToUTF8(thread, *((ILString **)(watch->addr)));
-					DumpString(str, stream);
-				}
-				else
-				{
-					fprintf(stream, "%p", *((void **)(watch->addr)));
-				}
-			}
-			break;
-		}
-		fputs("\" >", stream);
-
-		str = ILTypeToName(type);
-		fputs("<Type Name=\"", stream);
-		DumpString(str, stream);
-		fputs("\" /></LocalVariable>\n", stream);
-		ILFree(str);
+		/* TODO: local variable name */
+		DebuggerHelper_AddLocal(thread, 0, type, local->addr);
 
 		current++;
 		num--;
 	}
-
-	fputs("</LocalVariables>",stream);
-
 #endif
+}
+
+/*
+ * show_locals command.
+ */
+void ShowLocals(ILDebugger *debugger, FILE *stream)
+{
+#ifdef IL_USE_CVM
+	CVMWord *p;
+	ILExecThread *thread = debugger->dbthread->execThread;
+	fputs("<LocalVariables>\n", stream);
+	for(p = thread->frame; p < thread->stackTop; p++)
+	{
+		fprintf(stream, "  <LocalVariable Value=\"%d\" />\n", p->intValue);
+	}
+	fputs("</LocalVariables>",stream);
+#endif
+
+#ifdef IL_USE_JIT
+	char *str;
+
+	/* Update locals in DebuggerHelper class */
+	UpdateLocals(stream, debugger->dbthread->execThread,
+												debugger->dbthread->method);
+
+	str = DebuggerHelper_ShowLocals(debugger->dbthread->execThread);
+	if(str)
+	{
+		if(*str == '<')
+		{
+			fputs(str, stream);
+		}
+		else
+		{
+			DumpError(str, stream);
+		}
+	}
+	else
+	{
+		DumpOutOfMemoryError(stream);
+	}
+#endif  // IL_USE_JIT
+}
+
+/*
+ * add_watch command.
+ */
+void AddWatch(ILDebugger *debugger, FILE *stream)
+{
+	ILDebuggerWatch *watch;
+	ILDebuggerWatch *tail;
+
+	if(debugger->argCount < 1)
+	{
+		DumpParamMissingError(stream);
+		return;
+	}
+	
+	/* Allocate new watch */
+	if((watch = (ILDebuggerWatch *)ILMalloc(sizeof(ILDebuggerWatch))) == 0)
+	{
+		DumpOutOfMemoryError(stream);
+		return;
+	}
+
+	/* Append the watch to the end of the list */
+	tail = debugger->watches;
+	if(tail != 0)
+	{
+		while(tail->next != 0)
+		{
+			tail = tail->next;
+		}
+		tail->next = watch;
+	}
+	else
+	{
+		debugger->watches = watch;
+	}
+	
+	watch->expression = ILDupString(debugger->args[0]);
+	watch->next = 0;
+
+	DumpMessage("ok", stream);
+}
+
+/*
+ * remove_watch command.
+ */
+void RemoveWatch(ILDebugger *debugger, FILE *stream)
+{
+	ILDebuggerWatch *watch;
+	ILDebuggerWatch *prev;
+
+	if(debugger->argCount < 1)
+	{
+		DumpParamMissingError(stream);
+		return;
+	}
+	
+	/* Search the watch list for watch with given name */
+	prev = 0;
+	watch = debugger->watches;
+	while(watch != 0)
+	{
+		if(ILStrICmp(watch->expression, debugger->args[0]) == 0)
+		{
+			if(prev != 0)
+			{
+				prev->next = watch->next;
+			}
+			else
+			{
+				debugger->watches = watch->next;
+			}
+			ILFree(watch->expression);
+			ILFree(watch);
+			DumpMessage("ok", stream);
+			return;
+		}
+		prev = watch;
+		watch = watch->next;
+	}
+	
+	DumpMessage("watch not found", stream);
+}
+
+/*
+ * Destroy the watch list.
+ */
+static void DestroyWatchList(ILDebuggerWatch *watch)
+{
+	ILDebuggerWatch *next;
+	while(watch)
+	{
+		next = watch->next;
+		ILFree(watch->expression);
+		ILFree(watch);
+		watch = next;
+	}
+}
+
+/*
+ * remove_all_watches command.
+ */
+void RemoveAllWatches(ILDebugger *debugger, FILE *stream)
+{
+	DestroyWatchList(debugger->watches);
+	debugger->watches = 0;
+	DumpMessage("ok", stream);
+}
+
+/*
+ * show_watches command.
+ */
+void ShowWatches(ILDebugger *debugger, FILE *stream)
+{
+	ILDebuggerWatch *watch;
+	char *value;
+
+	/* Update locals in DebuggerHelper class */
+	UpdateLocals(stream, debugger->dbthread->execThread,
+												debugger->dbthread->method);
+
+	fputs("<Watches>\n", stream);
+
+	/* Iterate all watches and dump their values */
+	watch = debugger->watches;
+	while(watch != 0)
+	{
+		fputs("  <Watch Expression=\"", stream);
+		DumpString(watch->expression, stream);
+		fputs("\" Value=\"", stream);
+		value = DebuggerHelper_ExpressionToString(
+						debugger->dbthread->execThread, watch->expression);
+		if(value)
+		{
+			DumpString(value, stream);
+		}
+		fputs("\"/>\n", stream);
+		watch = watch->next;
+	}
+
+	fputs("</Watches>", stream);
 }
 
 /*
@@ -1197,7 +1375,7 @@ void ShowStackTrace(ILDebugger *debugger, FILE *stream)
 	else if((frame = _ILAllocCallFrame(thread)) == 0)
 	{
 		/* We ran out of memory trying to push the frame */
-		DumpError("out of memory while getting stack trace", stream);
+		DumpOutOfMemoryError(stream);
 		return;
 	}
 	frame->method = thread->method;
@@ -1297,7 +1475,7 @@ void WatchAssembly(ILDebugger *debugger, FILE *stream)
 
 	if(debugger->argCount < 1)
 	{
-		DumpError("Parameter missing", stream);
+		DumpParamMissingError(stream);
 		return;
 	}
 
@@ -1334,7 +1512,7 @@ void WatchAssembly(ILDebugger *debugger, FILE *stream)
 	/* Add the image to the watch list in the thread safe way */
 	if((watch = (ILAssemblyWatch *)ILMalloc(sizeof(ILAssemblyWatch))) == 0)
 	{
-		DumpError("out of memory", stream);
+		DumpOutOfMemoryError(stream);
 		return;
 	}
 
@@ -1352,35 +1530,6 @@ void WatchAssembly(ILDebugger *debugger, FILE *stream)
 void UnwatchAllAssemblies(ILDebugger *debugger, FILE *stream)
 {
 	DestroyAssemblyWatches(debugger);
-	DumpMessage("ok", stream);
-}
-
-/*
- * suspend_all command.
- */
-void SuspendAll(ILDebugger *debugger, FILE *stream)
-{
-	ILExecThread *thread = debugger->process->firstThread;
-	while(thread)
-	{
-		_ILExecThreadSuspendThread(thread, thread->supportThread);
-		thread = thread->nextThread;
-	}
-	
-	/* Report ok and continue execution */
-	DumpMessage("ok", stream);
-}
-
-void ResumeAll(ILDebugger *debugger, FILE *stream)
-{
-	ILExecThread *thread = debugger->process->firstThread;
-	while(thread)
-	{
-		_ILExecThreadResumeThread(thread, thread->supportThread);
-		thread = thread->nextThread;
-	}
-
-	/* Report ok and continue execution */
 	DumpMessage("ok", stream);
 }
 
@@ -1528,7 +1677,7 @@ void ShowLibraries(ILDebugger *debugger, FILE *stream)
 							StringFreeFunc);
 	if(table == 0)
 	{
-		DumpError("Out of memory", stream);
+		DumpOutOfMemoryError(stream);
 		return;
 	}
 
@@ -1662,12 +1811,8 @@ void Resume(ILDebugger *debugger, int runType)
 				info->runType = IL_DEBUGGER_RUN_TYPE_CONTINUE;
 			}
 	
-			/* Resume exec thread if it was suspended */
-			if(debugger->commandThread)
-			{
-				_ILExecThreadResumeThread(info->execThread,
-											info->execThread->supportThread);
-			}
+			/* Signal thread to continue */
+			ILWaitEventSet(info->event);
 		}
 		info = info->next;
 	} while(info);
@@ -1717,6 +1862,22 @@ void IsStopped(ILDebugger *debugger, FILE *stream)
 }
 
 /*
+ * is_stopped_in_watched_assembly command.
+ */
+void IsStoppedInWatchedAssembly(ILDebugger *debugger, FILE *stream)
+{
+	if(debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED &&
+			ILDebuggerIsAssemblyWatched(debugger, debugger->dbthread->method))
+	{
+		DumpMessage("yes", stream);
+	}
+	else
+	{
+		DumpMessage("no", stream);
+	}
+}
+
+/*
  * show_dasm command.
  */
 void ShowDasm(ILDebugger *debugger, FILE *stream)
@@ -1744,7 +1905,7 @@ void ShowDasm(ILDebugger *debugger, FILE *stream)
 
 	if(!str)
 	{
-		DumpError("Out of memory", stream);
+		DumpOutOfMemoryError(stream);
 		return;
 	}
 
@@ -1781,7 +1942,7 @@ void ShowIldasm(ILDebugger *debugger, FILE *stream)
 
 	if(!str)
 	{
-		DumpError("Out of memory", stream);
+		DumpOutOfMemoryError(stream);
 		return;
 	}
 
@@ -1792,6 +1953,15 @@ void ShowIldasm(ILDebugger *debugger, FILE *stream)
 	fputs("</ILDasm>\n", stream);
 
 	ILFree(str);
+}
+
+/*
+ * quit command.
+ */
+void Quit(ILDebugger *debugger, FILE *stream)
+{
+	debugger->abort = 1;
+	DumpMessage("ok", stream);
 }
 
 /*
@@ -1840,6 +2010,24 @@ static Cmd const commands[] = {
 		"Toggle breakpoint."
 	},
 
+	{ "add_watch",					9,	1,	AddWatch,
+		"add_watch [expression]",
+		"Add new watch.",
+		"Add new watch. Specify variable, field, property or function call e.g. i, this.x, this.X, this.ToString"
+	},
+
+	{ "remove_watch",				12,	1,	RemoveWatch,
+		"remove_watch [expression]",
+		"Remove watch.",
+		"Remove watch with given id."
+	},
+
+	{ "remove_all_watches",			18,	1,	RemoveAllWatches,
+		"remove_all_watches",
+		"Remove all watches.",
+		"Remove all watches."
+	},
+
 	{ "break",						5,	0,	Break,
 		"break",
 		"Break execution.",
@@ -1876,6 +2064,12 @@ static Cmd const commands[] = {
 		"Execution is stopped e.g when breakpoint is reached or break command is issued."
 	},
 
+	{ "is_stopped_in_watched_assembly",	30,	0,	IsStoppedInWatchedAssembly,
+		"is_stopped_in_watched_assembly",
+		"Is execution stopped in assembly that we watch?",
+		"This function is useful after initial break. We usually do step command to get to assembly that is user watching."
+	},	
+
 	{ "show_threads",				12,	0,	ShowThreads,
 		"show_threads",
 		"List threads stopped in debugger.",
@@ -1889,9 +2083,15 @@ static Cmd const commands[] = {
 	},
 
 	{ "show_locals",				11,	0,	ShowLocals,
-		"print_locals",
-		"Print local variables.",
-		"Print local variables."
+		"show_locals",
+		"Show local variables.",
+		"Show local variables."
+	},
+
+	{ "show_watches",				12,	0,	ShowWatches,
+		"show_watches",
+		"Show all watches.",
+		"Show all watches defined with add_watch command."
 	},
 
 	{ "show_position",				13,	0,	ShowPosition,
@@ -1924,6 +2124,12 @@ static Cmd const commands[] = {
 		"Dissassemble current function in IL."
 	},
 
+	{ "quit",						4,	0,	Quit,
+		"quit",
+		"Abort debugged program.",
+		"Abort debugged program."
+	},
+
 	{ "help",						4,	0,	Help,
 		"help [command]",
 		"Display this information or command help.",
@@ -1932,6 +2138,63 @@ static Cmd const commands[] = {
 };
 
 #define	num_commands	(sizeof(commands) / sizeof(commands[0]))
+
+/*
+ * Help command.
+ */
+static void Help(ILDebugger *debugger, FILE *stream)
+{
+	int i;
+	char *msg;
+	int size, maxSize; 
+
+	/* Print the help header */
+	fputs("Usage: command [arguments]\n", stream);
+	fputs("Commands:\n", stream);
+
+	/* Scan the command table to determine the width of the tab column */
+	maxSize = 0;
+	for(i = 0; i < num_commands; ++i)
+	{
+		msg = commands[i].helpName;
+		if(!msg)
+		{
+			continue;
+		}
+		size = strlen(msg);
+		if(size > maxSize)
+		{
+			maxSize = size;
+		}
+	}
+
+	/* Dump the help messages in the command table */
+	for(i = 0; i < num_commands; ++i)
+	{
+		if(i > 0)
+		{
+			putc('\n', stream);
+		}
+		msg = commands[i].helpName;
+		if(!msg)
+		{
+			continue;
+		}
+		msg = msg;
+		size = 0;
+		fputs(msg, stream);
+		size = strlen(msg);
+		while(size < maxSize)
+		{
+			putc(' ', stream);
+			++size;
+		}
+		putc(' ', stream);
+		putc(' ', stream);
+		msg = commands[i].helpMsg;
+		fputs(msg, stream);
+	}
+}
 
 /*
  * Check if commands are ok.
@@ -2026,26 +2289,46 @@ int ParseCommand(ILDebugger *debugger, char *text, int textLen)
 }
 
 /*
- * Parse command from input text and call command function.
+ * Parse, execute and free current debugger command.
+ * Returns:
+ *   1 if next command is expected 
+ *   0 to continue execution (e.g. after step command)
  */
-void ParseAndExecuteCommand(ILDebugger *debugger, char *text, int textLen,
-															FILE *outputStream)
+static void ParseAndExecuteCurrentCommand(ILDebugger *debugger)
 {
-	int cmdIndex = ParseCommand(debugger, text, textLen);
-	if(cmdIndex >= 0)
+	int cmdIndex;
+	FILE *outputStream = debugger->io->output;
+
+	/* Handle aborting */
+	if(debugger->abort)
 	{
-		/* Execute command */
-		(*(commands[cmdIndex].func))(debugger, outputStream);
-		
+		DumpMessage("process is aborting", outputStream);
 	}
-	else if(cmdIndex == -1)
+	else
 	{
-		DumpError("Unknown command", outputStream);
+		/* Parse command */
+		cmdIndex = ParseCommand(debugger, debugger->currentCommand,
+												strlen(debugger->currentCommand));
+
+		if(cmdIndex >= 0)
+		{
+			/* Execute command */
+			(*(commands[cmdIndex].func))(debugger, outputStream);
+			
+		}
+		else if(cmdIndex == -1)
+		{
+			DumpError("Unknown command", outputStream);
+		}
+		else if(cmdIndex == -2)
+		{
+			DumpError("Too many parameters for command", outputStream);
+		}
 	}
-	else if(cmdIndex == -2)
-	{
-		DumpError("Too many parameters for command", outputStream);
-	}
+
+	/* Free command text, since it was allocated on heap */
+	ILFree(debugger->currentCommand);
+	debugger->currentCommand = 0;
  }
 
 /*
@@ -2053,8 +2336,8 @@ void ParseAndExecuteCommand(ILDebugger *debugger, char *text, int textLen,
  */
 static void CommandLoop(ILDebugger *debugger)
 {
-	char *cmd;
 	int nextCommand;
+
 	do
 	{
 		/* Recieve command */
@@ -2065,8 +2348,8 @@ static void CommandLoop(ILDebugger *debugger)
 		}
 
 		/* Read command text from input stream */
-		cmd = ReadStream(debugger->io->input);
-		if(cmd == 0)
+		debugger->currentCommand = ReadStream(debugger->io->input);
+		if(debugger->currentCommand == 0)
 		{
 			debugger->abort = 1;
 			break;
@@ -2075,100 +2358,50 @@ static void CommandLoop(ILDebugger *debugger)
 		/* Dump response header */
 		fputs("<DebuggerResponse>\n", debugger->io->output);
 
-		/* Lock down the debugger */
+		/* Lock down the debugger for executing command */
 		LockDebugger(debugger);
-		
-		/* Execute command */
-		ParseAndExecuteCommand(debugger, cmd, strlen(cmd),
-														debugger->io->output);
 
-		/* Next command flag - true until debugger is stopped */
-		nextCommand =
-				(debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED);
+		/* Determine which thread should execute the command */
+		if(debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED &&
+												debugger->ioThread != 0)
+		{
+			/* Wake up current thread to execute the command */
+			ILWaitEventSet(debugger->dbthread->event);
 
-		/* Unlock the debugger */
+			/* Wait until the command is processed */
+			ILWaitOne(debugger->event, -1);
+		}
+		else
+		{
+			/* Handle command from this thread */
+			ParseAndExecuteCurrentCommand(debugger);
+		}
+
 		UnlockDebugger(debugger);
 
 		/* Dump response footer */
 		fputs("\n</DebuggerResponse>\n", debugger->io->output);
-
-		/* Free command text, since it was allocated on head */
-		ILFree(cmd);
-
+	
 		/* Send response to client */
 		if(!(debugger->io->send(debugger->io)))
 		{
 			debugger->abort = 1;
 			break;
 		}
+
+		/* Is next command expected?*/
+		nextCommand = debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED;
 	}
-	while(nextCommand);
-}
-
-/*
- * Help command.
- */
-static void Help(ILDebugger *debugger, FILE *stream)
-{
-	int i;
-	char *msg;
-	int size, maxSize; 
-
-	/* Print the help header */
-	fputs("Usage: command [arguments]\n", stream);
-	fputs("Commands:\n", stream);
-
-	/* Scan the command table to determine the width of the tab column */
-	maxSize = 0;
-	for(i = 0; i < num_commands; ++i)
-	{
-		msg = commands[i].helpName;
-		if(!msg)
-		{
-			continue;
-		}
-		size = strlen(msg);
-		if(size > maxSize)
-		{
-			maxSize = size;
-		}
-	}
-
-	/* Dump the help messages in the command table */
-	for(i = 0; i < num_commands; ++i)
-	{
-		if(i > 0)
-		{
-			putc('\n', stream);
-		}
-		msg = commands[i].helpName;
-		if(!msg)
-		{
-			continue;
-		}
-		msg = msg;
-		size = 0;
-		fputs(msg, stream);
-		size = strlen(msg);
-		while(size < maxSize)
-		{
-			putc(' ', stream);
-			++size;
-		}
-		putc(' ', stream);
-		putc(' ', stream);
-		msg = commands[i].helpMsg;
-		fputs(msg, stream);
-	}
+	while(nextCommand && debugger->abort == 0);
 }
 
 /*
  * Do CommandLoop() until abort is requested.
- * This function executing in command thread.
- * When abort requested, all thread have to
+ * This function is executing in IO thread.
+ * When abort is requested, all thread have to
  * be resumed, so that they can terminate.
  */
-static void CommandThreadFn(void *arg)
+static void IOThreadFn(void *arg)
 {
 	ILDebugger *debugger = (ILDebugger *) arg;
 	do
@@ -2185,7 +2418,7 @@ static void CommandThreadFn(void *arg)
 /*
  * Start command-loop in separate thread.
  */
-int StartCommandThread(ILDebugger *debugger)
+int StartIOThread(ILDebugger *debugger)
 {
 	if(!ILHasThreads())
 	{
@@ -2193,19 +2426,19 @@ int StartCommandThread(ILDebugger *debugger)
 	}
 
 	/* Create command loop thread  */
-	debugger->commandThread = ILThreadCreate(CommandThreadFn,
+	debugger->ioThread = ILThreadCreate(IOThreadFn,
 														(void *) debugger);
 
-	if(debugger->commandThread == 0)
+	if(debugger->ioThread == 0)
 	{
 		return 0;
 	}
 
 	/* Start command loop thread */
-	if(!ILThreadStart(debugger->commandThread))
+	if(!ILThreadStart(debugger->ioThread))
 	{
-		ILThreadDestroy(debugger->commandThread);
-		debugger->commandThread = 0;
+		ILThreadDestroy(debugger->ioThread);
+		debugger->ioThread = 0;
 		return 0;
 	}
 
@@ -2256,7 +2489,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	/* Get or create debugger info about thread */
 	info = GetDbThreadInfo(debugger, thread);
 
-	//fprintf(stderr, " run type %d\n", info->runType);
+	/* fprintf(stderr, " runType=%d breakAll=%d\n", info->runType, debugger->breakAll); */
 
 	if(debugger->breakAll)
 	{
@@ -2326,7 +2559,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 				stop = 1;
 			}
 			break;
-			
+
 			default:
 			{
 				stop = 1;
@@ -2361,10 +2594,21 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	UnlockDebugger(debugger);
 
 	/* Check command loop thread */
-	if(debugger->commandThread || StartCommandThread(debugger))
+	if(debugger->ioThread || StartIOThread(debugger))
 	{
-		/* Suspend until resumed by continue, step or similar command */
-		_ILExecThreadSuspendThread(thread, thread->supportThread);
+		while(info->runType == IL_DEBUGGER_RUN_TYPE_STOPPED)
+		{
+			/* Wait for command or for resuming */
+			ILWaitOne(info->event, -1);
+
+			/* Check if we were resumed for executing current command */
+			if(debugger->currentCommand != 0 && info == debugger->dbthread)
+			{
+				/* Execute and signal that the command was handled */
+				ParseAndExecuteCurrentCommand(debugger);
+				ILWaitEventSet(debugger->event);
+			}
+		}
 	}
 	else
 	{
@@ -2452,12 +2696,22 @@ ILDebugger *ILDebuggerFromProcess(ILExecProcess *process)
 	return process->debugger;
 }
 
+void ILDebuggerRequestTerminate(ILDebugger *debugger)
+{
+	/* Notify IO thread to abort */
+	debugger->abort = 1;
+}
+
 void ILDebuggerDestroy(ILDebugger *debugger)
 {
 	/* Destroy initialized members */
-	if(debugger->commandThread)
+	if(debugger->ioThread)
 	{
-		ILThreadDestroy(debugger->commandThread);
+		ILThreadDestroy(debugger->ioThread);
+	}
+	if(debugger->event)
+	{
+		ILWaitHandleClose(debugger->event);
 	}
 	if(debugger->lock)
 	{
@@ -2469,6 +2723,9 @@ void ILDebuggerDestroy(ILDebugger *debugger)
 	}
 	/* Destroy assembly watch list */
 	DestroyAssemblyWatches(debugger);
+
+	/* Destroy watch list */
+	DestroyWatchList(debugger->watches);
 
 	if(debugger->io)
 	{
@@ -2518,6 +2775,9 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	/* Assembly watch list */
 	debugger->assemblyWatches = 0;
 
+	/* Watch list */
+	debugger->watches = 0;
+
 	/* Default thread info */
 	debugger->dbthread = ILDebuggerThreadInfo_Create();
 	debugger->dbthread->runType = IL_DEBUGGER_RUN_TYPE_STEP;
@@ -2529,13 +2789,22 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	debugger->breakpoint = ILBreakpoint_Create();
 
 	/* Initialize command thread */
-	debugger->commandThread = 0;
+	debugger->ioThread = 0;
+
+	/* Initialize handle for synchronizing command execution */
+	debugger->event = ILWaitEventCreate(0, 0);
+	if(!(debugger->event))
+	{
+		fprintf(stderr, "il_debugger: failed to create wait handle\n");
+		ILDebuggerDestroy(debugger);
+		return 0;
+	}
 
 	/* Register debug hook function */
 	if(ILExecProcessDebugHook(process, DebugHook, 0) == 0)
 	{
-		ILDebuggerDestroy(debugger);
 		fprintf(stderr, "il_debugger: the runtime engine does not support debugging.\n");
+		ILDebuggerDestroy(debugger);
 		return 0;
 	}
 

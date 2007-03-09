@@ -784,10 +784,10 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
 
 #ifdef IL_CONFIG_DEBUGGER
 
-ILWatch *_ILAllocWatch(ILExecThread *thread)
+ILLocalWatch *_ILAllocLocalWatch(ILExecThread *thread)
 {
 	ILUInt32 newsize;
-	ILWatch *watches;
+	ILLocalWatch *watches;
 
 	/* Calculate watch stack size */
 	if(thread->maxWatches)
@@ -800,8 +800,8 @@ ILWatch *_ILAllocWatch(ILExecThread *thread)
 	}
 
 	/* Allocate new watches */
-	if((watches = (ILWatch *)ILGCAllocPersistent
-				(sizeof(ILWatch) * newsize)) == 0)
+	if((watches = (ILLocalWatch *)ILGCAllocPersistent
+				(sizeof(ILLocalWatch) * newsize)) == 0)
 	{
 	    thread->thrownException = thread->process->outOfMemoryObject;
 		return 0;
@@ -811,7 +811,7 @@ ILWatch *_ILAllocWatch(ILExecThread *thread)
 	if(thread->maxWatches)
 	{
 		ILMemCpy(watches, thread->watchStack,
-				sizeof(ILWatch) * thread->maxWatches);
+				sizeof(ILLocalWatch) * thread->maxWatches);
 
 		/* Free the old watches */
 		ILGCFreePersistent(thread->watchStack);

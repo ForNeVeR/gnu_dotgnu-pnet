@@ -37,6 +37,7 @@ typedef struct _tagILDebugger			ILDebugger;
 typedef struct _tagILBreakpoint 		ILBreakpoint;
 typedef struct _tagILDebuggerThreadInfo		ILDebuggerThreadInfo;
 typedef struct _tagILAssemblyWatch 		ILAssemblyWatch;
+typedef struct _tagILDebuggerWatch 		ILDebuggerWatch;
 typedef struct _tagILDebuggerIO			ILDebuggerIO;
 
 /*
@@ -117,6 +118,12 @@ void ILDebuggerSetIO(ILDebugger *debugger, ILDebuggerIO *io);
  * debugger tries to create io from known connectionString scheme.
  */
 int ILDebuggerConnect(ILDebugger *debugger, char *connectionString);
+
+/*
+ * Notify debugger that the process is terminating.
+ * This will notify client and terminate IO thread.
+ */
+void ILDebuggerRequestTerminate(ILDebugger *debugger);
 
 /*
  * Destroy debugger and IO connection to debugger client.

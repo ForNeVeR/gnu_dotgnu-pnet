@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 #endif
 #ifdef IL_CONFIG_DEBUGGER
 	char *debuggerConnectionString = 0;
-	ILDebugger *debugger;
+	ILDebugger *debugger = 0;
 #endif
 
 	/* Initialize the locale routines */
@@ -436,6 +436,7 @@ int main(int argc, char *argv[])
 			{
 				/* Connect failed - destroy debugger and print error */
 				ILDebuggerDestroy(debugger);
+				debugger = 0;
 				fprintf(stderr, "%s: debugger connection failed on %s\n",
 											progname,
 											debuggerConnectionString);
@@ -587,6 +588,14 @@ int main(int argc, char *argv[])
 	{		
 		ILExecThreadPrintException(thread);
 	}
+
+#ifdef IL_CONFIG_DEBUGGER
+	/* Notify debugger client that the process is terminating */
+	if(debugger)
+	{
+		ILDebuggerRequestTerminate(debugger);
+	}
+#endif
 
 	/* Wait for all foreground threads to finish */
 	ILThreadWaitForForegroundThreads(-1);

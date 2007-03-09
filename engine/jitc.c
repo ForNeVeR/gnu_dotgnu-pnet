@@ -2574,7 +2574,7 @@ static void ILJitDropInvalidWatches(ILExecThread *thread)
 {
 	void *frame;
 	ILUInt32 i;
-	ILWatch *watch;
+	ILLocalWatch *watch;
 
 	/* Mark all watches invalid */
 	for(i = 0; i < thread->numWatches; i++)
@@ -2628,10 +2628,16 @@ static void ILJitDropInvalidWatches(ILExecThread *thread)
 static void JitDebuggerHook(jit_function_t func, jit_nint data1, jit_nint data2)
 {
 	ILExecThread *thread;
-	ILWatch *watch;
+	ILLocalWatch *watch;
 	void *frame;
 
 	thread = ILExecThreadCurrent();
+
+	/* Prevent debug hook call for thread executing from debugger */
+	if(ILDebuggerIsThreadUnbreakable(thread))
+	{
+		return;
+	}
 
 	switch(data1)
 	{
@@ -2649,7 +2655,7 @@ static void JitDebuggerHook(jit_function_t func, jit_nint data1, jit_nint data2)
 			{
 				watch = &(thread->watchStack[(thread->numWatches)]);
 			}
-			else if((watch = _ILAllocWatch(thread)) == 0)
+			else if((watch = _ILAllocLocalWatch(thread)) == 0)
 			{
 				/* We ran out of memory trying to push the watch */
 				thread->numWatches = 0;
@@ -2659,7 +2665,7 @@ static void JitDebuggerHook(jit_function_t func, jit_nint data1, jit_nint data2)
 			/* Two frames above us should be frame for current method */
 			watch->frame = jit_get_frame_address(2);
 
-			/* Assign index of local variable. Type and address will follow */
+			/* Address is in data2 */
 			watch->addr = (void *) data2;
 
 			thread->numWatches++;

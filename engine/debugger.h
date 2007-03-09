@@ -45,6 +45,20 @@ extern	"C" {
 
 #define IL_DEBUGGER_COMMAND_MAX_ARG_COUNT	3
 
+/*
+ * Determine if thread is unbreakable and untouchable in coder's debug hook.
+ *
+ * Such thread has stopped in debug hook and is now calling managed method
+ * e.g. ToString() for displaying watch.
+ * 
+ * The engine must prevent calling debug hook and changing debugger related
+ * stuff of such thread. Otherwise it leads to deadlock or other disfunctions.
+ * For example if thread->frame gets changed this affects show_locals command
+ * which relies on this value.
+ */
+#define ILDebuggerIsThreadUnbreakable(thread) \
+	(thread->process->debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED && \
+	 thread->process->debugger->dbthread->execThread == thread)
 
 /*
  * Check whether debugger is watching method's assembly.
@@ -66,6 +80,9 @@ struct _tagILDebuggerThreadInfo
 	ILMethod *method;
 	ILInt32 offset;
 	int type;
+
+	/* Wakeups the thread to execute command or continue execution */
+	ILWaitHandle *event;
 
 	/* Current location in source file */
 	const char *sourceFile;
@@ -112,6 +129,18 @@ struct _tagILAssemblyWatch
 };
 
 /*
+ * Watch info for local variable, field, property or function call.
+ */
+struct _tagILDebuggerWatch
+{
+	/* Expression to watch */
+	char *expression;
+
+	/* Next watch in this linked list */
+	ILDebuggerWatch *next;
+};
+
+/*
  * Structure of a debugger instance.
  */
 struct _tagILDebugger
@@ -119,20 +148,31 @@ struct _tagILDebugger
 	/* Lock to serialize access to this object */
 	ILMutex *lock;
 
-	/* Refernce to current exec process */
+	/* Reference to current exec process */
 	ILExecProcess *process;
 
 	/* Debugger client stream */
 	ILDebuggerIO *io;
 
-	/* Thread with command loop or 0 if debugging runs in single thread */
-	ILThread *commandThread;
+	/* Current command */
+	char *currentCommand;
+
+	/* Used to signal that command execution finnished */
+	ILWaitHandle *event;
+
+	/* Thread that is recieving, sending and sometimes executing commands.
+	   Can be 0 if debugging runs in single thread. */
+	ILThread *ioThread;
 
 	/* Currently debugged thread followed by other stopped threads */
 	ILDebuggerThreadInfo * volatile dbthread;
 
 	/* Linked list of watched assemblies or NULL to watch all */
 	ILAssemblyWatch *assemblyWatches;
+
+	/* Linked list of watched local variables, fields, properties or function
+	   calls */
+	ILDebuggerWatch *watches;
 	
 	/* Linked list of user breakpoints */
 	ILBreakpoint *breakpoint;

@@ -444,6 +444,14 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		_ILExecThreadDestroy(process->finalizerThread);
 	}
 
+#ifdef IL_CONFIG_DEBUGGER
+	/* Destroy the debugger */
+	if(process->debugger)
+	{
+		ILDebuggerDestroy(process->debugger);
+	}
+#endif
+
 	/* Destroy the CVM coder instance */
 	if (process->coder)
 	{

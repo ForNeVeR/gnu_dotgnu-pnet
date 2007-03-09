@@ -339,13 +339,13 @@ struct _tagILExecProcess
 /*
  * Information about local variable or function parameter.
  */
-typedef struct _tagILWatch
+typedef struct _tagILLocalWatch
 {
 	void           *addr;			/* Address of variable */
 	int				flag;
 	void		   *frame;			/* Frame pointer */
 
-} ILWatch;
+} ILLocalWatch;
 #endif
 
 /*
@@ -424,7 +424,7 @@ struct _tagILExecThread
 
 #ifdef IL_CONFIG_DEBUGGER
 	/* Stack for watching local variables and function params */
-	ILWatch	       *watchStack;
+	ILLocalWatch   *watchStack;
 	ILUInt32		numWatches;
 	ILUInt32		maxWatches;
 #endif
@@ -902,7 +902,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread);
  * Reallocate the watches for a given thread in order
  * to provide more space.  Returns NULL if out of memory.
  */
-ILWatch *_ILAllocWatch(ILExecThread *thread);
+ILLocalWatch *_ILAllocLocalWatch(ILExecThread *thread);
 #endif
 
 /*

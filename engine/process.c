@@ -444,7 +444,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		_ILExecThreadDestroy(process->finalizerThread);
 	}
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	/* Destroy the debugger */
 	if(process->debugger)
 	{

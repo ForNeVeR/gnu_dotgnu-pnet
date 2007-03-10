@@ -1694,7 +1694,7 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 	}
 #endif
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	/* Insert potential breakpoint with method in data2 */
 	if(jitCoder->markBreakpoints)
 	{

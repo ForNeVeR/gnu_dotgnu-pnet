@@ -28,7 +28,7 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 {
 	ILJITCoder *coder = ((ILJITCoder *)_coder);
 	ILJITLabel *label0;
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	ILDebugger *debugger;
 #endif
 
@@ -62,7 +62,7 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	}
 #endif
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	/* Check if this method can be debugged */
 	debugger = ILDebuggerFromProcess(coder->process);
 	coder->markBreakpoints =

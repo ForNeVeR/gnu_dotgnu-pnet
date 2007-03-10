@@ -21,7 +21,14 @@
 #ifndef	_IL_DEBUGGER_H
 #define	_IL_DEBUGGER_H
 
-#ifdef IL_CONFIG_DEBUGGER
+/*
+ * Compile debugger only if configured in profile and if we have tools support.
+ */
+#if defined(IL_CONFIG_DEBUGGER) && !defined(IL_WITHOUT_TOOLS)
+	#define IL_DEBUGGER 1
+#endif
+
+#ifdef IL_DEBUGGER
 
 #include "il_sysio.h"
 #include "il_engine.h"

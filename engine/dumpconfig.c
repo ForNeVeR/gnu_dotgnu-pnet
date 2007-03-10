@@ -160,7 +160,7 @@ int _ILDumpConfig(FILE *stream,int level)
 	PrintFormatted(stream, "Libffi", "No");
 #endif
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	PrintFormatted(stream,"Debugger support", "Yes");
 #else
 	PrintFormatted(stream,"Debugger support", "No");

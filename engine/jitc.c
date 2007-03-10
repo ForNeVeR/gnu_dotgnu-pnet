@@ -27,7 +27,7 @@
 #include "cctormgr.h"
 #include "il_opcodes.h"
 #include "il_utils.h"
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 #include "debugger.h"
 #endif
 #ifndef IL_WITHOUT_TOOLS
@@ -444,7 +444,7 @@ struct _tagILJITCoder
 	ILJitValue		thread;
 #endif
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	/* Flag if current method can be debugged */
 	int markBreakpoints;
 #endif
@@ -2562,7 +2562,7 @@ jit_context_t ILJitGetContext(ILCoder *_coder)
 	return _ILCoderToILJITCoder(_coder)->context;
 }
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 /*
  * Drop invalid watches from thread->watchStack.
  * Watches are normaly removed on return statement (see handler
@@ -2717,7 +2717,7 @@ static void JITCoder_EnableDebug(ILCoder *coder)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	jitCoder->debugEnabled = 1;
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	jit_debugger_set_hook(jitCoder->context, JitDebuggerHook);
 #endif
 }
@@ -2805,7 +2805,7 @@ static void JITCoder_MarkBytecode(ILCoder *coder, ILUInt32 offset)
 	{
 		jit_insn_mark_offset(jitCoder->jitFunction, (jit_int)offset);
 	}
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	/* Insert breakpoint marks if needed */
 	if(jitCoder->markBreakpoints)
 	{

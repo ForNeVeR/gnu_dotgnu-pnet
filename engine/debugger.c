@@ -36,7 +36,7 @@
 #include "jitc.h"
 #endif
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 
 /*
  * Lock the debugger object.
@@ -2818,4 +2818,4 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	return debugger;
 }
 
-#endif	/* IL_CONFIG_DEBUGGER */
+#endif	/* IL_DEBUGGER */

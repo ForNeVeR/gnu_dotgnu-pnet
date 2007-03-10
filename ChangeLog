@@ -1,3 +1,16 @@
+2007-03-10  Radek Polak  <psonek2@seznam.cz>
+
+	* pnet/engine/cvmc.c, pnet/engine/cvmc_setup.c,
+	pnet/engine/debugger.c, pnet/engine/debugger.h,
+	pnet/engine/dumpconfig.c, pnet/engine/engine.h, pnet/engine/ilrun.c,
+	pnet/engine/jitc.c, pnet/engine/jitc_call.c,
+	pnet/engine/jitc_locals.c, pnet/engine/jitc_setup.c,
+	pnet/engine/process.c, pnet/engine/thread.c,
+	pnet/include/il_debugger.h: Fix build for --disable-tools option. The
+	debugger is also disabled in this case, because it is considered to be
+	developer tool and because some functions cannot be implemented
+	without tools.
+
 2007-03-09  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: Fix problem when response from debugger was not

@@ -552,7 +552,7 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 		return 0;
 	}
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	if(coder->markBreakpoints)
 	{
 		ILUInt32 current;

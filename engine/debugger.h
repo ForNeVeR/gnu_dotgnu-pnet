@@ -26,7 +26,7 @@
 #include "jit/jit-except.h"
 #endif
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -194,6 +194,6 @@ struct _tagILDebugger
 };
 #endif
 
-#endif	/* IL_CONFIG_DEBUGGER */
+#endif	/* IL_DEBUGGER */
 
 #endif	/* _DEBUGGER_H */

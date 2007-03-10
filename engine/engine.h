@@ -297,7 +297,7 @@ struct _tagILExecProcess
 
 #endif /* IL_CONFIG_DEBUG_LINES */
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 
 	/* Debugger attached to this process */
 	ILDebugger		*debugger;
@@ -335,7 +335,7 @@ struct _tagILExecProcess
 #endif /* IL_CONFIG_APPDOMAINS */
 };
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 /*
  * Information about local variable or function parameter.
  */
@@ -422,7 +422,7 @@ struct _tagILExecThread
 	ILUInt32		numFrames;
 	ILUInt32		maxFrames;
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 	/* Stack for watching local variables and function params */
 	ILLocalWatch   *watchStack;
 	ILUInt32		numWatches;
@@ -897,7 +897,7 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame);
  */
 ILCallFrame *_ILAllocCallFrame(ILExecThread *thread);
 
-#ifdef IL_CONFIG_DEBUGGER
+#ifdef IL_DEBUGGER
 /*
  * Reallocate the watches for a given thread in order
  * to provide more space.  Returns NULL if out of memory.

@@ -1,3 +1,14 @@
+2007-03-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs:
+	optimized performance in ReadPrimitiveTypeArray by reading 
+	arrays once instead of reading it for each object.
+
+2007-03-12  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Drawing/Drawing2D/GraphicsPath.cs: fixed calculation
+	ellipse and pie.
+
 2007-03-09  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/Private/DebuggerHelper.cs: Managed helper class for

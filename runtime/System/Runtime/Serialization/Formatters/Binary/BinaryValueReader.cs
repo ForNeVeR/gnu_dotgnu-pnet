@@ -518,124 +518,117 @@ abstract class BinaryValueReader
 		}
 	}
 		
-	public static void ReadPrimitiveTypeArray(DeserializationContext context, BinaryPrimitiveTypeCode typeCode, Array array) 
+	internal static Array ReadPrimitiveTypeArray(DeserializationContext context, BinaryPrimitiveTypeCode typeCode, int count ) 
 	{
-		int count = array.GetLength(0);
 		switch(typeCode) 
 		{
 			case BinaryPrimitiveTypeCode.Boolean:
-				bool[] boolArray = (bool[]) array;
+				bool[] boolArray = new bool[count];
 				for(int i = 0; i < count; i++) {
 					boolArray[i] = context.Reader.ReadBoolean();
 				}
-				break;
-
+				return boolArray;
+	
 			case BinaryPrimitiveTypeCode.Byte:
-				byte[] byteArray = (byte[]) array;
-				for(int i = 0; i < count; i++) {
-					byteArray[i] = context.Reader.ReadByte();
-				}
-				break;
-
+				byte[] byteArray = context.Reader.ReadBytes(count);
+				return byteArray;
+	
 			case BinaryPrimitiveTypeCode.Char:
-				char[] charArray = (char[]) array;
-				for(int i = 0; i < count; i++) {
-					charArray[i] = context.Reader.ReadChar();
-				}
-				break;
-
+				char[] charArray = context.Reader.ReadChars(count);
+				return charArray;
+	
 			case BinaryPrimitiveTypeCode.Decimal:
-				decimal[] decimalArray = (decimal[]) array;
+				decimal[] decimalArray = new decimal[count];
 				for(int i = 0; i < count; i++) {
 					decimalArray[i] = Decimal.Parse(context.Reader.ReadString());
 				}
-				break;
-
+				return decimalArray;
+	
 			case BinaryPrimitiveTypeCode.Double:
-				double[] doubleArray = (double[]) array;
+				double[] doubleArray = new double[count];
 				for(int i = 0; i < count; i++) {
 					doubleArray[i] = context.Reader.ReadDouble();
 				}
-				break;
-
+				return doubleArray;
+	
 			case BinaryPrimitiveTypeCode.Int16:
-				short[] shortArray = (short[]) array;
+				short[] shortArray = new short[count];
 				for(int i = 0; i < count; i++) {
 					shortArray[i] = context.Reader.ReadInt16();
 				}
-				break;
-
+				return shortArray;
+	
 			case BinaryPrimitiveTypeCode.Int32:
-				int[] intArray = (int[]) array;
+				int[] intArray = new int[count];
 				for(int i = 0; i < count; i++) {
 					intArray[i] = context.Reader.ReadInt32();
 				}
-				break;
-
+				return intArray;
+	
 			case BinaryPrimitiveTypeCode.Int64:
-				long[] longArray = (long[]) array;
+				long[] longArray = new long[count];
 				for(int i = 0; i < count; i++) {
 					longArray[i] = context.Reader.ReadInt64();
 				}
-				break;
-
+				return longArray;
+	
 			case BinaryPrimitiveTypeCode.SByte:
-				sbyte[] sbyteArray = (sbyte[]) array;
+				sbyte[] sbyteArray = new sbyte[count];
 				for(int i = 0; i < count; i++) {
 					sbyteArray[i] = context.Reader.ReadSByte();
 				}
-				break;
-
+				return sbyteArray;
+	
 			case BinaryPrimitiveTypeCode.Single:
-				float[] singleArray = (float[]) array;
+				float[] singleArray = new float[count];
 				for(int i = 0; i < count; i++) {
 					singleArray[i] = context.Reader.ReadChar();
 				}
-				break;
-
+				return singleArray;
+	
 			case BinaryPrimitiveTypeCode.TimeSpan:
-				TimeSpan[] tsArray = (TimeSpan[]) array;
+				TimeSpan[] tsArray = new TimeSpan[count];
 				for(int i = 0; i < count; i++) {
 					tsArray[i] = new TimeSpan(context.Reader.ReadInt64());
 				}
-				break;
-
+				return tsArray;
+	
 			case BinaryPrimitiveTypeCode.DateTime:
-				DateTime[] dtArray = (DateTime[]) array;
+				DateTime[] dtArray = new DateTime[count];
 				for(int i = 0; i < count; i++) {
 					dtArray[i] = new DateTime(context.Reader.ReadInt64());
 				}
-				break;
-
+				return dtArray;
+	
 			case BinaryPrimitiveTypeCode.UInt16:
-				ushort[] ushortArray = (ushort[]) array;
+				ushort[] ushortArray = new ushort[count];
 				for(int i = 0; i < count; i++) {
 					ushortArray[i] = context.Reader.ReadUInt16();
-
+	
 				}
-				break;
-
+				return ushortArray;
+	
 			case BinaryPrimitiveTypeCode.UInt32:
-				uint[] uintArray = (uint[]) array;
+				uint[] uintArray = new uint[count];
 				for(int i = 0; i < count; i++) {
 					uintArray[i] = context.Reader.ReadUInt32();
 				}
-				break;
-
+				return uintArray;
+	
 			case BinaryPrimitiveTypeCode.UInt64:
-				ulong[] ulongArray = (ulong[]) array;
+				ulong[] ulongArray = new ulong[count];
 				for(int i = 0; i < count; i++) {
 					ulongArray[i] = context.Reader.ReadUInt64();
 				}
-				break;
-
+				return ulongArray; 
+	
 			case BinaryPrimitiveTypeCode.String:
-				string[] stringArray = (string[]) array;
+				string[] stringArray = new string[count];
 				for(int i = 0; i < count; i++) {
 					stringArray[i] = context.Reader.ReadString();
 				}
-				break;
-
+				return stringArray;
+	
 			default:
 				throw new SerializationException("unknown primitive type code:"+typeCode);
 		}
@@ -852,20 +845,18 @@ abstract class ArrayReader : BinaryValueReader
 	{
 		bool ret = true;
 
-		Type convertedType;
 		Array array;
 
 		if(type is BinaryPrimitiveTypeCode) 
 		{
 			// this is a primitive array
-			convertedType = GetPrimitiveType((BinaryPrimitiveTypeCode) type);
-			array = Array.CreateInstance(convertedType, (int) count);
-			ReadPrimitiveTypeArray(context, (BinaryPrimitiveTypeCode) type, array);
+			array = ReadPrimitiveTypeArray(context, (BinaryPrimitiveTypeCode) type, (int) count);
+			
 		}
 		else if(type is Type)
 		{
 			// this is an object array
-			convertedType = (Type) type;
+			Type convertedType = (Type) type;
 			array = Array.CreateInstance(convertedType, (int) count);
 			for(int i = 0; i < count; i++) 
 			{

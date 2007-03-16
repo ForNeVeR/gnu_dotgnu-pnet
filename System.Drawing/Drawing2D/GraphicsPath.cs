@@ -1097,6 +1097,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	
 	}; // class PathObject
 
+	
 	// Arc path objects.
 	private sealed class ArcPathObject : PathObject
 	{
@@ -1137,14 +1138,14 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			double rx = this.width/2;
 			double ry = this.height/2;
 			for( int i = 0; i < iCount-1; i++ ) {
-				px = rx*( 1 + DegCosinus( dStart ) ) + this.x+1;
-				py = ry*( 1 + DegSinus  ( dStart ) ) + this.y+1;
+				px = rx*( 1 + DegCosinus( dStart ) ) + this.x;
+				py = ry*( 1 + DegSinus  ( dStart ) ) + this.y;
 				points[i] = new PointF( (float)px,(float)py );
 				if( i == 0 ) startPoint = points[i];
 				dStart += dDelta;
 			}
-			px = rx*( 1 + DegCosinus( dEnd ) ) + this.x+1;
-			py = ry*( 1 + DegSinus  ( dEnd ) ) + this.y+1;
+			px = rx*( 1 + DegCosinus( dEnd ) ) + this.x;
+			py = ry*( 1 + DegSinus  ( dEnd ) ) + this.y;
 			points[iCount-1] = new PointF( (float)px,(float)py );
 			endPoint = points[iCount-1];
 			return points;
@@ -1504,13 +1505,13 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			double ry = this.height/2;
 			points[0] = new PointF( (float)(this.x+rx),(float)(this.y+ry) );
 			for( int i = 1; i < iCount; i++ ) {
-				xP = rx*( 1 + DegCosinus( dStart ) ) + this.x+1;
-				yP = ry*( 1 + DegSinus  ( dStart ) ) + this.y+1;
+				xP = rx*( 1 + DegCosinus( dStart ) ) + this.x;
+				yP = ry*( 1 + DegSinus  ( dStart ) ) + this.y;
 				points[i] = new PointF( (float)xP,(float)yP );
 				dStart += dDelta;
 			}
-			xP = rx*( 1 + DegCosinus( dEnd ) ) + this.x+1;
-			yP = ry*( 1 + DegSinus  ( dEnd ) ) + this.y+1;
+			xP = rx*( 1 + DegCosinus( dEnd ) ) + this.x;
+			yP = ry*( 1 + DegSinus  ( dEnd ) ) + this.y;
 			points[iCount]   = new PointF( (float)xP,(float)yP );
 			points[iCount+1] = points[0];
 			return points;

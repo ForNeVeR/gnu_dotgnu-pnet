@@ -100,3 +100,9 @@ IL_CONFIG_FILESYSTEM=n
 # ECMA compliance. Might differ from observed behavior of .NET (y/n).
 IL_CONFIG_ECMA=y
 
+# Major CLR/Framework Version to support (1 .. 3)
+IL_VERSION_MAJOR=3
+
+# Minor CLR/Framework Version to support
+IL_VERSION_MINOR=0
+

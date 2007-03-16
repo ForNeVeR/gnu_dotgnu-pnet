@@ -271,13 +271,14 @@ static ILNode *NegateInteger(ILNode_Integer *node)
  */
 static ILNode **classNameStack = 0;
 static int     *classNameCtorDefined = 0;
+static ILUInt32 *classNameModifiers = 0;
 static int		classNameStackSize = 0;
 static int		classNameStackMax = 0;
 
 /*
  * Push an item onto the class name stack.
  */
-static void ClassNamePush(ILNode *name)
+static void ClassNamePush(ILNode *name, ILUInt32 modifiers)
 {
 	if(classNameStackSize >= classNameStackMax)
 	{
@@ -293,9 +294,16 @@ static void ClassNamePush(ILNode *name)
 		{
 			CCOutOfMemory();
 		}
+		classNameModifiers = (ILUInt32 *)ILRealloc
+			(classNameModifiers, sizeof(ILUInt32) * (classNameStackMax + 4));
+		if(!classNameModifiers)
+		{
+			CCOutOfMemory();
+		}
 		classNameStackMax += 4;
 	}
 	classNameStack[classNameStackSize] = name;
+	classNameModifiers[classNameStackSize] = modifiers;
 	classNameCtorDefined[classNameStackSize++] = 0;
 }
 
@@ -321,6 +329,14 @@ static void ClassNameCtorDefined(void)
 static int ClassNameIsCtorDefined(void)
 {
 	return classNameCtorDefined[classNameStackSize - 1];
+}
+
+/*
+ * Get the modifiers of the current class.
+ */
+static ILUInt32 ClassNameGetModifiers(void)
+{
+	return classNameModifiers[classNameStackSize - 1];
 }
 
 /*
@@ -2719,21 +2735,54 @@ ClassDeclaration
 				/* Enter a new nesting level */
 				++NestingLevel;
 
+			#if IL_VERSION_MAJOR > 1
+				/* ECMA 334 Version 4: 17.1.1.3 */
+				if($2 & CS_MODIFIER_STATIC)
+				{
+					if($2 & CS_MODIFIER_SEALED)
+					{
+						CCError(_("static classes must not be sealed"));
+					}
+					if($2 & CS_MODIFIER_ABSTRACT)
+					{
+						CCError(_("static classes must not be abstract"));
+					}
+					if($7 != 0)
+					{
+						CCError(_("static classes must not have a base class specification"));
+					}
+					/* Static classes are implecitely sealed. */
+					/* ECMA 335 Version 4: 10.1.4 states they should be abstract too. */
+					$2 |= (CS_MODIFIER_SEALED | CS_MODIFIER_ABSTRACT);
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
+
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($5);
+				ClassNamePush($5, $2);
 			}
 			ClassBody OptSemiColon	{
 				ILNode *classBody = ($10).body;
 
 				/* Validate the modifiers */
 				ILUInt32 attrs =
+			#if IL_VERSION_MAJOR > 1
+					CSModifiersToTypeAttrs($5, $2 & ~CS_MODIFIER_STATIC,
+										   (NestingLevel > 1));
+			#else	/* IL_VERSION_MAJOR == 1 */
 					CSModifiersToTypeAttrs($5, $2, (NestingLevel > 1));
+			#endif	/* IL_VERSION_MAJOR == 1 */
 
 				/* Exit the current nesting level */
 				--NestingLevel;
 
 				/* Determine if we need to add a default constructor */
+			#if IL_VERSION_MAJOR > 1
+				/* Don't add the default constructor for static classes. */
+				if((($2 & CS_MODIFIER_STATIC) == 0) && 
+				   !ClassNameIsCtorDefined())
+			#else	/* IL_VERSION_MAJOR == 1 */
 				if(!ClassNameIsCtorDefined())
+			#endif	/* IL_VERSION_MAJOR == 1 */
 				{
 					ILUInt32 ctorMods =
 						(((attrs & IL_META_TYPEDEF_ABSTRACT) != 0)
@@ -2835,7 +2884,7 @@ ModuleDeclaration
 
 				/* Push the identifier onto the class name stack */
 				$<node>$ = ILQualIdentSimple("<Module>");
-				ClassNamePush($<node>$);
+				ClassNamePush($<node>$, 0);
 			}
 			ClassBody OptSemiColon	{
 				ILNode *classBody = ($3).body;
@@ -2962,6 +3011,19 @@ ConstantDeclarator
 FieldDeclaration
 	: OptAttributes OptModifiers Type FieldDeclarators ';'	{
 				ILUInt32 attrs = CSModifiersToFieldAttrs($3, $2);
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					if(!($2 & CS_MODIFIER_STATIC))
+					{
+						CCError(_("only static fields are allowed in static classes"));
+					}
+					if($2 & CS_MODIFIER_PROTECTED)
+					{
+						CCError(_("no protected or protected internal fields are allowed in static classes"));
+					}
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
 				$$ = ILNode_FieldDeclaration_create($1, attrs, $3, $4);
 			}
 	;
@@ -3001,6 +3063,19 @@ MethodDeclaration
 					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 						"`private' cannot be used in this context");
 				}
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					if(!($2 & CS_MODIFIER_STATIC))
+					{
+						CCError(_("only static methods are allowed in static classes"));
+					}
+					if($2 & CS_MODIFIER_PROTECTED)
+					{
+						CCError(_("no protected or protected internal methods are allowed in static classes"));
+					}
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, $3, $4, $6, $8);
 				CloneLine($$, $4);
@@ -3053,6 +3128,19 @@ PropertyDeclaration
 			StartAccessorBlock AccessorBlock	{
 				ILUInt32 attrs;
 
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					if(!($2 & CS_MODIFIER_STATIC))
+					{
+						CCError(_("only static properties are allowed in static classes"));
+					}
+					if($2 & CS_MODIFIER_PROTECTED)
+					{
+						CCError(_("no protected or protected internal properties are allowed in static classes"));
+					}
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
 				/* Create the property declaration */
 				attrs = CSModifiersToPropertyAttrs($3, $2);
 				$$ = ILNode_PropertyDeclaration_create($1,
@@ -3142,6 +3230,19 @@ EventDeclaration
 EventFieldDeclaration
 	: OptAttributes OptModifiers EVENT Type EventDeclarators ';'	{
 				ILUInt32 attrs = CSModifiersToEventAttrs($4, $2);
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					if(!($2 & CS_MODIFIER_STATIC))
+					{
+						CCError(_("only static events are allowed in static classes"));
+					}
+					if($2 & CS_MODIFIER_PROTECTED)
+					{
+						CCError(_("no protected or protected internal events are allowed in static classes"));
+					}
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
 				$$ = ILNode_EventDeclaration_create($1, attrs, $4, $5);
 				CreateEventMethods((ILNode_EventDeclaration *)($$));
 			}
@@ -3239,6 +3340,21 @@ IndexerDeclaration
 				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1,
 							$3.ident);
 				ILUInt32 attrs = CSModifiersToPropertyAttrs($3.type, $2);
+
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					if(!($2 & CS_MODIFIER_STATIC))
+					{
+						CCError(_("only static indexers are allowed in static classes"));
+					}
+					if($2 & CS_MODIFIER_PROTECTED)
+					{
+						CCError(_("no protected or protected internal indexers are allowed in static classes"));
+					}
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
+
 				$$ = ILNode_PropertyDeclaration_create($1,
 								   attrs, $3.type, name, $3.params,
 								   $5.item1, $5.item2,
@@ -3319,6 +3435,13 @@ NormalOperatorDeclaration
 					$5.unary = $5.binary;
 				}
 
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					CCError(_("no operators are allowed in static classes"));
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
+
 				/* Get the operator attributes */
 				attrs = CSModifiersToOperatorAttrs($3, $2);
 
@@ -3347,6 +3470,13 @@ NormalOperatorDeclaration
 					CCError("overloadable binary operator expected");
 					$5.binary = $5.unary;
 				}
+
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					CCError(_("no operators are allowed in static classes"));
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
 
 				/* Get the operator attributes */
 				attrs = CSModifiersToOperatorAttrs($3, $2);
@@ -3456,6 +3586,17 @@ ConstructorDeclaration
 				ILNode *cname;
 				ILNode *initializer = $7;
 				ILNode *body;
+
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					if(!($2 & CS_MODIFIER_STATIC))
+					{
+						CCError(_("no instance constructors are allowed in static classes"));
+					}
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
+
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
 				{
 					cname = ILQualIdentSimple
@@ -3546,6 +3687,16 @@ DestructorDeclaration
 				ILNode *name;
 				ILNode *body;
 
+			#if IL_VERSION_MAJOR > 1
+				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
+				{
+					if(!($2 & CS_MODIFIER_STATIC))
+					{
+						CCError(_("no destructors are allowed in static classes"));
+					}
+				}
+			#endif	/* IL_VERSION_MAJOR > 1 */
+
 				/* Destructors cannot have type parameters */
 				dtorName = $4;
 				if(yyisa(dtorName, ILNode_GenericReference))
@@ -3601,7 +3752,7 @@ StructDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($5);
+				ClassNamePush($5, $2);
 			}
 			StructBody OptSemiColon	{
 				ILNode *baseList;
@@ -3675,7 +3826,7 @@ InterfaceDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($5);
+				ClassNamePush($5, $2);
 			}
 			InterfaceBody OptSemiColon	{
 				/* Validate the modifiers */
@@ -3861,7 +4012,7 @@ EnumDeclaration
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4);
+				ClassNamePush($4, $2);
 			}
 			EnumBody OptSemiColon	{
 				ILNode *baseList;

@@ -1,3 +1,11 @@
+2007-03-12  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_grammar.y: Add support for static classes.
+
+	* profiles/compact, profiles/compact-fp, profiles/full, profiles/full-tl,
+	profiles/kernel, profiles/kernel-fp, profiles/tiny: Add IL_VERSION_MAJOR
+	and IL_VERSION_MINOR for the framework version that should be supported.
+
 2007-03-10  Radek Polak  <psonek2@seznam.cz>
 
 	* pnet/engine/cvmc.c, pnet/engine/cvmc_setup.c,

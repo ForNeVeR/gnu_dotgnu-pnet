@@ -212,6 +212,7 @@ static ILIntString PackUnicodeString(ILIntString str)
 	}
 }
 
+#ifdef IL_CONFIG_FP_SUPPORTED
 /*
  * Helper function that sets 32-bit version of a "float".
  */
@@ -227,6 +228,7 @@ static void SetDouble(unsigned char *dbytes, ILDouble value)
 {
 	IL_WRITE_DOUBLE(dbytes, value);
 }
+#endif	/* IL_CONFIG_FP_SUPPORTED */
 
 /*
  * Find a module reference, or create it if not found.
@@ -1162,18 +1164,27 @@ Integer64
 Float64
 	: FLOAT_CONSTANT	{
 				/* Literal floating point constant */
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				SetFloat($$.fbytes, (ILFloat)($1));
 				SetDouble($$.dbytes, $1);
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				yyerror("no floating point support on this system");
+			#endif	/* IL_CONFIG_FP_SUPPORTED */
 			}
 	| K_FLOAT32 '(' Integer32 ')' {
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				/* Convert a raw big endian value into a 32-bit float */
 				$$.fbytes[3] = (ILUInt8)($3 >> 24);
 				$$.fbytes[2] = (ILUInt8)($3 >> 16);
 				$$.fbytes[1] = (ILUInt8)($3 >> 8);
 				$$.fbytes[0] = (ILUInt8)($3);
 				SetDouble($$.dbytes, (ILDouble)(IL_READ_FLOAT($$.fbytes)));
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				yyerror("no floating point support on this system");
+			#endif	/* IL_CONFIG_FP_SUPPORTED */
 			}
 	| K_FLOAT64 '(' Integer64 ')' {
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				/* Convert a raw big endian value into a 64-bit float */
 				$$.dbytes[7] = (ILUInt8)($3 >> 56);
 				$$.dbytes[6] = (ILUInt8)($3 >> 48);
@@ -1184,6 +1195,9 @@ Float64
 				$$.dbytes[1] = (ILUInt8)($3 >> 8);
 				$$.dbytes[0] = (ILUInt8)($3);
 				SetFloat($$.fbytes, (ILFloat)(IL_READ_DOUBLE($$.dbytes)));
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				yyerror("no floating point support on this system");
+			#endif	/* IL_CONFIG_FP_SUPPORTED */
 			}
 	| K_NAN				{
 				/* Not a number */
@@ -1819,16 +1833,24 @@ FieldAttributeName
 
 FieldInitialization
 	: K_FLOAT32 '(' FLOAT_CONSTANT ')'	{
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				unsigned char bytes[4];
 				SetFloat(bytes, (ILFloat)($3));
 				$$.type = IL_META_ELEMTYPE_R4;
 				$$.valueBlob = ILInternString((char *)bytes, 4);
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				yyerror("no floating point support on this system");
+			#endif	/* IL_CONFIG_FP_SUPPORTED */
 			}
 	| K_FLOAT64 '(' FLOAT_CONSTANT ')'	{
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				unsigned char bytes[8];
 				SetDouble(bytes, (ILDouble)($3));
 				$$.type = IL_META_ELEMTYPE_R8;
 				$$.valueBlob = ILInternString((char *)bytes, 8);
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				yyerror("no floating point support on this system");
+			#endif	/* IL_CONFIG_FP_SUPPORTED */
 			}
 	| K_FLOAT32 '(' Integer64 ')'	{
 				unsigned char bytes[4];
@@ -4176,11 +4198,16 @@ Instruction
 InstructionFloat
 	: Float64			{ $$ = $1; }
  	| Integer64			{
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				/* Convert a 64-bit integer into a float */
 				SetFloat($$.fbytes, (ILFloat)($1));
 				SetDouble($$.dbytes, (ILDouble)($1));
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				yyerror("no floating point support on this system");
+			#endif	/* IL_CONFIG_FP_SUPPORTED */
 			}
 	| Bytes				{
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				/* Convert a group of bytes into a float */
 				if($1.len == 4)
 				{
@@ -4213,6 +4240,9 @@ InstructionFloat
 					$$.dbytes[6] = 0;
 					$$.dbytes[7] = 0;
 				}
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				yyerror("no floating point support on this system");
+			#endif	/* IL_CONFIG_FP_SUPPORTED */
 			}
 	;
 

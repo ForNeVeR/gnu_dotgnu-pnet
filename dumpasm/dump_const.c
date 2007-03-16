@@ -142,6 +142,7 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats)
 		{
 			if(blobLen > 3)
 			{
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				if(hexFloats)
 				{
 					fprintf(stream, "float32(0x%08lX)",
@@ -152,6 +153,10 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats)
 					fprintf(stream, "float32(%.30e)",
 							(double)(IL_READ_FLOAT(blob)));
 				}
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				fprintf(stream, "float32(0x%08lX)",
+						(unsigned long)(IL_READ_UINT32(blob)));
+			#endif	/* !IL_CONFIG_FP_SUPPORTED */
 			}
 			else
 			{
@@ -164,6 +169,7 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats)
 		{
 			if(blobLen > 7)
 			{
+			#ifdef IL_CONFIG_FP_SUPPORTED
 				if(hexFloats)
 				{
 					fprintf(stream, "float64(0x%08lX%08lX)",
@@ -175,6 +181,11 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats)
 					fprintf(stream, "float64(%.30e)",
 							(double)(IL_READ_DOUBLE(blob)));
 				}
+			#else	/* !IL_CONFIG_FP_SUPPORTED */
+				fprintf(stream, "float64(0x%08lX%08lX)",
+						(unsigned long)(IL_READ_UINT32(blob + 4)),
+						(unsigned long)(IL_READ_UINT32(blob)));
+			#endif	/* !IL_CONFIG_FP_SUPPORTED */
 			}
 			else
 			{

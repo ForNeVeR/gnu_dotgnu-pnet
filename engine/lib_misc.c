@@ -143,6 +143,7 @@ ILFloat _IL_BitConverter_Int32BitsToFloat(ILExecThread *thread,
 System_Array *_IL_BitConverter_GetLittleEndianBytes_f
 		(ILExecThread *_thread, ILFloat value)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	System_Array *array =
 		(System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)4);
 	if(array)
@@ -150,6 +151,10 @@ System_Array *_IL_BitConverter_GetLittleEndianBytes_f
 		IL_WRITE_FLOAT((unsigned char *)ArrayToBuffer(array), value);
 	}
 	return array;
+#else	/* !IL_CONFIG_FP_SUPPORTED */
+	ILExecThreadThrowSystem(_thread, "System.NotImplementedException", 0);
+	return 0;
+#endif	/* !IL_CONFIG_FP_SUPPORTED */
 }
 
 /*
@@ -158,6 +163,7 @@ System_Array *_IL_BitConverter_GetLittleEndianBytes_f
 System_Array *_IL_BitConverter_GetLittleEndianBytes_d
 		(ILExecThread *_thread, ILDouble value)
 {
+#ifdef IL_CONFIG_FP_SUPPORTED
 	System_Array *array =
 		(System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)8);
 	if(array)
@@ -165,6 +171,10 @@ System_Array *_IL_BitConverter_GetLittleEndianBytes_d
 		IL_WRITE_DOUBLE((unsigned char *)ArrayToBuffer(array), value);
 	}
 	return array;
+#else	/* !IL_CONFIG_FP_SUPPORTED */
+	ILExecThreadThrowSystem(_thread, "System.NotImplementedException", 0);
+	return 0;
+#endif	/* !IL_CONFIG_FP_SUPPORTED */
 }
 
 #ifdef IL_CONFIG_VARARGS

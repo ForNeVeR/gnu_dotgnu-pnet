@@ -1,3 +1,15 @@
+2007-03-16  Klaus Treichel  <ktreichel@web.de>
+
+	* dumpasm/dump_const.c: Write FP values as hex values if there is no 
+	FP support compiled in with the current profile.
+
+	* engine/lib_misc.c: Fix build without FP support. Throw a
+	NotImplementedException if a float operation is involved in the
+	BitConverter.GetLittleEndianBytes functions.
+
+	* ilasm/ilasm_grammar.y: Bail out on FP operations if there is no
+	FP support compiled in with the current profile.
+
 2007-03-12  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_grammar.y: Add support for static classes.

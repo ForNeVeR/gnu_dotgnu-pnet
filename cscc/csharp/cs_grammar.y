@@ -759,6 +759,22 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 }
 
 /*
+ * simple operator precedence.
+ */
+%right '=' MUL_ASSIGN_OP DIV_ASSIGN_OP MOD_ASSIGN_OP ADD_ASSIGN_OP SUB_ASSIGN_OP LEFT_ASSIGN_OP RIGHT_ASSIGN_OP AND_ASSIGN_OP XOR_ASSIGN_OP OR_ASSIGN_OP
+%left OR_OP
+%left AND_OP
+%left '|'
+%left '&'
+%left EQ_OP NE_OP
+%left '<' '>' LE_OP GE_OP AS IS
+%left LEFT_OP RIGHT_OP
+%left '+' '-'
+%left '*' '/' '%'
+%left UN_PLUS UN_MINUS '!' '~' UN_PRE_INC UN_PRE_DEC CAST ADDRESS_OF
+%left '.' UN_POST_INC UN_POST_DEC TYPEOF CHECKED UNCHECKED NEW PTR_OP 
+
+/*
  * Primitive lexical tokens.
  */
 %token INTEGER_CONSTANT		"an integer value"
@@ -768,6 +784,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token FLOAT_CONSTANT		"a floating point value"
 %token DECIMAL_CONSTANT		"a decimal value"
 %token DOC_COMMENT			"a documentation comment"
+%token DEFAULT_LABEL		"the default label token"
 
 /*
  * Keywords.
@@ -889,6 +906,8 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %token OR_ASSIGN_OP			"`|='"
 %token PTR_OP				"`->'"
 %token GENERIC_LT			"`<'"
+%token NULL_COALESCING_OP	"`??'"
+%token QUALIFIED_ALIAS_OP	"`::'"
 
 /*
  * Define the yylval types of the various non-terminals.
@@ -940,7 +959,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <node>		UsingStatement ResourceAcquisition FixedStatement
 %type <node>		FixedPointerDeclarators FixedPointerDeclarator
 %type <node>		InnerEmbeddedStatement InnerExpressionStatement
-%type <node>		YieldStatement
+%type <node>		YieldStatement DefaultValueExpression
 
 %type <node>		ConstantDeclaration ConstantDeclarators ConstantDeclarator
 %type <node>		FieldDeclaration FieldDeclarators FieldDeclarator
@@ -993,7 +1012,7 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 35
+%expect 28
 
 %start CompilationUnit
 %%
@@ -1548,6 +1567,7 @@ PrimaryExpression
 	| BuiltinType '.' DEFAULT			{
 				$$ = ILNode_DefaultConstructor_create($1, 0, 0);
 			}
+	| DefaultValueExpression			{ $$ = $1; }
 	;
 
 LiteralExpression
@@ -1600,6 +1620,12 @@ LiteralExpression
 			}
 	| STRING_LITERAL			{
 				$$ = ILNode_String_create($1.string, $1.len);
+			}
+	;
+
+DefaultValueExpression
+	: DEFAULT '(' Type ')'				{
+				$$ = ILNode_DefaultConstructor_create($3, 0, 0);
 			}
 	;
 
@@ -1718,7 +1744,7 @@ UnaryExpression
 
 PrefixedUnaryExpression
 	: UnaryExpression				{ $$ = $1; }
-	| '+' PrefixedUnaryExpression	{ MakeUnary(UnaryPlus, $2); }
+	| '+' PrefixedUnaryExpression	{ MakeUnary(UnaryPlus, $2); } %prec UN_PLUS
 	| '-' PrefixedUnaryExpression			{
 				/* We create negate nodes carefully so that integer
 				   and float constants can be negated in-place */
@@ -1742,11 +1768,11 @@ PrefixedUnaryExpression
 				{
 					MakeUnary(Neg, $2);
 				}
-			}
+			}  %prec UN_MINUS
 	| INC_OP PrefixedUnaryExpression	{ MakeUnary(PreInc, $2); }
 	| DEC_OP PrefixedUnaryExpression	{ MakeUnary(PreDec, $2); }
 	| '*' PrefixedUnaryExpression		{ MakeBinary(Deref, $2, 0); }
-	| '&' PrefixedUnaryExpression		{ MakeUnary(AddressOf, $2); }
+	| '&' PrefixedUnaryExpression		{ MakeUnary(AddressOf, $2); } %prec ADDRESS_OF
 	;
 
 MultiplicativeExpression
@@ -2284,7 +2310,7 @@ SwitchLabels
 
 SwitchLabel
 	: CASE ConstantExpression ':'	{ MakeUnary(CaseLabel, $2); }
-	| DEFAULT ':'					{ MakeSimple(DefaultLabel); }
+	| DEFAULT_LABEL					{ MakeSimple(DefaultLabel); }
 	;
 
 IterationStatement

@@ -1,3 +1,15 @@
+2007-03-17  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_grammar.cs: Add the new 2.0 operators for Null Coalescing
+	and qualified alias members. Add support for the default value function.
+	Replace the token for the default label with the new one from the scanner.
+	Add operator precedence to fix some shift/reduce conflicts in the grammar.
+
+	* cscc/chsarp/cs_scanner.l: Add the new 2.0 operators for Null Coalescing
+	and qualified aliases. Add a new token for the default label to work around
+	a shift/reduce conflict in the grammar that caused that the default label
+	was never recognized with the new default value instruction.
+
 2007-03-16  Klaus Treichel  <ktreichel@web.de>
 
 	* dumpasm/dump_const.c: Write FP values as hex values if there is no 

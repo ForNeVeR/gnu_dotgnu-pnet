@@ -994,6 +994,10 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "^="					{ RETURNTOK(XOR_ASSIGN_OP); }
 "|="					{ RETURNTOK(OR_ASSIGN_OP); }
 "->"					{ RETURNTOK(PTR_OP); }
+"??"					{ RETURNTOK(NULL_COALESCING_OP); }
+"::"					{ RETURNTOK(QUALIFIED_ALIAS_OP); }
+
+"default"{WHITE}*":"	{ RETURNTOK(DEFAULT_LABEL); }
 
 "abstract"				{ RETURNTOK(ABSTRACT); }
 "add"					{ RETURNTOK(ADD); }

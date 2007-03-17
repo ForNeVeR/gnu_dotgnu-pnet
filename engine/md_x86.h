@@ -101,13 +101,30 @@ extern	"C" {
 #define	MD_REG_FRAME	X86_EBX
 
 /*
+ * The registers to be used to save pc before jumping to cvm.  These
+ * can be set to -1 if MD_STATE_ALREADY_IN_REGS is not 0.
+ */
+#define MD_REG_TEMP_PC			X86_EAX
+#define MD_REG_TEMP_PC_PTR		X86_ECX
+
+/*
+ * The register that contains native stack pointer.  This can be set to
+ * -1 if MD_STATE_ALREADY_IN_REGS is not 0.
+ */
+#define MD_REG_NATIVE_STACK		X86_ESP
+
+/*
  * Set this to 1 if "pc", "stacktop", and "frame" are already in
  * the above registers when unrolled code is entered.  i.e. the
  * CVM interpreter has manual assignments of registers to variables
  * in the file "cvm.c".  If the state is not already in registers,
  * then set this value to zero.
  */
+#ifdef IL_NO_REGISTERS_USED
+#define	MD_STATE_ALREADY_IN_REGS	0
+#else
 #define	MD_STATE_ALREADY_IN_REGS	1
+#endif
 
 /*
  * Registers that must be saved on the system stack prior to their use
@@ -119,7 +136,21 @@ extern	"C" {
  * Registers with special meanings (pc, stacktop, frame) that must
  * be saved if MD_STATE_ALREADY_IN_REGS is 0.
  */
-#define	MD_SPECIAL_REGS_TO_BE_SAVED	0
+#ifdef IL_VMCASE_BARRIER
+#define MD_SPECIAL_REGS_TO_BE_SAVED	0
+#else
+#define MD_SPECIAL_REGS_TO_BE_SAVED \
+	((1 << MD_REG_PC) | (1 << MD_REG_STACK) | (1 << MD_REG_FRAME))
+#endif
+
+/*
+ * The number of bytes the special registers occupy on the stack.
+ */
+#ifdef IL_VMCASE_BARRIER
+#define MD_SPECIAL_REGS_STACK_OFFSET	0
+#else
+#define MD_SPECIAL_REGS_STACK_OFFSET	(3 * 4)
+#endif
 
 /*
  * Floating-point register numbers that must be saved.
@@ -484,6 +515,8 @@ extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
  * Jump back into the CVM interpreter to execute the instruction
  * at "pc".  If "label" is non-NULL, then it indicates the address
  * of the CVM instruction handler to jump directly to.
+ *
+ * This is used if MD_STATE_ALREADY_IN_REGS is 0.
  */
 #define	md_jump_to_cvm(inst,pc,label)	\
 			do { \
@@ -496,6 +529,43 @@ extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
 				{ \
 					x86_jump_membase((inst), MD_REG_PC, 0); \
 				} \
+			} while (0)
+
+/*
+ * Jump back into the CVM interpreter to execute the instruction
+ * at "pc".  If "label" is non-NULL, then it indicates the address
+ * of the CVM instruction handler to jump directly to.
+ *
+ * This is used if MD_STATE_ALREADY_IN_REGS is not 0.
+ */
+#define	md_jump_to_cvm_with_pc_offset(inst,pc,pc_offset,label)		\
+			do { \
+				int __offset = (pc_offset) - MD_SPECIAL_REGS_STACK_OFFSET; \
+				x86_mov_reg_imm((inst), MD_REG_TEMP_PC, (int)pc); \
+				x86_mov_membase_reg((inst), MD_REG_NATIVE_STACK, __offset, MD_REG_TEMP_PC, 4); \
+				if((label)) \
+				{ \
+					x86_jump_code((inst), label); \
+				} \
+				else \
+				{ \
+					x86_jump_membase((inst), MD_REG_TEMP_PC, 0); \
+				} \
+			} while (0)
+
+/*
+ * Jump back into the CVM interpreter to execute the instruction
+ * at "pc".
+ *
+ * This is used if MD_STATE_ALREADY_IN_REGS is not 0 to bootstrap
+ * the unroller.
+ */
+#define	md_jump_to_cvm_with_pc_ptr(inst,pc,pc_ptr)		\
+			do { \
+				x86_mov_reg_imm((inst), MD_REG_TEMP_PC, (int)pc); \
+				x86_mov_reg_imm((inst), MD_REG_TEMP_PC_PTR, (int)pc_ptr); \
+				x86_mov_membase_reg((inst), MD_REG_TEMP_PC_PTR, 0, MD_REG_TEMP_PC, 4); \
+				x86_jump_membase((inst), MD_REG_TEMP_PC, 0); \
 			} while (0)
 
 /*

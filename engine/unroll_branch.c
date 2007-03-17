@@ -43,7 +43,7 @@ static void BranchOnCondition(MDUnroll *unroll, int cond,
 
 	/* Output the jump to the true PC */
 	FixStackHeight(unroll);
-	UnloadMachineState(unroll, truePC, 0);
+	UnloadMachineState(unroll, truePC, 0, 0);
 
 	/* Back-patch the branch instruction to point here */
 	md_patch(patch, unroll->out);
@@ -51,7 +51,7 @@ static void BranchOnCondition(MDUnroll *unroll, int cond,
 	/* Output the jump to the false PC */
 	FixStackHeight(unroll);
 	unroll->stackHeight = 0;
-	UnloadMachineState(unroll, falsePC, 0);
+	UnloadMachineState(unroll, falsePC, 0, 0);
 }
 
 #elif defined(IL_UNROLL_CASES)

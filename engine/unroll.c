@@ -67,7 +67,11 @@ typedef struct
 	long	cachedLocal;		/* Local variable that was just stored */
 	int		cachedReg;			/* Register for variable that was stored */
 	int		thisValidated;		/* "this" has been checked for NULL */
-
+#if !MD_STATE_ALREADY_IN_REGS
+	int		pcOffset;		/* interpreter's pc variable offset */
+	int		stackOffset;		/* interpreter's stack variable offset */
+	int		frameOffset;		/* interpreter's frame variable offset */
+#endif
 } MDUnroll;
 
 /*
@@ -252,7 +256,14 @@ static void LoadMachineState(MDUnroll *unroll)
 	}
 
 	/* Load stack and frame from the local variables in "_ILCVMInterpreter" */
-	/* TODO */
+	if(unroll->stackOffset)
+	{
+		md_load_membase_word_native(unroll->out, MD_REG_STACK, MD_REG_NATIVE_STACK, unroll->stackOffset);
+	}
+	if(unroll->frameOffset)
+	{
+		md_load_membase_word_native(unroll->out, MD_REG_FRAME, MD_REG_NATIVE_STACK, unroll->frameOffset);
+	}
 }
 
 #else /* MD_STATE_ALREADY_IN_REGS */
@@ -264,12 +275,15 @@ static void LoadMachineState(MDUnroll *unroll)
 /*
  * Unload the machine state and jump back into the CVM interpreter.
  */
-static void UnloadMachineState(MDUnroll *unroll, unsigned char *pc,
+static void UnloadMachineState(MDUnroll *unroll, unsigned char *pc, unsigned char **pcPtr,
 							   unsigned char *label)
 {
 #if !MD_STATE_ALREADY_IN_REGS
 	/* Store the stack and pc to the local variables in "_ILCVMInterpreter" */
-	/* TODO */
+	if(unroll->stackOffset)
+	{
+		md_store_membase_word_native(unroll->out, MD_REG_STACK, MD_REG_NATIVE_STACK, unroll->stackOffset);
+	}
 
 	/* Restore the previous values of the special registers */
 	if((MD_SPECIAL_REGS_TO_BE_SAVED & (1 << MD_REG_FRAME)) != 0)
@@ -284,10 +298,24 @@ static void UnloadMachineState(MDUnroll *unroll, unsigned char *pc,
 	{
 		md_pop_reg(unroll->out, MD_REG_PC);
 	}
-#endif
 
 	/* Jump back into the CVM interpreter */
+	if(unroll->pcOffset)
+	{
+		md_jump_to_cvm_with_pc_offset(unroll->out, pc, unroll->pcOffset, label);
+	}
+	else if(pcPtr)
+	{
+		md_jump_to_cvm_with_pc_ptr(unroll->out, pc, pcPtr);
+	}
+	else
+	{
+		md_jump_to_cvm(unroll->out, pc, label);
+	}
+#else
+	/* Jump back into the CVM interpreter */
 	md_jump_to_cvm(unroll->out, pc, label);
+#endif
 }
 
 /*
@@ -309,7 +337,7 @@ static void BranchToPC(MDUnroll *unroll, unsigned char *pc)
 	unroll->regsSaved = 0;
 
 	/* Unload the machine state and jump back into the CVM interpreter */
-	UnloadMachineState(unroll, pc, 0);
+	UnloadMachineState(unroll, pc, 0, 0);
 }
 
 /*
@@ -339,7 +367,7 @@ static void ReExecute(MDUnroll *unroll, unsigned char *pc,
 	RestoreSpecialRegisters(unroll);
 
 	/* Jump into the CVM interpreter to re-execute the instruction */
-	UnloadMachineState(unroll, pc, label);
+	UnloadMachineState(unroll, pc, 0, label);
 }
 
 /*
@@ -1546,6 +1574,11 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	unroll.cachedLocal = -1;
 	unroll.cachedReg = -1;
 	unroll.thisValidated = 0;
+#if !MD_STATE_ALREADY_IN_REGS
+	unroll.pcOffset = _ILCVMGetPcOffset(coder);
+	unroll.stackOffset = _ILCVMGetStackOffset(coder);
+	unroll.frameOffset = _ILCVMGetFrameOffset(coder);
+#endif
 	inUnrollBlock = 0;
 	overwritePC = 0;
 	unrollStart = 0;
@@ -1653,6 +1686,75 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	posn.ptr = (unsigned char *)(unroll.out);
 	ILCacheEndMethod(&posn);
 	return 1;
+}
+
+int _ILCVMUnrollGetNativeStack(ILCoder *coder, unsigned char **pcPtr, CVMWord **stackPtr)
+{
+#if !MD_STATE_ALREADY_IN_REGS
+	unsigned char *pc;
+	unsigned char *stack;
+	MDUnroll unroll;
+	md_inst_ptr unrollStart;
+	ILCachePosn posn;
+
+	pc = *pcPtr;
+	stack = (unsigned char *) *stackPtr;
+
+	/* Find some room in the cache */
+	if(!_ILCVMStartUnrollBlock(coder, 32, &posn))
+	{
+		return 0;
+	}
+	if((posn.limit - posn.ptr) < UNROLL_BUFMIN)
+	{
+		/* Insufficient space to unroll the method */
+		ILCacheEndMethod(&posn);
+		return 0;
+	}
+
+	/* Initialize the local unroll state */
+	unroll.out = (md_inst_ptr)(posn.ptr);
+	unroll.regsUsed = 0;
+	unroll.regsSaved = 0;
+	unroll.pseudoStackSize = 0;
+	unroll.fpStackSize = 0;
+	unroll.stackHeight = 0;
+	unroll.cachedLocal = -1;
+	unroll.cachedReg = -1;
+	unroll.thisValidated = 0;
+	unroll.pcOffset = 0;
+	unroll.stackOffset = 0;
+	unroll.frameOffset = 0;
+
+	/* The start position of the code */
+	unrollStart = unroll.out;
+
+	/* Load the machine state */
+	LoadMachineState(&unroll);
+
+	/* Store native stack pointer value on the interpreter stack */
+	md_load_const_native(unroll.out, MD_REG_TEMP_PC, stack);
+	md_load_const_native(unroll.out, MD_REG_TEMP_PC_PTR, stackPtr);
+	md_store_membase_word_native(unroll.out, MD_REG_NATIVE_STACK, MD_REG_TEMP_PC, 0);
+	md_add_reg_imm(unroll.out, MD_REG_TEMP_PC, sizeof(CVMWord));
+	md_store_membase_word_native(unroll.out, MD_REG_TEMP_PC, MD_REG_TEMP_PC_PTR, 0);
+
+	/* Store the start position next to the current op  */
+	pc += CVM_LEN_NONE;
+	*((void **)pc) = unrollStart;
+	pc += CVM_LEN_NONE;
+
+	/* Unload the machine state and jump back into the CVM interpreter */
+	UnloadMachineState(&unroll, pc, pcPtr, 0);
+
+	/* Update the method cache to reflect the final position */
+	ILCacheFlush(posn.ptr, (long)(((unsigned char *)(unroll.out)) - posn.ptr));
+	posn.ptr = (unsigned char *)(unroll.out);
+	ILCacheEndMethod(&posn);
+	return 1;
+#else
+	return 0;
+#endif
 }
 
 #else /* !IL_CVM_DIRECT_UNROLLED */

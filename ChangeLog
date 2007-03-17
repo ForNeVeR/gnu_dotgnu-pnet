@@ -1,3 +1,31 @@
+2007-03-18  Aleksey Demakov  <ademakov@gmail.com>
+
+	* engine/cvm_config.h (IL_NO_REGISTERS_USED, IL_VMCASE_BARRIER): New
+	configuration options.
+
+	* engine/cvm.h, engine/cvm.c (COP_PREFIX_UNROLL_STACK)
+	(COP_PREFIX_UNROLL_STACK_RETURN): New opcodes for unroller stack
+	variables initialization.
+
+	* engine/mklabel.sh: Add VMBARRIER() macro. Use VMBARRIER() in
+	VMCASE() if IL_VMCASE_BARRIER is defined.
+
+	* engine/unroll.c (LoadMachineState): Load stack and frame variables.
+	(UnloadMachineState): Store stack and pc variables. Add pc address
+	argument.
+
+	* engine/md_x86.h: Support variable load and store configuration.
+
+	* engine/cvmc.c (_ILCVMUnrollInitStack): New function.
+	(_ILCVMGetPcOffset, _ILCVMSetPcOffset): New functions.
+	(_ILCVMGetStackOffset, _ILCVMSetStackOffset): New functions.
+	(_ILCVMGetFrameOffset, _ILCVMSetFrameOffset): New functions.
+	* engine/unroll.c (_ILCVMUnrollGetNativeStack): New function.
+	* engine/engine.h: New functions declarations.
+
+	* engine/process.c (ILExecProcessCreate): add _ILCVMUnrollInitStack
+	call.
+
 2007-03-17  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_grammar.cs: Add the new 2.0 operators for Null Coalescing

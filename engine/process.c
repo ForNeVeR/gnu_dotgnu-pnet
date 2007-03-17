@@ -223,6 +223,14 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 		return 0;
 	}
 
+#ifdef IL_USE_CVM
+	if(!_ILCVMUnrollInitStack(process))
+	{
+		ILExecProcessDestroy(process);
+		return 0;
+	}
+#endif
+
 	/* If threading isn't supported, then the main thread is the finalizer thread */
 	if (!ILHasThreads())
 	{

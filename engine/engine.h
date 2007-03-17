@@ -948,6 +948,46 @@ int _ILUnrollMethod(ILExecThread *thread, ILCoder *coder,
 					unsigned char *pc, ILMethod *method);
 
 /*
+ * Initialize the CVM interpreter stack variables.
+ */
+int _ILCVMUnrollInitStack(ILExecProcess *process);
+
+/*
+ * Generate code that gets the native stack pointer value.
+ */
+int _ILCVMUnrollGetNativeStack(ILCoder *coder, unsigned char **pcPtr, CVMWord **stackPtr);
+
+/*
+ * Get offset of the interpreter "pc" variable.
+ */
+int _ILCVMGetPcOffset(ILCoder *coder);
+
+/*
+ * Set offset of the interpreter "pc" variable.
+ */
+void _ILCVMSetPcOffset(ILCoder *coder, int pcOffset);
+
+/*
+ * Get offset of the interpreter "stacktop" variable.
+ */
+int _ILCVMGetStackOffset(ILCoder *coder);
+
+/*
+ * Set offset of the interpreter "stacktop" variable.
+ */
+void _ILCVMSetStackOffset(ILCoder *coder, int stackOffset);
+
+/*
+ * Get offset of the interpreter "frame" variable.
+ */
+int _ILCVMGetFrameOffset(ILCoder *coder);
+
+/*
+ * Set offset of the interpreter "frame" variable.
+ */
+void _ILCVMSetFrameOffset(ILCoder *coder, int frameOffset);
+
+/*
  * Determine the size of a type's values in bytes.  This assumes
  * that the caller has obtained the metadata write lock.
  */

@@ -46,6 +46,7 @@ extern	"C" {
  * figure out that "pc", "stacktop", and "frame" are the
  * best values to put into registers.
  */
+#if !defined(IL_NO_REGISTERS_USED)
 #if defined(CVM_X86) && defined(__GNUC__) && !defined(IL_NO_ASM)
 
 	#define REGISTER_ASM_X86 1
@@ -135,21 +136,25 @@ extern	"C" {
 	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #else
 	#define IL_NO_REGISTERS_USED 1
-    #define REGISTER_ASM_PC(x)              x
-    #define REGISTER_ASM_STACK(x)           x
-    #define REGISTER_ASM_FRAME(x)           x
-	#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
-	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
-	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
-	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
-	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
+#endif
+#endif
+
+#if defined(IL_NO_REGISTERS_USED)
+	#define REGISTER_ASM_PC(x)		x
+	#define REGISTER_ASM_STACK(x)		x
+	#define REGISTER_ASM_FRAME(x)		x
+	#define	IL_MEMCPY(dst,src,len)		(ILMemCpy((dst), (src), (len)))
+	#define	IL_MEMMOVE(dst,src,len)		(ILMemMove((dst), (src), (len)))
+	#define	IL_MEMZERO(dst,len)		(ILMemZero((dst), (len)))
+	#define	IL_MEMSET(dst,ch,len)		(ILMemSet((dst), (ch), (len)))
+	#define	IL_MEMCMP(dst,src,len)		(ILMemCmp((dst), (src), (len)))
 #endif
 
 /*
  * Defining macros to declare variables in the interpreter loop volatile.
  * This is done to fix problems with gcc's optimized code.
  */
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(IL_VMCASE_BARRIER)
 #if (__GNUC__ == 4) && defined(CVM_X86)
 #define IL_PC_VOLATILE volatile
 #define IL_STACKTOP_VOLATILE volatile
@@ -862,6 +867,80 @@ int _ILCVMInterpreter(ILExecThread *thread)
 						}
 					}
 					VMBREAK(COP_PREFIX_UNROLL_METHOD);
+
+					/**
+					 * <opcode name="unroll_stack"
+					 *         group="Miscellaneous instructions">
+					 *
+					 *   <operation>Start special stack variable
+					 *   initialization for unroller</operation>
+					 *
+					 *   <dformat>{unroll_stack}</dformat>
+					 *
+					 *   <form name="unroll_stack"
+					 *         code="COP_PREFIX_UNROLL_STACK"/>
+					 *
+					 *   <description>The <i>unroll_stack</i> instruction
+					 *   is used only to bootstrap the unroller.<p/>
+					 *
+					 *   It generates the code that gets the native stack
+					 *   pointer value and puts it on the interpreter
+					 *   stack. This istruction must be followed by
+					 *   <i>unroll_stack_return</i>.</description>
+					 * </opcode>
+					 */
+					VMCASE(COP_PREFIX_UNROLL_STACK):
+					{
+					#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+						_ILCVMUnrollGetNativeStack(thread->process->coder, &pc, &stacktop);
+					#endif
+						MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+					}
+					VMBREAK(COP_PREFIX_UNROLL_STACK);
+
+					/**
+					 * <opcode name="unroll_stack_return"
+					 *         group="Miscellaneous instructions">
+					 *
+					 *   <operation>Finish special stack variable
+					 *   initialization for unroller</operation>
+					 *
+					 *   <dformat>{unroll_stack_return}</dformat>
+					 *
+					 *   <form name="unroll_stack_return"
+					 *         code="COP_PREFIX_UNROLL_STACK_RETURN"/>
+					 *
+					 *   <description>The <i>unroll_stack_return</i>
+					 *   instruction is used only to bootstrap the
+					 *   unroller.<p/>
+					 *
+					 *   It gets the native stack pointer value obtained
+					 *   through the "unroll_stack" instruction, computes
+					 *   the offset of the interpreter variables against
+					 *   it, and stores the offsets for internal use by
+					 *   the unroller.</description>
+					 * </opcode>
+					 */
+					VMCASE(COP_PREFIX_UNROLL_STACK_RETURN):
+					{
+					#ifdef IL_NO_REGISTERS_USED
+						char *native_stack = stacktop[-1].ptrValue;
+						_ILCVMSetPcOffset(
+							thread->process->coder,
+							((char *) &pc) - native_stack);
+						_ILCVMSetStackOffset(
+							thread->process->coder,
+							((char *) &stacktop) - native_stack);
+						_ILCVMSetFrameOffset(
+							thread->process->coder,
+							((char *) &frame) - native_stack);
+						MODIFY_PC_AND_STACK(CVMP_LEN_NONE, -1);
+					#else
+						MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+					#endif
+						return 0;
+					}
+					VMBREAK(COP_PREFIX_UNROLL_STACK_RETURN);
 
 #ifndef IL_CVM_DIRECT
 					VMPREFIXDEFAULT:

@@ -93,6 +93,11 @@ struct _tagILCVMCoder
 	ILExecProcess  *process;		/* Backpointer to the owning process */
 	/* The manager for running the required cctors. */
 	ILCCtorMgr		cctorMgr;
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	int		pcOffset;
+	int		stackOffset;
+	int		frameOffset;
+#endif
 };
 
 /*
@@ -189,6 +194,11 @@ static ILCoder *CVMCoder_Create(ILExecProcess *process, ILUInt32 size,
 	coder->nativeArgPosn = 0;
 	coder->nativeArgHeight = 0;
 	coder->process = process;
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	coder->pcOffset = 0;
+	coder->stackOffset = 0;
+	coder->frameOffset = 0;
+#endif
 
 	/* Call the interpreter to export the label tables for
 	   use in code generation for direct threading */
@@ -319,6 +329,85 @@ int _ILCVMStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
 	return (ILCacheStartMethod(coder->cache, posn, align, 0) != 0);
+}
+
+
+int _ILCVMGetPcOffset(ILCoder *_coder)
+{
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	return _ILCoderToILCVMCoder(_coder)->pcOffset;
+#else
+	return 0;
+#endif
+}
+
+void _ILCVMSetPcOffset(ILCoder *_coder, int pcOffset)
+{
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	_ILCoderToILCVMCoder(_coder)->pcOffset = pcOffset;
+#endif
+}
+
+int _ILCVMGetStackOffset(ILCoder *_coder)
+{
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	return _ILCoderToILCVMCoder(_coder)->stackOffset;
+#else
+	return 0;
+#endif
+}
+
+void _ILCVMSetStackOffset(ILCoder *_coder, int stackOffset)
+{
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	_ILCoderToILCVMCoder(_coder)->stackOffset = stackOffset;
+#endif
+}
+
+int _ILCVMGetFrameOffset(ILCoder *_coder)
+{
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	return _ILCoderToILCVMCoder(_coder)->frameOffset;
+#else
+	return 0;
+#endif
+}
+
+void _ILCVMSetFrameOffset(ILCoder *_coder, int frameOffset)
+{
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	_ILCoderToILCVMCoder(_coder)->frameOffset = frameOffset;
+#endif
+}
+
+int _ILCVMUnrollInitStack(ILExecProcess *process)
+{
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+	ILCVMCoder *coder;
+
+	coder = _ILCoderToILCVMCoder(process->coder);
+
+	/* Find some room in the cache */
+	coder->start = ILCacheStartMethod(coder->cache, &(coder->codePosn), 1, 0);
+	if(!(coder->start))
+	{
+		return 0;
+	}
+
+	/* Generate register initialization code */
+	CVMP_OUT_NONE(COP_PREFIX_UNROLL_STACK);
+	CVM_OUT_NONE(COP_POP);
+	CVMP_OUT_NONE(COP_PREFIX_UNROLL_STACK_RETURN);
+	ILCacheEndMethod(&coder->codePosn);
+
+	/* Execute register initialization code */
+	process->mainThread->pc = coder->start;
+	_ILCVMInterpreter(process->mainThread);
+
+	return 1;
+#else
+	return 1;
+#endif
 }
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)

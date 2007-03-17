@@ -570,6 +570,11 @@ extern	"C" {
 #define	COP_PREFIX_TAN					0x89
 #define	COP_PREFIX_TANH					0x8A
 
+/*
+ * Initialize unroller special stack variables.
+ */
+#define COP_PREFIX_UNROLL_STACK			0x8B
+#define COP_PREFIX_UNROLL_STACK_RETURN		0x8C
 
 /*
  * Definition of a CVM stack word which can hold

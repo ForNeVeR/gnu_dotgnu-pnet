@@ -35,6 +35,11 @@ extern	"C" {
 /*#define IL_NO_ASM*/
 
 /*
+ * Turn off explicit register declarations in the cvm loop if this is defined.
+ */
+/*#define IL_NO_REGISTERS_USED*/
+
+/*
  * Enable or disable dumping of CVM instructions during execution.
  */
 /*#define	IL_DUMP_CVM*/
@@ -241,6 +246,16 @@ extern int _ILCVMInsnCount[];
 	#define	CVM_CTOR_OFFSET		(3 * sizeof(void *))
 #else
 	#define	CVM_CTOR_OFFSET		6
+#endif
+
+/*
+ * If the interpeter does not use explicit register declarations it might be
+ * necessary to flush the variables on each opcode.
+ */
+#if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
+#if defined(CVM_X86)
+#define IL_VMCASE_BARRIER
+#endif
 #endif
 
 #ifdef	__cplusplus

@@ -217,6 +217,14 @@ void ILScopeDataModify(ILScopeData *data, int kind, ILNode *node,
  */
 ILScope *ILScopeGetParent(ILScope *scope);
 
+/*
+ * Return next local variable in scope.
+ * Call with prev=NULL to begin iteration.
+ */
+ILScopeData *ILScopeLocalsIter(ILScope *scope, ILScopeData *prev, int *iter,
+							   unsigned long *index, const char **name);
+
+
 #ifdef	__cplusplus
 };
 #endif

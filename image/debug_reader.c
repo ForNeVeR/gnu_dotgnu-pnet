@@ -434,7 +434,10 @@ const char *ILDebugGetVarName(ILDebugContext *dbg, ILToken token,
 			{
 				scopeStart = tempStart;
 				scopeEnd = tempEnd;
-				name = ILDebugGetString(dbg, tempName);
+				if(offset >= scopeStart && offset < scopeEnd)
+				{
+					name = ILDebugGetString(dbg, tempName);
+				}
 			}
 		}
 	}

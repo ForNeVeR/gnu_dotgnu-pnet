@@ -862,6 +862,9 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 		DumpILLocals(info, outstream, node->localVarSig);
 	}
 
+	/* Don't create extra scope for locals */
+	info->createLocalsScope = 0;
+
 	/* Dump the code within the body of the method */
 	if(node->body)
 	{

@@ -923,6 +923,22 @@ ILScope *ILScopeGetParent(ILScope *scope)
 	return scope->parent;
 }
 
+ILScopeData *ILScopeLocalsIter(ILScope *scope, ILScopeData *prev, int *iter,
+							   unsigned long *index, const char **name)
+{
+	while((prev = (ILScopeData *) ILRBTreeIterNext(&(scope->nameTree),
+												(ILRBTreeNode *)prev, iter)))
+	{
+		if(prev->rbnode.kind == IL_SCOPE_LOCAL)
+		{
+			*index = (unsigned int) prev->data;
+			*name = prev->name;
+			return prev;
+		}
+	}
+	return 0;
+}
+
 #ifdef	__cplusplus
 };
 #endif

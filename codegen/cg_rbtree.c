@@ -353,6 +353,122 @@ ILRBTreeNode *ILRBTreeGetRight(ILRBTree *tree, ILRBTreeNode *node)
 	}
 }
 
+/*
+ * This function returns next node of a binary tree. Result is computed from
+ * current node and previous action.
+ *
+ * Below is picture of actions with example iteration:
+ *
+ *       4
+ *      / \
+ *     /   \
+ *    /     \
+ *   2       5
+ *  / \
+ * 1   3
+ *
+ * current node		4	2	1	1	2	2	3	3	4	4	5	5	4
+ * action			LD	LD	RET	RU	RET	LD	RET	RU	RET	RD	RET	LU	RET
+ * next node		2	1	1	2	2	3	3	4	4	5	5	4	0
+ *
+ * Actions (or directions from node if you want):
+ *
+ * LU    RU
+ *   \  /
+ *   RET
+ *   /  \
+ * LD    RD
+ *
+ */
+ILRBTreeNode *ILRBTreeIterNext(ILRBTree *tree, ILRBTreeNode *node, int *iter)
+{
+	ILRBTreeNode *tmp;
+
+	if(node == 0)
+	{
+		/* Initialize iteration */
+		*iter = IL_RB_TREE_ITER_LD;
+		tmp = ILRBTreeGetRoot(tree);
+		if(tmp)
+		{
+			tmp->_iterParent = 0;
+			return ILRBTreeIterNext(tree, tmp, iter);
+		}
+		return 0;
+	}
+
+	switch(*iter)
+	{
+		case IL_RB_TREE_ITER_RD:
+		{
+			*iter = IL_RB_TREE_ITER_LD;
+		}
+		case IL_RB_TREE_ITER_LD:
+		{
+			/* Process left-down node if exists otherwise return curr. node */
+			tmp = ILRBTreeGetLeft(tree, node);
+			if(tmp)
+			{
+				tmp->_iterParent = node;
+				return ILRBTreeIterNext(tree, tmp, iter);
+			}
+			else
+			{
+				*iter = IL_RB_TREE_ITER_RET;
+				return node;
+			}
+		}
+		break;
+
+		case IL_RB_TREE_ITER_RET:
+		{
+			/* Process right-down if exist otherwise move up the tree */
+			tmp = ILRBTreeGetRight(tree, node);
+			if(tmp)
+			{
+				tmp->_iterParent = node;
+				*iter = IL_RB_TREE_ITER_RD;
+				return ILRBTreeIterNext(tree, tmp, iter);
+			}
+		}
+		case IL_RB_TREE_ITER_LU:
+		{
+			/* Process up-left or up-right */
+			if(node->_iterParent)
+			{
+				tmp = ILRBTreeGetRight(tree, node->_iterParent);
+				if(node == tmp)
+				{
+					*iter = IL_RB_TREE_ITER_LU;
+					return ILRBTreeIterNext(tree, node->_iterParent, iter);
+				}
+				else
+				{
+					*iter = IL_RB_TREE_ITER_RU;
+					return ILRBTreeIterNext(tree, node->_iterParent, iter);
+				}
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		break;
+
+		case IL_RB_TREE_ITER_RU:
+		{
+			*iter = IL_RB_TREE_ITER_RET;
+			return node;
+		}
+		break;
+
+		default:
+		{
+			return 0;
+		}
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

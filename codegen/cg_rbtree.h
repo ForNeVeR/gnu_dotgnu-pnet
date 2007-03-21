@@ -31,7 +31,7 @@ extern	"C" {
 typedef struct _tagILRBTreeNode ILRBTreeNode;
 struct _tagILRBTreeNode
 {
-	ILRBTreeNode   *_left, *_right;
+	ILRBTreeNode   *_left, *_right, *_iterParent;
 	int				_red : 1;
 	int				_duplicate : 1;
 	int				_continue : 1;
@@ -60,6 +60,12 @@ typedef struct _tagILRBTree
 	ILRBFreeFunc		freeFunc;
 
 } ILRBTree;
+
+#define IL_RB_TREE_ITER_LD		0
+#define IL_RB_TREE_ITER_LU		1
+#define IL_RB_TREE_ITER_RD		2
+#define IL_RB_TREE_ITER_RU		3
+#define IL_RB_TREE_ITER_RET		4
 
 /*
  * Initialize a red-black tree to empty.
@@ -100,6 +106,13 @@ ILRBTreeNode *ILRBTreeGetRoot(ILRBTree *tree);
  */
 ILRBTreeNode *ILRBTreeGetLeft(ILRBTree *tree, ILRBTreeNode *node);
 ILRBTreeNode *ILRBTreeGetRight(ILRBTree *tree, ILRBTreeNode *node);
+
+/*
+ * Return next node from a red-black tree.
+ * Start iteration by calling with node=NULL.
+ * Nodes are returned in sorted order.
+ */
+ILRBTreeNode *ILRBTreeIterNext(ILRBTree *tree, ILRBTreeNode *node, int *iter);
 
 #ifdef	__cplusplus
 };

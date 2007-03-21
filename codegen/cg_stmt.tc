@@ -22,6 +22,7 @@
  */
 
 #include <codegen/cg_nodes.h>
+#include <codegen/cg_scope.h>
 #include "il_dumpasm.h"
 
 /*
@@ -1687,6 +1688,32 @@ ILNode_GenValue(ILNode_NewScope)
  */
 ILNode_GenDiscard(ILNode_NewScope)
 {
+	ILScopeData *data = 0;
+	int iter;
+	unsigned long index;
+	const char *name;
+	int dumpScope = 0;
+
+	/* Dump local variable debug section */
+	if(info->debugFlag)
+	{
+		/* Locals scope is suppressed after method declaration */
+		dumpScope = info->createLocalsScope;
+		info->createLocalsScope = 1;
+		if(dumpScope)
+		{
+			fputs("{\n", info->asmOutput);
+		}
+		while((data = ILScopeLocalsIter(node->scope, data, &iter, &index,
+																	&name)))
+		{
+			/* TODO: fix ilasm so that it can compile local variables with same
+			   name as IL opcode. Now it fails e.g. when local variable is
+			   named "box" */
+			fprintf(info->asmOutput, ".locals <_%s=%lu>\n", name, index);
+		}
+	}
+
 	if(info->hasGotoScopes)
 	{
 		/* Enter a new scope */
@@ -1705,6 +1732,12 @@ ILNode_GenDiscard(ILNode_NewScope)
 	{
 		/* Generate the code within the scope */
 		ILNode_GenDiscard(node->stmt, info);
+	}
+
+	/* End of local variable scope */
+	if(dumpScope)
+	{
+		fputs("}\n", info->asmOutput);
 	}
 }
 

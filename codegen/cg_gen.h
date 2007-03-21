@@ -130,6 +130,7 @@ struct _tagILGenInfo
 	unsigned		numTempVars;		/* Number of active variables */
 	unsigned		maxTempVars;		/* Maximum variables in "localVars" */
 	unsigned        tempLocalBase;		/* Base for temporary local variables */
+	int				createLocalsScope;	/* Non-zero to create scope for local variables */
 	ILScope		   *currentScope;		/* Current scope for declarations */
 	ILJavaGenInfo  *javaInfo;			/* Java-specific information */
 	long			unsafeLevel;		/* Number of unsafe contexts */

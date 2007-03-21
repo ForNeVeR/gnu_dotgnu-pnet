@@ -29,6 +29,7 @@
 #include "il_dumpasm.h"
 #include "engine.h"
 #include "cvm.h"
+#include "lib_defs.h"
 #include "debugger.h"
 
 #ifdef IL_USE_JIT
@@ -1077,7 +1078,8 @@ char *DebuggerHelper_ShowLocals(ILExecThread *thread)
 /*
  * Update locals in DebuggerHelper class.
  */
-static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method)
+static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
+						 ILUInt32 offset)
 {
 #ifdef IL_USE_JIT
 	ILMethodCode code;
@@ -1087,6 +1089,8 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method)
 	ILUInt32 i;
 	ILLocalWatch *local;
 	ILType *type;
+	const char *name = 0;
+	ILDebugContext *dbgc = 0;
 
 	/* Clear locals in helper class */
 	DebuggerHelper_ClearLocals(thread);
@@ -1108,6 +1112,16 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method)
 		num = 0;
 	}
 
+	/* Debug context for local variable names */
+	if(ILDebugPresent(ILProgramItem_Image(method)))
+	{
+		/* Get the symbol debug information */
+		if((dbgc = ILDebugCreate(ILProgramItem_Image(method))) == 0)
+		{
+			ILDbOutOfMemory();
+		}
+	}
+
 	/* Add local variables in current frame */
 	current = 0;
 	for(i = 0; i < thread->numWatches && num > 0; i++)
@@ -1119,13 +1133,26 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method)
 		{
 			continue;
 		}
-		type = ILTypeGetLocal(signature, current);
 
-		/* TODO: local variable name */
-		DebuggerHelper_AddLocal(thread, 0, type, local->addr);
+		type = ILTypeGetLocal(signature, current);
+		if(dbgc)
+		{
+			name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset, i);
+			if(name == 0)
+			{
+				continue;
+			}
+		}
+		/* TODO: fix ilasm and remove starting '_' from locals names */
+		DebuggerHelper_AddLocal(thread, name + 1, type, local->addr);
 
 		current++;
 		num--;
+	}
+
+	if(dbgc)
+	{
+		ILDebugDestroy(dbgc);
 	}
 #endif
 }
@@ -1151,7 +1178,7 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
 
 	/* Update locals in DebuggerHelper class */
 	UpdateLocals(stream, debugger->dbthread->execThread,
-												debugger->dbthread->method);
+			debugger->dbthread->method, (ILUInt32) debugger->dbthread->offset);
 
 	str = DebuggerHelper_ShowLocals(debugger->dbthread->execThread);
 	if(str)
@@ -1290,7 +1317,7 @@ void ShowWatches(ILDebugger *debugger, FILE *stream)
 
 	/* Update locals in DebuggerHelper class */
 	UpdateLocals(stream, debugger->dbthread->execThread,
-												debugger->dbthread->method);
+			debugger->dbthread->method, (ILUInt32) debugger->dbthread->offset);
 
 	fputs("<Watches>\n", stream);
 
@@ -1588,7 +1615,7 @@ void ShowBreakpoints(ILDebugger *debugger, FILE *stream)
 /*
  * Return directory where image was linked.
  */
-static const char * GetLinkDir(ILImage *image)
+static const char *GetLinkDir(ILImage *image)
 {
 	ILDebugContext *dbgc;
 	ILToken token;

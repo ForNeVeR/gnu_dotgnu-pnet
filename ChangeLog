@@ -1,3 +1,10 @@
+2007-03-21  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Diagnostics/DebuggerNonUserCodeAttribute.cs,
+	runtime/System/Diagnostics/CodeAnalysis/SuppressMessageAttribute.cs,
+	System/CodeDom/Compiler/GeneratedCodeAttribute.cs, Add some .Net 2.0
+	attributes.
+
 2007-03-21  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/Private/DebuggerHelper.cs: Fix displaying errors and

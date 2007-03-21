@@ -1,3 +1,8 @@
+2007-03-21  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/Private/DebuggerHelper.cs: Fix displaying errors and
+	strings.
+
 2007-03-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Runtime/Serialization/Formatters/Binary/BinaryValueReader.cs:

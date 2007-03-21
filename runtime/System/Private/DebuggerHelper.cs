@@ -42,6 +42,10 @@ internal sealed class DebuggerHelper
 				{
 					return "null";
 				}
+				if(o == error || o is String)
+				{
+					return o.ToString();
+				}
 				try
 				{
 					StringBuilder sb = new StringBuilder();

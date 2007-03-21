@@ -1143,8 +1143,7 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 				continue;
 			}
 		}
-		/* TODO: fix ilasm and remove starting '_' from locals names */
-		DebuggerHelper_AddLocal(thread, name + 1, type, local->addr);
+		DebuggerHelper_AddLocal(thread, name, type, local->addr);
 
 		current++;
 		num--;

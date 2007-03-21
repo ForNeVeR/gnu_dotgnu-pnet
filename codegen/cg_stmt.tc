@@ -1707,10 +1707,7 @@ ILNode_GenDiscard(ILNode_NewScope)
 		while((data = ILScopeLocalsIter(node->scope, data, &iter, &index,
 																	&name)))
 		{
-			/* TODO: fix ilasm so that it can compile local variables with same
-			   name as IL opcode. Now it fails e.g. when local variable is
-			   named "box" */
-			fprintf(info->asmOutput, ".locals <_%s=%lu>\n", name, index);
+			fprintf(info->asmOutput, ".locals <'%s'=%lu>\n", name, index);
 		}
 	}
 

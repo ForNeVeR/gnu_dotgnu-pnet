@@ -1,5 +1,12 @@
 2007-03-21  Radek Polak  <psonek2@seznam.cz>
 
+	* codegen/cg_stmt.tc: Output quoted variable names so that we produce
+	valid IL output on variable name named after one of IL keywords.
+
+	* engine/debugger.c: Remove hack for variables starting with '_'.
+
+2007-03-21  Radek Polak  <psonek2@seznam.cz>
+
 	* codegen/cg_decls.tc, codegen/cg_gen.h: Flag to suppress creating extra
 	scope for locals after method declaration.
 

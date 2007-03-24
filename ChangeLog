@@ -1,3 +1,8 @@
+2007-03-24  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Pass the threadimplementation used for pnet to configuring
+	libgc. (Fix bug #19237)
+
 2007-03-21  Radek Polak  <psonek2@seznam.cz>
 
 	* codegen/cg_stmt.tc: Output quoted variable names so that we produce

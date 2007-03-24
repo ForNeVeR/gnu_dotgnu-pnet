@@ -1137,7 +1137,8 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 		type = ILTypeGetLocal(signature, current);
 		if(dbgc)
 		{
-			name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset, i);
+			name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
+																	current);
 			if(name == 0)
 			{
 				continue;

@@ -1,3 +1,7 @@
+2007-03-24  Radek Polak  <psonek2@sezam.cz>
+
+	* engine/debugger.c: Fix local variable index.
+
 2007-03-24  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Pass the threadimplementation used for pnet to configuring

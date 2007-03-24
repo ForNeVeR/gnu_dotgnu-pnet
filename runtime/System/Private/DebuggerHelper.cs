@@ -324,11 +324,13 @@ internal sealed class DebuggerHelper
 									ParameterInfo[] paramInfo;
 									if(mi is PropertyInfo)
 									{
-										paramInfo = ((PropertyInfo)(mi)).GetIndexParameters();
+										paramInfo = ((PropertyInfo)(mi)).
+														GetIndexParameters();
 									}
 									else
 									{
-										paramInfo = ((MethodInfo)(mi)).GetParameters();
+										paramInfo = ((MethodInfo)(mi)).
+															GetParameters();
 									}
 									outArgs = CreateArguments(paramInfo, args);
 								}
@@ -389,7 +391,8 @@ internal sealed class DebuggerHelper
 	// Search assemblies in current app domain for type of given name.
 	private static Type FindType(String typeName)
 			{
-				foreach(Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
+				foreach(Assembly assembly in 
+									AppDomain.CurrentDomain.GetAssemblies())
 				{
 					foreach(Type type in assembly.GetTypes())
 					{
@@ -485,7 +488,7 @@ internal sealed class DebuggerHelper
 			args = (String[]) list.ToArray(typeof(String));
 			return true;
 		}
-	}
+	}; // class ExpressionParser
 
 	// Information about function parameter or local variable.
 	private class LocalWatch
@@ -558,7 +561,7 @@ internal sealed class DebuggerHelper
 					return count;
 				}
 
-	} // class LocalWatch
+	}; // class LocalWatch
 
 }; // class DebuggerHelper
 

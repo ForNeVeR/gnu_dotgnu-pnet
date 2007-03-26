@@ -185,7 +185,7 @@ public class CheckBox : ButtonBase
 				switch (checkAlign)
 				{
 					case ContentAlignment.BottomCenter:
-						height = 2;
+						height -= checkSize + 3;
 						break;
 					case ContentAlignment.BottomLeft:
 						x = checkSize + 3;
@@ -201,12 +201,11 @@ public class CheckBox : ButtonBase
 						width -= x;
 						break;
 					case ContentAlignment.MiddleRight:
-						x = checkSize + 3;
-						width -= x;
+						width -= checkSize;
 						break;
 					case ContentAlignment.TopCenter:
 						y = checkSize + 3;
-						height -= y - 2;
+						height -= y;
 						break;
 					case ContentAlignment.TopLeft:
 						x = checkSize + 3;

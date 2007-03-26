@@ -1,3 +1,8 @@
+2007-03-26  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/CheckBox.cs:
+	fixed drawing text if using CheckAlign and TextAlign.
+
 2007-03-24  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Xml/Schema/XmlSchemaCollection.cs: Removed

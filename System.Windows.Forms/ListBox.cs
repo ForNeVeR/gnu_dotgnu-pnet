@@ -1709,6 +1709,8 @@ public class ListBox : ListControl
 				this.PaintItem(index);
 			
 			this.pendingDrawItems.Clear();
+
+			Invalidate ( );
 		}
 	}
 	

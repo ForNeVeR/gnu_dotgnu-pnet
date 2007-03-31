@@ -1,3 +1,8 @@
+2007-03-31  Deryk Robosson  <drobosson@gmail.com>
+
+	* System.Windows.Forms/ListBox.cs: Invalidate control when flushing so
+	that child controls get redrawn as well (bug #16735).
+
 2007-03-26  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/CheckBox.cs:

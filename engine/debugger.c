@@ -1083,11 +1083,13 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 {
 #ifdef IL_USE_JIT
 	ILMethodCode code;
-	ILType *signature;
-	ILUInt32 num;
-	ILUInt32 current;
+	ILType *localSignature;
+	ILType *paramSignature;
+	ILUInt32 currentLocal;
+	ILUInt32 currentParam;
+	ILUInt32 paramDebugIndex;
 	ILUInt32 i;
-	ILLocalWatch *local;
+	ILLocalWatch *watch;
 	ILType *type;
 	const char *name = 0;
 	ILDebugContext *dbgc = 0;
@@ -1095,7 +1097,7 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 	/* Clear locals in helper class */
 	DebuggerHelper_ClearLocals(thread);
 
-	/* Get local variables info */
+	/* Get locals signature */
 	if(!ILMethodGetCode(method, &code))
 	{
 		DumpError("Unable to get method code", stream);
@@ -1103,16 +1105,17 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 	}
 	if(code.localVarSig)
 	{
-		signature = ILStandAloneSigGetType(code.localVarSig);
-		num = ILTypeNumLocals(signature);
+		localSignature = ILStandAloneSigGetType(code.localVarSig);
 	}
 	else
 	{
-		signature = 0;
-		num = 0;
+		localSignature = 0;
 	}
 
-	/* Debug context for local variable names */
+	/* Get params signature */
+	paramSignature = ILMethod_Signature(method);
+
+	/* Debug context for local variable and parameter names */
 	if(ILDebugPresent(ILProgramItem_Image(method)))
 	{
 		/* Get the symbol debug information */
@@ -1122,32 +1125,57 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 		}
 	}
 
-	/* Add local variables in current frame */
-	current = 0;
-	for(i = 0; i < thread->numWatches && num > 0; i++)
+	/* Iterate watches in current thread */
+	currentLocal = 0;
+	currentParam = 1;
+	paramDebugIndex = 0;
+	for(i = 0; i < thread->numWatches; i++)
 	{
-		local = &(thread->watchStack[i]);
+		watch = &(thread->watchStack[i]);
 
 		/* Skip variables that are not in current frame */
-		if(local->frame != thread->frame)
+		if(watch->frame != thread->frame)
 		{
 			continue;
 		}
 
-		type = ILTypeGetLocal(signature, current);
-		if(dbgc)
+		if(watch->type == IL_LOCAL_WATCH_TYPE_LOCAL_VAR)
 		{
-			name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
-																	current);
-			if(name == 0)
+			type = ILTypeGetLocal(localSignature, currentLocal);
+			if(dbgc)
 			{
-				continue;
+				name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
+																currentLocal);
+				if(name == 0)
+				{
+					continue;
+				}
 			}
+			DebuggerHelper_AddLocal(thread, name, type, watch->addr);
+			currentLocal++;
 		}
-		DebuggerHelper_AddLocal(thread, name, type, local->addr);
-
-		current++;
-		num--;
+		else if(watch->type == IL_LOCAL_WATCH_TYPE_PARAM)
+		{
+			type = ILTypeGetParam(paramSignature, currentParam);
+			if(dbgc)
+			{
+				name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
+												paramDebugIndex | 0x80000000);
+			}
+			DebuggerHelper_AddLocal(thread, name, type, watch->addr);
+			currentParam++;
+			paramDebugIndex++;
+		}
+		else if(watch->type == IL_LOCAL_WATCH_TYPE_THIS)
+		{
+			type = ILType_FromClass(ILMethod_Owner(method));
+			DebuggerHelper_AddLocal(thread, "this", type, watch->addr);
+			paramDebugIndex++;
+		}
+		else
+		{
+			continue;
+		}
 	}
 
 	if(dbgc)

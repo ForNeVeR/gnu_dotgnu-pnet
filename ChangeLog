@@ -1,4 +1,10 @@
-2007-03-24  Radek Polak  <psonek2@sezam.cz>
+2007-04-03  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c, engine/engine.h, engine/jitc.c, engine/jitc.h,
+	engine/jitc_locals.c: Implement watching method's parameters.
+	Implement watching "this" in instance methods.
+
+2007-03-24  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: Fix local variable index.
 

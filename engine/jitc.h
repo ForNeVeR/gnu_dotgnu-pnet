@@ -59,6 +59,12 @@
 #define IL_JIT_META_METHODNAME 1001
 
 /*
+ * Definition of flag that is set to 1 if method has this parameter.
+ * Used only when debugging.
+ */
+#define IL_JIT_META_HAS_THIS 1002
+
+/*
  * Use the ILMethod * as function pointer.
  */
 #define IL_JIT_FNPTR_ILMETHOD 1
@@ -87,7 +93,9 @@
 #define	JIT_DEBUGGER_DATA1_METHOD_ENTER			0
 #define	JIT_DEBUGGER_DATA1_METHOD_LEAVE			1
 #define	JIT_DEBUGGER_DATA1_METHOD_OFFSET		2
-#define	JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR		3
+#define	JIT_DEBUGGER_DATA1_THIS_ADDR			3
+#define	JIT_DEBUGGER_DATA1_PARAM_ADDR			4
+#define	JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR		5
 
 /*
  * Representation of a type representation for libjit.

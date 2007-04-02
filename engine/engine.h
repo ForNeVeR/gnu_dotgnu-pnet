@@ -342,10 +342,15 @@ struct _tagILExecProcess
 typedef struct _tagILLocalWatch
 {
 	void           *addr;			/* Address of variable */
-	int				flag;
+	int				type;
 	void		   *frame;			/* Frame pointer */
 
 } ILLocalWatch;
+
+#define IL_LOCAL_WATCH_TYPE_THIS			(0)
+#define IL_LOCAL_WATCH_TYPE_PARAM			(1)
+#define IL_LOCAL_WATCH_TYPE_LOCAL_VAR		(2)
+
 #endif
 
 /*

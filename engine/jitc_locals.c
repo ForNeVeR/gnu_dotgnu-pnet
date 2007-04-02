@@ -541,6 +541,28 @@ static int _ILJitLocalSlotsCreateLocals(ILJITCoder *jitCoder,
 	return 1;
 }
 
+#ifdef IL_DEBUGGER
+/*
+ * Create debug mark with local's or parameter's address.
+ */
+static void _ILJitLocalsMarkDebug(ILJITCoder *coder, ILJitValue value,
+								  jit_nint type)
+{
+	jit_value_t data1;
+	jit_value_t data2;
+
+	/* Make the variable accessible for debugger */
+	jit_value_set_volatile(value);
+	jit_value_set_addressable(value);
+
+	data1 = jit_value_create_nint_constant(coder->jitFunction, jit_type_nint,
+																		type);
+
+	data2 = jit_insn_address_of(coder->jitFunction,	value);
+	jit_insn_mark_breakpoint_variable(coder->jitFunction, data1, data2);
+}
+#endif /* IL_DEBUGGER */
+
 /*
  * Create the slots for the declared local variables.
  * Returns zero if out of memory.
@@ -556,26 +578,15 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 	if(coder->markBreakpoints)
 	{
 		ILUInt32 current;
-		jit_value_t data1;
-		jit_value_t data2;
 
 		/* Set the offsets for each of the local variables */
 		for(current = 0; current < coder->jitLocals.numSlots; ++current)
 		{
-			ILJitLocalSlot *local = &_ILJitLocalSlotFromSlots(coder->jitLocals, current);
+			ILJitLocalSlot *local = &_ILJitLocalSlotFromSlots(coder->jitLocals,
+																	current);
 
-			/* Notify debugger about address of local variable */
-			/* Make the variable accessible for debugger */
-			jit_value_set_volatile(local->value);
-			jit_value_set_addressable(local->value);
-
-			/* Report address of the variable to debugger */
-			data1 = jit_value_create_nint_constant(coder->jitFunction,
-				 								   jit_type_nint,
-												   JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR);
-
-			data2 = jit_insn_address_of(coder->jitFunction,	local->value);
-			jit_insn_mark_breakpoint_variable(coder->jitFunction, data1, data2);
+			_ILJitLocalsMarkDebug(coder, local->value,
+											JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR);
 		}
 	}
 #endif
@@ -598,11 +609,23 @@ static int _ILJitLocalsCreate(ILJITCoder *coder, ILStandAloneSig *localVarSig)
 static int _ILJitParamsCreate(ILJITCoder *coder)
 {
 	ILJitType signature = jit_function_get_signature(coder->jitFunction);
+#ifdef IL_DEBUGGER
+	int markThis;
+#endif
 
 	if(signature)
 	{
 		ILJitLocalSlot *param = 0;
 		ILUInt32 numParams = jit_type_num_params(signature);
+
+#ifdef IL_DEBUGGER
+		if(coder->markBreakpoints)
+		{
+			markThis = ILType_HasThis(ILMethod_Signature(
+							ILCCtorMgr_GetCurrentMethod(&(coder->cctorMgr))));
+		}
+#endif
+
 
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 		/* We don't include the ILExecThread in the params. */
@@ -620,6 +643,24 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 				param->value = jit_value_get_param(coder->jitFunction, current);
 				param->flags = 0;
 				param->refValue = 0;
+
+#ifdef IL_DEBUGGER
+				if(coder->markBreakpoints)
+				{
+					if(markThis)
+					{
+						_ILJitLocalsMarkDebug(coder, param->value,
+												JIT_DEBUGGER_DATA1_THIS_ADDR);
+						markThis = 0;
+					}
+					else
+					{
+						_ILJitLocalsMarkDebug(coder, param->value,
+												JIT_DEBUGGER_DATA1_PARAM_ADDR);
+					}
+				}
+#endif
+
 			}
 			coder->jitParams.numSlots = numParams - 1;
 		}
@@ -638,6 +679,20 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 				param->value = jit_value_get_param(coder->jitFunction, current);
 				param->flags = 0;
 				param->refValue = 0;
+
+#ifdef IL_DEBUGGER
+				if(markThis)
+				{
+					_ILJitLocalsMarkDebug(coder, param->value,
+												JIT_DEBUGGER_DATA1_THIS_ADDR);
+					markThis = 0;
+				}
+				else
+				{
+					_ILJitLocalsMarkDebug(coder, param->value,
+												JIT_DEBUGGER_DATA1_PARAM_ADDR);
+				}
+#endif
 			}
 			coder->jitParams.numSlots = numParams;
 		}

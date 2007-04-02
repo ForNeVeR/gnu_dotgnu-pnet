@@ -2563,6 +2563,14 @@ jit_context_t ILJitGetContext(ILCoder *_coder)
 }
 
 #ifdef IL_DEBUGGER
+
+/*
+ * Temporary watch marking.
+ */
+#define ILLocalWatchIsInvalid(watch)		((watch)->type & 0x80000000)
+#define ILLocalWatchMarkInvalid(watch)		((watch)->type |= 0x80000000)
+#define ILLocalWatchMarkValid(watch)		((watch)->type &= ~0x80000000)
+
 /*
  * Drop invalid watches from thread->watchStack.
  * Watches are normaly removed on return statement (see handler
@@ -2580,7 +2588,7 @@ static void ILJitDropInvalidWatches(ILExecThread *thread)
 	for(i = 0; i < thread->numWatches; i++)
 	{
 		watch = &(thread->watchStack[i]);
-		watch->flag = 1;
+		ILLocalWatchMarkInvalid(watch);
 	}
 
 	/* Find and unmark watches with valid frame pointers */
@@ -2592,8 +2600,7 @@ static void ILJitDropInvalidWatches(ILExecThread *thread)
 			watch = &(thread->watchStack[i]);
 			if(watch->frame == frame)
 			{
-				/* Frame is valid */
-				watch->flag = 0;
+				ILLocalWatchMarkValid(watch);
 			}
 		}
 		frame = jit_get_next_frame_address(frame);
@@ -2603,7 +2610,7 @@ static void ILJitDropInvalidWatches(ILExecThread *thread)
 	for(i = thread->numWatches - 1; ((ILInt32)(i)) >= 0; i--)
 	{
 		watch = &(thread->watchStack[i]);
-		if(watch->flag)
+		if(ILLocalWatchIsInvalid(watch))
 		{
 			/* Watch is invalid */
 			thread->numWatches--;
@@ -2621,6 +2628,8 @@ static void ILJitDropInvalidWatches(ILExecThread *thread)
  * data1					data2					meaning
  *-----------------------------------------------------------------------------
  * METHOD_ENTER 			ILMethod *				method was called
+ * PARAM_ADDR				void *					address of parameter
+ * THIS_ADDR				void *					address of "this"
  * LOCAL_VAR_ADDR			void *					address of local variable
  * ILMethod * (method)		ILUInt32 (IL offset)	soft breakpoint (before every IL instruction)
  * METHOD_LEAVE				unused					return from method
@@ -2648,6 +2657,8 @@ static void JitDebuggerHook(jit_function_t func, jit_nint data1, jit_nint data2)
 		}
 		/* Not reached */
 
+		case JIT_DEBUGGER_DATA1_THIS_ADDR:
+		case JIT_DEBUGGER_DATA1_PARAM_ADDR:
 		case JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR:
 		{
 			/* Allocate watch for this local variable */
@@ -2667,6 +2678,19 @@ static void JitDebuggerHook(jit_function_t func, jit_nint data1, jit_nint data2)
 
 			/* Address is in data2 */
 			watch->addr = (void *) data2;
+
+			if(data1 == JIT_DEBUGGER_DATA1_PARAM_ADDR)
+			{
+				watch->type = IL_LOCAL_WATCH_TYPE_PARAM;
+			}
+			else if(data1 == JIT_DEBUGGER_DATA1_LOCAL_VAR_ADDR)
+			{
+				watch->type = IL_LOCAL_WATCH_TYPE_LOCAL_VAR;
+			}
+			else if(data1 == JIT_DEBUGGER_DATA1_THIS_ADDR)
+			{
+				watch->type = IL_LOCAL_WATCH_TYPE_THIS;
+			}
 
 			thread->numWatches++;
 			return;

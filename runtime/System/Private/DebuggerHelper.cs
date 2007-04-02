@@ -92,6 +92,17 @@ internal sealed class DebuggerHelper
 					// Find matching local variable/function parameter
 					value = GetLocal(name);
 
+					// Try instance members
+					if(value == error)
+					{
+						Object instance = GetLocal("this");
+						if(instance != error)
+						{
+							value = GetNonStaticMemberValue(instance, name,
+																		null);
+						}
+					}
+
 					// Call indexer if local variable found
 					// and arguments were specified
 					if(value != error)

@@ -1,3 +1,8 @@
+2007-04-03  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/Private/DebuggerHelper.cs: Implement watching
+	instance members without need to specify "this".
+
 2007-03-31  Deryk Robosson  <drobosson@gmail.com>
 
 	* System.Windows.Forms/ListBox.cs: Invalidate control when flushing so

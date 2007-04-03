@@ -59,12 +59,6 @@
 #define IL_JIT_META_METHODNAME 1001
 
 /*
- * Definition of flag that is set to 1 if method has this parameter.
- * Used only when debugging.
- */
-#define IL_JIT_META_HAS_THIS 1002
-
-/*
  * Use the ILMethod * as function pointer.
  */
 #define IL_JIT_FNPTR_ILMETHOD 1

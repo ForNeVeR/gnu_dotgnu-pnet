@@ -1,5 +1,9 @@
 2007-04-03  Radek Polak  <psonek2@seznam.cz>
 
+	* engine/jitc.h: Removed unused define.
+
+2007-04-03  Radek Polak  <psonek2@seznam.cz>
+
 	* engine/debugger.c, engine/engine.h, engine/jitc.c, engine/jitc.h,
 	engine/jitc_locals.c: Implement watching method's parameters.
 	Implement watching "this" in instance methods.

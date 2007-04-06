@@ -22,7 +22,7 @@ AC_INIT(gc,6.8,Hans.Boehm@hp.com)
 AC_CONFIG_SRCDIR(gcj_mlc.c)
 AC_CANONICAL_TARGET 
 AC_PREREQ(2.53)
-AC_REVISION($Revision: 1.10 $)
+AC_REVISION($Revision: 1.11 $)
 GC_SET_VERSION
 AM_INIT_AUTOMAKE
 
@@ -65,6 +65,10 @@ AC_ARG_ENABLE(parallel-mark,
 
 AC_ARG_ENABLE(cplusplus,
 [  --enable-cplusplus		install C++ support],
+)
+
+AC_ARG_ENABLE(munmap,
+[  --enable-munmap		enable returning freed memory to the os],
 )
 
 INCLUDES=-I${srcdir}/include
@@ -262,6 +266,11 @@ esac
 if test "${enable_cplusplus}" = yes; then
       addincludes="$addincludes include/gc_cpp.h include/gc_allocator.h"
       addtests="$addtests test_cpp"
+fi
+
+if test "${enable_munmap}" = yes; then
+      AC_DEFINE(USE_MMAP)
+      AC_DEFINE(USE_MUNMAP)
 fi
 
 AM_CONDITIONAL(CPLUSPLUS, test "${enable_cplusplus}" = yes)

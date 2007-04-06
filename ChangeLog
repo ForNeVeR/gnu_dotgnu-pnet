@@ -1,3 +1,9 @@
+2007-04-06  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/configure.in: Add configure option --enable-munmap to enable
+	returning unused memory to the os. This option enables the usage off mmap
+	too and can't be used on platforms where mmap is not available.
+
 2007-04-03  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/jitc.h: Removed unused define.

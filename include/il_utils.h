@@ -49,7 +49,7 @@ unsigned long ILHashString(unsigned long start, const char *str, int len);
  * unique for a string.  Comparing interned values with "==" is
  * identical to comparing them with "strcmp".
  */
-ILIntString ILInternString(char *str, int len);
+ILIntString ILInternString(const char *str, int len);
 
 /*
  * Append two internalised strings and internalise the result.

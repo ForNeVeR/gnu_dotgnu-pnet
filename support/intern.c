@@ -40,7 +40,7 @@ typedef struct _InternEntry
 static InternEntry *hashTable[INTERN_HASH_SIZE];
 static char emptyString[] = "";
 
-ILIntString ILInternString(char *str, int len)
+ILIntString ILInternString(const char *str, int len)
 {
 	unsigned long hash;
 	InternEntry *entry;

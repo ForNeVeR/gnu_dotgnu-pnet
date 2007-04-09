@@ -1,3 +1,9 @@
+2007-04-09  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_utils.h, support/intern.c: Change the signature of
+	ILInternString from ILInternString(char *, int) to
+	ILInternString(const char *, int).
+
 2007-04-06  Klaus Treichel  <ktreichel@web.de>
 
 	* libgc/configure.in: Add configure option --enable-munmap to enable

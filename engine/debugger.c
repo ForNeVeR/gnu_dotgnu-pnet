@@ -1021,6 +1021,21 @@ char *DebuggerHelper_ExpressionToString(ILExecThread *thread, const char *expres
 }
 
 /*
+ * Call DebuggerHelper.SetMethodOwner() method.
+ */
+void DebuggerHelper_SetMethodOwner(ILExecThread *thread, ILType *type)
+{
+	ILObject *clrType;
+
+	clrType = _ILGetClrTypeForILType(thread, type);
+
+	ILExecThreadCallNamed(thread, "System.Private.DebuggerHelper",
+					"SetMethodOwner", "(oSystem.Type;)V",
+					(void *)0, clrType);
+
+}
+
+/*
  * Call DebuggerHelper.ClearLocals() method.
  */
 void DebuggerHelper_ClearLocals(ILExecThread *thread)
@@ -1146,12 +1161,11 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 			{
 				name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
 																currentLocal);
-				if(name == 0)
-				{
-					continue;
-				}
 			}
-			DebuggerHelper_AddLocal(thread, name, type, watch->addr);
+			if(name || dbgc == 0)
+			{
+				DebuggerHelper_AddLocal(thread, name, type, watch->addr);
+			}
 			currentLocal++;
 		}
 		else if(watch->type == IL_LOCAL_WATCH_TYPE_PARAM)
@@ -1172,16 +1186,17 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 			DebuggerHelper_AddLocal(thread, "this", type, watch->addr);
 			paramDebugIndex++;
 		}
-		else
-		{
-			continue;
-		}
 	}
 
 	if(dbgc)
 	{
 		ILDebugDestroy(dbgc);
 	}
+
+	/* Update method's owner type */
+	type = ILType_FromClass(ILMethod_Owner(method));
+	DebuggerHelper_SetMethodOwner(thread, type);
+
 #endif
 }
 

@@ -1,3 +1,8 @@
+2007-04-09  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Set method owner for currently debugged function
+	in debugger helper class. Always increment local var index.
+
 2007-04-09  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_utils.h, support/intern.c: Change the signature of

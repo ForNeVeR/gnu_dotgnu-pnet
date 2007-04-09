@@ -28,6 +28,7 @@ using System.Reflection;
 internal sealed class DebuggerHelper
 {
 	static LocalWatch locals;
+	static Type methodOwner;
 	static int maxItemsDumpCount = 16;
 	static Object error;
 
@@ -101,6 +102,10 @@ internal sealed class DebuggerHelper
 							value = GetNonStaticMemberValue(instance, name,
 																		null);
 						}
+						else
+						{
+							error = value;		// restore last error
+						}
 					}
 
 					// Call indexer if local variable found
@@ -118,10 +123,19 @@ internal sealed class DebuggerHelper
 						// Check for static member
 						Type matchingType = FindType(name);
 
-						// Find matching static field/method/property
+						// Parse member name or try current method owner
 						if(matchingType != null)
 						{
 							parser.Read(out name, out args);
+						}
+						else
+						{
+							matchingType = methodOwner;
+						}
+
+						// Find matching static field/method/property
+						if(matchingType != null)
+						{
 							value = GetStaticMemberValue(matchingType,
 																name, args);
 						}
@@ -222,6 +236,12 @@ internal sealed class DebuggerHelper
 					}
 				}
 				return ExpressionNotFoundError();
+			}
+
+	// Set type that owns currently debugged method
+	public static void SetMethodOwner(Type type)
+			{
+				methodOwner = type;
 			}
 
 	// Set current error and return it.

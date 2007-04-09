@@ -1,3 +1,9 @@
+2007-04-09  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/Private/DebuggerHelper.cs: Allow watches for static
+	members without need to specify class name. Fix for static member
+	watches.
+
 2007-04-03  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/Private/DebuggerHelper.cs: Implement watching

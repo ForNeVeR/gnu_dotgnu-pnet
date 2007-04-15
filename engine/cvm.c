@@ -175,6 +175,16 @@ extern	"C" {
 #define IL_CALLFRAME_VOLATILE volatile
 #define IL_TEMPPTR_VOLATILE volatile
 #endif
+#if (__GNUC__ == 4) && defined(CVM_ARM)
+#define IL_PC_VOLATILE volatile
+#define IL_STACKTOP_VOLATILE volatile
+#define IL_FRAME_VOLATILE volatile
+#define IL_STACKMAX_VOLATILE volatile
+#define IL_METHOD_VOLATILE volatile
+#define IL_METHODTOCALL_VOLATILE volatile
+#define IL_CALLFRAME_VOLATILE volatile
+#define IL_TEMPPTR_VOLATILE volatile
+#endif
 #if (__GNUC__ == 4) && defined(CVM_PPC)
 #define IL_PC_VOLATILE volatile
 #define IL_STACKTOP_VOLATILE volatile

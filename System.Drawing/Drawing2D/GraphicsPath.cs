@@ -583,6 +583,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 	// Close the current figure and start a new one.
 	public void CloseFigure()
 			{
+				if( null != actualFigure ) actualFigure.CloseFigure();
 				actualFigure = null;
 			}
 
@@ -845,6 +846,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			
 	private class PathFigure : ICloneable
 	{
+		bool closedFigure = false;
 		public ArrayList pathObjs;
 		
 		public PathFigure() 
@@ -860,6 +862,10 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 			return cpy;
 		}
 		
+		public void CloseFigure() {
+			this.closedFigure = true;
+		}
+		
 		public PointF[] GetPathPoints() {
 			PointF[][] fpoints = new PointF[pathObjs.Count][];
 			int size=0;
@@ -870,6 +876,8 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 				if( null != fpoints[i] ) size += fpoints[i].Length;
 				i++;
 			}
+			
+			if( this.closedFigure ) size += 1; 
 				
 			PointF[] poly= new PointF[size];
 			int z=0;
@@ -880,6 +888,7 @@ public sealed class GraphicsPath : MarshalByRefObject, ICloneable, IDisposable
 					}
 				}
 			}
+			if( this.closedFigure ) poly[z++] = poly[0];
 				
 			return poly;
 		}

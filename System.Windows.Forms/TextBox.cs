@@ -562,6 +562,21 @@ public class TextBox : TextBoxBase
 		return base.IsInputKey(keyData);
 	}
 
+	// need to check for caret OnGotFocus too, since OnEnter might not be exexuted
+	// because OnEnter only gets executed if ActiveControl is set.
+	protected override void OnGotFocus(EventArgs e) {
+		base.OnGotFocus(e);
+		if( this.Focused ) {
+		// reset the caret position
+			CaretSetPosition(caretPosition);
+		
+		// Perform the regular focus handling.
+			CaretShow();
+			InvalidateDirty();
+			this.Invalidate();
+		}
+	}
+	
 	// Process when the control receives the focus
 	protected override void OnEnter(EventArgs e)
 	{

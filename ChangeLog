@@ -1,3 +1,7 @@
+2007-04-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TextBox.cs: fixed showing caret.
+
 2007-04-18  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Drawing/Drawing2D/GraphicsPath.cs: fixed closing figure.

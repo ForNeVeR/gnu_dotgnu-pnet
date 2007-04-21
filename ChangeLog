@@ -1,3 +1,9 @@
+2007-04-21  Radek Polak  <psonek2@seznam.cz>
+
+	* pnetlib/System.Windows.Forms/MainMenu.cs,
+	pnetlib/System.Windows.Forms/Menu.cs: Apply patch #5879 to fix
+	updating MainMenu when adding/removing items.
+
 2007-04-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TextBox.cs: fixed showing caret.

@@ -82,8 +82,14 @@ public abstract class Menu
 				--suppressUpdates;
 				if(suppressUpdates == 0)
 				{
-					// Fix: force a repaint/recalc of the menu
+					// Force a repaint/recalc of the menu
+					RepaintAndRecalc();
 				}
+			}
+
+	// Repaint/recalc of the menu
+	protected internal virtual void RepaintAndRecalc()
+			{
 			}
 
 	// Get or set this object's properties.

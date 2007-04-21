@@ -111,6 +111,15 @@ using System.Drawing;
 
 #endif
 
+		protected internal override void RepaintAndRecalc()
+		{
+			itemBounds = null;
+			if(ownerForm != null)
+			{
+				ownerForm.Invalidate(false);
+			}
+		}
+
 		// Add this main menu to a form.
 		internal void AddToForm(Form form)
 		{

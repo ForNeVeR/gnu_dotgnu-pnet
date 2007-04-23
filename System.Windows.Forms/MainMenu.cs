@@ -116,7 +116,7 @@ using System.Drawing;
 			itemBounds = null;
 			if(ownerForm != null)
 			{
-				ownerForm.Invalidate(false);
+				OnPaint();
 			}
 		}
 

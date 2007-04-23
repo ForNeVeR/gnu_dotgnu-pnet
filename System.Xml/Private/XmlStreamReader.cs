@@ -312,6 +312,30 @@ internal class XmlStreamReader : TextReader
 					decoder = encoding.GetDecoder();
 					encodingDetected = true;
 				}
+				else if(inBufferLen >= 4 &&
+									 inBuffer[0] == 0x3C &&
+									 inBuffer[1] == 0x00 &&
+									 inBuffer[2] == 0x3F &&
+									 inBuffer[3] == 0x00)
+				{
+					// Little-endian UTF-16, missing FF FE
+					encoding = Encoding.Unicode;
+					inBufferPosn = 0;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
+				else if(inBufferLen >= 4 &&
+									 inBuffer[0] == 0x00 &&
+									 inBuffer[1] == 0x3C &&
+									 inBuffer[2] == 0x00 &&
+									 inBuffer[3] == 0x3F)
+				{
+					// Big-endian UTF-16, missing FE FF
+					encoding = Encoding.BigEndianUnicode;
+					inBufferPosn = 0;
+					decoder = encoding.GetDecoder();
+					encodingDetected = true;
+				}
 			}
 
 	// Close this stream reader.

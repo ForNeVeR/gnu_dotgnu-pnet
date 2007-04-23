@@ -1,3 +1,7 @@
+2007-04-23  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Xml/Private/XmlStreamReader.cs: fixed DetectByteOrder.
+
 2007-04-21  Radek Polak  <psonek2@seznam.cz>
 
 	* pnetlib/System.Windows.Forms/MainMenu.cs,

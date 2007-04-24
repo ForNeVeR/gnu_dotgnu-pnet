@@ -39,8 +39,7 @@ endif
 else
 
 ## We only want to build the runtime engine.
-OPT_SUBDIRS += coremul \
-			   engine
+OPT_SUBDIRS += engine
 
 endif
 

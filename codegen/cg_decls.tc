@@ -304,12 +304,11 @@ ILNode_GenDiscard(ILNode_ProxyDeclaration)
 	}
 	
 	/* Create a name for the proxy method */
-	name = ILInternAppendedString
-		(ILInternAppendedString
-			(ILInternString
+	name = ILInternStringConcat3
+		(ILInternString
 				((char *)ILClass_Name(ILMethod_Owner(node->interfaceMethod)),
 				 -1),
-			 ILInternString(".", 1)),
+		 ILInternString(".", 1),
 		 ILInternString((char *)ILMethod_Name(node->interfaceMethod), -1))
 		 		.string;
 

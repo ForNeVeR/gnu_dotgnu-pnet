@@ -162,6 +162,127 @@ ILIntString ILInternAppendedString(ILIntString str1, ILIntString str2)
 	return result;
 }
 
+ILIntString ILInternStringConcat3(ILIntString str1, ILIntString str2, ILIntString str3)
+{
+	unsigned long hash = 0;
+	int len = 0;
+	InternEntry *entry;
+	ILIntString result;
+
+	/* Bail out early for the easy cases */
+	if(str1.len == 0)
+	{
+		if(str2.len == 0)
+		{
+			return str3;
+		}
+		if(str3.len == 0)
+		{
+			return str2;
+		}
+	}
+	if(str2.len == 0)
+	{
+		if(str3.len == 0)
+		{
+			return str1;
+		}
+	}
+
+	/* Hash the combined string */
+	if(str1.len > 0)
+	{
+		hash = ILHashString(hash, str1.string, str1.len);
+		len += str1.len;
+	}
+	else
+	{
+		str1.len = 0;
+	}
+	if(str2.len > 0)
+	{
+		hash = ILHashString(hash, str2.string, str2.len);
+		len += str2.len;
+	}
+	else
+	{
+		str2.len = 0;
+	}
+	if(str3.len > 0)
+	{
+		hash = ILHashString(hash, str3.string, str3.len);
+		len += str3.len;
+	}
+	else
+	{
+		str3.len = 0;
+	}
+	hash %= INTERN_HASH_SIZE;
+
+	/* Look in the hash table to see if we already have the combined string */
+	entry = hashTable[hash];
+	while(entry != 0)
+	{
+		if(len == entry->len)
+		{
+			if((str1.len > 0) && ILMemCmp(entry->str, str1.string, str1.len))
+			{
+				/* No match */
+			}
+			else if((str2.len > 0) && ILMemCmp(entry->str + str1.len, str2.string, str2.len))
+			{
+				/* No match */
+			}
+			else if((str3.len > 0) && ILMemCmp(entry->str + str1.len + str2.len, str3.string, str3.len))
+			{
+				/* No match */
+			}
+			else
+			{
+				result.string = entry->str;
+				result.len = entry->len;
+				return result;
+			}
+		}
+		entry = entry->next;
+	}
+
+	/* Add a new item to the hash table */
+	entry = (InternEntry *)ILMalloc(sizeof(InternEntry) + len);
+	if(!entry)
+	{
+	#ifndef REDUCED_STDIO
+		fprintf(stderr, "virtual memory exhausted - cannot intern \"");
+		fwrite(str1.string, 1, str1.len, stderr);
+		fwrite(str2.string, 1, str2.len, stderr);
+		fprintf(stderr, "\"\n");
+		exit(1);
+	#endif
+		result.string = emptyString;
+		result.len = 0;
+		return result;
+	}
+	entry->next = hashTable[hash];
+	entry->len = len;
+	if(str1.len > 0)
+	{
+		ILMemCpy(entry->str, str1.string, str1.len);
+	}
+	if(str2.len > 0)
+	{
+		ILMemCpy(entry->str + str1.len, str2.string, str2.len);
+	}
+	if(str3.len > 0)
+	{
+		ILMemCpy(entry->str + str1.len + str2.len, str3.string, str3.len);
+	}
+	entry->str[entry->len] = '\0';
+	hashTable[hash] = entry;
+	result.string = entry->str;
+	result.len = entry->len;
+	return result;
+}
+
 #ifdef	__cplusplus
 };
 #endif

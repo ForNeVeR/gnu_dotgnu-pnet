@@ -164,11 +164,10 @@ const char *CSTypeToName(ILType *type)
 		const char *finalName;
 		if(namespace)
 		{
-			finalName = ILInternAppendedString
-						(ILInternAppendedString
+			finalName = ILInternStringConcat3
 							(ILInternString((char *)namespace, -1),
-							 ILInternString((char *)".", 1)),
-						 ILInternString((char *)name, -1)).string;
+							 ILInternString((char *)".", 1),
+							 ILInternString((char *)name, -1)).string;
 		}
 		else
 		{
@@ -179,11 +178,10 @@ const char *CSTypeToName(ILType *type)
 			/* Prepend the name of the enclosing nesting class */
 			const char *parentName = CSTypeToName
 				(ILType_FromClass(ILClass_NestedParent(classInfo)));
-			finalName = ILInternAppendedString
-						(ILInternAppendedString
+			finalName = ILInternStringConcat3
 							(ILInternString((char *)parentName, -1),
-							 ILInternString((char *)".", 1)),
-						 ILInternString((char *)finalName, -1)).string;
+							 ILInternString((char *)".", 1),
+							 ILInternString((char *)finalName, -1)).string;
 		}
 		return finalName;
 	}

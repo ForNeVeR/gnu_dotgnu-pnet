@@ -1615,8 +1615,8 @@ char *ILQualIdentName(ILNode *node, int asmForm)
 			ILIntString name;
 			name.string = ident->name;
 			name.len = strlen(ident->name);
-			return (ILInternAppendedString
-						(quote, ILInternAppendedString(name, quote))).string;
+			return (ILInternStringConcat3
+						(quote, name, quote)).string;
 		}
 		return ident->name;
 	}
@@ -1669,8 +1669,8 @@ char *ILQualIdentAppend(char *name1, char *name2)
 	str2.len = 1;
 	str3.string = name2;
 	str3.len = strlen(name2);
-	return (ILInternAppendedString
-				(str1, ILInternAppendedString(str2, str3))).string;
+	return (ILInternStringConcat3
+				(str1, str2, str3)).string;
 }
 
 int ILIsQualIdent(ILNode *node)

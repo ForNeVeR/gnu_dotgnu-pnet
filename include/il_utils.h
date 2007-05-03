@@ -57,6 +57,13 @@ ILIntString ILInternString(const char *str, int len);
 ILIntString ILInternAppendedString(ILIntString str1, ILIntString str2);
 
 /*
+ * Concatenate three internalised strings and internalise the result.
+ */
+ILIntString ILInternStringConcat3(ILIntString str1,
+				  ILIntString str2,
+				  ILIntString str3);
+
+/*
  * Generate a GUID value.  The "guid" buffer must be at
  * least 16 bytes in length.
  */

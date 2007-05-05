@@ -184,12 +184,12 @@ void CScopeUsingNamespace(const char *name);
 /*
  * Push a namespace onto the lookup context.
  */
-void CScopePushNamespace(char *name);
+void CScopePushNamespace(const char *name);
 
 /*
  * Pop a namespace from the lookup context.
  */
-void CScopePopNamespace(char *name);
+void CScopePopNamespace(const char *name);
 
 /*
  * Get the scope data kind.

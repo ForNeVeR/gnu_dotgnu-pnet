@@ -123,7 +123,7 @@ ILUInt32 CSModifiersToDestructorAttrs(ILNode *node, ILUInt32 modifiers);
 /*
  * Convert a built-in constant name into a constant node.
  */
-ILNode *CSBuiltinConstant(char *name);
+ILNode *CSBuiltinConstant(const char *name);
 
 /*
  * Gather information about all types in the program.

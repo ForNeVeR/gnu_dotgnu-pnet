@@ -146,7 +146,7 @@ static ILNode *ModifyAttrName(ILNode *node)
 static ILProgramItem *LookupAttrField(ILGenInfo *info, ILType *type,
 									  ILNode *nameNode)
 {
-	char *name = ILQualIdentName(nameNode, 0);
+	const char *name = ILQualIdentName(nameNode, 0);
 	ILClass *classInfo = ILClassResolve(ILTypeToClass(info, type));
 	ILClass *scope = ILClassLookup(ILClassGlobalScope(info->image),
 							 	   "<Module>", (const char *)0);
@@ -927,7 +927,7 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 	ILNode_ListIter iter2;
 	ILNode_AttributeSection *section;
 	ILNode_Attribute *attr;
-	char *targetName;
+	const char *targetName;
 	ILClass *classInfo;
 	ILMethod *method;
 	unsigned long numParams;

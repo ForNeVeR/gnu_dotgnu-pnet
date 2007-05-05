@@ -32,7 +32,7 @@ extern	"C" {
  */
 typedef struct
 {
-	char		   *name;
+	const char	   *name;
 	ILLabel		   *continueLabel;
 	ILLabel		   *breakLabel;
 	ILLabel		   *finallyLabel;
@@ -45,7 +45,7 @@ typedef struct
  */
 typedef struct _tagILGotoEntry
 {
-	char		   *name;
+	const char	   *name;
 	int				defined : 1;
 	int				crossedTry : 1;
 	long			loopStackSize;
@@ -60,7 +60,7 @@ typedef struct _tagILGotoEntry
  */
 typedef struct _tagILLocalVar
 {
-	char		   *name;
+	const char	   *name;
 	long			scopeLevel;
 	ILType		   *type;
 	short			allocated;
@@ -88,7 +88,7 @@ typedef struct _tagILJavaGenInfo ILJavaGenInfo;
  */
 struct _tagILGenInfo
 {
-	char		   *progname;			/* Name of the program */
+	const char	   *progname;			/* Name of the program */
 	FILE		   *asmOutput;			/* Assembly output stream */
 	ILContext	   *context;			/* Context that is being built */
 	ILImage		   *image;				/* Image that is being built */

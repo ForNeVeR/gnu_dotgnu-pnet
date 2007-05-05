@@ -92,7 +92,7 @@ void ILAsmOutBranchInt(ILInt32 opcode, ILInt64 addr);
 /*
  * Output a branch to a named label within the current method.
  */
-void ILAsmOutBranch(ILInt32 opcode, char *label);
+void ILAsmOutBranch(ILInt32 opcode, const char *label);
 
 /*
  * Start output of a switch statement.
@@ -107,7 +107,7 @@ void ILAsmOutSwitchRefInt(ILInt64 addr);
 /*
  * Output a switch label reference within the current method.
  */
-void ILAsmOutSwitchRef(char *label);
+void ILAsmOutSwitchRef(const char *label);
 
 /*
  * End output of a switch statement.
@@ -117,29 +117,29 @@ void ILAsmOutSwitchEnd(void);
 /*
  * Output a named label at the current position within the method.
  */
-void ILAsmOutLabel(char *label);
+void ILAsmOutLabel(const char *label);
 
 /*
  * Convert an integer label name into its string form.
  */
-char *ILAsmOutIntToName(ILInt64 label);
+const char *ILAsmOutIntToName(ILInt64 label);
 
 /*
  * Output an integer label name at the current position.
  * Returns the string form of the label name.
  */
-char *ILAsmOutIntLabel(ILInt64 label);
+const char *ILAsmOutIntLabel(ILInt64 label);
 
 /*
  * Output a unique label name for the current position,
  * and return the string form of the label name.
  */
-char *ILAsmOutUniqueLabel(void);
+const char *ILAsmOutUniqueLabel(void);
 
 /*
  * Add debug line information at this point within the method.
  */
-void ILAsmOutDebugLine(char *filename, ILUInt32 line, ILUInt32 column);
+void ILAsmOutDebugLine(const char *filename, ILUInt32 line, ILUInt32 column);
 
 /*
  * Start output of an SSA instruction.
@@ -185,7 +185,7 @@ void ILAsmOutAddParams(ILAsmParamInfo *vars, ILUInt32 callConv);
 /*
  * Look up a local or parameter and return the index.
  */
-ILUInt32 ILAsmOutLookupVar(char *name);
+ILUInt32 ILAsmOutLookupVar(const char *name);
 
 /*
  * Information that is stored for an exception handler block.
@@ -194,16 +194,16 @@ typedef struct _tagILAsmOutException ILAsmOutException;
 struct _tagILAsmOutException
 {
 	ILUInt32			flags;
-	char			   *blockStart;
-	char			   *blockEnd;
+	const char		   *blockStart;
+	const char		   *blockEnd;
 	ILUInt32			blockOffset;
 	ILUInt32			blockLength;
-	char			   *handlerStart;
-	char			   *handlerEnd;
+	const char		   *handlerStart;
+	const char		   *handlerEnd;
 	ILUInt32			handlerOffset;
 	ILUInt32			handlerLength;
 	ILClass			   *classToCatch;
-	char			   *filterLabel;
+	const char		   *filterLabel;
 	ILUInt32			filterOffset;
 	ILAsmOutException  *next;
 
@@ -213,13 +213,14 @@ struct _tagILAsmOutException
  * Make an exception handler block for the current method.
  */
 ILAsmOutException *ILAsmOutMakeException(ILUInt32 flags, ILClass *classInfo,
-									     char *filterLabel, char *handlerStart,
-									     char *handlerEnd);
+									     const char *filterLabel,
+										 const char *handlerStart,
+									     const char *handlerEnd);
 
 /*
  * Add a try block to the current method.
  */
-void ILAsmOutAddTryBlock(char *blockStart, char *blockEnd,
+void ILAsmOutAddTryBlock(const char *blockStart, const char *blockEnd,
 						 ILAsmOutException *handlers);
 
 /*
@@ -235,17 +236,17 @@ void ILAsmOutAddResource(const char *name, FILE *stream);
 /*
  * Declare a local variable name for debug symbol information.
  */
-void ILAsmOutDeclareVarName(char *name, ILUInt32 index);
+void ILAsmOutDeclareVarName(const char *name, ILUInt32 index);
 
 /*
  * Push into a nested local variable scope.
  */
-void ILAsmOutPushVarScope(char *name);
+void ILAsmOutPushVarScope(const char *name);
 
 /*
  * Pop out of a nested local variable scope.
  */
-void ILAsmOutPopVarScope(char *name);
+void ILAsmOutPopVarScope(const char *name);
 
 /*
  * Initialize the constant pool attached to the current class
@@ -306,13 +307,13 @@ void ILJavaAsmOutToken(ILInt32 opcode, ILUInt32 token);
  * Output a java instruction that takes a constant pool method or field 
  * argument.
  */
-void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, char *className, 
-					 char *refName, char *sigName);
+void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, const char *className, 
+					 const char *refName, const char *sigName);
 
 /*
  * Output a java instruction that takes a constant pool type argument.
  */
-void ILJavaAsmOutType(ILInt32 opcode, char *className);
+void ILJavaAsmOutType(ILInt32 opcode, const char *className);
 
 /*
  * Output a newarray java instruction.
@@ -328,7 +329,7 @@ void ILJavaAsmOutMultinewarray(ILInt32 opcode, ILType *type, ILInt64 dim);
  * Output a multinewarray java instruction.
  * The type (typeName) is a string in java form (i.e. "java/lang/Object").
  */
-void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, char *typeName, ILInt64 dim);
+void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, const char *typeName, ILInt64 dim);
 
 /* 
  * Set the table switch default label.
@@ -338,7 +339,7 @@ void ILJavaAsmOutTableSwitchDefaultRefInt(ILInt64 addr);
 /*
  * Set the table switch default label.
  */
-void ILJavaAsmOutTableSwitchDefaultRef(char *label);
+void ILJavaAsmOutTableSwitchDefaultRef(const char *label);
 
 /*
  * Start output of a java table switch statement.
@@ -353,7 +354,7 @@ void ILJavaAsmOutTableSwitchRefInt(ILInt64 addr);
 /*
  * Output a java table switch label reference within the current method.
  */
-void ILJavaAsmOutTableSwitchRef(char *label);
+void ILJavaAsmOutTableSwitchRef(const char *label);
 
 /*
  * End output of a java table switch statement.
@@ -368,7 +369,7 @@ void ILJavaAsmOutLookupSwitchDefaultRefInt(ILInt64 addr);
 /*
  * Set the lookup switch default label.
  */
-void ILJavaAsmOutLookupSwitchDefaultRef(char *label);
+void ILJavaAsmOutLookupSwitchDefaultRef(const char *label);
 
 /*
  * Start output of a java lookup switch statement.
@@ -383,7 +384,7 @@ void ILJavaAsmOutLookupSwitchRefInt(ILInt64 match, ILInt64 addr);
 /*
  * Output a java lookup switch label reference within the current method.
  */
-void ILJavaAsmOutLookupSwitchRef(ILInt64 match, char *label);
+void ILJavaAsmOutLookupSwitchRef(ILInt64 match, const char *label);
 
 /*
  * End output of a java lookup switch statement.

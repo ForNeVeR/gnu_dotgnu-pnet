@@ -31,7 +31,7 @@
 /*
  * Current context.
  */
-static char *functionName = "";
+static const char *functionName = "";
 static ILType *currentStruct = 0;
 static ILType *currentEnum = 0;
 static ILInt32 currentEnumValue = 0;
@@ -67,7 +67,7 @@ void CInhibitNodeRollback(void)
  */
 static ILNode *FixIdentifierNode(ILNode *node, int functionRef)
 {
-	char *name;
+	const char *name;
 
 	/* Bail out if the node is not an identifier */
 	if(!yyisa(node, ILNode_Identifier))
@@ -146,7 +146,7 @@ static void ProcessField(CDeclSpec spec, CDeclarator decl)
 /*
  * Report an invalid bit field type error.
  */
-static void BitFieldInvalidType(char *name, ILNode *node)
+static void BitFieldInvalidType(const char *name, ILNode *node)
 {
 	if(name)
 	{
@@ -162,7 +162,7 @@ static void BitFieldInvalidType(char *name, ILNode *node)
 /*
  * Report a zero-width bit field error.
  */
-static void BitFieldZeroWidth(char *name, ILNode *node)
+static void BitFieldZeroWidth(const char *name, ILNode *node)
 {
 	if(name)
 	{
@@ -178,7 +178,7 @@ static void BitFieldZeroWidth(char *name, ILNode *node)
 /*
  * Report bit field size warning.
  */
-static void BitFieldMaxSize(char *name, ILNode *node)
+static void BitFieldMaxSize(const char *name, ILNode *node)
 {
 	if(name)
 	{
@@ -339,7 +339,7 @@ static ILNode *BuildAssignInit(ILNode *var, ILNode *init, ILType *type)
 /*
  * Add a global initializer statement to the pending list.
  */
-static void AddInitializer(char *name, ILNode *node, ILType *type, ILNode *init)
+static void AddInitializer(const char *name, ILNode *node, ILType *type, ILNode *init)
 {
 	ILNode *stmt;
 
@@ -535,7 +535,8 @@ static void ProcessFunctionDeclaration(CDeclSpec spec, CDeclarator decl,
 			else if(!(decl.isKR))
 			{
 				/* Convert the K&R prototype into an ANSI prototype */
-				CScopeUpdateFunction(decl.name, C_SCDATA_FUNCTION_FORWARD,
+				CScopeUpdateFunction((void *)(decl.name),
+									 C_SCDATA_FUNCTION_FORWARD,
 									 decl.node, signature);
 				if(decl.attrs)
 				{
@@ -907,12 +908,12 @@ static void ProcessDeclaration(CDeclSpec spec, CDeclarator decl,
 static void ProcessUsingTypeDeclaration(ILType *type, ILNode *declNode)
 {
 	ILClass *classInfo;
-	char *name;
+	const char *name;
 	void *data;
 
 	/* Get the name of the type, without its namespace */
 	classInfo = ILTypeToClass(&CCCodeGen, type);
-	name = ILInternString((char *)ILClass_Name(classInfo), -1).string;
+	name = ILInternString(ILClass_Name(classInfo), -1).string;
 
 	/* See if we already have a declaration for this name */
 	data = CScopeLookupCurrent(name);
@@ -1110,7 +1111,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 	CLexIntConst		integer;
 	CLexFloatConst		real;
 	ILIntString			string;
-	char	           *name;
+	const char	       *name;
 	ILNode             *node;
 	ILType			   *type;
 	CDeclSpec			declSpec;
@@ -1124,7 +1125,7 @@ static ILInt32 EvaluateIntConstant(ILNode *expr)
 	struct
 	{
 		ILType		   *type;
-		char		   *id;
+		const char	   *id;
 		ILNode         *idNode;
 	}					catchInfo;
 	ILGCSpecifier		gcSpecifier;
@@ -3335,7 +3336,7 @@ ParamDeclarationList
 ParamDeclaration
 	: DeclarationSpecifiers ParamDeclaratorList ';'	{
 				CDeclSpec spec;
-				char *name;
+				const char *name;
 				ILNode *nameNode;
 				ILType *type;
 				ILNode_CDeclarator *decl;

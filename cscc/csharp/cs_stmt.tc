@@ -1645,7 +1645,7 @@ ILNode_EndsInReturnImpl(ILNode_Unsafe)
 ILNode_SemAnalysis(ILNode_Fixed)
 {
 	ILType *type;
-	char *name;
+	const char *name;
 	ILNode_MethodDeclaration *method;
 	ILNode *errorNode;
 	ILNode_ListIter iter;
@@ -1802,7 +1802,7 @@ ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 	ILType *type;
 	ILNode_ListIter iter;
 	ILNode *nameNode;
-	char *name;
+	const char *name;
 	ILScopeData *data;
 	ILNode_MethodDeclaration *method;
 	ILNode *errorNode;
@@ -1869,7 +1869,7 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 	CSSemValue value;
 	ILEvalValue evalValue;
 	ILType *type = CSSemType(node->type, info, &(node->type));
-	char *name;
+	const char *name;
 	ILScopeData *data;
 	ILNode_MethodDeclaration *method;
 	ILNode *errorNode;
@@ -1980,7 +1980,7 @@ ILNode_SemAnalysis(ILNode_ResourceDeclaration)
 	ILType *type;
 	ILNode_ListIter iter;
 	ILNode *nameNode;
-	char *name;
+	const char *name;
 	ILScopeData *data;
 	ILNode_MethodDeclaration *method;
 	ILNode *errorNode;

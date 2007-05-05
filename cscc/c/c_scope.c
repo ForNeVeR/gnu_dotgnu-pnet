@@ -27,13 +27,13 @@ extern	"C" {
 ILScope *CCurrentScope;
 ILScope *CGlobalScope;
 static ILIntString CurrNamespace = {"", 0};
-static char **usingScopes = 0;
+static const char **usingScopes = 0;
 static int numUsingScopes = 0;
 
 /*
  * Make a scope name for a struct or union.
  */
-static char *StructScopeName(const char *name, int structKind)
+static const char *StructScopeName(const char *name, int structKind)
 {
 	ILIntString str1;
 	ILIntString str2;
@@ -55,7 +55,7 @@ static char *StructScopeName(const char *name, int structKind)
 /*
  * Make a scope name for an enum.
  */
-static char *EnumScopeName(const char *name)
+static const char *EnumScopeName(const char *name)
 {
 	ILIntString str1;
 	ILIntString str2;
@@ -299,7 +299,7 @@ void CScopeAddUndeclared(const char *name)
 
 void CScopeUsingNamespace(const char *name)
 {
-	char *interned = (ILInternString((char *)name, -1)).string;
+	const char *interned = (ILInternString((char *)name, -1)).string;
 	int using;
 	ILScopeDeclareNamespace(CGlobalScope, interned);
 	for(using = 0; using < numUsingScopes; ++using)
@@ -310,7 +310,7 @@ void CScopeUsingNamespace(const char *name)
 			return;
 		}
 	}
-	if((usingScopes = (char **)ILRealloc
+	if((usingScopes = (const char **)ILRealloc
 			(usingScopes, (numUsingScopes + 1) * sizeof(char *))) == 0)
 	{
 		CCOutOfMemory();
@@ -318,7 +318,7 @@ void CScopeUsingNamespace(const char *name)
 	usingScopes[numUsingScopes++] = interned;
 }
 
-void CScopePushNamespace(char *name)
+void CScopePushNamespace(const char *name)
 {
 	if(CurrNamespace.len != 0)
 	{
@@ -333,7 +333,7 @@ void CScopePushNamespace(char *name)
 	}
 }
 
-void CScopePopNamespace(char *name)
+void CScopePopNamespace(const char *name)
 {
 	if(CurrNamespace.len == strlen(name))
 	{

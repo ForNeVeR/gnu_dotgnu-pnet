@@ -28,7 +28,7 @@ extern	"C" {
 /*
  * Create a new function and return its method block.
  */
-ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
+ILMethod *CFunctionCreate(ILGenInfo *info, const char *name, ILNode *node,
 						  CDeclSpec spec, CDeclarator decl,
 						  ILNode *declaredParams);
 

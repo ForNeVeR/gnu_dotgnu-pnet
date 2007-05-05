@@ -487,7 +487,7 @@ static int ILMethodIsPsuedoConstructor(ILMethod *method)
  * Convert a semantic value into an l-value or r-value if necessary.
  */
 static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
-							   CSSemValue value, char *name, ILNode *expr,
+							   CSSemValue value, const char *name, ILNode *expr,
 							   CSSemValue *exprSem)
 {
 	ILField *field;
@@ -817,7 +817,8 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 	return value;
 }
 
-static CSSemValue GetFullyQualifiedType(ILGenInfo *info, char * ns, char * name)
+static CSSemValue GetFullyQualifiedType(ILGenInfo *info, const char * ns,
+										const char * name)
 {
 	CSSemValue value;
 	ILScopeData * data = NULL;
@@ -1079,7 +1080,7 @@ ILNode_SemAnalysisType(ILNode_AttrIdentifier)
 	ILNode_UsingAlias *alias;
 	ILScopeData *data;
 	int savedState=info->inSemType;
-	char *name;
+	const char *name;
 
 	/* Resolve the simple name */
 	info->inSemType=1;
@@ -1150,7 +1151,7 @@ ILNode_SemAnalysis(ILNode_QualIdent)
 {
 	CSSemValue value;
 	CSSemValue value2;
-	char *name;
+	const char *name;
 
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysisType(node->left, info, &(node->left));
@@ -1171,8 +1172,8 @@ ILNode_SemAnalysisType(ILNode_QualIdent)
 {
 	CSSemValue value;
 	CSSemValue value2;
-	char *name;
-	char *ns;
+	const char *name;
+	const char *ns;
 	int savedState = info->inSemType;
 	
 	ns = ILQualIdentName(node->left, 0);
@@ -1217,7 +1218,7 @@ ILNode_SemAnalysisType(ILNode_AttrQualIdent)
 {
 	CSSemValue value;
 	CSSemValue value2;
-	char *name;
+	const char *name;
 	int savedState = info->inSemType;
 
 	/* Restrict lookups for types only (ie namespaces , types, nested types */
@@ -1275,7 +1276,7 @@ ILNode_SemAnalysis(ILNode_MemberAccess)
 	CSSemValue value;
 	CSSemValue value2;
 	CSSemValue nsvalue;
-	char *name;
+	const char *name;
 	ILEvalValue evalue;
 	ILNode *save1;
 
@@ -1388,8 +1389,8 @@ ILNode_SemAnalysisType(ILNode_MemberAccess)
 {
 	CSSemValue value;
 	int savedState = info->inSemType;
-	char *name;
-	char *ns;
+	const char *name;
+	const char *ns;
 	
 	/* convert the first subexpression into a namespace */
 	ns = ILMemberAccessName(node->expr1);
@@ -1427,7 +1428,7 @@ ILNode_SemAnalysis(ILNode_BaseAccess)
 	ILNode_MethodDeclaration *caller;
 	ILClass *classInfo;
 	ILNode *thisExpr;
-	char *name;
+	const char *name;
 
 	/* Bail out if "base" is used within a static method */
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
@@ -1635,7 +1636,7 @@ ILNode_SemAnalysis(ILNode_DerefField)
 {
 	CSSemValue value;
 	ILType *type;
-	char *name;
+	const char *name;
 	ILClass *classInfo;
 	ILField *field;
 

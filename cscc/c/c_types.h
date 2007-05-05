@@ -426,7 +426,7 @@ char *CTypeToName(ILGenInfo *info, ILType *type);
  * name into a C type reference.  Returns NULL if it isn't
  * possible to resolve the identifier.
  */
-ILType *CTypeFromCSharp(ILGenInfo *info, char *assembly, ILNode *node);
+ILType *CTypeFromCSharp(ILGenInfo *info, const char *assembly, ILNode *node);
 
 /*
  * Mark a type as needing to be output at code generation time.

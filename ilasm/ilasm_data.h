@@ -43,13 +43,13 @@ void ILAsmDataSetTLS(void);
 /*
  * Set a label within the current output data section.
  */
-void ILAsmDataSetLabel(char *name);
+void ILAsmDataSetLabel(const char *name);
 
 /*
  * Resolve a data section label to a data RVA.
  * Returns '-1' if label is not found
  */
-ILInt64 ILAsmDataResolveLabel(char *name);
+ILInt64 ILAsmDataResolveLabel(const char *name);
 
 /*
  * Pad the data section with a number of zero bytes.

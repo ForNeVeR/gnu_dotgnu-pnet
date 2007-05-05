@@ -549,7 +549,7 @@ static ILType *CombineArrayType(ILType *elemType, ILType *shell, int cont)
 /*
  * Set the originator for the current assembly definition or reference.
  */
-static void SetOriginator(char *orig, int len, int fullOriginator)
+static void SetOriginator(const char *orig, int len, int fullOriginator)
 {
 	if(ILAsmCurrAssemblyRef)
 	{
@@ -583,7 +583,7 @@ static void SetOriginator(char *orig, int len, int fullOriginator)
 
 typedef struct _tagFieldDataEntry
 {
-	char    *name;
+	const char *name;
 	ILField *field;
 	char *filename;
 	long linenum;
@@ -598,7 +598,7 @@ typedef struct _tagFieldDataList
 
 static FieldDataList *unresolvedFieldList = 0;
 
-static void RegisterFieldRvaLabel(char * name, ILField * field)
+static void RegisterFieldRvaLabel(const char * name, ILField * field)
 {
 	FieldDataEntry *entry;
 	
@@ -685,14 +685,14 @@ static void FinishDataLabels()
 		ILInt64		flags;
 		ILIntString	nativeType;
 		ILInt64		pinvokeAttrs;
-		char	   *name1;
-		char	   *name2;
+		const char *name1;
+		const char *name2;
 	}				fieldAttrs;
 	struct {
 		ILInt64		flags;
 		ILInt64		pinvokeAttrs;
-		char	   *name1;
-		char	   *name2;
+		const char *name1;
+		const char *name2;
 	}				methodAttrs;
 	ILInt32			opcode;
 	struct {
@@ -725,12 +725,12 @@ static void FinishDataLabels()
 	ILProgramItem  *customType;
 	struct
 	{
-		char	   *start;
-		char	   *end;
+		const char *start;
+		const char *end;
 	}				scope;
 	struct
 	{
-		char       *label;
+		const char *label;
 		ILInt64     offset;
 	}				datalabel;
 	ILAsmOutException *exception;

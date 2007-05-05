@@ -55,13 +55,13 @@
 
 %node ILNode_JPackage ILNode_Dummy =
 {
-	char *name;
+	const char *name;
 	%nocreate ILNode *import={0};
 }
 
 %node ILNode_JImport ILNode_Dummy =
 {
-	char *name;
+	const char *name;
 	%nocreate ILNode *next={0};
 }
 %node ILNode_JImportType ILNode_JImport

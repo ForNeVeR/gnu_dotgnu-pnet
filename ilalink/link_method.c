@@ -924,7 +924,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 	ILType *signature;
 	ILMethod *method;
 	ILField *field;
-	char *findAliasFor;
+	const char *findAliasFor;
 	ILLibrary *findLibrary;
 	int findFlags;
 	ILMember *findMember;

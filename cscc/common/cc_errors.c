@@ -51,7 +51,7 @@ int CCHaveWarnings = 0;
 /*
  * Print an error or warning message to stderr.
  */
-static void PrintMessage(char *filename, unsigned long linenum, int warning,
+static void PrintMessage(const char *filename, unsigned long linenum, int warning,
 						 const char *format, VA_LIST va)
 {
 	/* Print the filename and line number information */
@@ -88,7 +88,7 @@ void CCError(const char *format, ...)
 	CCHaveErrors = 1;
 }
 
-void CCErrorOnLine(char *filename, unsigned long linenum,
+void CCErrorOnLine(const char *filename, unsigned long linenum,
 				   const char *format, ...)
 {
 	VA_START;
@@ -174,7 +174,7 @@ void CCTypedWarning(const char *type, const char *format, ...)
 	}
 }
 
-void CCWarningOnLine(char *filename, unsigned long linenum,
+void CCWarningOnLine(const char *filename, unsigned long linenum,
 				     const char *format, ...)
 {
 	if(!inhibit_warnings)
@@ -190,7 +190,7 @@ void CCWarningOnLine(char *filename, unsigned long linenum,
 	}
 }
 
-void CCTypedWarningOnLine(char *filename, unsigned long linenum,
+void CCTypedWarningOnLine(const char *filename, unsigned long linenum,
 				     	  const char *type, const char *format, ...)
 {
 	if(WarningEnabled(type))

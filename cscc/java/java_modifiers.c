@@ -24,7 +24,7 @@
 /*
  * Report errors for each modifier in a mask.
  */
-static void ModifierError(char *filename, long linenum,
+static void ModifierError(const char *filename, long linenum,
 						  ILUInt32 modifiers, const char *msg)
 {
 	if((modifiers & JAVA_MODIFIER_PUBLIC) != 0)
@@ -100,7 +100,8 @@ static ILUInt32 ValidateAccess(ILNode *node, ILUInt32 modifiers)
 	}
 }
 
-static void JavaModifiersUsedTwice(char *filename, long linenum, ILUInt32 modifiers)
+static void JavaModifiersUsedTwice(const char *filename, long linenum,
+								   ILUInt32 modifiers)
 {
 	ModifierError(filename, linenum,
 				  modifiers, "`%s' specified multiple times");

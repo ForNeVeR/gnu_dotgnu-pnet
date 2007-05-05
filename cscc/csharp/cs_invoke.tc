@@ -78,7 +78,7 @@ ILType *CSItemCoerceArgs(ILGenInfo *info, ILProgramItem *item,
  * Report an error message for a failed item signature match,
  * listing the candidates for the call.
  */
-void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
+void CSItemCandidateError(ILNode *node, const char *itemName, int isCtor,
 						  void *group, CSEvalArg *args, int numArgs);
 
 %}
@@ -179,7 +179,7 @@ ILNode_SemAnalysis(ILNode_Argument)
 
 %{
 
-void CSItemCandidateError(ILNode *node, char *itemName, int isCtor,
+void CSItemCandidateError(ILNode *node, const char *itemName, int isCtor,
 						  void *group, CSEvalArg *args, int numArgs)
 {
 	unsigned long num;
@@ -409,7 +409,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 	CSEvalArg *args;
 	int numArgs;
 	unsigned long itemNum;
-	char *itemName;
+	const char *itemName;
 	ILNode_MethodDeclaration *caller;
 	int isCtor = 0;
 	ILNode_MemberAccess *savedNode = NULL;

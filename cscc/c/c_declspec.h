@@ -140,13 +140,13 @@ CDeclSpec CDeclSpecFinalize(CDeclSpec spec, ILNode *node,
  */
 typedef struct
 {
-	char    *name;			/* Name represented by the declarator */
-	ILNode  *node;			/* Node that defines the name, for errors */
-	ILType  *type;			/* Type template for the declarator */
-	ILType **typeHole;		/* The hole in the template for the base type */
-	int		 isKR;			/* Non-zero if a K&R-style prototype */
-	ILNode  *params;		/* Declared function parameters */
-	ILNode  *attrs;			/* Declared function attributes */
+	const char *name;		/* Name represented by the declarator */
+	ILNode	   *node;		/* Node that defines the name, for errors */
+	ILType	   *type;		/* Type template for the declarator */
+	ILType	  **typeHole;	/* The hole in the template for the base type */
+	int			isKR;		/* Non-zero if a K&R-style prototype */
+	ILNode	   *params;		/* Declared function parameters */
+	ILNode	   *attrs;		/* Declared function attributes */
 
 } CDeclarator;
 

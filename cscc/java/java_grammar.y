@@ -235,7 +235,7 @@ static void InitGlobalPackage()
  * declaration for a particular package.
  */
  
-static int HaveImported(char *name)
+static int HaveImported(const char *name)
 {
 	ILNode_JImport *import = (ILNode_JImport*)CurrPackageNode->import;
 	while(import != 0)
@@ -465,7 +465,7 @@ static int ClassNameSame(ILNode *name)
 	}real;
 	ILUInt16 charValue;
 	ILIntString string;
-	char		*name;
+	const char	*name;
 	ILUInt32 count;
 	ILUInt32 mask;
 	ILNode	*node;

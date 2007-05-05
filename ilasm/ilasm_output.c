@@ -59,8 +59,8 @@ static int			  initLocals = 0;
 static ILUInt32		  localIndex = 0;
 typedef struct _tagLocalBlock
 {
-	char *blockStart;
-	char *blockEnd;
+	const char *blockStart;
+	const char *blockEnd;
 	struct _tagLocalBlock *outer;
 	struct _tagLocalBlock *next;
 
@@ -68,7 +68,7 @@ typedef struct _tagLocalBlock
 typedef struct _tagLocalInfo
 {
 	LocalBlock *block;
-	char *name;
+	const char *name;
 	ILUInt32 index;
 	int isParam;
 	struct _tagLocalInfo *next;
@@ -86,8 +86,8 @@ static ILUInt32 ssaStartOffset = 0;
 static ILUInt32 switchStartOffset = 0;
 static ILUInt32 switchHighOffset = 0;
 static ILUInt32 switchNPairsOffset = 0;
-static char* defaultTableSwitchLabel = 0;
-static char* defaultLookupSwitchLabel = 0;
+static const char* defaultTableSwitchLabel = 0;
+static const char* defaultLookupSwitchLabel = 0;
 
 /*
  * Output a single byte to the buffer.
@@ -133,13 +133,13 @@ typedef struct _tagLabelRef
 } LabelRef;
 typedef struct _tagLabelInfo
 {
-	char         *name;
+	const char	 *name;
 	ILUInt32	  address;
 	int			  defined : 1;
 	int			  tokenFixup : 1;
 	LabelRef     *refs;
 	struct _tagLabelInfo *next;
-	char		 *debugFilename;
+	const char	 *debugFilename;
 	ILUInt32	  debugLine;
 	ILUInt32	  debugColumn;
 
@@ -575,7 +575,7 @@ void ILAsmOutDouble(unsigned char *bytes)
 /*
  * Look up a label or create a new one.
  */
-static LabelInfo *GetLabel(char *name)
+static LabelInfo *GetLabel(const char *name)
 {
 	LabelInfo *label = labels;
 	while(label != 0)
@@ -625,7 +625,7 @@ void ILAsmOutToken(ILInt32 opcode, ILUInt32 token)
 		/* We need to record this position in the code because
 		   it will need to be relocated when references are
 		   compacted at the end of the assembly process */
-		char *label = ILAsmOutUniqueLabel();
+		const char *label = ILAsmOutUniqueLabel();
 		LabelInfo *info = GetLabel(label);
 		info->tokenFixup = 1;
 	}
@@ -650,7 +650,7 @@ void ILAsmOutString(ILIntString interned)
 /*
  * Assemble a branch instruction.
  */
-static void Branch(ILInt32 opcode, char *name)
+static void Branch(ILInt32 opcode, const char *name)
 {
 	LabelInfo *labelInfo;
 	long delta;
@@ -966,7 +966,7 @@ void ILAsmOutBranchInt(ILInt32 opcode, ILInt64 addr)
 	Branch(opcode, ILAsmOutIntToName(addr));
 }
 
-void ILAsmOutBranch(ILInt32 opcode, char *label)
+void ILAsmOutBranch(ILInt32 opcode, const char *label)
 {
 	Branch(opcode, label);
 }
@@ -974,7 +974,7 @@ void ILAsmOutBranch(ILInt32 opcode, char *label)
 /*
  * Output a switch label reference.
  */
-static void SwitchRef(char *name)
+static void SwitchRef(const char *name)
 {
 	LabelInfo *labelInfo;
 	LabelRef *ref;
@@ -1023,7 +1023,7 @@ void ILAsmOutSwitchRefInt(ILInt64 addr)
 	SwitchRef(ILAsmOutIntToName(addr));
 }
 
-void ILAsmOutSwitchRef(char *label)
+void ILAsmOutSwitchRef(const char *label)
 {
 	SwitchRef(label);
 }
@@ -1193,7 +1193,7 @@ static void Squash(LabelRef *ref)
 	}
 }
 
-void ILAsmOutLabel(char *label)
+void ILAsmOutLabel(const char *label)
 {
 	LabelInfo *labelInfo = GetLabel(label);
 	LabelRef *ref;
@@ -1260,7 +1260,7 @@ void ILAsmOutLabel(char *label)
 	}
 }
 
-char *ILAsmOutIntToName(ILInt64 label)
+const char *ILAsmOutIntToName(ILInt64 label)
 {
 	char numbuf[32];
 	if(label >= 0 && label <= (ILInt64)IL_MAX_INT32)
@@ -1276,18 +1276,18 @@ char *ILAsmOutIntToName(ILInt64 label)
 	return (ILInternString(numbuf, -1)).string;
 }
 
-char *ILAsmOutIntLabel(ILInt64 label)
+const char *ILAsmOutIntLabel(ILInt64 label)
 {
-	char *name = ILAsmOutIntToName(label);
+	const char *name = ILAsmOutIntToName(label);
 	ILAsmOutLabel(name);
 	return name;
 }
 
-char *ILAsmOutUniqueLabel(void)
+const char *ILAsmOutUniqueLabel(void)
 {
 	static unsigned long unique = 0;
 	char numbuf[32];
-	char *name;
+	const char *name;
 	sprintf(numbuf, ".?$.%lu", unique);
 	++unique;
 	name = (ILInternString(numbuf, -1)).string;
@@ -1295,10 +1295,10 @@ char *ILAsmOutUniqueLabel(void)
 	return name;
 }
 
-void ILAsmOutDebugLine(char *filename, ILUInt32 line, ILUInt32 column)
+void ILAsmOutDebugLine(const char *filename, ILUInt32 line, ILUInt32 column)
 {
 	/* Output a unique label at this position */
-	char *label = ILAsmOutUniqueLabel();
+	const char *label = ILAsmOutUniqueLabel();
 	LabelInfo *info = GetLabel(label);
 
 	/* Attach the debug information to the label */
@@ -1348,7 +1348,7 @@ void ILAsmOutZeroInit(void)
 /*
  * Add a local variable name and index to the current method.
  */
-static void AddLocalName(char *name, ILUInt32 index, int isParam)
+static void AddLocalName(const char *name, ILUInt32 index, int isParam)
 {
 	LocalInfo *local = (LocalInfo *)ILMalloc(sizeof(LocalInfo));
 	if(!local)
@@ -1414,7 +1414,7 @@ void ILAsmOutAddParams(ILAsmParamInfo *vars, ILUInt32 callConv)
 	}
 }
 
-ILUInt32 ILAsmOutLookupVar(char *name)
+ILUInt32 ILAsmOutLookupVar(const char *name)
 {
 	LocalInfo *local = localNames;
 	while(local != 0)
@@ -1432,8 +1432,9 @@ ILUInt32 ILAsmOutLookupVar(char *name)
 }
 
 ILAsmOutException *ILAsmOutMakeException(ILUInt32 flags, ILClass *classInfo,
-									     char *filterLabel, char *handlerStart,
-									     char *handlerEnd)
+									     const char *filterLabel,
+										 const char *handlerStart,
+									     const char *handlerEnd)
 {
 	ILAsmOutException *exception;
 
@@ -1464,7 +1465,7 @@ ILAsmOutException *ILAsmOutMakeException(ILUInt32 flags, ILClass *classInfo,
 	return exception;
 }
 
-void ILAsmOutAddTryBlock(char *blockStart, char *blockEnd,
+void ILAsmOutAddTryBlock(const char *blockStart, const char *blockEnd,
 						 ILAsmOutException *handlers)
 {
 	ILAsmOutException *current;
@@ -1681,7 +1682,7 @@ static int FinishLabels(void)
 static void OutputDebugInfo(ILMethod *method)
 {
 	unsigned char buf[256];
-	char *prevFilename = 0;
+	const char *prevFilename = 0;
 	LabelInfo *label = labels;
 	unsigned long len = 0;
 	int type;
@@ -2211,12 +2212,12 @@ void ILAsmOutAddResource(const char *name, FILE *stream)
 	}
 }
 
-void ILAsmOutDeclareVarName(char *name, ILUInt32 index)
+void ILAsmOutDeclareVarName(const char *name, ILUInt32 index)
 {
 	AddLocalName(name, index, 0);
 }
 
-void ILAsmOutPushVarScope(char *name)
+void ILAsmOutPushVarScope(const char *name)
 {
 	LocalBlock *block = (LocalBlock *)ILMalloc(sizeof(LocalBlock));
 	if(!block)
@@ -2231,7 +2232,7 @@ void ILAsmOutPushVarScope(char *name)
 	localCurrentBlock = block;
 }
 
-void ILAsmOutPopVarScope(char *name)
+void ILAsmOutPopVarScope(const char *name)
 {
 	if(localCurrentBlock)
 	{
@@ -2406,8 +2407,8 @@ void ILJavaAsmOutToken(ILInt32 opcode, ILUInt32 token)
 #endif
 }
 
-void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, char *className, 
-					 char *refName, char *sigName)
+void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, const char *className,
+					 const char *refName, const char *sigName)
 {
 #ifdef IL_CONFIG_JAVA
 	int index = 
@@ -2421,7 +2422,7 @@ void ILJavaAsmOutRef(ILInt32 opcode, int isMethod, char *className,
 #endif
 }
 
-void ILJavaAsmOutType(ILInt32 opcode, char *className)
+void ILJavaAsmOutType(ILInt32 opcode, const char *className)
 {
 #ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetClassFromName(ILAsmWriter, ILAsmClass, className);
@@ -2450,7 +2451,7 @@ void ILJavaAsmOutMultinewarray(ILInt32 opcode, ILType *type, ILInt64 dim)
 #endif
 }
 
-void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, char *typeName, ILInt64 dim)
+void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, const char *typeName, ILInt64 dim)
 {
 #ifdef IL_CONFIG_JAVA
 	int index = ILJavaSetClassFromName(ILAsmWriter, ILAsmClass, typeName);
@@ -2465,7 +2466,7 @@ void ILJavaAsmOutMultinewarrayFromName(ILInt32 opcode, char *typeName, ILInt64 d
 /*
  * Output a switch label reference in java.
  */
-static void JavaSwitchRef(char *name)
+static void JavaSwitchRef(const char *name)
 {
 	LabelInfo *labelInfo;
 	LabelRef *ref;
@@ -2504,7 +2505,7 @@ void ILJavaAsmOutTableSwitchDefaultRefInt(ILInt64 addr)
 	defaultTableSwitchLabel = ILAsmOutIntToName(addr);
 }
 
-void ILJavaAsmOutTableSwitchDefaultRef(char *label)
+void ILJavaAsmOutTableSwitchDefaultRef(const char *label)
 {
 	defaultTableSwitchLabel = label;
 }
@@ -2542,7 +2543,7 @@ void ILJavaAsmOutTableSwitchRefInt(ILInt64 addr)
 	JavaSwitchRef(ILAsmOutIntToName(addr));
 }
 
-void ILJavaAsmOutTableSwitchRef(char *label)
+void ILJavaAsmOutTableSwitchRef(const char *label)
 {
 	JavaSwitchRef(label);
 }
@@ -2564,7 +2565,7 @@ void ILJavaAsmOutLookupSwitchDefaultRefInt(ILInt64 addr)
 	defaultLookupSwitchLabel = ILAsmOutIntToName(addr);
 }
 
-void ILJavaAsmOutLookupSwitchDefaultRef(char *label)
+void ILJavaAsmOutLookupSwitchDefaultRef(const char *label)
 {
 	defaultLookupSwitchLabel = label;
 }
@@ -2596,7 +2597,7 @@ void ILJavaAsmOutLookupSwitchRefInt(ILInt64 match, ILInt64 addr)
 	ILJavaAsmOutLookupSwitchRef(match, ILAsmOutIntToName(addr));
 }
 
-void ILJavaAsmOutLookupSwitchRef(ILInt64 match, char *label)
+void ILJavaAsmOutLookupSwitchRef(ILInt64 match, const char *label)
 {
 	OUT_BYTE(match >> 24);
 	OUT_BYTE(match >> 16);

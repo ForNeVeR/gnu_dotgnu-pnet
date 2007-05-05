@@ -429,8 +429,8 @@ static int ILMethodIsPsuedoConstructor(ILMethod *method)
  * Convert a semantic value into an l-value or r-value if necessary.
  */
 static JavaSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
-							   JavaSemValue value, char *name, ILNode *expr,
-							   JavaSemValue *exprSem)
+								 JavaSemValue value, const char *name,
+								 ILNode *expr, JavaSemValue *exprSem)
 {
 	ILNode *constNode;
 	ILMethod *method;
@@ -671,7 +671,7 @@ ILNode_JSemAnalysis(ILNode_QualIdent)
 {
 	JavaSemValue value;
 	JavaSemValue value2;
-	char *name;
+	const char *name;
 
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_JSemAnalysis(node->left, info, &(node->left));
@@ -692,7 +692,7 @@ ILNode_JSemAnalysis(ILNode_MemberAccess)
 {
 	JavaSemValue value;
 	JavaSemValue value2;
-	char *name;
+	const char *name;
 	ILEvalValue evalue;
 
 	/* Get the semantic value for the left part of the identifier */
@@ -950,7 +950,7 @@ ILNode_JSemAnalysis(ILNode_BaseAccess)
 	ILNode_MethodDeclaration *caller;
 	ILClass *classInfo;
 	ILNode *thisExpr;
-	char *name;
+	const char *name;
 
 	/* Bail out if "base" is used within a static method */
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);

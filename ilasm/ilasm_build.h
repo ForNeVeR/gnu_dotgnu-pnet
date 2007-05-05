@@ -44,7 +44,7 @@ struct _tagILAsmParamInfo
 	ILType		   *type;
 	ILIntString		nativeType;
 	ILUInt32		parameterAttrs;
-	char		   *name;
+	const char	   *name;
 	ILAsmParamInfo *next;
 };
 
@@ -227,7 +227,7 @@ void ILAsmAddSemantics(int type, ILToken token);
 /*
  * Process a debug line within the input stream.
  */
-void ILAsmDebugLine(ILUInt32 line, ILUInt32 column, char *filename);
+void ILAsmDebugLine(ILUInt32 line, ILUInt32 column, const char *filename);
 
 /*
  * Get a reference to a standard class within the "System" namespace.

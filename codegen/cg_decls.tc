@@ -292,7 +292,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 ILNode_GenDiscard(ILNode_ProxyDeclaration)
 {
 	FILE *outstream = info->asmOutput;
-	char *name;
+	const char *name;
 	ILType *signature = ILMethod_Signature(node->interfaceMethod);
 	unsigned long numParams;
 	unsigned long param;

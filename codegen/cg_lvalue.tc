@@ -1542,7 +1542,7 @@ ILNode_GenRef(ILNode_ArrayAccess)
 /*
  * Create a simple identifier node.  "name" must be intern'ed.
  */
-ILNode *ILQualIdentSimple(char *name);
+ILNode *ILQualIdentSimple(const char *name);
 
 /*
  * Create a two-name identifier node.  The names do not need
@@ -1556,7 +1556,7 @@ ILNode *ILQualIdentTwo(const char *name1, const char *name2);
  * If "asmForm" is non-zero, then quote the name to put it into
  * a form suitable for assembly code.
  */
-char *ILQualIdentName(ILNode *node, int asmForm);
+const char *ILQualIdentName(ILNode *node, int asmForm);
 
 /*
  *  Very similar to ILQualIdentName, but only recognizes
@@ -1565,12 +1565,12 @@ char *ILQualIdentName(ILNode *node, int asmForm);
  *
  *  Not sensible, but documented.  -JPS
  */
-char *ILMemberAccessName(ILNode *node);
+const char *ILMemberAccessName(ILNode *node);
 
 /*
  * Append two qualified identifier strings, with '.' between them.
  */
-char *ILQualIdentAppend(char *name1, char *name2);
+const char *ILQualIdentAppend(const char *name1, const char *name2);
 
 /*
  * Determine if a node is a qualified identifier.
@@ -1584,20 +1584,20 @@ int ILIsQualIdent(ILNode *node);
  */
 %end %{
 
-ILNode *ILQualIdentSimple(char *name)
+ILNode *ILQualIdentSimple(const char *name)
 {
 	return ILNode_Identifier_create(name);
 }
 
 ILNode *ILQualIdentTwo(const char *name1, const char *name2)
 {
-	char *intern1 = ILInternString((char *)name1, -1).string;
-	char *intern2 = ILInternString((char *)name2, -1).string;
+	const char *intern1 = ILInternString((char *)name1, -1).string;
+	const char *intern2 = ILInternString((char *)name2, -1).string;
 	return ILNode_QualIdent_create(ILNode_Identifier_create(intern1),
 								   ILNode_Identifier_create(intern2));
 }
 
-char *ILQualIdentName(ILNode *node, int asmForm)
+const char *ILQualIdentName(ILNode *node, int asmForm)
 {
 	if(!node)
 	{
@@ -1633,7 +1633,7 @@ char *ILQualIdentName(ILNode *node, int asmForm)
 	}
 }
 
-char *ILMemberAccessName(ILNode *node)
+const char *ILMemberAccessName(ILNode *node)
 {
 	if (!node) return 0;
 
@@ -1654,7 +1654,7 @@ char *ILMemberAccessName(ILNode *node)
 	}
 }
 
-char *ILQualIdentAppend(char *name1, char *name2)
+const char *ILQualIdentAppend(const char *name1, const char *name2)
 {
 	ILIntString str1;
 	ILIntString str2;

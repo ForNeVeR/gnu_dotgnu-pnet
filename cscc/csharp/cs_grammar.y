@@ -134,7 +134,7 @@ static void ResetState(void)
  * Determine if the current namespace already has a "using"
  * declaration for a particular namespace.
  */
-static int HaveUsingNamespace(char *name)
+static int HaveUsingNamespace(const char *name)
 {
 	ILNode_UsingNamespace *using = CurrNamespaceNode->using;
 	while(using != 0)
@@ -355,7 +355,7 @@ static int ClassNameSame(ILNode *name)
  */
 static void ModifyAttrName(ILNode *node,int force)
 {
-	char *name;
+	const char *name;
 	int namelen;
 	ILNode_Identifier *ident;
 	
@@ -392,7 +392,7 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 	ILNode *attr;
 	ILNode_List *args;
 	ILEvalValue evalValue;
-	char* prefix=(prefixName) ? ILQualIdentName(prefixName,0) : NULL;
+	const char* prefix=(prefixName) ? ILQualIdentName(prefixName,0) : NULL;
 	int i;
 
 	const char* possibleWays[] = {"IndexerName", "IndexerNameAttribute",
@@ -708,14 +708,14 @@ static void CreateEventMethods(ILNode_EventDeclaration *event)
 	ILDecimal  			decimal;
 	ILUInt16			charValue;
 	ILIntString			string;
-	char			   *name;
+	const char		   *name;
 	ILUInt32			count;
 	ILUInt32			mask;
 	ILNode			   *node;
 	struct
 	{
 		ILNode		   *type;
-		char		   *id;
+		const char	   *id;
 		ILNode         *idNode;
 	} catchinfo;
 	struct

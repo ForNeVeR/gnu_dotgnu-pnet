@@ -143,7 +143,7 @@ static void reset(void);
 int ILAsmMain(int argc, char *argv[], FILE *newStdin)
 {
 	char *progname = argv[0];
-	char *outputFile = 0;
+	const char *outputFile = 0;
 	int format = -1;
 	int jvmMode = 0;
 	int debug = 0;

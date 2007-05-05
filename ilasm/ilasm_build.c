@@ -1084,7 +1084,7 @@ void ILAsmAddSemantics(int type, ILToken token)
 	}
 }
 
-void ILAsmDebugLine(ILUInt32 line, ILUInt32 column, char *filename)
+void ILAsmDebugLine(ILUInt32 line, ILUInt32 column, const char *filename)
 {
 	if(ILAsmDebugMode)
 	{

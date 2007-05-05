@@ -709,9 +709,9 @@ static void Message(CCPreProcLine *line, const char *msg1, const char *msg2)
 /*
  * Skip white space on a directive line.
  */
-static void SkipWhite(char **_line)
+static void SkipWhite(const char **_line)
 {
-	char *line = (*_line);
+	const char *line = (*_line);
 	while(*line == ' ' || *line == '\t' || *line == '\f' ||
 	      *line == '\v' || *line == CTRL_Z)
 	{
@@ -723,12 +723,12 @@ static void SkipWhite(char **_line)
 /*
  * Parse an identifier from a directive line.
  */
-static char *ParseIdentifier(CCPreProc *preproc, CCPreProcLine *info,
-							 char **_line)
+static const char *ParseIdentifier(CCPreProc *preproc, CCPreProcLine *info,
+							 const char **_line)
 {
-	char *line;
+	const char *line;
 	int len;
-	char *identifier;
+	const char *identifier;
 
 	/* Skip white space before the identifier */
 	SkipWhite(_line);
@@ -782,7 +782,7 @@ static char *ParseIdentifier(CCPreProc *preproc, CCPreProcLine *info,
 typedef struct
 {
 	int			type;
-	char	   *name;
+	const char *name;
 
 } CCPreProcToken;
 #define	CSPP_TOKEN_END			0
@@ -801,9 +801,9 @@ typedef struct
 /*
  * Get the next token from a directive line.
  */
-static void NextToken(char **_line, CCPreProcToken *token)
+static void NextToken(const char **_line, CCPreProcToken *token)
 {
-	char *line;
+	const char *line;
 	int len;
 
 	/* Skip white space before the token */
@@ -897,13 +897,13 @@ static void NextToken(char **_line, CCPreProcToken *token)
 /*
  * Forward declaration.
  */
-static int ParseOrExpression(CCPreProc *preproc, char **line,
+static int ParseOrExpression(CCPreProc *preproc, const char **line,
 						     CCPreProcToken *token);
 
 /*
  * Parse a primary expression.
  */
-static int ParsePrimaryExpression(CCPreProc *preproc, char **line,
+static int ParsePrimaryExpression(CCPreProc *preproc, const char **line,
 								  CCPreProcToken *token)
 {
 	int result;
@@ -947,7 +947,7 @@ static int ParsePrimaryExpression(CCPreProc *preproc, char **line,
 /*
  * Parse a unary expression.
  */
-static int ParseUnaryExpression(CCPreProc *preproc, char **line,
+static int ParseUnaryExpression(CCPreProc *preproc, const char **line,
 								CCPreProcToken *token)
 {
 	/* Negated or normal sub-expression? */
@@ -965,7 +965,7 @@ static int ParseUnaryExpression(CCPreProc *preproc, char **line,
 /*
  * Parse an equality expression.
  */
-static int ParseEqualityExpression(CCPreProc *preproc, char **line,
+static int ParseEqualityExpression(CCPreProc *preproc, const char **line,
 								   CCPreProcToken *token)
 {
 	int result1, result2, iseq;
@@ -997,7 +997,7 @@ static int ParseEqualityExpression(CCPreProc *preproc, char **line,
 /*
  * Parse an AND expression.
  */
-static int ParseAndExpression(CCPreProc *preproc, char **line,
+static int ParseAndExpression(CCPreProc *preproc, const char **line,
 							  CCPreProcToken *token)
 {
 	int result1, result2;
@@ -1020,7 +1020,7 @@ static int ParseAndExpression(CCPreProc *preproc, char **line,
 /*
  * Parse an OR expression.
  */
-static int ParseOrExpression(CCPreProc *preproc, char **line,
+static int ParseOrExpression(CCPreProc *preproc, const char **line,
 							 CCPreProcToken *token)
 {
 	int result1, result2;
@@ -1043,7 +1043,8 @@ static int ParseOrExpression(CCPreProc *preproc, char **line,
 /*
  * Parse an expression.  Returns 0 or 1 for the value of the expression.
  */
-static int ParseExpression(CCPreProc *preproc, CCPreProcLine *info, char **line)
+static int ParseExpression(CCPreProc *preproc, CCPreProcLine *info,
+						   const char **line)
 {
 	CCPreProcToken token;
 	int result;
@@ -1072,7 +1073,8 @@ static int ParseExpression(CCPreProc *preproc, CCPreProcLine *info, char **line)
  * Determine if we are at the end of a directive line.
  * If not, report an error.
  */
-static void CheckAtEnd(CCPreProc *preproc, CCPreProcLine *info, char **line)
+static void CheckAtEnd(CCPreProc *preproc, CCPreProcLine *info,
+					   const char **line)
 {
 	SkipWhite(line);
 	if((*(*line)) != '\n')
@@ -1089,8 +1091,8 @@ static int RefillLineBuffer(CCPreProc *preproc)
 {
 	CCPreProcLine *lines;
 	int line, cond;
-	char *dirname;
-	char *symbol;
+	const char *dirname;
+	const char *symbol;
 	CCPreProcScope *scope;
 	unsigned long num;
 	int len;

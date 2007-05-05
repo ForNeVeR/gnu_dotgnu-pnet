@@ -2280,10 +2280,10 @@ char *CTypeToName(ILGenInfo *info, ILType *type)
 	return name;
 }
 
-ILType *CTypeFromCSharp(ILGenInfo *info, char *assembly, ILNode *node)
+ILType *CTypeFromCSharp(ILGenInfo *info, const char *assembly, ILNode *node)
 {
-	char *name;
-	char *namespace;
+	const char *name;
+	const char *namespace;
 	ILType *type;
 	ILClass *classInfo;
 	const char *assemblyName;

@@ -34,8 +34,8 @@ extern	"C" {
  */
 typedef struct
 {
-	char   *string;
-	int		len;
+	const char *string;
+	int			len;
 
 } ILIntString;
 
@@ -60,8 +60,25 @@ ILIntString ILInternAppendedString(ILIntString str1, ILIntString str2);
  * Concatenate three internalised strings and internalise the result.
  */
 ILIntString ILInternStringConcat3(ILIntString str1,
-				  ILIntString str2,
-				  ILIntString str3);
+								  ILIntString str2,
+								  ILIntString str3);
+
+/*
+ * Concatenate four internalised strings and internalise the result.
+ */
+ILIntString ILInternStringConcat4(ILIntString str1,
+								  ILIntString str2,
+								  ILIntString str3,
+								  ILIntString str4);
+
+/*
+ * Concatenate five internalised strings and internalise the result.
+ */
+ILIntString ILInternStringConcat5(ILIntString str1,
+								  ILIntString str2,
+								  ILIntString str3,
+								  ILIntString str4,
+								  ILIntString str5);
 
 /*
  * Generate a GUID value.  The "guid" buffer must be at

@@ -233,7 +233,7 @@ static void ResetState(void)
  * Determine if the current namespace already has a "using"
  * declaration for a particular namespace.
  */
-static int HaveUsingNamespace(char *name)
+static int HaveUsingNamespace(const char *name)
 {
 	ILNode_UsingNamespace *using = CurrNamespaceNode->using;
 	while(using != 0)
@@ -386,7 +386,7 @@ static ILNode *CombineAttributes(ILNode *list, ILAttrTargetType type,
 	}					real;
 	ILDecimal			decimal;
 	ILIntString			string;
-	char	           *name;
+	const char		   *name;
 	ILNode             *node;
 	ILUInt32			rank;
 	ILInt64				date;
@@ -692,8 +692,8 @@ OptionList
 
 Option
 	: K_OPTION Identifier OptionValue END_LINE	{
-				char *name = ILQualIdentName($2, 0);
-				char *value = $3;
+				const char *name = ILQualIdentName($2, 0);
+				const char *value = $3;
 				int invalidValue = 0;
 				InitGlobalNamespace();
 				if(!ILStrICmp(name, "Explicit"))
@@ -792,7 +792,7 @@ ImportClause
 	: QualifiedIdentifier		{
 				ILScope *globalScope = GlobalScope();
 				ILNode_UsingNamespace *using;
-				char *name = ILQualIdentName($1, 0);
+				const char *name = ILQualIdentName($1, 0);
 				if(!ILScopeUsing(globalScope, name))
 				{
 					CCError("`%s' is not a namespace", name);
@@ -810,7 +810,7 @@ ImportClause
 				ILScope *globalScope = GlobalScope();
 				ILScope *scope = LocalScope();
 				ILNode *alias;
-				char *name = ILQualIdentName($1, 0);
+				const char *name = ILQualIdentName($1, 0);
 				if(ILScopeLookup(globalScope, name, 1))
 				{
 					CCError("`%s' is already declared", name);

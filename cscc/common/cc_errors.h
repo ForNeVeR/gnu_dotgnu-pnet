@@ -53,7 +53,7 @@ void CCError(const char *format, ...) CC_PRINTF(1, 2);
 /*
  * Report an error on a specific line.
  */
-void CCErrorOnLine(char *filename, unsigned long linenum,
+void CCErrorOnLine(const char *filename, unsigned long linenum,
 				   const char *format, ...) CC_PRINTF(3, 4);
 
 /*
@@ -70,14 +70,14 @@ void CCTypedWarning(const char *type, const char *format, ...) CC_PRINTF(2, 3);
 /*
  * Report a warning on a specific line.
  */
-void CCWarningOnLine(char *filename, unsigned long linenum,
+void CCWarningOnLine(const char *filename, unsigned long linenum,
 				     const char *format, ...) CC_PRINTF(3, 4);
 
 /*
  * Report a typed warning on a specific line.  The warning
  * will only be reported if the "type" is enabled.
  */
-void CCTypedWarningOnLine(char *filename, unsigned long linenum,
+void CCTypedWarningOnLine(const char *filename, unsigned long linenum,
 				     	  const char *type, const char *format, ...)
 						  CC_PRINTF(4, 5);
 

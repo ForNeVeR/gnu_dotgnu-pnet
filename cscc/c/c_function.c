@@ -55,7 +55,7 @@ static int numSpecials = 0;
  * failing to do so correctly.
  */
 static void ReportInferError(ILGenInfo *info, ILNode *node,
-							 char *name, ILType *signature)
+							 const char *name, ILType *signature)
 {
 	char *typeName;
 	unsigned long numParams;
@@ -210,7 +210,7 @@ static void AddInitOrFini(ILGenInfo *info, ILProgramItem *item,
 	ILProgramItemAddAttribute(item, attr);
 }
 
-ILMethod *CFunctionCreate(ILGenInfo *info, char *name, ILNode *node,
+ILMethod *CFunctionCreate(ILGenInfo *info, const char *name, ILNode *node,
 						  CDeclSpec spec, CDeclarator decl,
 						  ILNode *declaredParams)
 {
@@ -676,7 +676,7 @@ void CFunctionFlushInits(ILGenInfo *info, ILNode *list)
 	CDeclSpec spec;
 	CDeclarator decl;
 	char buf[64];
-	char *name;
+	const char *name;
 	ILMethod *method;
 	ILNode *attributes;
 	ILScope *scope;

@@ -932,7 +932,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	ILNode_ListIter iter;
 	ILNode_FormalParameter *param;
 	ILScopeData *data;
-	char *name;
+	const char *name;
 	ILNode *errorNode;
 	ILType *returnType;
 

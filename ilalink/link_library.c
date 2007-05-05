@@ -164,9 +164,9 @@ static void LibraryDestroy(ILLibrary *library)
 	while(library != 0)
 	{
 		next = library->altNames;
-		ILFree(library->name);
-		ILFree(library->filename);
-		ILFree(library->moduleName);
+		ILFree((void *)(library->name));
+		ILFree((void *)(library->filename));
+		ILFree((void *)(library->moduleName));
 		if(library->publicKey)
 		{
 			ILFree(library->publicKey);
@@ -312,7 +312,7 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 		nextLibrary->filename = ILDupString(filename);
 		if(!(nextLibrary->filename))
 		{
-			ILFree(nextLibrary->name);
+			ILFree((void *)(nextLibrary->name));
 			ILFree(nextLibrary);
 			_ILLinkerOutOfMemory(linker);
 			LibraryDestroy(library);
@@ -321,8 +321,8 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 		nextLibrary->moduleName = ILDupString(IL_LINKER_DLL_MODULE_NAME);
 		if(!(nextLibrary->moduleName))
 		{
-			ILFree(nextLibrary->filename);
-			ILFree(nextLibrary->name);
+			ILFree((void *)(nextLibrary->filename));
+			ILFree((void *)(nextLibrary->name));
 			ILFree(nextLibrary);
 			_ILLinkerOutOfMemory(linker);
 			LibraryDestroy(library);
@@ -362,9 +362,9 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 				{
 					ILFree(nextLibrary->publicKey);
 				}
-				ILFree(nextLibrary->moduleName);
-				ILFree(nextLibrary->filename);
-				ILFree(nextLibrary->name);
+				ILFree((void *)(nextLibrary->moduleName));
+				ILFree((void *)(nextLibrary->filename));
+				ILFree((void *)(nextLibrary->name));
 				ILFree(nextLibrary);
 				LibraryDestroy(library);
 				return 0;
@@ -381,9 +381,9 @@ static ILLibrary *ScanAssemblies(ILLinker *linker, ILContext *context,
 				{
 					ILFree(nextLibrary->publicKey);
 				}
-				ILFree(nextLibrary->moduleName);
-				ILFree(nextLibrary->filename);
-				ILFree(nextLibrary->name);
+				ILFree((void *)(nextLibrary->moduleName));
+				ILFree((void *)(nextLibrary->filename));
+				ILFree((void *)(nextLibrary->name));
 				ILFree(nextLibrary);
 				LibraryDestroy(library);
 				return 0;
@@ -426,12 +426,12 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
 	ILNestedInfo *nestedInfo;
 	ILClass *child;
 	ILLibraryClass *libClass;
-	char *name;
-	char *namespace;
+	const char *name;
+	const char *namespace;
 
 	/* Add the name of this type to the library's hash table */
 	name = (ILInternString((char *)(ILClass_Name(classInfo)), -1)).string;
-	namespace = (char *)(ILClass_Namespace(classInfo));
+	namespace = (const char *)(ILClass_Namespace(classInfo));
 	if(namespace)
 	{
 		namespace = (ILInternString(namespace, -1)).string;
@@ -479,7 +479,7 @@ static int WalkTypeAndNested(ILLinker *linker, ILImage *image,
  * Add a global symbol definition to a library.
  */
 static int AddGlobalSymbol(ILLinker *linker, ILLibrary *library,
-						   char *name, char *aliasFor, int flags,
+						   const char *name, char *aliasFor, int flags,
 						   ILMember *member)
 {
 	ILLibrarySymbol *libSymbol;
@@ -561,7 +561,7 @@ static int WalkGlobals(ILLinker *linker, ILImage *image,
 	ILMember *member;
 	ILField *field;
 	ILMethod *method;
-	char *name;
+	const char *name;
 	char *aliasFor;
 	int flags;
 
@@ -597,7 +597,7 @@ static int WalkGlobals(ILLinker *linker, ILImage *image,
 			if(ILMethod_IsPublic(method) && ILMethod_IsStatic(method))
 			{
 				name = (ILInternString
-					((char *)(ILMethod_Name(method)), -1)).string;
+					(ILMethod_Name(method), -1)).string;
 				flags = IL_LINKSYM_FUNCTION;
 				aliasFor = ILLinkerGetStringAttribute
 					(ILToProgramItem(method),
@@ -663,7 +663,7 @@ static int WalkTypeDefs(ILLinker *linker, ILImage *image, ILLibrary *library)
 						_ILLinkerOutOfMemory(linker);
 						return 0;
 					}
-					ILFree(library->moduleName);
+					ILFree((void *)(library->moduleName));
 					library->moduleName = name;
 				}
 				if(!WalkGlobals(linker, image, library, classInfo))
@@ -1200,7 +1200,7 @@ static ILMember *CreateSymbolRef(ILLinker *linker, ILLibrary *library,
 }
 
 int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
-						char **aliasFor, ILLibrary **library,
+						const char **aliasFor, ILLibrary **library,
 						ILMember **memberRef)
 {
 	ILLibrary *lib;

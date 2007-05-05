@@ -75,10 +75,10 @@ void ILAsmDataSetTLS(void)
 
 typedef struct
 {
-	char    *name;
-	ILUInt32 value;
-	char    *filename;
-	long	 linenum;
+	const char *name;
+	ILUInt32	value;
+	char	   *filename;
+	long		linenum;
 
 } DataLabelHashEntry;
 
@@ -102,7 +102,7 @@ static void DataLabelFreeFunc(void *elem)
 	ILFree(elem);
 }
 
-void ILAsmDataSetLabel(char *name)
+void ILAsmDataSetLabel(const char *name)
 {
 	DataLabelHashEntry *entry;
 	if(!nameTable)
@@ -148,7 +148,7 @@ void ILAsmDataSetLabel(char *name)
 	}
 }
 
-ILInt64 ILAsmDataResolveLabel(char *name)
+ILInt64 ILAsmDataResolveLabel(const char *name)
 {
 	DataLabelHashEntry *entry;
 	if(!nameTable ||

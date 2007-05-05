@@ -299,7 +299,7 @@ int ILLinkerDestroy(ILLinker *linker)
 	while(image != 0)
 	{
 		nextImage = image->next;
-		ILFree(image->filename);
+		ILFree((void *)(image->filename));
 		ILContextDestroy(image->context);
 		ILFree(image);
 		image = nextImage;
@@ -350,7 +350,7 @@ int ILLinkerDestroy(ILLinker *linker)
 	ILContextDestroy(linker->context);
 
 	/* Free the linker context */
-	ILFree(linker->moduleName);
+	ILFree((void *)(linker->moduleName));
 	ILFree(linker);
 
 	/* Done */
@@ -492,7 +492,7 @@ int ILLinkerCreateModuleAndAssembly(ILLinker *linker,
 			return 0;
 		}
 		strcpy(name, assemblyName);
-		ILFree(linker->moduleName);
+		ILFree((void *)(linker->moduleName));
 		linker->moduleName = name;
 	}
 

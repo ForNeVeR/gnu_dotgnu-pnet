@@ -274,7 +274,7 @@ ILNode_SemAnalysis(ILNode_String)
 
 %end %{
 
-ILNode *CSBuiltinConstant(char *name)
+ILNode *CSBuiltinConstant(const char *name)
 {
 	if(!strcmp(name, "float_min"))
 	{

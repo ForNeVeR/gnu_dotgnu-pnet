@@ -897,13 +897,13 @@ static CSSemValue LookupToSem(ILNode *node, const char *name,
  * Find the type with a specific name within a namespace.
  */
 static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
-							   char *namespace, ILClass *accessedFrom,
+							   const char *namespace, ILClass *accessedFrom,
 							   CSMemberLookupInfo *results)
 {
 	ILClass *type;
 	ILScopeData *data;
 	int scopeKind;
-	char *fullName;
+	const char *fullName;
 	ILNode_ClassDefn *node;
 
 	/* Look in the current image for the type */
@@ -928,15 +928,14 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 		{
 			if(namespace)
 			{
-				fullName = ILInternAppendedString
+				fullName = ILInternStringConcat3
 								(ILInternString(namespace, -1),
-								 ILInternAppendedString
-								 	(ILInternString(".", 1),
-									 ILInternString((char *)name, -1))).string;
+								 ILInternString(".", 1),
+								 ILInternString(name, -1)).string;
 			}
 			else
 			{
-				fullName = (char *)name;
+				fullName = name;
 			}
 			AddMember(results, (ILProgramItem *)fullName,
 					  0, CS_MEMBERKIND_NAMESPACE);

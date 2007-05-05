@@ -429,7 +429,7 @@ typedef struct _tagCGenGoto CGenGoto;
 struct _tagCGenGoto
 {
 	CGenGoto   *next;
-	char	   *name;
+	const char *name;
 	ILNode     *node;
 	ILInt32		labelNum;
 	int			defined : 1;

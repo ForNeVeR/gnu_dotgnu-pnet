@@ -748,7 +748,7 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
  */
 static void ReportDuplicates(ILNode *node, ILMember *newMember,
 							 ILMember *existingMember, ILClass *classInfo,
-							 ILUInt32 modifiers, char *name)
+							 ILUInt32 modifiers, const char *name)
 {
 	/* TODO: we need better error messages here */
 
@@ -807,8 +807,8 @@ static int MethodIsEntrypoint(ILGenInfo *info, ILMethod* method)
 static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 						 ILNode_MethodDeclaration *method)
 {
-	char *name;
-	char *basicName;
+	const char *name;
+	const char *basicName;
 	ILType *tempType;
 	ILMethod *methodInfo;
 	ILType *signature;
@@ -988,7 +988,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 	ILNode_ListIter iterator;
 	ILNode_FieldDeclarator *decl;
 	ILField *fieldInfo;
-	char *name;
+	const char *name;
 	ILType *tempType;
 	ILType *modifier;
 	ILMember *member;

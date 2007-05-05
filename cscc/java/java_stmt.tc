@@ -264,7 +264,7 @@ ILNode_JSemAnalysis(ILNode_LocalVarDeclaration)
 	ILType *type;
 	ILNode_ListIter iter;
 	ILNode *nameNode;
-	char *name;
+	const char *name;
 	ILScopeData *data;
 	ILNode_MethodDeclaration *method;
 	ILNode *errorNode;

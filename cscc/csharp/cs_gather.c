@@ -82,11 +82,11 @@ static ILClass *NodeToClass(ILNode *node)
 /*
  * Get the full and basic names from a method/property/event name.
  */
-static char *GetFullAndBasicNames(ILNode *name, char **basicName)
+static const char *GetFullAndBasicNames(ILNode *name, const char **basicName)
 {
-	char *result;
-	char *basic;
-	char *left;
+	const char *result;
+	const char *basic;
+	const char *left;
 	if(yyisa(name, ILNode_Identifier))
 	{
 		result = ILQualIdentName(name, 0);
@@ -577,7 +577,7 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
  */
 static void ReportDuplicates(ILNode *node, ILMember *newMember,
 							 ILMember *existingMember, ILClass *classInfo,
-							 ILUInt32 modifiers, char *name)
+							 ILUInt32 modifiers, const char *name)
 {
 	/* TODO: we need better error messages here */
 
@@ -600,7 +600,7 @@ static void ReportDuplicates(ILNode *node, ILMember *newMember,
 /*
  * Report a warning for an unnecessary "new" keyword on a declaration.
  */
-static void ReportUnnecessaryNew(ILNode *node, char *name)
+static void ReportUnnecessaryNew(ILNode *node, const char *name)
 {
 	CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
 			        "declaration of `%s' includes unnecessary `new' keyword",
@@ -616,7 +616,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 	ILNode_ListIter iterator;
 	ILNode_FieldDeclarator *decl;
 	ILField *fieldInfo;
-	char *name;
+	const char *name;
 	ILType *tempType;
 	ILType *modifier;
 	ILMember *member;
@@ -866,31 +866,28 @@ static ILMember *FindInterfaceDecl(ILNode *node, ILClass *classInfo,
 /*
  * Get the full name of an explicit interface override member.
  */
-static char *GetFullExplicitName(ILClass *interface, char *memberName)
+static const char *GetFullExplicitName(ILClass *interface, const char *memberName)
 {
-	char *name;
+	const char *name;
 	if(ILClass_Namespace(interface) != 0)
 	{
-		name = ILInternAppendedString
-			(ILInternAppendedString
+		name = ILInternStringConcat3
 				(ILInternString
-					((char *)ILClass_Namespace(interface), -1),
-				 ILInternString(".", 1)),
-			 ILInternString
-			 	((char *)ILClass_Name(interface), -1)).string;
-		name = ILInternAppendedString
-			(ILInternAppendedString
+					(ILClass_Namespace(interface), -1),
+				 ILInternString(".", 1),
+				 ILInternString
+				 	(ILClass_Name(interface), -1)).string;
+		name = ILInternStringConcat3
 				(ILInternString(name, -1),
-				 ILInternString(".", 1)),
-			 ILInternString(memberName, -1)).string;
+				 ILInternString(".", 1),
+				 ILInternString(memberName, -1)).string;
 	}
 	else
 	{
-		name = ILInternAppendedString
-			(ILInternAppendedString
-				(ILInternString((char *)ILClass_Name(interface), -1),
-				 ILInternString(".", 1)),
-			 ILInternString(memberName, -1)).string;
+		name = ILInternStringConcat3
+				(ILInternString(ILClass_Name(interface), -1),
+				 ILInternString(".", 1),
+				 ILInternString(memberName, -1)).string;
 	}
 	return name;
 }
@@ -941,8 +938,8 @@ static int IsRealFinalizer(ILClass *classInfo)
 static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 						 ILNode_MethodDeclaration *method)
 {
-	char *name;
-	char *basicName;
+	const char *name;
+	const char *basicName;
 	ILUInt32 thisAccess;
 	ILUInt32 baseAccess;
 	ILType *tempType;
@@ -1327,7 +1324,7 @@ static void CreateEnumMember(ILGenInfo *info, ILClass *classInfo,
 						     ILNode_EnumMemberDeclaration *enumMember)
 {
 	ILField *fieldInfo;
-	char *name;
+	const char *name;
 	ILType *tempType;
 	ILMember *member;
 
@@ -1424,10 +1421,10 @@ static int EventIsVirtual(ILEvent *event)
  */
 static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 						   ILNode_PropertyDeclaration *property,
-						   char **defaultMemberName)
+						   const char **defaultMemberName)
 {
-	char *name;
-	char *basicName;
+	const char *name;
+	const char *basicName;
 	ILUInt32 thisAccess;
 	ILUInt32 baseAccess;
 	ILType *propType;
@@ -1695,8 +1692,8 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 							ILType *eventType,
 							ILNode_EventDeclarator *eventDecl)
 {
-	char *name;
-	char *basicName;
+	const char *name;
+	const char *basicName;
 	ILUInt32 thisAccess;
 	ILUInt32 baseAccess;
 	ILNode *eventName;
@@ -2008,7 +2005,7 @@ static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
  * Create a formal parameter with a system type
  */
 static ILNode_FormalParameter* CreateFormalParameter(char *systemtype,
-													 char *name)
+													 const char *name)
 {
 	ILNode *param=ILNode_FormalParameter_create(
 						NULL,ILParamMod_empty, 
@@ -2292,7 +2289,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	ILNode *savedNamespace;
 	ILNode_ListIter iterator;
 	ILNode *member;
-	char *defaultMemberName;
+	const char *defaultMemberName;
 
 	/* Get the class information block, and bail out if not defined */
 	classInfo = ((ILNode_ClassDefn *)classNode)->classInfo;

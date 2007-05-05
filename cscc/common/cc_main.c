@@ -222,7 +222,7 @@ static int Preprocess(void)
 	int size;
 	const char *filename;
 	CCPreProcSymbol *symbol;
-	char *expectedFile;
+	const char *expectedFile;
 	unsigned long expectedLine;
 
 	/* Open the output stream */
@@ -1436,7 +1436,8 @@ int CCLoadLibrary(const char *name)
 
 char *yycurrfilename(void)
 {
-	return CCPreProcessorStream.lexerFileName;
+	/* should be const char * but this has to be fixed in treecc. */
+	return (char *)CCPreProcessorStream.lexerFileName;
 }
 
 long yycurrlinenum(void)

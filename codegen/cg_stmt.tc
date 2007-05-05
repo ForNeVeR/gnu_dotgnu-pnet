@@ -34,7 +34,7 @@
  * Push a new entry onto the loop stack.
  */
 static void PushLoop(ILGenInfo *info, ILLabel *continueLabel,
-					 ILLabel *breakLabel, char *name,
+					 ILLabel *breakLabel, const char *name,
 					 int isForeachCollection)
 {
 	if(info->loopStackSize >= info->loopStackMax)

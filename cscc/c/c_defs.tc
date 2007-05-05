@@ -408,7 +408,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 %node ILNode_VaStart ILNode_Expression =
 {
 	ILNode *vaList;
-	char *name;
+	const char *name;
 }
 %node ILNode_VaEnd ILNode_Expression =
 {
@@ -423,7 +423,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 %node ILNode_AllocA ILNode_UnaryExpression
 %node ILNode_AsmStmt ILNode_Statement =
 {
-	char *code;
+	const char *code;
 }
 %node ILNode_CLocalVar ILNode_LValue =
 {
@@ -440,18 +440,18 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 }
 %node ILNode_CGlobalVar ILNode_LValue =
 {
-	char *name;
+	const char *name;
 	ILType *type;
 	ILType *decayedType;
 }
 %node ILNode_FunctionRef ILNode_Expression =
 {
-	char *name;
+	const char *name;
 	ILType *signature;
 }
 %node ILNode_CInvocationExpression ILNode_InvocationExpression =
 {
-	%nocreate char *name = {0};
+	%nocreate const char *name = {0};
 }
 %node ILNode_CSharpInvocation ILNode_Dummy =
 {
@@ -464,7 +464,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 %node ILNode_CFieldAccess ILNode_LValue %abstract =
 {
 	ILNode *expr;
-	char *name;
+	const char *name;
 	%nocreate ILField *field = {0};
 	%nocreate ILType *ownerType = {0};
 }
@@ -490,7 +490,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 }
 %node ILNode_CAttribute ILNode_Dummy =
 {
-	char *name;
+	const char *name;
 	ILNode *args;
 }
 %node ILNode_CAttributeValue ILNode_Dummy =
@@ -513,7 +513,7 @@ void CGenAddress(ILGenInfo *info, ILNode *node);
 %node ILNode_CArrayInit ILNode_UnaryExpression
 %node ILNode_CLabelRef ILNode_Expression =
 {
-	char *name;
+	const char *name;
 	%nocreate ILInt32 labelNum = {0};
 }
 %node ILNode_CGotoPtr ILNode_Statement =

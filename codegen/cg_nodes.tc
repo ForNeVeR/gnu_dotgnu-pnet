@@ -139,7 +139,7 @@ struct _tagILEvalValue
 		void		   *oValue;
 		struct
 		{
-			char	   *str;
+			const char *str;
 			int			len;
 		}				strValue;
 	} un;
@@ -250,7 +250,7 @@ struct _tagILSwitchValue
 }
 %node ILNode_String ILNode_Constant =
 {
-	char *str;
+	const char *str;
 	int   len;
 }
 
@@ -511,7 +511,7 @@ struct _tagILSwitchValue
 
 %node ILNode_Identifier ILNode =
 {
-	char *name;
+	const char *name;
 }
 %node ILNode_QualIdent ILNode =
 {
@@ -621,7 +621,7 @@ struct _tagILSwitchValue
 }
 %node ILNode_LabelledStatement ILNode_Statement %abstract =
 {
-	%nocreate char *name = {0};
+	%nocreate const char *name = {0};
 }
 %node ILNode_While ILNode_LabelledStatement =
 {
@@ -642,11 +642,11 @@ struct _tagILSwitchValue
 }
 %node ILNode_Foreach ILNode_LabelledStatement =
 {
-	ILNode *type;
-	char   *varName;
-	ILNode *varNameNode;
-	ILNode *expr;
-	ILNode *stmt;
+	ILNode	   *type;
+	const char *varName;
+	ILNode	   *varNameNode;
+	ILNode	   *expr;
+	ILNode	   *stmt;
 	%nocreate ILNode* doCast = {0};
 	%nocreate unsigned long varIndex = {0};
 	%nocreate ILMachineType varType = {ILMachineType_Void};
@@ -680,12 +680,12 @@ struct _tagILSwitchValue
 %node ILNode_Break ILNode_Statement
 %node ILNode_LabelledBreak ILNode_Statement =
 {
-	char *name;
+	const char *name;
 }
 %node ILNode_Continue ILNode_Statement
 %node ILNode_LabelledContinue ILNode_Statement =
 {
-	char *name;
+	const char *name;
 }
 %node ILNode_Return ILNode_Statement
 %node ILNode_ReturnExpr ILNode_Statement =
@@ -694,11 +694,11 @@ struct _tagILSwitchValue
 }
 %node ILNode_Goto ILNode_Statement =
 {
-	char *name;
+	const char *name;
 }
 %node ILNode_GotoLabel ILNode_Statement =
 {
-	char *name;
+	const char *name;
 }
 %node ILNode_GotoCase ILNode_Statement =
 {
@@ -754,10 +754,10 @@ struct _tagILSwitchValue
 %node ILNode_CatchClauses ILNode_List
 %node ILNode_CatchClause ILNode_Statement =
 {
-	ILNode *type;
-	char   *name;
-	ILNode *nameNode;
-	ILNode *stmt;
+	ILNode	   *type;
+	const char *name;
+	ILNode	   *nameNode;
+	ILNode	   *stmt;
 	%nocreate ILClass *classInfo = {0};
 	%nocreate unsigned long varIndex = {0};
 }
@@ -801,8 +801,8 @@ struct _tagILSwitchValue
 {
 	ILNode	   *attributes;
 	ILUInt32	modifiers;
-	char	   *name;
-	char	   *namespace;
+	const char *name;
+	const char *namespace;
 	ILNode     *namespaceNode;
 	ILNode     *typeFormals;
 	ILNode     *baseClass;
@@ -815,7 +815,7 @@ struct _tagILSwitchValue
 	%nocreate ILNode_ClassDefn *nestedParent = {0};
 	%nocreate ILNode *nestedClasses = {0};
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
-	%nocreate char *defaultMemberName = {0};
+	%nocreate const char *defaultMemberName = {0};
 
 }
 %node ILNode_ScopeChange ILNode_Declaration =

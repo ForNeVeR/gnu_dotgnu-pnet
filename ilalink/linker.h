@@ -40,8 +40,8 @@ extern	"C" {
 typedef struct _tagILLibraryClass ILLibraryClass;
 struct _tagILLibraryClass
 {
-	char		   *name;			/* Intern'ed name of the class */
-	char		   *namespace;		/* Intern'ed namespace of the class */
+	const char	   *name;			/* Intern'ed name of the class */
+	const char	   *namespace;		/* Intern'ed namespace of the class */
 	ILLibraryClass *parent;			/* Parent for nesting purposes */
 
 };
@@ -52,8 +52,8 @@ struct _tagILLibraryClass
 typedef struct _tagILLibrarySymbol ILLibrarySymbol;
 struct _tagILLibrarySymbol
 {
-	char		   *name;			/* Intern'ed name of the symbol */
-	char           *aliasFor;		/* Intern'ed name of the aliased symbol */
+	const char	   *name;			/* Intern'ed name of the symbol */
+	const char	   *aliasFor;		/* Intern'ed name of the aliased symbol */
 	int				flags;			/* Flags that define the symbol kind */
 	ILMember       *member;			/* Member reference information */
 };
@@ -84,9 +84,9 @@ typedef union
 typedef struct _tagILLibrary ILLibrary;
 struct _tagILLibrary
 {
-	char		   *name;			/* Name of the library's assembly */
-	char           *filename;		/* Filename for the library's assembly */
-	char		   *moduleName;		/* Name of the library's main module */
+	const char	   *name;			/* Name of the library's assembly */
+	const char	   *filename;		/* Filename for the library's assembly */
+	const char	   *moduleName;		/* Name of the library's main module */
 	ILUInt16		version[4];		/* Version of the library's assembly */
 	ILLibrary	   *altNames;		/* Alternative names for the library */
 	unsigned char  *publicKey;		/* Public key value for the library */
@@ -107,7 +107,7 @@ struct _tagILLibrary
 typedef struct _tagILLinkImage ILLinkImage;
 struct _tagILLinkImage
 {
-	char		   *filename;		/* Name of the image file */
+	const char	   *filename;		/* Name of the image file */
 	ILContext	   *context;		/* Context that contains the image */
 	ILImage		   *image;			/* The image itself */
 	ILLinkImage    *next;			/* Next image to be linked */
@@ -140,9 +140,9 @@ struct _tagILLinker
 	int				isCLink;		/* Non-zero if linking a C image */
 	ILHashTable    *symbolHash;		/* Hash table for global symbol lookup */
 	ILMemPool		pool;			/* Memory pool for symbol allocation */
-	char     	   *moduleName;		/* Name of the "<Module>" class */
+	const char	   *moduleName;		/* Name of the "<Module>" class */
 	ILClass        *moduleClass;	/* Reference to the "<Module>" class */
-	char		   *initTempFile;	/* Temporary object file for init/fini */
+	const char	   *initTempFile;	/* Temporary object file for init/fini */
 
 };
 
@@ -216,7 +216,7 @@ ILClass *_ILLinkerMakeTypeRef(ILLibraryFind *find, ILImage *image);
  * will be NULL if the symbol is in the image being linked.
  */
 int _ILLinkerFindSymbol(ILLinker *linker, const char *name,
-						char **aliasFor, ILLibrary **library,
+						const char **aliasFor, ILLibrary **library,
 						ILMember **memberRef);
 
 /*

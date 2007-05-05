@@ -47,7 +47,7 @@ typedef struct _tagCCPreProcLine
 	int					len;
 	int					directive;
 	unsigned long		number;
-	char			   *filename;
+	const char		   *filename;
 
 } CCPreProcLine;
 
@@ -61,7 +61,7 @@ typedef struct _tagCCPreProcScope
 	int					ancestor : 1;	/* Ancestor is actively including */
 	int					sawElse : 1;	/* Already seen '#else' */
 	unsigned long		number;			/* Line number of the '#if' */
-	char			   *filename;		/* Filename of the '#if' */
+	const char		   *filename;		/* Filename of the '#if' */
 	struct _tagCCPreProcScope *next;	/* Next outer scope level */
 
 } CCPreProcScope;
@@ -96,11 +96,11 @@ typedef struct _tagCCPreProc
 
 	/* Line number information for the next line of real input */
 	unsigned long		lineNumber;
-	char			   *filename;
+	const char		   *filename;
 
 	/* Default Line number information for the next line of input */
 	unsigned long		defaultLinenumber;
-	char			   *defaultFilename;
+	const char		   *defaultFilename;
 
 	/* Pre-processor scope information for conditional inclusions */
 	CCPreProcScope	   *currentScope;
@@ -108,7 +108,7 @@ typedef struct _tagCCPreProc
 
 	/* Line number information reported to the lexer */
 	unsigned long		lexerLineNumber;
-	char			   *lexerFileName;
+	const char		   *lexerFileName;
 
 	/* Out of memory indicator */
 	int					outOfMemory;

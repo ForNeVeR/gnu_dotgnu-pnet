@@ -93,7 +93,7 @@ extern ILClass *ILAsmModuleClass;
  * Debug information.
  */
 extern int ILAsmDebugMode;
-extern char *ILAsmDebugLastFile;
+extern const char *ILAsmDebugLastFile;
 
 /*
  * Name of the standard library.

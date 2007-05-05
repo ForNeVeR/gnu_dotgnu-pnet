@@ -51,7 +51,7 @@ ILClass *ILAsmClass;
 ILAssembly *ILAsmCurrAssemblyRef;
 ILClass *ILAsmModuleClass;
 int ILAsmDebugMode;
-char *ILAsmDebugLastFile = "";
+const char *ILAsmDebugLastFile = "";
 char *ILAsmLibraryName = "mscorlib";
 
 /*

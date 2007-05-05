@@ -31,9 +31,9 @@ extern	"C" {
 typedef struct
 {
 	ILNode_ListIter	iter;
-	char           *str;
+	const char     *str;
 	int			    len;
-	char		   *filename;
+	const char	   *filename;
 	long			linenum;
 
 } CSXMLValidator;

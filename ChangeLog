@@ -21,9 +21,9 @@
 	ilalink/linker.h, ilalink/link_create.c, ilalink/link_library.c,
 	ilalink/link_method.c, ilasm/ilasm_build.h, ilasm/ilasm_build.c,
 	ilasm/ilasm_data.h, ilasm/ilasm_data.c, ilasm/ilasm_output.h,
-	ilasm/ilasm_output.c, ilasm/ilasm_main.c, ilasm/ilasm_grammar.y: Fix the
-	resulting compiler warnings by making the locals and args causing them
-	const.
+	ilasm/ilasm_output.c, ilasm/ilasm_main.c, ilasm/ilasm_grammar.y,
+	cscc/csharp/cs_defs.tc, cscc/csharp/cs_valdoc.c: Fix the resulting compiler
+	warnings by making the locals and args causing them const.
 
 2007-05-03  Klaus Treichel  <ktreichel@web.de>
 

@@ -168,7 +168,7 @@
  */
 %node ILNode_DocComment ILNode_Dummy =
 {
-	char *str;
+	const char *str;
 	int len;
 }
 
@@ -177,20 +177,20 @@
  */
 %node ILNode_Namespace ILNode_DummySem =
 {
-	char *name;
+	const char *name;
 	ILNode_Namespace *enclosing;
 	%nocreate ILNode_UsingNamespace *using = {0};
 	%nocreate ILScope *localScope={0};
 }
 %node ILNode_UsingAlias ILNode_DummySem =
 {
-	char *name;
-	char *ref;
+	const char *name;
+	const char *ref;
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 }
 %node ILNode_UsingNamespace ILNode_DummySem =
 {
-	char *name;
+	const char *name;
 	%nocreate ILNode_UsingNamespace *next = {0};
 }
 %node ILNode_GlobalNamespace ILNode_AsIs

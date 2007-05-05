@@ -290,7 +290,7 @@ static void DumpDocComments(FILE *stream, ILNode *attrs, int indent)
 {
 	ILNode_ListIter iter;
 	ILNode *node;
-	char *str;
+	const char *str;
 	int len;
 	int sawComment = 0;
 	if(attrs && yyisa(attrs, ILNode_AttributeTree))

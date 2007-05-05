@@ -264,7 +264,8 @@ ILUInt32 ILJavaSetClassFromType(ILWriter *writer, ILClass *info, ILType *type);
  * Set a class value in a Java constant pool entry.
  * The class is a string in the java form (i.e. "java/lang/Object").
  */
-ILUInt32 ILJavaSetClassFromName(ILWriter *writer, ILClass *info, char *name);
+ILUInt32 ILJavaSetClassFromName(ILWriter *writer, ILClass *info,
+								const char *name);
 
 /*
  * Set a name and type value in a Java constant pool entry.
@@ -285,7 +286,8 @@ ILUInt32 ILJavaSetref(ILWriter *writer, ILClass *info, int type, ILClass *owner,
  * Return the allocated pool index, or 0 on failure.
  */
 ILUInt32 ILJavaSetrefFromName(ILWriter *writer, ILClass *info, int type, 
-							  char *className, char *refName, char *sigName);
+							  const char *className, const char *refName,
+							  const char *sigName);
 
 /*
  * ILJavaSetXXX: set the corresponding value type in a constant pool entry.

@@ -25,6 +25,10 @@
 	cscc/csharp/cs_defs.tc, cscc/csharp/cs_valdoc.c: Fix the resulting compiler
 	warnings by making the locals and args causing them const.
 
+	* image/java_writer.c, include/il_writer.h: Fix some warnings in ilasm.
+
+	* cscc/csdoc.c Fix a warning in csdoc.
+
 2007-05-03  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_utils.h, support/intern.c: Add the function

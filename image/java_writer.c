@@ -465,7 +465,8 @@ ILUInt32 ILJavaSetClassFromType(ILWriter *writer, ILClass *info, ILType *type)
 	ADD_POOL(CLASS, classValue, nameIndex, nameIndex, nameIndex, nameIndex);
 }
 
-ILUInt32 ILJavaSetClassFromName(ILWriter *writer, ILClass *info, char *name)
+ILUInt32 ILJavaSetClassFromName(ILWriter *writer, ILClass *info,
+								const char *name)
 {
 	ILUInt32 constPoolEntries = info->ext->constPoolSize;
 	JavaConstEntry *constPool = info->ext->constPool;
@@ -527,7 +528,8 @@ ILUInt32 ILJavaSetref(ILWriter *writer, ILClass *info, int type,
 }
 
 ILUInt32 ILJavaSetrefFromName(ILWriter *writer, ILClass *info, int type, 
-							  char *className, char *refName, char *sigName)
+							  const char *className, const char *refName,
+							  const char *sigName)
 {
 	ILUInt32 constPoolEntries = info->ext->constPoolSize;
 	JavaConstEntry *constPool = info->ext->constPool;

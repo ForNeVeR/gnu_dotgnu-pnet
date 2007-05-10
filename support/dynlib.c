@@ -379,28 +379,46 @@ void  ILDynLibraryClose(void *handle)
 
 void *ILDynLibraryGetSymbol(void *handle, const char *symbol)
 {
-	void *value = dlsym(handle, (char *)symbol);
+	/* call dlerror prior to resolving the symbol to clear any pending
+	   errors. */
 	const char *error = dlerror();
-	char *newName;
-	if(error == 0)
+	void *value = dlsym(handle, (char *)symbol);
+	if(value != 0)
 	{
+		/* In this case we definitely found the symbol. */
 		return value;
 	}
-	newName = (char *)ILMalloc(strlen(symbol) + 2);
-	if(newName)
+	if(!(error = dlerror()))
 	{
-		/* Try again with '_' prepended to the name in case
-		   we are running on a system with a busted "dlsym" */
-		newName[0] = '_';
-		strcpy(newName + 1, symbol);
-		value = dlsym(handle, newName);
-		error = dlerror();
-		if(error == 0)
+		/* No error. The symbol is actually NULL */
+		return 0;
+	}
+	else
+	{
+		/* There occured an error during resolving the symbol */
+		char *newName = (char *)ILMalloc(strlen(symbol) + 2);
+		if(newName)
 		{
+			/* Try again with '_' prepended to the name in case
+			   we are running on a system with a busted "dlsym" */
+			newName[0] = '_';
+			strcpy(newName + 1, symbol);
+			value = dlsym(handle, newName);
+			if(value != 0)
+			{
+				/* So we found the symbol with preceding underscore. */
+				ILFree(newName);
+				return value;
+			}
+			error = dlerror();
+			if(error == 0)
+			{
+				/* This symbol is NULL. */
+				ILFree(newName);
+				return value;
+			}
 			ILFree(newName);
-			return value;
 		}
-		ILFree(newName);
 	}
 #ifdef IL_DYNLIB_DEBUG
 	fprintf(stderr, "%s: %s\n", symbol, error);

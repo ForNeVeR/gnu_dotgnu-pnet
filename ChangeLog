@@ -1,3 +1,10 @@
+2007-05-10  Klaus Treichel  <ktreichel@web.de>
+
+	* support/dynlib.c: Fix ILDynLibraryGetSymbol for FreeBSD. Resolving a 
+	symbol semed to fail because a previous error was not cleared by calling
+	dlerror prior to calling dlsym (Thanks to Steffen Reichelt for finding this
+	issue and pointing out how to solve it).
+
 2007-05-05  Klaus Treichel  <ktreichel@web.de>
 
 	* support/intern.c, include/il_utils.h: Make the interned string a const

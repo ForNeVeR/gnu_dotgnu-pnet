@@ -74,18 +74,18 @@ internal abstract class Formatter
 
 	static protected bool IsSignedInt(Object o)
 	{
-		return (o is SByte || o is Int16 || o is Int32 || o is Int64);
+		return ( o is Int32 || o is Int16 || o is Int64 || o is SByte  );
 	}
 	
 	static protected bool IsUnsignedInt(Object o)
 	{
-		return (o is Byte || o is UInt16 || o is UInt32 || o is UInt64);
+		return (o is UInt32 ||  o is UInt16 || o is UInt64 || o is Byte );
 	}
 	
 #if CONFIG_EXTENDED_NUMERICS
 	static protected bool IsFloat(Object o)
 	{
-		return (o is Single || o is Double);
+		return (o is Double || o is Single );
 	}
 	
 	static protected bool IsDecimal(Object o)
@@ -299,24 +299,31 @@ internal abstract class Formatter
 		string ret;
 
 		//  Type validation
-		if (IsSignedInt(o) && (OToLong(o) < 0) )
+		if (IsSignedInt(o) )
 		{
-			ulong value=(ulong) -OToLong(o);
-
-			if(value==0)
-			{
-				// because -(Int64.MinValue) does not exist
-				ret = "-9223372036854775808.";
+			long  lvalue = OToLong(o);
+			if( lvalue < 0 ) {
+				ulong value=(ulong) -lvalue;
+	
+				if(value==0)
+				{
+					// because -(Int64.MinValue) does not exist
+					ret = "-9223372036854775808.";
+				}
+				else
+				{
+					ret = "-" + Formatter.FormatInteger(value);
+				}
 			}
-			else
-			{
-				ret = "-" + Formatter.FormatInteger(value);
+			else {
+				ret = Formatter.FormatInteger(OToUlong(o));
 			}
 		}
-		else if (IsSignedInt(o) || IsUnsignedInt(o))
+		else if (IsUnsignedInt(o))
 		{
 			ret = Formatter.FormatInteger(OToUlong(o));
 		}
+
 #if CONFIG_EXTENDED_NUMERICS
 		else if (IsDecimal(o))
 		{
@@ -352,13 +359,15 @@ internal abstract class Formatter
 			{
 				return NumberFormatInfo(provider).NaNSymbol;
 			}
-			else if (Double.IsPositiveInfinity(val))
-			{
-				return NumberFormatInfo(provider).PositiveInfinitySymbol;
-			}
-			else if (Double.IsNegativeInfinity(val))
-			{
-				return NumberFormatInfo(provider).NegativeInfinitySymbol;
+			else if( Double.IsInfinity(val) ) {
+				if (Double.IsPositiveInfinity(val))
+				{
+					return NumberFormatInfo(provider).PositiveInfinitySymbol;
+				}
+				else if (Double.IsNegativeInfinity(val))
+				{
+					return NumberFormatInfo(provider).NegativeInfinitySymbol;
+				}
 			}
 			else {
 				// do not round here, is done in Formatter.FormatFloat
@@ -383,7 +392,7 @@ internal abstract class Formatter
 		
 		if (value == 0) return ".";
 
-		StringBuilder ret = new StringBuilder(".");
+		StringBuilder ret = new StringBuilder(".", 30 );
 		ulong work = value;
 
 		while (work > 0) {
@@ -477,7 +486,7 @@ internal abstract class Formatter
 		//  Build a numeric representation, sans decimal point.
 		//
 		StringBuilder sb = 
-			new StringBuilder(FormatInteger((ulong)Math.Floor(work)));
+			new StringBuilder(FormatInteger((ulong)Math.Floor(work)), 30 );
 		sb.Remove(sb.Length-1, 1);    // Ditch the trailing decimal point
 
 		if (sb.Length > precision + exponent + 1)
@@ -567,8 +576,9 @@ internal abstract class Formatter
 		// handle empty format
 		if(format.Length == 0)
 		{
-			//return new CustomFormatter(format);
-			return new GeneralFormatter(-1, 'G');
+			ret = new GeneralFormatter(-1, 'G');
+			formats[format] = ret;
+			return ret;
 		}
 
 		//  Search for cached formats
@@ -577,12 +587,15 @@ internal abstract class Formatter
 			return (Formatter) formats[format];
 		}
 
+
 		// Validate the format.  
 		// It should be of the form 'X', 'X9', or 'X99'.
 		// If it's not, return a CustomFormatter.
 		if (validformats.IndexOf(format[0]) == -1 || format.Length > 3)
 		{
-			return new CustomFormatter(format);
+			ret = new CustomFormatter(format);
+			formats[format] = ret;
+			return ret;
 		}
 
 		try 
@@ -592,7 +605,9 @@ internal abstract class Formatter
 		}
 		catch (FormatException)
 		{
-			return new CustomFormatter(format);
+			ret = new CustomFormatter(format);
+			formats[format] = ret;
+			return ret;
 		}
 		
 		switch(format[0])	// There's always a yucky switch somewhere

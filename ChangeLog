@@ -1,3 +1,10 @@
+2007-05-10  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Private/NumberFormat/Formatter.cs,
+		runtime/System/Private/NumberFormat/GeneralFormatter.cs,
+		runtime/System/Private/NumberFormat/FixedPointFormatter.cs:
+	optimized performance.
+
 2007-04-23  Radek Polak  <psonek2@seznam.cz>
 
 	* pnetlib/System.Windows.Forms/MainMenu.cs: Handle repaint more

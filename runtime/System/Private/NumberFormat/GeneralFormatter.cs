@@ -64,20 +64,20 @@ internal class GeneralFormatter : Formatter
 
 	private string StripTrail(string s, IFormatProvider provider)
 	{
-		StringBuilder sb = new StringBuilder(s);
 		String ds = NumberFormatInfo(provider).NumberDecimalSeparator;
 
 		// Strip unnecessary trailing zeroes and point
-		if (sb.ToString().IndexOf(ds) >= 0)
+		if ( s.IndexOf(ds) >= 0)
 		{
+			StringBuilder sb = new StringBuilder(s);
 			while (sb[sb.Length - 1] == '0') sb.Remove(sb.Length-1,1);
 			if (sb.ToString().IndexOf(ds) == sb.Length - ds.Length)
 			{
 				sb.Remove(sb.Length-ds.Length, ds.Length);
 			}
+			return sb.ToString();
 		}
-
-		return sb.ToString();
+		return s;
 	}
 
 	public override string Format(Object o, IFormatProvider provider)
@@ -94,14 +94,15 @@ internal class GeneralFormatter : Formatter
 		}
 
 #if CONFIG_EXTENDED_NUMERICS
-		if (OToDouble(o) == 0.0d) 
+		double val = OToDouble(o);
+		if ( val == 0.0) 
 		{
 			exponent = 0;
 		}
 		else
 		{
 			//exponent = (int) Math.Floor(Math.Log10(Math.Abs(OToDouble(o))));
-			exponent = Formatter.GetExponent( OToDouble(o) );
+			exponent = Formatter.GetExponent( val );
 		}
 #else
 		// Determine the exponent without using floating-point.
@@ -140,7 +141,7 @@ internal class GeneralFormatter : Formatter
 			if (exponent < precision)
 			{
 				return StripTrail(
-							new FixedPointFormatter(0).Format(o, provider),
+							FixedPointFormatter.Format(o, 0, provider),
 							provider);
 
 			}
@@ -154,7 +155,7 @@ internal class GeneralFormatter : Formatter
 		if (exponent >= -4 && exponent < precision)
 		{
 			return StripTrail(
-					new FixedPointFormatter(precision).Format(o, provider),
+					FixedPointFormatter.Format(o, precision, provider),
 					provider);
 		}
 		else

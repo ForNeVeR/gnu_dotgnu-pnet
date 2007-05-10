@@ -33,12 +33,8 @@ internal class FixedPointFormatter : Formatter
 		this.precision = precision;
 	}
 
-	public override string Format(Object o, IFormatProvider provider)
+	internal static string Format(Object o, int precision, IFormatProvider provider)
 	{
-		//  Calculate precision
-		int precision = (this.precision == -1) ?
-			NumberFormatInfo(provider).NumberDecimalDigits : this.precision;
-
 		//  Get string
 		string rawnumber = FormatAnyRound(o, precision, provider);
 		StringBuilder ret = new StringBuilder();
@@ -67,6 +63,16 @@ internal class FixedPointFormatter : Formatter
 		}
 
 		return ret.ToString();
+	}		
+
+
+	public override string Format(Object o, IFormatProvider provider)
+	{
+		//  Calculate precision
+		int precision = (this.precision == -1) ?
+			NumberFormatInfo(provider).NumberDecimalDigits : this.precision;
+
+		return Format( o, precision, provider );
 	}		
 } // class FixedPointFormatter
 

@@ -1,3 +1,9 @@
+2007-05-17  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_string.c: Check the new string builder capacity prior to
+	allocating the new StringBuilder to fix a not detected overflow when
+	the real memory size is computed in IL_String_NewBuilder.
+
 2007-05-10  Klaus Treichel  <ktreichel@web.de>
 
 	* support/dynlib.c: Fix ILDynLibraryGetSymbol for FreeBSD. Resolving a 

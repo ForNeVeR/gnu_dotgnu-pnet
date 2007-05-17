@@ -662,6 +662,12 @@ System_String *_IL_String_NewBuilder(ILExecThread *thread,
 	{
 		roundLen = length;
 	}
+	/* Check if we have an overflow */
+	if((roundLen < 0) || (roundLen > ((IL_MAX_INT32 >> 1) - sizeof(System_String))))
+	{
+		ILExecThreadThrowOutOfMemory(thread);
+		return 0;
+	}
 	roundLen = ((length + 7) & ~7);	/* Round to a multiple of 8 */
 	str = (System_String *)_ILEngineAllocAtomic(thread,
 												thread->process->stringClass,

@@ -1,3 +1,22 @@
+2007-05-23  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/Microsoft/Win32/RegistryValueOptions.cs: Add the System using
+	namespace.
+
+	* System.Drawing/Toolkit/ToolkitImageBase.cs,
+	System.Drawing/Toolkit/NullToolkit.cs,
+	System.Drawing.Win32/DrawingImage.cs,
+	System.Drawing.Postscript/PostscriptImage.cs: Fix the resolution of
+	the correct image type if ECMA compliant type resolution is used.
+
+	* DotGNU.XmlRpc/XmlRpcWriter.cs, DotGNU.XmlRpc/XmlRpcObject.cs,
+	DotGNU.XmlRpc/XmlRpcRequest.cs, DotGNU.XmlRpc/XmlRpcResponse.cs,
+	DotGNU.XmlRpc/XmlRpcMethod.cs,
+	DotGNU.XmlRpc/Serialization/IXmlRpcMessage.cs,
+	DotGNU.XmlRpc/Serialization/MethodCallFormatter.cs,
+	DotGNU.XmlRpc/Serialization/MethodResponseFormatter.cs: Add the System
+	using namespace.
+
 2007-05-10  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Private/NumberFormat/Formatter.cs,

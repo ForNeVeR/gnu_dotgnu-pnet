@@ -33,7 +33,7 @@ public class PostscriptImage : ToolkitImageBase
 	private String maskDataStream;
 
 	// Constructor.
-	public PostscriptImage(Image image, int frame)
+	public PostscriptImage(DotGNU.Images.Image image, int frame)
 			: base(image, frame)
 			{
 				ImageChanged();

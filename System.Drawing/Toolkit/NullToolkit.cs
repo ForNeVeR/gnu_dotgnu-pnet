@@ -287,7 +287,7 @@ public class NullToolkit : IToolkit
 				return point;
 			}
 
-	public virtual IToolkitImage CreateImage( Image image, int frame )
+	public virtual IToolkitImage CreateImage(DotGNU.Images.Image image, int frame )
 			{
 				return null;
 			}

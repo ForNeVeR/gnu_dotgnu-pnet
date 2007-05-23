@@ -21,7 +21,7 @@
 
 namespace Microsoft.Win32
 {
-
+using System;
 using System.Runtime.InteropServices;
 
 #if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2

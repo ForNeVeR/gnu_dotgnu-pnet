@@ -30,7 +30,7 @@ namespace System.Drawing.Toolkit
 		protected internal DotGNU.Images.Image image;
 		protected internal int frame;
 
-		public ToolkitImageBase(Image image, int frame)
+		public ToolkitImageBase(DotGNU.Images.Image image, int frame)
 				{
 					this.image = image;
 					this.frame = frame;

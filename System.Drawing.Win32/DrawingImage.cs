@@ -28,7 +28,7 @@ public class DrawingImage : ToolkitImageBase
 {
 	private Frame imageFrame;
 
-	public DrawingImage(Image image, int frame) : base(image, frame)
+	public DrawingImage(DotGNU.Images.Image image, int frame) : base(image, frame)
 	{
 		ImageChanged();
 	}

@@ -130,11 +130,6 @@ extern ILNode *CCStandaloneAttrs;
 extern ILNode *CCStandaloneAttrsEnd;
 
 /*
- * Global definition scope.
- */
-extern ILScope *CCGlobalScope;
-
-/*
  * Pre-processor stream.
  */
 CCPreProc CCPreProcessorStream;

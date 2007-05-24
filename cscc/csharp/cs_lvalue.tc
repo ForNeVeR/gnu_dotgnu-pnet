@@ -877,7 +877,6 @@ ILNode_SemAnalysis(ILNode_Identifier)
 	ILNode_MethodDeclaration *method;
 	ILParameterModifier paramMod;
   	ILNode_SemGuard *constVar;
-	ILNode_UsingAlias *alias;
 	ILType *type;
 	ILEvalValue evalValue;
 
@@ -972,47 +971,23 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		return value;
 	}
 
-	/* Resolve the simple name quietly so that we can check for aliases
-	   if & only if this fails */
+	/* Resolve the simple name now. */
+	/* This two step stuff is pretty ugly but the static filtering is only */
+	/* done in the quiet mode. */
 	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, node->name, 0);
 
 	if (CSSemGetKind(value) != CS_SEMKIND_VOID)
-	{	
+	{
 		/* Convert the result into an l-value or r-value and return it */
 		return SemToLRValue((ILNode *)node, info, parent, 
 							value, node->name, 0, 0);
 	}
 
-	if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS)
-	{
-		alias=(ILNode_UsingAlias*)ILScopeDataGetNode(data);
-		if(alias->visited==ILVisitMode_Processing)
-		{
-			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-			  "circularity detected in `using' declaration");
-			CSSemSetLValue(value, ILType_Int32);
-			return value;
-		}
-		alias->visited=ILVisitMode_Processing;
-		*parent = (ILNode*)ILScopeDataGetData1(data);
-		if(info->resolvingAlias)
-		{
-			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-						  "using aliases may not refer to other aliases");
-		}
-		info->resolvingAlias = 1;
-		value = ILNode_SemAnalysis(*parent,info,parent);
-		info->resolvingAlias = 0;
-		alias->visited=ILVisitMode_Done;
-		return value;
-	}
-
-	/* This time around dump the errors */
 	value = CSResolveSimpleName(info, (ILNode *)node, node->name, 0);
 
 	/* Convert the result into an l-value or r-value and return it */
 	return SemToLRValue((ILNode *)node, info, parent, 
-							value, node->name, 0, 0);
+						value, node->name, 0, 0);
 }
 
 /*
@@ -1021,8 +996,6 @@ ILNode_SemAnalysis(ILNode_Identifier)
 ILNode_SemAnalysisType(ILNode_Identifier)
 {
 	CSSemValue value;
-	ILNode_UsingAlias *alias;
-	ILScopeData *data;
 	int savedState=info->inSemType;
 
 	info->inSemType=1;
@@ -1037,36 +1010,6 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 							value, node->name, 0, 0);
 	}
 
-	data = ILScopeLookup(((ILNode_Namespace*)info->currentNamespace)->localScope, node->name, 1);
-	
-	if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS &&
-	   !(info->resolvingAlias))
-	{
-		alias=(ILNode_UsingAlias*)ILScopeDataGetNode(data);
-		if(alias->visited==ILVisitMode_Processing)
-		{
-			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-			  "circularity detected in `using' declaration");
-			CSSemSetLValue(value, ILType_Int32);
-			return value;
-		}
-		alias->visited=ILVisitMode_Processing;
-		*parent = (ILNode*)ILScopeDataGetData1(data);
-		if(info->resolvingAlias)
-		{
-			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-						  "using aliases may not refer to other aliases");
-		}
-		info->resolvingAlias = 1;
-		savedState=info->inSemType;
-		info->inSemType=1;
-		value = ILNode_SemAnalysis(*parent,info,parent);
-		info->inSemType=savedState;
-		info->resolvingAlias = 0;
-		alias->visited=ILVisitMode_Done;
-		return value;
-	}
-
 	return CSSemValueDefault;
 }
 
@@ -1077,9 +1020,8 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 ILNode_SemAnalysisType(ILNode_AttrIdentifier)
 {
 	CSSemValue value;
-	ILNode_UsingAlias *alias;
-	ILScopeData *data;
 	int savedState=info->inSemType;
+	int savedAliasState;
 	const char *name;
 
 	/* Resolve the simple name */
@@ -1097,48 +1039,24 @@ ILNode_SemAnalysisType(ILNode_AttrIdentifier)
 	}
 
 	/* Try again, this time with "Attribute" appended */
+	/* but don't allow alias resolution in this case. */
 	name = ILInternAppendedString
 		(ILInternString(node->name, strlen(node->name)),
 		 ILInternString("Attribute", 9)).string;
 	info->inSemType=1;
+	savedAliasState = info->resolvingAlias;
+	info->resolvingAlias = 1;
 	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, name, 1);
+	info->resolvingAlias = savedAliasState;
 	info->inSemType=savedState;
 
-	if (CSSemGetKind(value) == CS_SEMKIND_TYPE)
+	if (CSSemGetKind(value) == CS_SEMKIND_TYPE &&
+	    ILTypeAssignCompatible(info->image, CSSemGetType(value),
+	   					       ILFindSystemType(info, "Attribute")))
 	{
 		/* Convert the result into an l-value or r-value and return it */
 		return SemToLRValue((ILNode *)node, info, parent, 
 							value, node->name, 0, 0);
-	}
-
-	data = ILScopeLookup(info->currentScope, node->name, 1);
-	
-	if(data && ILScopeDataGetKind(data) == IL_SCOPE_ALIAS &&
-	   !(info->resolvingAlias))
-	{
-		alias=(ILNode_UsingAlias*)ILScopeDataGetNode(data);
-		if(alias->visited==ILVisitMode_Processing)
-		{
-			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-			  "circularity detected in `using' declaration");
-			CSSemSetLValue(value, ILType_Int32);
-			return value;
-		}
-		alias->visited=ILVisitMode_Processing;
-		*parent = (ILNode*)ILScopeDataGetData1(data);
-		if(info->resolvingAlias)
-		{
-			CCErrorOnLine(yygetfilename(alias), yygetlinenum(alias),
-						  "using aliases may not refer to other aliases");
-		}
-		info->resolvingAlias = 1;
-		savedState=info->inSemType;
-		info->inSemType=1;
-		value = ILNode_SemAnalysis(*parent,info,parent);
-		info->inSemType=savedState;
-		info->resolvingAlias = 0;
-		alias->visited=ILVisitMode_Done;
-		return value;
 	}
 
 	return CSSemValueDefault;

@@ -168,6 +168,11 @@ struct _tagILSwitchValue
  */
 %node ILNode_Dummy ILNode %abstract
 %node ILNode_Expression ILNode %abstract
+%node ILNode_Alias ILNode_Dummy %abstract =
+{
+	const char *name;
+	%nocreate ILNode_Alias	   *next = {0};
+}
 %node ILNode_Constant ILNode_Expression %abstract
 %node ILNode_LValue ILNode_Expression %abstract
 %node ILNode_LValueNoRef ILNode_LValue %abstract

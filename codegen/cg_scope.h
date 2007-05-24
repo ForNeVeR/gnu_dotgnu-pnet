@@ -26,11 +26,6 @@ extern	"C" {
 #endif
 
 /*
- * Opaque types used by the scope routines.
- */
-typedef struct _tagILScopeData ILScopeData;
-
-/*
  * Kinds of items that may appear in a scope attached to a name.
  */
 #define	IL_SCOPE_SUBSCOPE		1	/* Named sub-scope */
@@ -112,14 +107,21 @@ void ILScopeDeclareItem(ILScope *scope, const char *name, int kind,
 						ILNode *node, void *data1, void *data2);
 
 /*
- * Declare a namespace within a scope.
+ * Declare a namespace within a scope and return the scope associated with
+ * that namespace.
  */
-void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace);
+ILScope *ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace);
 
 /*
  * Find the scope associated with a namespace.
  */
 ILScope *ILScopeFindNamespace(ILScope *globalScope, const char *namespace);
+
+/*
+ * Find a namespace in the imported libraries and declare the namespace
+ * in the global scope if present.
+ */
+ILScope *ILScopeImportNamespace(ILScope *scope, const char *namespace);
 
 /*
  * Declare a type within a particular scope.  If the name

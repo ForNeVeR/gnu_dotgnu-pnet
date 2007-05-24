@@ -91,7 +91,7 @@ void CCPluginSemAnalysis(void)
 {
 	/* Perform type gathering */
 	CCCodeGen.typeGather = 1;
-	CCParseTree = CSTypeGather(&CCCodeGen, CCGlobalScope, CCParseTree);
+	CCParseTree = CSTypeGather(&CCCodeGen, CCCodeGen.globalScope, CCParseTree);
 	CCCodeGen.typeGather = 0;
 
 	/* Perform semantic analysis */

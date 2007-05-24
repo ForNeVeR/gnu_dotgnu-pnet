@@ -128,6 +128,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->maxTempVars = 0;
 	info->tempLocalBase = 0;
 	info->currentScope = 0;
+	info->globalScope = 0;
 	info->javaInfo = 0;
 	info->unsafeLevel = 0;
 	info->contextStack = 0;

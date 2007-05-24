@@ -180,13 +180,12 @@
 	const char *name;
 	ILNode_Namespace *enclosing;
 	%nocreate ILNode_UsingNamespace *using = {0};
+	%nocreate ILNode_Alias *alias = {0};
 	%nocreate ILScope *localScope={0};
 }
-%node ILNode_UsingAlias ILNode_DummySem =
+%node ILNode_UsingAlias ILNode_Alias =
 {
-	const char *name;
-	const char *ref;
-	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
+	ILNode *ref;
 }
 %node ILNode_UsingNamespace ILNode_DummySem =
 {
@@ -217,3 +216,94 @@
 %include "cs_oper.tc"
 %include "cs_stmt.tc"
 %include "cs_types.tc"
+
+/*
+ * Declare operations that manage namespaces.
+ */
+%decls %end %{
+
+/*
+ * Add an alias to a namespace body.
+ * If the namespace has no enclosing namespace then this is the 
+ * global / compilation unit scope.
+ */
+void ILNamespaceAddAlias(ILNode_Namespace *namespace, ILNode_Alias *node);
+
+/*
+ * Resolve an alias in the namspace and the enclosing namespaces if up is != 0.
+ */
+ILNode *ILNamespaceResolveAlias(ILNode_Namespace *namespace, const char *alias, int up);
+
+/*
+ * Add a using namespace declaration to the namespace.
+ */
+void ILNamespaceAddUsing(ILNode_Namespace *namespace,
+						 ILNode_UsingNamespace *using);
+
+/*
+ * Get the last using-namespace declared in this namespace.
+ */
+ILNode_UsingNamespace *ILNamespaceGetUsing(ILNode_Namespace *namespace);
+
+%}
+
+/*
+ * Implement the namespace operations.
+ */
+%end %{
+
+void ILNamespaceAddAlias(ILNode_Namespace *namespace, ILNode_Alias *node)
+{
+	if(namespace && node)
+	{
+		node->next = namespace->alias;
+		namespace->alias = node;
+	}
+}
+
+ILNode *ILNamespaceResolveAlias(ILNode_Namespace *namespace, const char *alias, int up)
+{
+	while(namespace)
+	{
+		ILNode_Alias *next = namespace->alias;
+
+		while(next)
+		{
+			if(next->name == alias)
+			{
+				return (ILNode *)next;
+			}
+			next = next->next;
+		}
+		if(up)
+		{
+			namespace = namespace->enclosing;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	return 0;
+}
+
+void ILNamespaceAddUsing(ILNode_Namespace *namespace,
+						 ILNode_UsingNamespace *using)
+{
+	if(namespace && using)
+	{
+		using->next = namespace->using;
+		namespace->using = using;
+	}
+}
+
+ILNode_UsingNamespace *ILNamespaceGetUsing(ILNode_Namespace *namespace)
+{
+	if(namespace)
+	{
+		return namespace->using;
+	}
+	return 0;
+}
+
+%}

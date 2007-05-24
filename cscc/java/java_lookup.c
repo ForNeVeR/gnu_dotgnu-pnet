@@ -621,7 +621,7 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	}
 
 	/* Look in the global scope for a declared type */
-	data = ILScopeLookupInNamespace(CCGlobalScope, namespace, name);
+	data = ILScopeLookupInNamespace(CCCodeGen.globalScope, namespace, name);
 	if(data)
 	{
 		scopeKind = ILScopeDataGetKind(data);

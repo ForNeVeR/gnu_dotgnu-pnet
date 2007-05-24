@@ -52,6 +52,11 @@ ILNode_SemAnalysisType(ILNode)
 	return ILNode_SemAnalysis(node, info, parent);
 }
 
+ILNode_SemAnalysis(ILNode_Alias)
+{
+	return CSSemValueDefault;
+}
+
 %decls %end %{
 
 /*
@@ -245,7 +250,7 @@ void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item)
 {
 	ILGenItemContext context;
 	ILNode *node;
-	node = ILEnterProgramItemContext(info, item, CCGlobalScope, &context);
+	node = ILEnterProgramItemContext(info, item, info->globalScope, &context);
 	if(node)
 	{
 		ILNode_SemAnalysis(node, info, &node);

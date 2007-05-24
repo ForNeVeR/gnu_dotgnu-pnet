@@ -67,7 +67,7 @@ void CCPluginSemAnalysis(void)
 {
 	/* Perform type gathering */
 	CCCodeGen.typeGather = 1;
-	CCParseTree = JavaTypeGather(&CCCodeGen, CCGlobalScope, CCParseTree);
+	CCParseTree = JavaTypeGather(&CCCodeGen, CCCodeGen.globalScope, CCParseTree);
 	CCCodeGen.typeGather = 0;
 
 	/* Perform semantic analysis */

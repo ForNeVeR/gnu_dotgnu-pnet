@@ -132,6 +132,7 @@ struct _tagILGenInfo
 	unsigned        tempLocalBase;		/* Base for temporary local variables */
 	int				createLocalsScope;	/* Non-zero to create scope for local variables */
 	ILScope		   *currentScope;		/* Current scope for declarations */
+	ILScope		   *globalScope;		/* The global scope of the image built. */
 	ILJavaGenInfo  *javaInfo;			/* Java-specific information */
 	long			unsafeLevel;		/* Number of unsafe contexts */
 	int			   *contextStack;		/* Statement context stack */

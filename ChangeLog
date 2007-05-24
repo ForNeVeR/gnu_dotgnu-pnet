@@ -1,3 +1,53 @@
+2007-05-24  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_defs.h, codegen/cg_scope.h: Move the opaque declaration of
+	ILScopeData from cg_scope.h to cg_defs.h.
+
+	* codegen/cg_gen.h, codegen/cg_gen.c: Add the member globalScope to the
+	generator type which replaces the global variable CCGlobalScope.
+
+	* codegen/cg_nodes.tc: Add the abstract node type ILNode_alias to hold
+	the UsingAlias (and ExternalAlias in the future).
+
+	* codegen/cg_scope.c, codegen/cg_scope.h: Add the function
+	ILScopeImportNamespace to check if a namespace occures in one of the
+	import libraries and declare it in the scope then. Change
+	ILScopeDeclareNamespace so that the namespace scope is returned.
+
+	* cscc/csdoc.c, cscc/cs_main.c, cscc/java_main.c, cscc/vb_main.c: Replace
+	CCGlobalScope with CCCodeGen.globalScope.
+
+	* cscc/common/cc_main.c, cscc/common/cc_main.h: Remove the declaration of
+	CCGlobalScope.
+
+	* cscc/csharp/cs_defs.tc: Change the definition of ILNode_UsingAlias so
+	that the ILNode_Alias is used. Add functions for managing using namespace
+	and using alias declarations.
+
+	* cscc/csharp/cs_grammar.y: Remove the default using namespace declaration
+	for the System namespace. Change the localScope in the namespace node so
+	that it points to the corresponding namespace scope in the global scope.
+	The using scopes are no longer used now by the csharp compiler.
+
+	* cscc/csharp/cs_lookup.c: Handle the aliases now when resolving a simple
+	name. Use ILScopeImportNamespace instead of ILClassNamespaceIsValid now
+	because the later one told that a namespace is invalid if there are no
+	types declared in that namespace but subnamespaces exist.
+
+	* cscc/csharp/cs_lvalue.tc: Remove the handling of aliases because they are
+	handled in cs_lookup.c now.
+
+	* cscc/csharp/cs_semantics.c: Declare a dummy function to semanalyze the
+	new alias node and replace CCGlobalScope by CCCodeGen.globalScope.
+
+	* cscc/vb/vb_grammar.y: Replace the CCGlobalScope by CCCodeGen.globalScope,
+	remove the default import of the System namespace and adjust the alias
+	declaration.
+
+	* cscc/java/java_grammar.y, cscc/java/java_lookup.c,
+	cscc/java/java_semantics.tc: Replace the CCGlobalScope by
+	CCCodeGen.globalScope.
+
 2007-05-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_string.c: Check the new string builder capacity prior to

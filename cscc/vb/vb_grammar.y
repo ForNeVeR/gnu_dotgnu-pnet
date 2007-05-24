@@ -69,16 +69,14 @@ static int HaveDecls = 0;
  */
 static ILScope *GlobalScope(void)
 {
-	if(CCGlobalScope)
+	if(CCCodeGen.globalScope)
 	{
-		return CCGlobalScope;
+		return CCCodeGen.globalScope;
 	}
 	else
 	{
-		CCGlobalScope = ILScopeCreate(&CCCodeGen, 0);
-		ILScopeDeclareNamespace(CCGlobalScope, "System");
-		ILScopeUsing(CCGlobalScope, "System");
-		return CCGlobalScope;
+		CCCodeGen.globalScope = ILScopeCreate(&CCCodeGen, 0);
+		return CCCodeGen.globalScope;
 	}
 }
 
@@ -93,7 +91,7 @@ static ILScope *LocalScope(void)
 	}
 	else
 	{
-		localScope = ILScopeCreate(&CCCodeGen, CCGlobalScope);
+		localScope = ILScopeCreate(&CCCodeGen, GlobalScope());
 		return localScope;
 	}
 }
@@ -106,14 +104,13 @@ static void InitGlobalNamespace(void)
 {
 	if(!CurrNamespaceNode)
 	{
-		ILNode_UsingNamespace *using;
 		char *root;
 
 		/* Create the global namespace node */
 		CurrNamespaceNode = (ILNode_Namespace *)ILNode_Namespace_create(0, 0);
-		using = (ILNode_UsingNamespace *)ILNode_UsingNamespace_create("System");
-		using->next = CurrNamespaceNode->using;
-		CurrNamespaceNode->using = using;
+		CurrNamespaceNode->localScope = GlobalScope();
+		ILNamespaceAddUsing(CurrNamespaceNode,
+			(ILNode_UsingNamespace *)ILNode_UsingNamespace_create("System"));
 		GlobalNamespaceNode = CurrNamespaceNode;
 
 		/* Set the default options on the global namespace */
@@ -807,22 +804,20 @@ ImportClause
 				}
 			}
 	| Identifier '=' QualifiedIdentifier	{
-				ILScope *globalScope = GlobalScope();
-				ILScope *scope = LocalScope();
 				ILNode *alias;
-				const char *name = ILQualIdentName($1, 0);
-				if(ILScopeLookup(globalScope, name, 1))
-				{
-					CCError("`%s' is already declared", name);
-				}
-				else if(ILScopeLookup(localScope, name, 1))
-				{
-					CCError("`%s' is already declared", name);
-				}
-				alias = ILNode_UsingAlias_create(name, ILQualIdentName($3, 0));
+				const char *name;
+
 				InitGlobalNamespace();
-				ILScopeDeclareAlias(scope, name, alias, $3);
-				CurrNamespaceNode->localScope = scope;
+				name = ILInternString(ILQualIdentName($1, 0), -1).string;
+				if((alias = ILNamespaceResolveAlias(CurrNamespaceNode, name, 0)))
+				{
+					CCError("the alias `%s' is already declared", name);
+				}
+				else
+				{
+					alias = ILNode_UsingAlias_create(name, $3);
+					ILNamespaceAddAlias(CurrNamespaceNode, (ILNode_Alias *)alias);
+				}
 			}
 	;
 

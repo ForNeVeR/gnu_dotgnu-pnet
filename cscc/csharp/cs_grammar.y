@@ -65,8 +65,23 @@ int CSMetadataOnly = 0;
 static unsigned long NestingLevel = 0;
 static ILIntString CurrNamespace = {"", 0};
 static ILNode_Namespace *CurrNamespaceNode = 0;
-static ILScope* localScope = 0;
 static int HaveDecls = 0;
+
+/*
+ * Get the global scope.
+ */
+static ILScope *GlobalScope(void)
+{
+	if(CCCodeGen.globalScope)
+	{
+		return CCCodeGen.globalScope;
+	}
+	else
+	{
+		CCCodeGen.globalScope = ILScopeCreate(&CCCodeGen, 0);
+		return CCCodeGen.globalScope;
+	}
+}
 
 /*
  * Initialize the global namespace, if necessary.
@@ -75,45 +90,8 @@ static void InitGlobalNamespace(void)
 {
 	if(!CurrNamespaceNode)
 	{
-		ILNode_UsingNamespace *using;
 		CurrNamespaceNode = (ILNode_Namespace *)ILNode_Namespace_create(0, 0);
-		using = (ILNode_UsingNamespace *)ILNode_UsingNamespace_create("System");
-		using->next = CurrNamespaceNode->using;
-		CurrNamespaceNode->using = using;
-	}
-}
-
-/*
- * Get the global scope.
- */
-static ILScope *GlobalScope(void)
-{
-	if(CCGlobalScope)
-	{
-		return CCGlobalScope;
-	}
-	else
-	{
-		CCGlobalScope = ILScopeCreate(&CCCodeGen, 0);
-		ILScopeDeclareNamespace(CCGlobalScope, "System");
-		ILScopeUsing(CCGlobalScope, "System");
-		return CCGlobalScope;
-	}
-}
-
-/* 
- * Get the local scope
- */
-static ILScope *LocalScope(void)
-{
-	if(localScope)
-	{
-		return localScope;
-	}
-	else
-	{
-		localScope = ILScopeCreate(&CCCodeGen, CCGlobalScope);
-		return localScope;
+		CurrNamespaceNode->localScope = GlobalScope();
 	}
 }
 
@@ -126,26 +104,7 @@ static void ResetState(void)
 	CurrNamespace = ILInternString("", 0);
 	CurrNamespaceNode = 0;
 	HaveDecls = 0;
-	localScope = 0;
 	ILScopeClearUsing(GlobalScope());
-}
-
-/*
- * Determine if the current namespace already has a "using"
- * declaration for a particular namespace.
- */
-static int HaveUsingNamespace(const char *name)
-{
-	ILNode_UsingNamespace *using = CurrNamespaceNode->using;
-	while(using != 0)
-	{
-		if(!strcmp(using->name, name))
-		{
-			return 1;
-		}
-		using = using->next;
-	}
-	return 0;
 }
 
 static void yyerror(char *msg)
@@ -1204,11 +1163,13 @@ QualifiedIdentifierPart
 NamespaceDeclaration
 	: OptAttributes NAMESPACE NamespaceIdentifier {
 				int posn, len;
-				ILScope *oldLocalScope;
+
+				/* Initialize the global Namespace (CompilationUnit) */
+				InitGlobalNamespace();
+					
 				posn = 0;
 				if($1)
 				{
-					InitGlobalNamespace();
 					CCPluginAddStandaloneAttrs
 						(ILNode_StandaloneAttr_create
 							((ILNode*)CurrNamespaceNode, $1));
@@ -1242,23 +1203,14 @@ NamespaceDeclaration
 						CurrNamespace = ILInternString($3.string + posn, len);
 					}
 
-					/* Create the namespace node */
-					InitGlobalNamespace();
-					
-					oldLocalScope=LocalScope();
-					
+					/* Create a namespace node for the new entered namespace. */
 					CurrNamespaceNode = (ILNode_Namespace *)
 						ILNode_Namespace_create(CurrNamespace.string,
 												CurrNamespaceNode);
 
-					/* Preserve compilation unit specific local scopes 
-					 * or maybe I need to create a new scope as child of
-					 * this scope (fix when I find a test case) */
-					CurrNamespaceNode->localScope=oldLocalScope;
-
-					/* Declare the namespace within the global scope */
-					ILScopeDeclareNamespace(GlobalScope(),
-											CurrNamespace.string);
+					CurrNamespaceNode->localScope =
+								ILScopeDeclareNamespace(GlobalScope(),
+														CurrNamespace.string);
 
 					/* Move on to the next namespace component */
 					posn += len;
@@ -1307,39 +1259,28 @@ NamespaceBody
 
 UsingDirective
 	: USING IDENTIFIER '=' QualifiedIdentifier ';'	{
-				ILScope *globalScope = GlobalScope();
-				ILScope *scope = LocalScope();
+				const char *internedAliasName;
 				ILNode *alias;
-				if(ILScopeLookup(globalScope, $2, 1))
-				{
-					CCError("`%s' is already declared", $2);
-				}
-				else if(ILScopeLookup(localScope, $2, 1))
-				{
-					CCError("`%s' is already declared", $2);
-				}
-				alias = ILNode_UsingAlias_create($2, ILQualIdentName($4,0));
-				/* NOTE: CSSemGuard is not needed as ILNode_UsingAlias is
-				         never Semanalyzed */
+
 				InitGlobalNamespace();
-				ILScopeDeclareAlias(scope, $2,alias,$4);
-				CurrNamespaceNode->localScope=scope;
+				internedAliasName = ILInternString($2, strlen($2)).string;
+				alias = ILNamespaceResolveAlias(CurrNamespaceNode, internedAliasName, 0);
+				if(alias)
+				{
+					CCError("the alias `%s' is already declared", $2);
+				}
+				else
+				{
+					alias = ILNode_UsingAlias_create(internedAliasName, $4);
+					/* NOTE: CSSemGuard is not needed as ILNode_UsingAlias is
+					         never Semanalyzed */
+					ILNamespaceAddAlias(CurrNamespaceNode, (ILNode_Alias *)alias);
+				}
 			}
 	| USING NamespaceIdentifier ';'		{
-				ILScope *globalScope = GlobalScope();
-				ILNode_UsingNamespace *using;
-				if(!ILScopeUsing(globalScope, $2.string))
-				{
-					CCError("`%s' is not a namespace", $2.string);
-				}
 				InitGlobalNamespace();
-				if(!HaveUsingNamespace($2.string))
-				{
-					using = (ILNode_UsingNamespace *)
-						ILNode_UsingNamespace_create($2.string);
-					using->next = CurrNamespaceNode->using;
-					CurrNamespaceNode->using = using;
-				}
+				ILNamespaceAddUsing(CurrNamespaceNode,
+					(ILNode_UsingNamespace *)ILNode_UsingNamespace_create($2.string));
 			}
 	;
 

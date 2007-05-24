@@ -36,6 +36,7 @@ extern	"C" {
 
 typedef struct _tagILGenInfo  		ILGenInfo;
 typedef struct _tagILScope  		ILScope;
+typedef struct _tagILScopeData		ILScopeData;
 typedef struct _tagILSwitchValue  	ILSwitchValue;
 typedef unsigned long		  		ILLabel;
 #define	ILLabel_Undefined			((ILLabel)0)

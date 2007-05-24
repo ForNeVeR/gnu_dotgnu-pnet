@@ -222,7 +222,7 @@ void JavaSemProgramItem(ILGenInfo *info, ILProgramItem *item)
 {
 	ILGenItemContext context;
 	ILNode *node;
-	node = ILEnterProgramItemContext(info, item, CCGlobalScope, &context);
+	node = ILEnterProgramItemContext(info, item, CCCodeGen.globalScope, &context);
 	if(node)
 	{
 		ILNode_JSemAnalysis(node, info, &node);

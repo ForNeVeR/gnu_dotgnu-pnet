@@ -318,6 +318,54 @@ static void ImportType(ILScope *scope, ILClass *info, const char *name)
 	}
 }
 
+ILScope *ILScopeImportNamespace(ILScope *scope, const char *namespace)
+{
+	if(scope && namespace)
+	{
+		ILImage *image = 0;
+		int namespaceLen = strlen(namespace);
+
+		if(namespaceLen == 0)
+		{
+			return 0;
+		}
+
+		while((image = ILContextNextImage(scope->info->context, image)) != 0)
+		{
+			unsigned long numTokens;
+			unsigned long token;
+			ILClass *info;
+			const char *namespaceTest = 0;
+
+			numTokens = ILImageNumTokens(image, IL_META_TOKEN_TYPE_DEF);
+			for(token = 1; token <= numTokens; ++token)
+			{
+				info = (ILClass *)(ILImageTokenInfo
+								(image, token | IL_META_TOKEN_TYPE_DEF));
+
+				if(info && (namespaceTest != ILClass_Namespace(info)))
+				{
+					namespaceTest = ILClass_Namespace(info);
+					if(namespaceTest)
+					{
+						int testLen = strlen(namespaceTest);
+
+						if(!strncmp(namespace, namespaceTest, namespaceLen))
+						{
+							if((testLen == namespaceLen) ||
+							   ((testLen > namespaceLen) && (namespaceTest[namespaceLen] == '.')))
+							{
+								return FindNamespaceScope(scope->info->globalScope, namespace);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 void ILScopeImport(ILScope *scope, ILImage *image)
 {
 	unsigned long numTokens;
@@ -480,9 +528,9 @@ ILScopeData *ILScopeNextItem(ILScopeData *data)
 	return (ILScopeData *)(ILRBTreeNext(&(data->rbnode)));
 }
 
-void ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace)
+ILScope *ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace)
 {
-	FindNamespaceScope(globalScope, namespace);
+	return FindNamespaceScope(globalScope, namespace);
 }
 
 ILScope *ILScopeFindNamespace(ILScope *globalScope, const char *namespace)

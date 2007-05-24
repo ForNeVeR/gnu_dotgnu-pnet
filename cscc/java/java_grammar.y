@@ -197,16 +197,16 @@ static int HaveDecls = 0;
  */
 static ILScope *GlobalScope(void)
 {
-	if(CCGlobalScope)
+	if(CCCodeGen.globalScope)
 	{
-		return CCGlobalScope;
+		return CCCodeGen.globalScope;
 	}
 	else
 	{
-		CCGlobalScope = ILScopeCreate(&CCCodeGen, 0);
-		ILScopeDeclareNamespace(CCGlobalScope, "java.lang");
-		ILScopeUsing(CCGlobalScope, "java.lang");
-		return CCGlobalScope;
+		CCCodeGen.globalScope = ILScopeCreate(&CCCodeGen, 0);
+		ILScopeDeclareNamespace(CCCodeGen.globalScope, "java.lang");
+		ILScopeUsing(CCCodeGen.globalScope, "java.lang");
+		return CCCodeGen.globalScope;
 	}
 }
 

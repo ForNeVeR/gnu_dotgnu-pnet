@@ -67,7 +67,6 @@ ILNode *CCParseTree;
 ILNode *CCParseTreeEnd;
 ILNode *CCStandaloneAttrs;
 ILNode *CCStandaloneAttrsEnd;
-ILScope *CCGlobalScope;
 
 /*
  * Forward declarations.

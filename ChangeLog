@@ -1,3 +1,7 @@
+2007-05-25  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/IO/BinaryReader.cs: Initialize result to 0 before use.
+
 2007-05-25  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
 
 	* runtime/System/IO/BinaryReader.cs: Dont throw

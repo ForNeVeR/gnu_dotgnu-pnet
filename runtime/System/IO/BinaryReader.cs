@@ -411,7 +411,7 @@ public class BinaryReader : IDisposable
 	public virtual byte[] ReadBytes(int count)
 			{
 				byte[] buffer;
-				int result;
+				int result = 0;
 				if(count < 0)
 				{
 					throw new ArgumentOutOfRangeException

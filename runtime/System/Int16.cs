@@ -68,9 +68,7 @@ public struct Int16 : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				if (format == null) format = "G";
-				return 
-					Formatter.CreateFormatter(format).Format(this, provider);
+				return Formatter.FormatInt16( value_, format, provider );
 			}
 
 	// Parsing methods.

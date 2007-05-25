@@ -1,3 +1,17 @@
+2007-05-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Byte.cs, runtime/System/Double.cs,
+	runtime/System/Int16.cs, runtime/System/Int32.cs,
+	runtime/System/Int64.cs, runtime/System/SByte.cs,
+	runtime/System/Single.cs, runtime/System/UInt16.cs,
+	runtime/System/UInt32.cs, runtime/System/UInt64.cs,
+	runtime/System/Private/NumberFormat/FixedPointFormatter.cs,
+	runtime/System/Private/NumberFormat/Formatter.cs,
+	runtime/System/Private/NumberFormat/GeneralFormatter.cs,
+	runtime/System/Private/NumberFormat/ScientificFormatter.cs:
+	optimized performance and do correct formatting.
+
+
 2007-05-23  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/Microsoft/Win32/RegistryValueOptions.cs: Add the System using

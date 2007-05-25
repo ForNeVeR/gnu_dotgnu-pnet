@@ -70,9 +70,7 @@ public struct UInt64 : IComparable, IFormattable
 
 	public String ToString(String format, IFormatProvider provider)
 			{
-				if (format == null) format = "G";
-				return
-					Formatter.CreateFormatter(format).Format(this, provider);
+				return Formatter.FormatUInt64( value_, format, provider );
 			}
 
 	// Parsing methods.

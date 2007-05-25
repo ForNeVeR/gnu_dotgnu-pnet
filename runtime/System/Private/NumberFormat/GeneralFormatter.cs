@@ -31,10 +31,12 @@ using System.Text;
 internal class GeneralFormatter : Formatter
 {
 	char Ee;
+	char Gg;
 
 	public GeneralFormatter(int precision, char Gg)
 	{
 		this.precision = precision;
+		this.Gg = Gg;
 		switch(Gg)
 		{
 			case 'G':
@@ -154,13 +156,21 @@ internal class GeneralFormatter : Formatter
 
 		if (exponent >= -4 && exponent < precision)
 		{
+#if CONFIG_EXTENDED_NUMERICS
+			if( !IsDecimal(o) )
+				return Formatter.FormatDouble( val, exponent, precision, false, provider );
+#endif
 			return StripTrail(
 					FixedPointFormatter.Format(o, precision, provider),
 					provider);
 		}
 		else
 		{
+#if CONFIG_EXTENDED_NUMERICS
+			return Formatter.FormatScientific( val, exponent, precision, this.Gg.ToString(), provider);
+#else
 			return new ScientificFormatter(precision, Ee).Format(o, provider);
+#endif
 		}
 	}		
 

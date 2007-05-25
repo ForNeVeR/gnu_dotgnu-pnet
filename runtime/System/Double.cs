@@ -126,9 +126,7 @@ public struct Double : IComparable, IFormattable
 					}
 				}
 				
-				if (format == null) format = "G";
-				return
-					Formatter.CreateFormatter(format).Format(this, provider);
+				return Formatter.FormatDouble( value_, format, provider );
 			}
 
 	// Parsing methods.

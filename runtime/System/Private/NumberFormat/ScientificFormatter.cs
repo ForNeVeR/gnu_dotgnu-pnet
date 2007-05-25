@@ -41,6 +41,10 @@ internal class ScientificFormatter : Formatter
 	public override string Format(Object o, IFormatProvider provider)
 	{
 #if CONFIG_EXTENDED_NUMERICS
+		double value = OToDouble(o);
+		return Formatter.FormatScientific( value, Formatter.GetExponent( value ), precision, Ee.ToString(), provider);
+		/*
+
 		bool isNegative = false;
 
 		double value;
@@ -64,6 +68,11 @@ internal class ScientificFormatter : Formatter
 		{
 			return NumberFormatInfo(provider).NegativeInfinitySymbol;
 		}
+		else if( value == double.Epsilon ) {
+		 return "4" + NumberFormatInfo(provider).NumberDecimalSeparator + "94065645841247E-324";
+		}
+
+		
 		if (value < 0)
 		{
 			isNegative = true;
@@ -81,6 +90,18 @@ internal class ScientificFormatter : Formatter
 			//exponent = (int) Math.Floor(Math.Log10(value));
 			exponent = Formatter.GetExponent( value );
 			mantissa = value / Math.Pow(10, exponent);
+			if (Double.IsNaN(mantissa))
+			{
+				return NumberFormatInfo(provider).NaNSymbol;
+			}
+			else if(Double.IsPositiveInfinity(mantissa))
+			{
+				return NumberFormatInfo(provider).PositiveInfinitySymbol;
+			}
+			else if(Double.IsNegativeInfinity(mantissa))
+			{
+				return NumberFormatInfo(provider).NegativeInfinitySymbol;
+			}
 		}
 
 		rawnumber = FormatFloat(mantissa, precision);
@@ -118,6 +139,7 @@ internal class ScientificFormatter : Formatter
 													.PadLeft(3,'0'));
 
 		return ret.ToString();
+		*/
 #else // !CONFIG_EXTENDED_NUMERICS
 		return String.Empty;
 #endif // !CONFIG_EXTENDED_NUMERICS

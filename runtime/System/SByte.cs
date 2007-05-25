@@ -68,9 +68,7 @@ public struct SByte : IComparable, IFormattable
 			}
 	public String ToString(String format, IFormatProvider provider)
 			{
-				if (format == null) format = "G";
-				return
-					Formatter.CreateFormatter(format).Format(this, provider);
+				return Formatter.FormatSByte( value_, format, provider );
 			}
 
 	// Parsing methods.

@@ -35,6 +35,10 @@ internal class FixedPointFormatter : Formatter
 
 	internal static string Format(Object o, int precision, IFormatProvider provider)
 	{
+#if CONFIG_EXTENDED_NUMERICS
+		if( !IsDecimal(o) )
+			return Formatter.FormatDouble( OToDouble(o), precision, true, provider );
+#endif
 		//  Get string
 		string rawnumber = FormatAnyRound(o, precision, provider);
 		StringBuilder ret = new StringBuilder();

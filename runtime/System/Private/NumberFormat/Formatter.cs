@@ -34,6 +34,8 @@ internal abstract class Formatter
 	//
 	private const string validformats = "CcDdEeFfGgNnPpRrXx";
 	static private IDictionary formats = new Hashtable();
+	// We need this ULongMaxValue, because cscc has a bug converting ulong.MaxValue to double
+	static private double ULongMaxValue = 18446744073709551615d;
 
 	// ----------------------------------------------------------------------
 	//  Protected data for other methods
@@ -437,8 +439,8 @@ internal abstract class Formatter
 
 		return ret.ToString();
 	}
-
-	internal static int GetExponent( double value ) {
+	
+	internal static int GetExponent( double value, int precision ) {
 		// return (int)Math.Floor(Math.Log10(Math.Abs(value)));
 		/*
 			Note:
@@ -448,23 +450,45 @@ internal abstract class Formatter
 			so the exponent would be one to big.
 			So the Method below is now used to calculate the exponent.
 		*/
+
 		if( value == 0.0 ) return 0;
+	
+		int exponent = (int)Math.Floor(Math.Log10(Math.Abs(value)));
+
+		if( exponent >= -4 && exponent < 15 ) {
+	
+			double work = Math.Abs(value);
+			if( precision >=0 ) work += 5*Math.Pow(10, -precision-1 );
 		
-		value = Math.Abs(value);
-		int exponent = 0;
-		if( value >= 1.0 ) {
-			while( value >= 10.0 ) {
-				exponent++;
-				value /= 10.0;
-			} 
-		}
-		else {
-			while( value <= 1.0 ) {
-				exponent--;
-				value *= 10.0;
-			} 
+			if( work < ULongMaxValue ) {
+				ulong  value1 = (ulong)work;
+				exponent = ULog10( value1 );
+		
+				work -= value1;
+				work *= Math.Pow(10, 15 - exponent -1 );
+		
+				ulong  value2 = (ulong) (work+.5);
+		
+				if( value2 != 0 ) {
+					ulong  test   = (ulong) work;
+					// check for rounding error
+					// if floor Log10(test) is not equal then floor Log10(value2) then value2 is factor 10 too big
+					// so increment value1 by 1 and set value2 to 0 -> return new value1
+					if( (test != value2) && ( ULog10(test) != ULog10(value2) ) ) {
+						exponent++;
+					}
+		
+					if( exponent < 0 ) {
+						exponent = ULog10( value2 ) - 15;
+					}
+				}
+			}
 		}
 		return exponent;
+	}
+
+	internal static int GetExponent( double value ) {
+		return GetExponent( value, -1 );
 	}
 	
 	static protected string FormatFloat(double value, int precision)
@@ -489,7 +513,7 @@ internal abstract class Formatter
 			new StringBuilder(FormatInteger((ulong)Math.Floor(work)), 30 );
 		sb.Remove(sb.Length-1, 1);    // Ditch the trailing decimal point
 
-		if (sb.Length > precision + exponent + 1)
+		if (sb.Length > 0 && sb.Length > precision + exponent + 1)
 		{
 			sb.Remove(precision+exponent+1, sb.Length-(precision+exponent+1));
 		}	
@@ -670,6 +694,378 @@ internal abstract class Formatter
 	//  Public access method.
 	//
 	public abstract string Format(Object o, IFormatProvider provider);
+
+	static bool UseScientificFormatter( string format, out int precision ) {
+
+		precision = -1;
+
+		if( null != format && format.Length > 1 && format.Length <= 3 && (format[0] == 'E' || format[0] == 'e') ) {
+			try 
+			{
+				precision = Byte.Parse(format.Substring(1));
+				return true;
+			}
+			catch (FormatException)
+			{
+				return false;
+			}
+		}
+		return false;
+	}
+
+	static bool UseStandardFormatter( string format, out int precision ) {
+
+		precision = -1;
+
+		if ( null == format || format == "G" || format == "g" || format.Length == 0 || format == "G0" ) return true;
+
+		if( format.Length > 1 && format.Length <= 3 && (format[0] == 'F' || format[0] == 'f') ) {
+			try 
+			{
+				precision = Byte.Parse(format.Substring(1));
+				return true;
+			}
+			catch (FormatException)
+			{
+				return false;
+			}
+		}
+		return false;
+	}
+
+	const string strNull = "0";
+
+	static public string FormatDouble( double value, string format, IFormatProvider provider ) {
+		int precision;
+		if( UseStandardFormatter(format, out precision ) ) {
+			if( value == 0.0 && precision <= 0 ) return strNull;
+
+			int exponent  = GetExponent(value);
+
+			if( precision >= 0 ) {
+				return FormatDouble( value, exponent, precision, true, provider );
+			}
+			else {
+				if (exponent >= -4 && exponent < 15) {
+					return FormatDouble( value, exponent, 15, false, provider );
+				}
+				else {
+					return FormatScientific(value, exponent, 15, format, provider);
+					//return Formatter.CreateFormatter(format == null ? "G" : format).Format(value, provider);
+				}
+			}
+		}
+		else if( UseScientificFormatter(format, out precision ) ) {
+			return FormatScientific(value, GetExponent(value), precision, format, provider);
+		}
+		
+		return Formatter.CreateFormatter(format == null ? "G" : format).Format(value, provider);
+	}
+
+	static public string FormatSingle( float value, string format, IFormatProvider provider ) {
+		int precision;
+		if( UseStandardFormatter(format, out precision ) ) {
+			if( value == 0.0 && precision <= 0 ) return strNull;
+
+			int exponent  = GetExponent(value);
+		
+			if( precision >= 0 ) {
+				return FormatDouble( value, exponent, precision, true, provider );
+			}
+			else {
+				if (exponent >= -4 && exponent < 7) {
+					return FormatDouble( value, exponent, 7, false, provider );
+				}
+				else {
+					return FormatScientific(value, exponent, 7, format, provider);
+					// return Formatter.CreateFormatter(format == null ? "G" : format).Format(value, provider);
+				}
+			}
+		}
+		else if( UseScientificFormatter(format, out precision ) ) {
+			return FormatScientific(value, GetExponent(value), precision, format, provider);
+		}
+		return Formatter.CreateFormatter(format == null ? "G" : format).Format(value, provider);
+	}
+
+	static public string FormatInt64( long value, string format, IFormatProvider provider ) {
+		int precision;
+		if( UseStandardFormatter(format, out precision ) ) {
+			NumberFormatInfo nfi = NumberFormatInfo.GetInstance( provider );
+			StringBuilder sb = new StringBuilder( FormatInt64( value, nfi.NegativeSign ) );
+			if( precision > 0 ) {
+				sb.Append( nfi.NumberDecimalSeparator );
+				sb.Append( '0', precision );
+			}
+			return sb.ToString();
+		}
+		else if( UseScientificFormatter(format, out precision ) ) {
+			return FormatScientific(value, GetExponent(value), precision, format, provider);
+		}
+		return Formatter.CreateFormatter(format).Format(value, provider);
+	}
+
+	static public string FormatUInt64( ulong value, string format, IFormatProvider provider ) {
+		int precision;
+		if( UseStandardFormatter(format, out precision ) ) {
+			if( precision > 0 ) {
+				NumberFormatInfo nfi = NumberFormatInfo.GetInstance( provider );
+				StringBuilder sb = new StringBuilder( FormatUInt64( value ) );
+				sb.Append( nfi.NumberDecimalSeparator );
+				sb.Append( '0', precision );
+				return sb.ToString();
+			}
+			else {
+				return FormatUInt64( value );
+			}
+		}
+		else if( UseScientificFormatter(format, out precision ) ) {
+			return FormatScientific(value, GetExponent(value), precision, format, provider);
+		}
+		return Formatter.CreateFormatter(format).Format(value, provider);
+	}
+
+	static public string FormatInt32( int value, string format, IFormatProvider provider ) {
+		return FormatInt64( value, format, provider );
+	}
+
+	static public string FormatUInt32( uint value, string format, IFormatProvider provider ) {
+		return FormatUInt64( value, format, provider );
+	}
+
+	static public string FormatInt16( short value, string format, IFormatProvider provider ) {
+		return FormatInt64( value, format, provider );
+	}
+
+	static public string FormatUInt16( ushort value, string format, IFormatProvider provider ) {
+		return FormatUInt64( value, format, provider );
+	}
+
+	static public string FormatSByte( sbyte value, string format, IFormatProvider provider ) {
+		return FormatInt64( value, format, provider );
+	}
+
+	static public string FormatByte( byte value, string format, IFormatProvider provider ) {
+		return FormatUInt64( value, format, provider );
+	}
+
+	// General formatting
+
+	// return the absolut value of Log10
+	static int ULog10( ulong val ) {
+		if( val == 0 ) return -1;
+		return (int) Math.Log10( val );
+	}
+
+	static protected string FormatDouble( double value, int exponent, int precision, bool FixedPoint, IFormatProvider provider ) {
+
+		NumberFormatInfo nfi = NumberFormatInfo.GetInstance( provider );
+
+		bool negativ = value < 0;
+		double work  = negativ ? -value : value;
+		if( precision < 0 ) precision = 15;
+
+		StringBuilder sb = new StringBuilder(30);
+
+		do {
+			if( work < ULongMaxValue ) {
+
+				work += 5*Math.Pow(10,-precision-1 + (FixedPoint ? 0 : exponent+1) );
+				ulong value1 = (ulong) work;
+
+				if( negativ && value1 != 0 ) sb.Append( nfi.NegativeSign );
+				sb.Append( FormatUInt64( value1 ) );
+
+				if( precision == 0 ) break;
+
+				work -= value1;
+				work *= Math.Pow( 10, 15 );
+				ulong value2 = (ulong) work;
+
+				if( value2 == 0 && !FixedPoint ) break;
+
+				int iCount = FixedPoint ? precision : precision-exponent-1;
+				if( iCount <= 0 ) break;
+
+				if( value2 == 0 ) {
+					sb.Append( nfi.NumberDecimalSeparator );
+					sb.Append( '0', iCount );
+					break;
+				}
+
+				int iLen   = ULog10( value2 )+1;
+				int iNull  = 15-iLen;
+				if( iNull >= iCount ) {
+					value2 = 0;
+					if( FixedPoint ) {
+						sb.Append( nfi.NumberDecimalSeparator );
+						sb.Append( '0', iCount );
+					}
+				}
+				else {
+					iCount -= iNull;
+					if( FixedPoint || iCount > 0 ) {
+						sb.Append( nfi.NumberDecimalSeparator );
+						if( iNull > 0 ) {
+							sb.Append( '0', iNull );
+						}
+						if( iLen <= iCount ) {
+							sb.Append( FormatUInt64( value2 ) );
+							iCount -= iLen;
+							if( iCount > 0 && FixedPoint ) sb.Append( '0', iCount );
+						}
+						else {
+							sb.Append( FormatUInt64( value2 ).Substring( 0, iCount ) );
+						}
+						if( !FixedPoint ) {
+							while( sb[sb.Length-1]=='0') sb.Remove(sb.Length-1,1);
+						}
+					}
+				}
+
+				if( negativ && value1 == 0 && value2 != 0 ) {
+					sb.Insert( 0, nfi.NegativeSign );
+				}
+			}
+			else {
+				if( negativ  ) sb.Append( nfi.NegativeSign );
+				int pow;
+				if( exponent > precision && exponent > 15 ) {
+					pow = exponent-15+1;
+				}
+				else {
+					pow = exponent-precision+1;
+				}
+				work /= Math.Pow(10,pow);
+				work += .5;
+				sb.Append( FormatUInt64( (ulong)work ) );
+				sb.Append( '0', pow );
+
+				if( FixedPoint && precision > 0 ) {
+					sb.Append( nfi.NumberDecimalSeparator );
+					sb.Append( '0', precision );
+				}
+			}
+		}while(false);
+
+		return sb.ToString();
+	}
+
+	static protected string FormatDouble( double value, int precision, bool FixedPoint, IFormatProvider provider ) {
+		return FormatDouble( value, GetExponent(value, precision ), precision, FixedPoint, provider );
+	}
+	
+	static protected string FormatScientific(double value, int exponent, int precision, string format, IFormatProvider provider)
+	{
+		if (Double.IsNaN(value)) {
+			return NumberFormatInfo(provider).NaNSymbol;
+		}
+		else if(Double.IsPositiveInfinity(value)) {
+			return NumberFormatInfo(provider).PositiveInfinitySymbol;
+		}
+		else if(Double.IsNegativeInfinity(value)) {
+			return NumberFormatInfo(provider).NegativeInfinitySymbol;
+		}
+		else if( value == double.Epsilon ) {
+			return "4" + NumberFormatInfo(provider).NumberDecimalSeparator + "94065645841247E-324";
+		}
+
+		bool fixPrecision = false;
+		bool isNegative = false;
+		int  iPadLeft   = 2;
+		char Ee         = 'E';
+		if( null != format && format.Length > 0 ) {
+			switch( format[0] ) {
+				case 'g' : 
+					Ee = 'e';
+					iPadLeft = 2;
+					break;
+				case 'G' : 
+					Ee = 'E';
+					iPadLeft = 2;
+					break;
+				case 'e' : 
+					Ee = 'e';
+					iPadLeft = 3;
+					fixPrecision = true;
+					break;
+				case 'E' : 
+					Ee = 'E';
+					iPadLeft = 3;
+					fixPrecision = true;
+					break;
+			}
+		}
+
+		if (value < 0) {
+			isNegative = true;
+			value = -value;
+		}
+
+		double mantissa = value / Math.Pow(10, exponent);
+		
+		if (Double.IsNaN(mantissa))
+		{
+			return NumberFormatInfo(provider).NaNSymbol;
+		}
+		else if(Double.IsPositiveInfinity(mantissa))
+		{
+			return NumberFormatInfo(provider).PositiveInfinitySymbol;
+		}
+		else if(Double.IsNegativeInfinity(mantissa))
+		{
+			return NumberFormatInfo(provider).NegativeInfinitySymbol;
+		}
+
+		StringBuilder ret = new StringBuilder( FormatDouble( mantissa, precision, fixPrecision, provider ) );
+		if (isNegative)
+		{
+			ret.Insert(0, NumberFormatInfo(provider).NegativeSign);
+		}
+
+		ret.Append(Ee);
+		if (exponent < 0)
+		{
+			ret.Append(NumberFormatInfo(provider).NegativeSign);
+		}
+		else
+		{
+			ret.Append(NumberFormatInfo(provider).PositiveSign);
+		}
+		ret.Append( FormatUInt64( (ulong) Math.Abs(exponent) ).PadLeft(iPadLeft,'0') );
+		return ret.ToString();
+	}		
+	
+
+	static private string FormatInt64( long value, string sign ) {
+		if( value == 0 ) return strNull;
+		if( value == long.MinValue ) return "-9223372036854775808";
+
+		StringBuilder ret = new StringBuilder(25);
+		long work = value;
+		if( work < 0 ) {
+			work = -work;
+		}
+		while (work > 0) {
+			ret.Insert(0, decimalDigits[work % 10]);
+			work /= 10;
+		}
+		if( value < 0 ) ret.Insert(0, sign );
+		return ret.ToString();
+	}
+
+	static private string FormatUInt64( ulong value ) {
+		if( value == 0 ) return strNull;
+
+		StringBuilder ret = new StringBuilder(25);
+		ulong work = value;
+		while (work > 0) {
+			ret.Insert(0, decimalDigits[work % 10]);
+			work /= 10;
+		}
+		return ret.ToString();
+	}
+
 
 } // class Formatter
 

@@ -425,7 +425,6 @@ public class BinaryReader : IDisposable
 					int num2 = Read(buffer, result, count);
 					if(num2 == 0)
 					{
-						throw new EndOfStreamException(_("IO_ReadEndOfStream"));
 						break;
 					}
 					result += num2;

@@ -1,3 +1,9 @@
+2007-05-25  Kirill Kononenko  <Kirill.Kononenko@gmail.com>
+
+	* runtime/System/IO/BinaryReader.cs: Dont throw
+	EndOfStreamException when trying to read more that is length
+	of the stream (patch  #5348, applied by radekp).
+
 2007-05-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Byte.cs, runtime/System/Double.cs,

@@ -1,3 +1,9 @@
+2007-05-25  Klaus Treichel  <ktreichel@web.de>
+
+	* support/cvt_float.c: Fix a problem with converting UInt64 values greater
+	than IL_MAX_INT64 ti ILNativeFloat. Gcc generated code that returned always
+	0 in this case.
+
 2007-05-24  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_defs.h, codegen/cg_scope.h: Move the opaque declaration of

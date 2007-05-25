@@ -39,8 +39,8 @@ ILNativeFloat ILUInt64ToFloat(ILUInt64 value)
 	}
 	else
 	{
-		return ((ILNativeFloat)(((ILInt64)value) + IL_MIN_INT64)) +
-					(ILNativeFloat)9223372036854775808.0;
+		return (ILNativeFloat)((ILInt64)value) +
+			   (ILNativeFloat)18446744073709551616.0;
 	}
 }
 

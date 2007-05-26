@@ -979,7 +979,7 @@ ILScopeData *ILScopeLocalsIter(ILScope *scope, ILScopeData *prev, int *iter,
 	{
 		if(prev->rbnode.kind == IL_SCOPE_LOCAL)
 		{
-			*index = (unsigned int) prev->data;
+			*index = (unsigned long) prev->data;
 			*name = prev->name;
 			return prev;
 		}

@@ -1,3 +1,10 @@
+2007-05-26  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_scope.c: Change the cast in the assignment of data to *index
+	from (unsignded int) to (unsigned long) to fix a compiler warning and to
+	avoid information loss on archs where the size of void * is greater than
+	the size of int.
+
 2007-05-25  Klaus Treichel  <ktreichel@web.de>
 
 	* support/cvt_float.c: Fix a problem with converting UInt64 values greater

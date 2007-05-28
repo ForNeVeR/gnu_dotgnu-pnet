@@ -19,6 +19,11 @@
  */
 
 #include <cscc/c/c_internal.h>
+/* This one is included only to be able to read all class attributes */
+/* Non System flags are masked out by ILClass_Attrs (ILClassGetAttrs). */
+/* So the flags for IL_META_TYPEDEF_IS_STRUCT, IL_META_TYPEDEF_IS_UNION */
+/* and IL_META_TYPEDEF_IS_ENUM might get lost there. */
+#include <image/program.h>
 #include "il_serialize.h"
 #include "il_crypt.h"
 
@@ -1748,8 +1753,9 @@ int CTypeIsStruct(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if((ILClass_Attrs(ILType_ToValueType(type)) &
-				IL_META_TYPEDEF_IS_STRUCT) != 0)
+		ILClass *info = ILType_ToValueType(type);
+
+		if((info->attributes & IL_META_TYPEDEF_IS_STRUCT) != 0)
 		{
 			return 1;
 		}
@@ -1762,8 +1768,9 @@ int CTypeIsUnion(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if((ILClass_Attrs(ILType_ToValueType(type)) &
-				IL_META_TYPEDEF_IS_UNION) != 0)
+		ILClass *info = ILType_ToValueType(type);
+
+		if((info->attributes & IL_META_TYPEDEF_IS_UNION) != 0)
 		{
 			return 1;
 		}

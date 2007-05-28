@@ -52,7 +52,7 @@ static int PendingHash_Match(const void *elem, const void *key)
  */
 static int IsCValueType(ILClass *classInfo)
 {
-	if((ILClass_Attrs(classInfo) & IL_META_TYPEDEF_TYPE_BITS) != 0)
+	if((classInfo->attributes & IL_META_TYPEDEF_TYPE_BITS) != 0)
 	{
 		return 1;
 	}

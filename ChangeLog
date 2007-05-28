@@ -1,8 +1,8 @@
 2007-05-28  Klaus Treichel  <ktreichel@web.de>
 
-	* cscc/c/c_types.h: Fix reading non system attributes of an ILClass. We have
-	to read the ILClass member directly because non system flags are masked out
-	otherwise.
+	* cscc/c/c_types.c, cscc/c/c_typeout.c: Fix reading non system attributes
+	of an ILClass. We have to read the ILClass member directly because non
+	system flags are masked out otherwise.
 
 2007-05-26  Klaus Treichel  <ktreichel@web.de>
 

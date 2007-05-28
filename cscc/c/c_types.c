@@ -1493,7 +1493,7 @@ ILType *CTypeEndStruct(ILGenInfo *info, ILType *structType, int renameAnon)
 			ILGenOutOfMemory(info);
 		}
 		ILFree(newName);
-		ILClassSetAttrs(newClass, ~0, ILClass_Attrs(classInfo));
+		ILClassSetAttrs(newClass, ~0, classInfo->attributes);
 		CloneStruct(info, newClass, classInfo);
 		return ILType_FromValueType(newClass);
 	}
@@ -1783,13 +1783,13 @@ int CTypeGetStructKind(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if((ILClass_Attrs(ILType_ToValueType(type)) &
-				IL_META_TYPEDEF_IS_STRUCT) != 0)
+		ILClass *info = ILType_ToValueType(type);
+
+		if((info->attributes & IL_META_TYPEDEF_IS_STRUCT) != 0)
 		{
 			return C_STKIND_STRUCT;
 		}
-		else if((ILClass_Attrs(ILType_ToValueType(type)) &
-					IL_META_TYPEDEF_IS_UNION) != 0)
+		else if((info->attributes & IL_META_TYPEDEF_IS_UNION) != 0)
 		{
 			return C_STKIND_UNION;
 		}
@@ -1802,8 +1802,9 @@ int CTypeIsEnum(ILType *type)
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsValueType(type))
 	{
-		if((ILClass_Attrs(ILType_ToValueType(type)) &
-				IL_META_TYPEDEF_IS_ENUM) != 0)
+		ILClass *info = ILType_ToValueType(type);
+
+		if((info->attributes & IL_META_TYPEDEF_IS_ENUM) != 0)
 		{
 			return 1;
 		}

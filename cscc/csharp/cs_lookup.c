@@ -895,10 +895,11 @@ static CSSemValue LookupToSem(ILNode *node, const char *name,
 
 /*
  * Find the type with a specific name within a namespace.
+ * Restrict the resolution to types only if typesOnly is != 0.
  */
 static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 							   const char *namespace, ILClass *accessedFrom,
-							   CSMemberLookupInfo *results)
+							   CSMemberLookupInfo *results, int typesOnly)
 {
 	ILClass *type;
 	ILScopeData *data;
@@ -926,20 +927,17 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 		scopeKind = ILScopeDataGetKind(data);
 		if(scopeKind == IL_SCOPE_SUBSCOPE)
 		{
-			if(namespace)
+			if(typesOnly == 0)
 			{
-				fullName = ILInternStringConcat3
-								(ILInternString(namespace, -1),
-								 ILInternString(".", 1),
-								 ILInternString(name, -1)).string;
+				fullName = ILScopeDataGetNamespaceName(data);
+				AddMember(results, (ILProgramItem *)fullName,
+						  0, CS_MEMBERKIND_NAMESPACE);
+				return CS_SEMKIND_NAMESPACE;
 			}
 			else
 			{
-				fullName = name;
+				return CS_SEMKIND_VOID;	
 			}
-			AddMember(results, (ILProgramItem *)fullName,
-					  0, CS_MEMBERKIND_NAMESPACE);
-			return CS_SEMKIND_NAMESPACE;
 		}
 		else if(scopeKind == IL_SCOPE_DECLARED_TYPE)
 		{
@@ -971,6 +969,27 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	{
 		AddMember(results, (ILProgramItem *)type, 0, CS_MEMBERKIND_TYPE);
 		return CS_SEMKIND_TYPE;
+	}
+
+	/* Now check if it's an existing namespace name */
+	if(typesOnly == 0)
+	{
+		if(namespace && (*namespace != '\0'))
+		{
+			fullName = ILInternStringConcat3(ILInternString(namespace, -1),
+											 ILInternString(".", 1),
+											 ILInternString(name, -1)).string;
+		}
+		else
+		{
+			fullName = name;
+		}
+		if(ILScopeImportNamespace(genInfo->globalScope, fullName) != 0)
+		{
+			AddMember(results, (ILProgramItem *)fullName,
+					  0, CS_MEMBERKIND_NAMESPACE);
+			return CS_SEMKIND_NAMESPACE;
+		}
 	}
 
 	/* Could not find a type or namespace with the specified name */
@@ -1298,7 +1317,7 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	{
 		/* Look for the type in the current namespace */
 		result = FindTypeInNamespace(genInfo, name, namespace->name,
-									 accessedFrom, &results);
+									 accessedFrom, &results, 0);
 		if(result != CS_SEMKIND_VOID)
 		{
 			/* We have to check if an alias with the same name is declared here too. */
@@ -1353,22 +1372,12 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 		while(using != 0)
 		{
 			FindTypeInNamespace(genInfo, name, using->name,
-								accessedFrom, &results);
+								accessedFrom, &results, 1);
 			using = using->next;
 		}
 
 		/* Move up to the enclosing namespace */
 		namespace = namespace->enclosing;
-	}
-
-	/* We have to look in the ipmorted libraries now if the name is a valid namespace. */
-	if((result == CS_SEMKIND_VOID) && !(results.num))
-	{
-		if(ILScopeImportNamespace(genInfo->globalScope, name))
-		{
-			CSSemSetNamespace(value, name);
-			return value;
-		}
 	}
 
 	/* We should have 0, 1, or many types at this point */
@@ -1441,21 +1450,7 @@ CSSemValue CSResolveNamespaceMemberName(ILGenInfo *genInfo,
 	result = FindTypeInNamespace(genInfo, name,
 								 CSSemGetNamespace(value),
 								 ILClassResolve(CSGetAccessScope(genInfo, 1)),
-								 &results);
-
-	/* See if the namespace is valid, according to the loaded libraries */
-	if(result == CS_SEMKIND_VOID)
-	{
-		nspace = ILInternStringConcat3
-			(ILInternString(CSSemGetNamespace(value), -1),
-			 ILInternString(".", 1),
-			 ILInternString((char *)name, -1));
-		if(ILScopeImportNamespace(genInfo->globalScope, nspace.string))
-		{
-			CSSemSetNamespace(value, nspace.string);
-			return value;
-		}
-	}
+								 &results, 0);
 
 	/* Return the result to the caller */
 	if(result == CS_SEMKIND_VOID)

@@ -60,7 +60,7 @@ struct _tagILScope
 	ILRBTree		nameTree;	/* Tree containing all names in the scope */
 	ILScopeUsingInfo *using;	/* Using declarations for the scope */
 	ILScope			*aliases;	/* aliases lookup scope */
-	ILClass		   *classInfo;	/* Data attached to the scope for searching */
+	void		   *userData;	/* user data attached to the scope */
 
 	/* Function for looking up an item within the scope */
 	ILScopeData *(*lookup)(ILScope *scope, const char *name);
@@ -151,7 +151,7 @@ ILScope *ILScopeCreate(ILGenInfo *info, ILScope *parent)
 	ILRBTreeInit(&(scope->nameTree), NameCompare, 0);
 	scope->using = 0;
 	scope->aliases = 0;
-	scope->classInfo = 0;
+	scope->userData = 0;
 	scope->lookup = NormalScope_Lookup;
 	return scope;
 }
@@ -179,14 +179,17 @@ static void AddToScope(ILScope *scope, const char *name,
 
 /*
  * Find a namespace scope from a name.  If the namespace
- * scope does not exist, then create it.
+ * scope does not exist, then create it if addMissing is != 0.
  */
-static ILScope *FindNamespaceScope(ILScope *scope, const char *name)
+static ILScope *FindNamespaceScope(ILScope *scope,
+								   const char *name,
+								   int addIfMissing)
 {
 	ILScopeData *data;
-	ILScope *newScope;
 	int len;
-	const char *newName;
+	ILIntString newName;
+	int newNameNeedsIntern = 0;
+
 	while(*name != '\0')
 	{
 		if(*name == '.')
@@ -201,13 +204,16 @@ static ILScope *FindNamespaceScope(ILScope *scope, const char *name)
 		}
 		if(name[len] == '\0')
 		{
-			newName = name;
+			newName.string = name;
+			newName.len = len;
+			newNameNeedsIntern = 1;
 		}
 		else
 		{
-			newName = (ILInternString((char *)name, len)).string;
+			newName = ILInternString(name, len);
+			newNameNeedsIntern = 0;
 		}
-		data = ILScopeLookup(scope, newName, 0);
+		data = ILScopeLookup(scope, newName.string, 0);
 		if(data != 0)
 		{
 			if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)
@@ -224,9 +230,51 @@ static ILScope *FindNamespaceScope(ILScope *scope, const char *name)
 		}
 		else
 		{
-			newScope = ILScopeCreate(scope->info, scope);
-			AddToScope(scope, newName, IL_SCOPE_SUBSCOPE, 0, newScope, 0);
-			scope = newScope;
+			if(addIfMissing)
+			{
+				ILScope *newScope = ILScopeCreate(scope->info, scope);
+				AddToScope(scope, newName.string, IL_SCOPE_SUBSCOPE, 0, newScope, 0);
+				if(scope)
+				{
+					if(scope->userData && (*(char *)(scope->userData) != '\0'))
+					{
+						ILIntString namespace;
+						ILIntString dot;
+
+						namespace.string = (const char *)(scope->userData);
+						namespace.len = strlen(namespace.string);
+						dot.string = ".";
+						dot.len = 1;
+						newScope->userData = 
+							(void *)(ILInternStringConcat3(namespace,
+														   dot,
+														   newName).string);
+					}
+					else
+					{
+						if(newNameNeedsIntern)
+						{
+							newName = ILInternString(newName.string,
+													 newName.len);
+						}
+						newScope->userData = (void *)newName.string;
+					}
+				}
+				else
+				{
+					if(newNameNeedsIntern)
+					{
+						newName = ILInternString(newName.string, newName.len);
+					}
+					newScope->userData = (void *)newName.string;
+				}
+				scope = newScope;
+			}
+			else
+			{
+				/* The Namespace couldn't be found so bail out. */
+				return (ILScope *)0;
+			}
 		}
 		name += len;
 	}
@@ -257,7 +305,7 @@ static void ImportType(ILScope *scope, ILClass *info, const char *name)
 	/* Create a new scope for the type */
 	newScope = ILScopeCreate(scope->info, scope);
 	newScope->lookup = TypeScope_Lookup;
-	newScope->classInfo = info;
+	newScope->userData = (void *)info;
 
 	/* Add the new scope to the original scope, attached to the type name */
 	AddToScope(scope, name, IL_SCOPE_IMPORTED_TYPE, 0, newScope, 0);
@@ -330,6 +378,12 @@ ILScope *ILScopeImportNamespace(ILScope *scope, const char *namespace)
 			return 0;
 		}
 
+		if(ILClassNamespaceIsValid(scope->info->context, namespace))
+		{
+			return FindNamespaceScope(scope->info->globalScope,
+									  namespace, 1);
+		}
+
 		while((image = ILContextNextImage(scope->info->context, image)) != 0)
 		{
 			unsigned long numTokens;
@@ -355,7 +409,8 @@ ILScope *ILScopeImportNamespace(ILScope *scope, const char *namespace)
 							if((testLen == namespaceLen) ||
 							   ((testLen > namespaceLen) && (namespaceTest[namespaceLen] == '.')))
 							{
-								return FindNamespaceScope(scope->info->globalScope, namespace);
+								return FindNamespaceScope(scope->info->globalScope,
+														  namespace, 1);
 							}
 						}
 					}
@@ -416,7 +471,8 @@ void ILScopeImport(ILScope *scope, ILImage *image)
 				     !strcmp(namespaceName, namespaceTest)))
 				{
 					namespaceName = namespaceTest;
-					namespaceScope = FindNamespaceScope(scope, namespaceTest);
+					namespaceScope = FindNamespaceScope(scope,
+														namespaceTest, 1);
 				}
 			}
 			else
@@ -442,7 +498,7 @@ void ILScopeImport(ILScope *scope, ILImage *image)
 
 int ILScopeUsing(ILScope *scope, const char *identifier)
 {
-	ILScope *namespaceScope = FindNamespaceScope(scope, identifier);
+	ILScope *namespaceScope = FindNamespaceScope(scope, identifier, 1);
 	ILScopeUsingInfo *using;
 	if(!namespaceScope)
 	{
@@ -508,7 +564,7 @@ ILScopeData *ILScopeLookupInNamespace(ILScope *globalScope,
 	}
 	else
 	{
-		scope = FindNamespaceScope(globalScope, namespace);
+		scope = FindNamespaceScope(globalScope, namespace, 0);
 		if(!scope)
 		{
 			return 0;
@@ -528,14 +584,23 @@ ILScopeData *ILScopeNextItem(ILScopeData *data)
 	return (ILScopeData *)(ILRBTreeNext(&(data->rbnode)));
 }
 
+const char *ILScopeGetNamespaceName(ILScope *scope)
+{
+	if(scope)
+	{
+		return (const char *)(scope->userData);
+	}
+	return 0;
+}
+
 ILScope *ILScopeDeclareNamespace(ILScope *globalScope, const char *namespace)
 {
-	return FindNamespaceScope(globalScope, namespace);
+	return FindNamespaceScope(globalScope, namespace, 1);
 }
 
 ILScope *ILScopeFindNamespace(ILScope *globalScope, const char *namespace)
 {
-	return FindNamespaceScope(globalScope, namespace);
+	return FindNamespaceScope(globalScope, namespace, 0);
 }
 
 int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
@@ -550,7 +615,7 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 	/* Find the scope that is associated with the namespace */
 	if(namespace && *namespace != '\0')
 	{
-		namespaceScope = FindNamespaceScope(scope, namespace);
+		namespaceScope = FindNamespaceScope(scope, namespace, 1);
 		if(!namespaceScope)
 		{
 			return IL_SCOPE_ERROR_CANT_CREATE_NAMESPACE;
@@ -674,7 +739,7 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 	if(namespace && identifier &&
 	   yykind(identifier) == yykindof(ILNode_Identifier))
 	{
-		namespaceScope = FindNamespaceScope(scope, namespace);
+		namespaceScope = FindNamespaceScope(scope, namespace, 0);
 		if(namespaceScope)
 		{
 			data = ILScopeLookup(namespaceScope,
@@ -689,7 +754,7 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 				}
 				else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
 				{
-					*classInfo = ((ILScope *)(data->data))->classInfo;
+					*classInfo = (ILClass *)((ILScope *)(data->data))->userData;
 					*nodeInfo = 0;
 					return 1;
 				}
@@ -713,7 +778,7 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 		}
 		else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
 		{
-			*classInfo = ((ILScope *)(data->data))->classInfo;
+			*classInfo = (ILClass *)(((ILScope *)(data->data))->userData);
 			*nodeInfo = 0;
 			return 1;
 		}
@@ -924,12 +989,24 @@ ILClass *ILScopeDataGetClass(ILScopeData *data)
 	}
 	else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE)
 	{
-		return ((ILScope *)(data->data))->classInfo;
+		return (ILClass *)(((ILScope *)(data->data))->userData);
 	}
 	else
 	{
 		return 0;
 	}
+}
+
+const char *ILScopeDataGetNamespaceName(ILScopeData *data)
+{
+	if(data)
+	{
+		if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)
+		{
+			return (const char *)(((ILScope *)(data->data))->userData);
+		}
+	}
+	return 0;
 }
 
 ILScope *ILScopeDataGetSubScope(ILScopeData *data)

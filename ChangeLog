@@ -4,6 +4,23 @@
 	of an ILClass. We have to read the ILClass member directly because non
 	system flags are masked out otherwise.
 
+	* codegen/cg_scope.c: Add the functions ILScopeGetNamespaceName and
+	ILScopeDataGetNamespaceName to get the fully qualified namespace name
+	attached to a scope or subscope of the scope data item.
+	Add attaching the namespace name to the scope in FindNamespaceScope for
+	new created namespace scopes. Add an additional argument for
+	FindNamespaceScope to specify if the namespace should be created if it
+	isn't found. Don't create the namespace scope if searching for a namespace
+	or or a member in a namespace.
+	
+	* codegen/cg_scope.c: Add the prototypes for ILScopeGetNamespaceName and
+	ILScopeDataGetNamespaceName.
+
+	* cscc/csharp/cs_lookup.c: Do the lookup for valid namespaces in
+	FindTypeInNamespace instead of after looking in all enclosing namespaces
+	only which is more ECMA compliant. Dont look for namespaces when resolving
+	with using namespace declarations.
+ 
 2007-05-26  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_scope.c: Change the cast in the assignment of data to *index

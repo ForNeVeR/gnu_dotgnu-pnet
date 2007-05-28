@@ -124,6 +124,13 @@ ILScope *ILScopeFindNamespace(ILScope *globalScope, const char *namespace);
 ILScope *ILScopeImportNamespace(ILScope *scope, const char *namespace);
 
 /*
+ * Get the fully qualified namespace name from the scope.
+ * The result is guaranteed to be valid only for scopes returned by
+ * ILScopeDeclareNamespace, ILScopeFindNamespace and ILScopeImportNamespace.
+ */
+const char *ILScopeGetNamespaceName(ILScope *scope);
+
+/*
  * Declare a type within a particular scope.  If the name
  * already exists, then an "IL_SCOPE_ERROR_xxx" code is
  * returned.  If there is a declaration for the type already,
@@ -182,6 +189,11 @@ ILNode *ILScopeDataGetNode(ILScopeData *data);
  * Get the class structure associated with a scope item.
  */
 ILClass *ILScopeDataGetClass(ILScopeData *data);
+
+/*
+ * Get the fully qualified namespace name associated with a scope item.
+ */
+const char *ILScopeDataGetNamespaceName(ILScopeData *data);
 
 /*
  * Get the sub-scope structure associated with a scope item.

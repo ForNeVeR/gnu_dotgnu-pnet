@@ -3,7 +3,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.custom instance void OpenSystem.C.MemoryModelAttribute::.ctor(int32) = (01 00 40 00 00 00 00 00)
+.custom instance void OpenSystem.C.ModuleAttribute::.ctor() = (01 00 00 00)
 .method public static specialname void 'ctor1'() cil managed 
 {
 .custom instance void ['OpenSystem.C']'OpenSystem.C'.'InitializerAttribute'::'.ctor'() = (01 00 00 00)

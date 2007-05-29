@@ -3,7 +3,7 @@
 	.ver 0:0:0:0
 }
 .module '<Module>'
-.custom instance void OpenSystem.C.MemoryModelAttribute::.ctor(int32) = (01 00 40 00 00 00 00 00)
+.custom instance void OpenSystem.C.ModuleAttribute::.ctor() = (01 00 00 00)
 .method public static int32 'func'(int32 'x') cil managed 
 {
 	ldarg.0
@@ -44,4 +44,4 @@
 	ret
 	.maxstack 1
 }
-.method public static pinvokeimpl("module.so" ansi /* callconv0 */ ) int32 'func6'(int32) cil managed {}
+.method public static pinvokeimpl("module.so" ansi cdecl ) int32 'func6'(int32) cil managed {}

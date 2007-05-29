@@ -29,6 +29,9 @@
 	csharp/stmt/using_alias5.jerr: Add new testscases for the using alias
 	directive.
 
+	* c/decl/cdtor1.3il, c/decl/cdtor1.il, c/decl/typeof1.3il,
+	c/decl/typeof1.il: Update the files to match the new cscc-c-s output.
+
 2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 
 	* csharp/stmt/Makefile.am, csharp/stmt/foreach6.cs,

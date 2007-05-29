@@ -898,12 +898,13 @@ static CSSemValue LookupToSem(ILNode *node, const char *name,
  * Restrict the resolution to types only if typesOnly is != 0.
  */
 static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
-							   const char *namespace, ILClass *accessedFrom,
+							   ILScope *namespaceScope, ILClass *accessedFrom,
 							   CSMemberLookupInfo *results, int typesOnly)
 {
 	ILClass *type;
 	ILScopeData *data;
 	int scopeKind;
+	const char *namespace = ILScopeGetNamespaceName(namespaceScope);
 	const char *fullName;
 	ILNode_ClassDefn *node;
 
@@ -921,7 +922,7 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	}
 
 	/* Look in the global scope for a declared type */
-	data = ILScopeLookupInNamespace(genInfo->globalScope, namespace, name);
+	data = ILScopeLookup(namespaceScope, name, 0);
 	if(data)
 	{
 		scopeKind = ILScopeDataGetKind(data);
@@ -930,7 +931,7 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 			if(typesOnly == 0)
 			{
 				fullName = ILScopeDataGetNamespaceName(data);
-				AddMember(results, (ILProgramItem *)fullName,
+				AddMember(results, (ILProgramItem *)ILScopeDataGetSubScope(data),
 						  0, CS_MEMBERKIND_NAMESPACE);
 				return CS_SEMKIND_NAMESPACE;
 			}
@@ -974,6 +975,8 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	/* Now check if it's an existing namespace name */
 	if(typesOnly == 0)
 	{
+		ILScope *scope;
+
 		if(namespace && (*namespace != '\0'))
 		{
 			fullName = ILInternStringConcat3(ILInternString(namespace, -1),
@@ -984,9 +987,10 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 		{
 			fullName = name;
 		}
-		if(ILScopeImportNamespace(genInfo->globalScope, fullName) != 0)
+		scope = ILScopeImportNamespace(genInfo->globalScope, fullName);
+		if(scope != 0)
 		{
-			AddMember(results, (ILProgramItem *)fullName,
+			AddMember(results, (ILProgramItem *)scope,
 					  0, CS_MEMBERKIND_NAMESPACE);
 			return CS_SEMKIND_NAMESPACE;
 		}
@@ -994,6 +998,53 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 
 	/* Could not find a type or namespace with the specified name */
 	return CS_SEMKIND_VOID;
+}
+
+/*
+ * Find the type in the given namespace scope and all it's parents.
+ */
+static void FindTypeInUsingNamespace(ILGenInfo *genInfo,
+									 ILScope *namespaceScope,
+									 const char *using,
+									 const char *name,
+									 ILClass *accessedFrom,
+									 CSMemberLookupInfo *results)
+{
+	while(namespaceScope)
+	{
+		ILScope *usingScope = ILScopeFindNamespace(namespaceScope, using);
+
+		if(!usingScope)
+		{
+			/* We have to check for a matching namespace in the import libs. */
+			const char *namespace = ILScopeGetNamespaceName(namespaceScope);
+
+			if(namespace && (*namespace != '\0'))
+			{
+				const char *fullName;
+
+				fullName = ILInternStringConcat3(ILInternString(namespace, -1),
+												 ILInternString(".", 1),
+												 ILInternString(name, -1)).string;
+				usingScope = ILScopeImportNamespace(genInfo->globalScope, fullName);
+			}
+			else
+			{
+				usingScope = ILScopeImportNamespace(genInfo->globalScope, using);
+			}
+		}
+		
+		if(usingScope)
+		{
+			if(FindTypeInNamespace(genInfo, name,
+								   usingScope, accessedFrom,
+								   results, 1) != CS_SEMKIND_VOID)
+			{
+				return;
+			}
+		}
+		namespaceScope = ILScopeGetParent(namespaceScope);
+	}
 }
 
 ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule)
@@ -1316,7 +1367,7 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	while(namespace != 0 && !(results.num))
 	{
 		/* Look for the type in the current namespace */
-		result = FindTypeInNamespace(genInfo, name, namespace->name,
+		result = FindTypeInNamespace(genInfo, name, namespace->localScope,
 									 accessedFrom, &results, 0);
 		if(result != CS_SEMKIND_VOID)
 		{
@@ -1371,8 +1422,12 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 		using = namespace->using;
 		while(using != 0)
 		{
-			FindTypeInNamespace(genInfo, name, using->name,
-								accessedFrom, &results, 1);
+			FindTypeInUsingNamespace(genInfo,
+									 namespace->localScope,
+									 using->name,
+									 name,
+									 accessedFrom,
+									 &results);
 			using = using->next;
 		}
 
@@ -1442,7 +1497,6 @@ CSSemValue CSResolveNamespaceMemberName(ILGenInfo *genInfo,
 {
 	CSMemberLookupInfo results;
 	int result;
-	ILIntString nspace;
 
 	InitMembers(&results);
 
@@ -1539,7 +1593,8 @@ CSSemValue CSResolveMemberName(ILGenInfo *genInfo, ILNode *node,
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`%s' is not a member of the namespace `%s'",
-						  name, CSSemGetNamespace(value));
+						  name,
+						  ILScopeGetNamespaceName(CSSemGetNamespace(value)));
 			}
 		}
 		break;

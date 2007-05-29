@@ -386,7 +386,7 @@ void _CSSemReplaceWithConstant(ILNode **parent, ILEvalValue *value);
 /*
  * Get the namespace associated with a semantic value.
  */
-#define	CSSemGetNamespace(value)	((char *)((value).extra__))
+#define	CSSemGetNamespace(value)	((ILScope *)((value).extra__))
 
 /*
  * Determine if a semantic value has the "base" flag.

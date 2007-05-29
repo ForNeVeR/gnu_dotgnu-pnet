@@ -1,3 +1,14 @@
+2007-05-29  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_semvalue.h: Change the semantic value for a namespace so
+	that it contains the resolved namespace scope instead of the fully
+	qualified namespace name.
+
+	* cscc/csharp/cs_lookup.c: Change FindTypeInNamespace to get the ILScope
+	in which to look for the name instead of the fully qualified namespace.
+	Fix the using lookup so that all parent scopes are searched for the using
+	namespace too.
+
 2007-05-28  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/c/c_types.c, cscc/c/c_typeout.c: Fix reading non system attributes

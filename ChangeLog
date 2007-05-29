@@ -13,8 +13,21 @@
 	csharp/expr/is1.cs, csharp/expr/new1.cs, csharp/expr/newarray1.cs,
 	csharp/expr/typedref1.cs: Fix the tests by including a using System.
 
-	* csharp/expr/pointeril: Remove the unknown flags because they are filtered
+	* csharp/expr/pointer.il: Remove the unknown flags because they are filtered
 	now.
+
+	* csharp/stmt/Makefile.am: Add the new testcases for the using alias
+	directive.
+
+	* csharp/stmt/using_alias1.cs, csharp/stmt/using_alias1.il,
+	csharp/stmt/using_alias1.jl, csharp/stmt/using_alias2.cs,
+	csharp/stmt/using_alias2.il, csharp/stmt/using_alias2.il,
+	csharp/stmt/using_alias3.cs, csharp/stmt/using_alias3.err,
+	csharp/stmt/using_alias3.jerr, csharp/stmt/using_alias4.cs,
+	csharp/stmt/using_alias4.err, csharp/stmt/using_alias4.jerr,
+	csharp/stmt/using_alias5.cs, csharp/stmt/using_alias5.err,
+	csharp/stmt/using_alias5.jerr: Add new testscases for the using alias
+	directive.
 
 2003-10-13  Rhys Weatherley  <rweather@southern-storm.com.au>
 

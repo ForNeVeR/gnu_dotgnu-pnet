@@ -19,6 +19,11 @@ TESTS = block1.cs \
 		switch3.cs \
 		switch4.cs \
 		switch5.cs \
+		using_alias1.cs \
+		using_alias2.cs \
+		using_alias3.cs \
+		using_alias4.cs \
+		using_alias5.cs \
 		using1.cs \
 		using2.cs \
 		using3.cs \

@@ -20,6 +20,7 @@
 
 namespace System2
 {
+using System;
 
 public class Uri
 {

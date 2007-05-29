@@ -1,3 +1,5 @@
+using System;
+
 public class SwitchBlade
 {
 	public int SwitchMan(int last)

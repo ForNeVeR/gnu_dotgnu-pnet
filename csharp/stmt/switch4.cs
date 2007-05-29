@@ -1,3 +1,5 @@
+using System;
+
 public class SW
 {
 	public int StringSwitch(String s)

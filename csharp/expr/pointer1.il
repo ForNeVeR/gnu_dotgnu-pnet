@@ -11,7 +11,7 @@
 }
 .module '<Module>'
 .custom instance void [.library]System.Security.UnverifiableCodeAttribute::.ctor() = (01 00 00 00)
-.class private auto ansi /* unknown_bits: 0x4000000 */ 'Test' extends ['.library']'System'.'Object'
+.class private auto ansi 'Test' extends ['.library']'System'.'Object'
 {
 .method public hidebysig instance void 't1'(void * 'x') cil managed 
 {

@@ -24,6 +24,12 @@ TESTS = block1.cs \
 		using_alias3.cs \
 		using_alias4.cs \
 		using_alias5.cs \
+		using_namespace1.cs \
+		using_namespace2.cs \
+		using_namespace3.cs \
+		using_namespace4.cs \
+		using_namespace5.cs \
+		using_namespace6.cs \
 		using1.cs \
 		using2.cs \
 		using3.cs \

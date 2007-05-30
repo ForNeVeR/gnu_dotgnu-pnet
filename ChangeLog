@@ -1,3 +1,19 @@
+2007-05-30  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/stmt/Makefile.am: Add the new tests for the using namespace
+	directive to the executing tests.
+
+	* csharp/stmt/using_namespace1.cs, csharp/stmt/using_namespace1.il,
+	csharp/stmt/using_namespace1.jl, csharp/stmt/using_namespace2.cs,
+	csharp/stmt/using_namespace2.err, csharp/stmt/using_namespace2.jerr,
+	csharp/stmt/using_namespace3.cs, csharp/stmt/using_namespace3.il,
+	csharp/stmt/using_namespace3.jl, csharp/stmt/using_namespace4.cs,
+	csharp/stmt/using_namespace4.err, csharp/stmt/using_namespace4.jerr,
+	csharp/stmt/using_namespace5.cs, csharp/stmt/using_namespace5.il,
+	csharp/stmt/using_namespace5.jl, csharp/stmt/using_namespace6.cs,
+	csharp/stmt/using_namespace6.il, csharp/stmt/using_namespace6.jl: Add new
+	tests for the using namespace directive.
+
 2007-05-29  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/parser/Makefile.am: exclude attrs1.cs and attrs2.cs from the tests

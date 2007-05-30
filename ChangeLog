@@ -1,3 +1,8 @@
+2007-05-30  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_lookup.c: Fix the ambiguous error if a type is resolved in
+	more than one of the using namespace declarations.
+
 2007-05-29  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_semvalue.h: Change the semantic value for a namespace so

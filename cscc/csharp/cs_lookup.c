@@ -1413,6 +1413,7 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 								"the alias `%s' does not refere to a type or namespace.",
 								ILQualIdentName(alias, 0));
 						}
+						FreeMembers(&results);
 						return CSSemValueDefault;
 					}
 				}
@@ -1429,6 +1430,17 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 									 accessedFrom,
 									 &results);
 			using = using->next;
+		}
+
+		if(results.num > 1)
+		{
+			if(reportErrors)
+			{
+				/* The result is ambiguous */
+				AmbiguousError(node, name, &results);
+			}
+			FreeMembers(&results);
+			return CSSemValueDefault;
 		}
 
 		/* Move up to the enclosing namespace */

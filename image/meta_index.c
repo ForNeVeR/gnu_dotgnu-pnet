@@ -613,10 +613,10 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
  */
 static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					  int guidRefSize, const ILUInt32 * const *desc,
-					  unsigned char *item, ILUInt32 *values,
+					  const unsigned char *item, ILUInt32 *values,
 					  unsigned long token)
 {
-	unsigned char *ptr = item;
+	const unsigned char *ptr = item;
 	int index = 0;
 	const ILUInt32 *type;
 	const ILUInt32 *start;
@@ -1001,6 +1001,12 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 		return IL_LOADERR_BAD_META;
 	}
 	sizeBits = index[6];
+
+	/* Determine the size of each of the token structures */
+	strRefSize = (sizeBits & IL_META_SIZE_FLAG_STRREF) ? 4 : 2;
+	guidRefSize = (sizeBits & IL_META_SIZE_FLAG_GUIDREF) ? 4 : 2;
+	blobRefSize = (sizeBits & IL_META_SIZE_FLAG_BLOBREF) ? 4 : 2;
+
 	typesPresent = IL_READ_UINT64(index + 8);
 	image->sorted = IL_READ_UINT64(index + 16);
 	index += 24;
@@ -1029,31 +1035,6 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 		size -= 4;
 	}
 
-	/* Determine the size of each of the token structures */
-	if((sizeBits & IL_META_SIZE_FLAG_STRREF) != 0)
-	{
-		strRefSize = 4;
-	}
-	else
-	{
-		strRefSize = 2;
-	}
-	if((sizeBits & IL_META_SIZE_FLAG_GUIDREF) != 0)
-	{
-		guidRefSize = 4;
-	}
-	else
-	{
-		guidRefSize = 2;
-	}
-	if((sizeBits & IL_META_SIZE_FLAG_BLOBREF) != 0)
-	{
-		blobRefSize = 4;
-	}
-	else
-	{
-		blobRefSize = 2;
-	}
 	for(type = 0; type < 64; ++type)
 	{
 		if((typesPresent & (((ILUInt64)1) << type)) != 0)
@@ -1175,9 +1156,9 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 	}
 
 	/* Record the size of STRREF's and BLOBREF's for later */
-	image->strRefBig = (strRefSize == 4);
-	image->blobRefBig = (blobRefSize == 4);
-	image->guidRefBig = (guidRefSize == 4);
+	image->strRefBig = (sizeBits & IL_META_SIZE_FLAG_STRREF) ? -1 : 0;
+	image->guidRefBig = (sizeBits & IL_META_SIZE_FLAG_GUIDREF) ? -1 : 0;
+	image->blobRefBig = (sizeBits & IL_META_SIZE_FLAG_BLOBREF) ? -1 : 0;
 
 	/* The index has been successfully parsed */
 	return 0;
@@ -1530,9 +1511,9 @@ void _ILImageComputeTokenSizes(ILImage *image)
 	{
 		guidRefSize = 2;
 	}
-	image->strRefBig = (strRefSize == 4);
-	image->blobRefBig = (blobRefSize == 4);
-	image->guidRefBig = (guidRefSize == 4);
+	image->strRefBig = (strRefSize == 4) ? -1 : 0;
+	image->blobRefBig = (blobRefSize == 4) ? -1 : 0;
+	image->guidRefBig = (guidRefSize == 4) ? -1 : 0;
 
 	/* Compute the size of all of the token types */
 	for(type = 0; type < 64; ++type)

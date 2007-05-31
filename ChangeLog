@@ -1,3 +1,14 @@
+2007-05-31  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/ilverify.c: Fix the verifier.
+
+	* include/il_align.h: replace a cast fom unsingned to ILNativeUInt to fix
+	some gcc 4.2.0 compiler warnings about casting a pointer to an integer of
+	a smaller size.
+
+	* image/meta_index.h: Fix setting some bitfields in the ILImage for the 
+	token sizes in the blobs for gcc 4.2.0.
+
 2007-05-30  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_lookup.c: Fix the ambiguous error if a type is resolved in

@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
 	int state, opt;
 	char *param;
 	int errors;
-	ILContext *context;
+	ILExecProcess *process = 0;
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -104,9 +104,12 @@ int main(int argc, char *argv[])
 	ILExecInit(0);
 #endif
 
-	/* Create a context to use for image loading */
-	context = ILContextCreate();
-	if(!context)
+	/* Create the default appdomain for the image loading. */
+#ifdef IL_CONFIG_APPDOMAINS
+	if(!(process = ILExecProcessCreate(0)))
+#else
+	if(!(process = ILExecProcessCreate(0, 0)))
+#endif
 	{
 		fprintf(stderr, "%s: out of memory\n", progname);
 		return 1;
@@ -122,21 +125,21 @@ int main(int argc, char *argv[])
 			/* Verify the contents of stdin, but only once */
 			if(!sawStdin)
 			{
-				errors |= verify("-", context, allowUnsafe);
+				errors |= verify("-", process->context, allowUnsafe);
 				sawStdin = 1;
 			}
 		}
 		else
 		{
 			/* Verify the contents of a regular file */
-			errors |= verify(argv[1], context, allowUnsafe);
+			errors |= verify(argv[1], process->context, allowUnsafe);
 		}
 		++argv;
 		--argc;
 	}
 
-	/* Destroy the context */
-	ILContextDestroy(context);
+	/* Destroy the engine */
+	ILExecDeinit();
 	
 	/* Done */
 	return errors;
@@ -229,7 +232,7 @@ static int verify(const char *filename, ILContext *context, int allowUnsafe)
 
 		/* Verify the method */
 		result = _ILVerify(&_ILNullCoder, &start, method,
-						   &code, allowUnsafe, 0);
+						   &code, allowUnsafe, ILExecThreadCurrent());
 		if(!result)
 		{
 			printError(image, method, "could not verify code");

@@ -40,7 +40,7 @@ extern	"C" {
 	}
 
 #define	_IL_ALIGN_FOR_TYPE(name)	\
-	((unsigned)(&(((struct _IL_align_##name *)0)->field)))
+	((ILNativeUInt)(&(((struct _IL_align_##name *)0)->field)))
 
 #define	_IL_ALIGN_MAX(a,b)	\
 	((a) > (b) ? (a) : (b))

@@ -1,3 +1,8 @@
+2007-06-01  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Form/Label.cs: set the correct default for ImageAlign to
+	ContentAlignment.MiddleCenter.
+
 2007-05-25  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/IO/BinaryReader.cs: Initialize result to 0 before use.

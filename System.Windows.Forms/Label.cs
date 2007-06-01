@@ -50,6 +50,7 @@ public class Label : Control
 				this.flatStyle = FlatStyle.Standard;
 				this.alignment = ContentAlignment.TopLeft;
 				this.preferredWidth = -1;
+				this.imageAlign = ContentAlignment.MiddleCenter;
 				TabStop = false;
 			}
 

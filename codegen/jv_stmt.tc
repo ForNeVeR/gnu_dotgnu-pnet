@@ -924,7 +924,7 @@ JavaGenDiscard(ILNode_GotoLabel)
 			ILGenOutOfMemory(info);
 		}
 		entry->name = node->name;
-		entry->defined = 1;
+		entry->defined = -1;
 		entry->crossedTry = 0;
 		entry->loopStackSize = info->loopStackSize;
 		entry->scopeLevel = info->scopeLevel;

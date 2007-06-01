@@ -49,7 +49,7 @@ ILNode_GetType(ILNode_Overflow)
 {
 	ILMachineType type;
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	type = ILNode_GetType(node->expr, info);
 	info->overflowInsns = oldOverflow;
 	return type;
@@ -75,7 +75,7 @@ ILNode_GetType(ILNode_Pedantic)
 {
 	ILMachineType type;
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	type = ILNode_GetType(node->expr, info);
 	info->pedanticArith = oldPedantic;
 	return type;
@@ -424,7 +424,7 @@ ILNode_GenDiscard(ILNode_VarArgList)
 ILNode_GenDiscard(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	ILNode_GenDiscard(node->expr, info);
 	info->overflowInsns = oldOverflow;
 }
@@ -446,7 +446,7 @@ ILNode_GenDiscard(ILNode_NoOverflow)
 ILNode_GenDiscard(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	ILNode_GenDiscard(node->expr, info);
 	info->pedanticArith = oldPedantic;
 }
@@ -613,7 +613,7 @@ ILNode_GenValue(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
 	ILMachineType valueType;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	valueType = ILNode_GenValue(node->expr, info);
 	info->overflowInsns = oldOverflow;
 	return valueType;
@@ -639,7 +639,7 @@ ILNode_GenValue(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
 	ILMachineType valueType;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	valueType = ILNode_GenValue(node->expr, info);
 	info->pedanticArith = oldPedantic;
 	return valueType;
@@ -654,7 +654,7 @@ ILNode_GenValue(ILNode_NoPedantic)
 	ILMachineType valueType;
 	info->pedanticArith = 0;
 	valueType = ILNode_GenValue(node->expr, info);
-	info->overflowInsns = oldPedantic;
+	info->pedanticArith = oldPedantic;
 	return valueType;
 }
 
@@ -1970,7 +1970,7 @@ ILNode_GenElse(ILNode_ToConst)
 ILNode_GenThen(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	ILNode_GenThen(node->expr, info, label);
 	info->overflowInsns = oldOverflow;
 }
@@ -1981,7 +1981,7 @@ ILNode_GenThen(ILNode_Overflow)
 ILNode_GenElse(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	ILNode_GenElse(node->expr, info, label);
 	info->overflowInsns = oldOverflow;
 }
@@ -2014,7 +2014,7 @@ ILNode_GenElse(ILNode_NoOverflow)
 ILNode_GenThen(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	ILNode_GenThen(node->expr, info, label);
 	info->pedanticArith = oldPedantic;
 }
@@ -2025,7 +2025,7 @@ ILNode_GenThen(ILNode_Pedantic)
 ILNode_GenElse(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	ILNode_GenElse(node->expr, info, label);
 	info->pedanticArith = oldPedantic;
 }
@@ -2359,7 +2359,7 @@ ILNode_Prepare(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
 	ILMachineType valueType;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	valueType = Prepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								info, data1, data2);
 	info->overflowInsns = oldOverflow;
@@ -2387,7 +2387,7 @@ ILNode_Prepare(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
 	ILMachineType valueType;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	valueType = Prepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								info, data1, data2);
 	info->pedanticArith = oldPedantic;
@@ -2459,7 +2459,7 @@ ILNode_GetAndPrepare(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
 	ILMachineType valueType;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	valueType = GetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								      info, leave, data1, data2);
 	info->overflowInsns = oldOverflow;
@@ -2487,7 +2487,7 @@ ILNode_GetAndPrepare(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
 	ILMachineType valueType;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	valueType = GetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								      info, leave, data1, data2);
 	info->pedanticArith = oldPedantic;
@@ -2582,7 +2582,7 @@ ILNode_Store(ILNode_AsIs)
 ILNode_Store(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	Store_SubExpr((ILNode_LValueUnaryExpr *)node, info, leave, data1, data2);
 	info->overflowInsns = oldOverflow;
 }
@@ -2604,7 +2604,7 @@ ILNode_Store(ILNode_NoOverflow)
 ILNode_Store(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	Store_SubExpr((ILNode_LValueUnaryExpr *)node, info, leave, data1, data2);
 	info->pedanticArith = oldPedantic;
 }
@@ -2678,7 +2678,7 @@ ILNode_EvalConst(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
 	int result;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	result = ILNode_EvalConst(node->expr, info, value);
 	info->overflowInsns = oldOverflow;
 	return result;
@@ -2704,7 +2704,7 @@ ILNode_EvalConst(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
 	int result;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	result = ILNode_EvalConst(node->expr, info, value);
 	info->pedanticArith = oldPedantic;
 	return result;

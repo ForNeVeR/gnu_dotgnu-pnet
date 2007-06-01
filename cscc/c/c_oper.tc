@@ -2022,8 +2022,8 @@ ILNode_CSemAnalysis(ILNode_Overflow)
 	CSemValue value;
 	int overflow = info->overflowInsns;
 	int changed = info->overflowChanged;
-	info->overflowInsns = 1;
-	info->overflowChanged = 1;
+	info->overflowInsns = -1;
+	info->overflowChanged = -1;
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
 	info->overflowInsns = overflow;
 	info->overflowChanged = changed;
@@ -2039,7 +2039,7 @@ ILNode_CSemAnalysis(ILNode_NoOverflow)
 	int overflow = info->overflowInsns;
 	int changed = info->overflowChanged;
 	info->overflowInsns = 0;
-	info->overflowChanged = 1;
+	info->overflowChanged = -1;
 	value = ILNode_CSemAnalysis(node->expr, info, &(node->expr), stmtLevel);
 	info->overflowInsns = overflow;
 	info->overflowChanged = changed;
@@ -2071,8 +2071,8 @@ ILNode_CGenAddress(ILNode_Overflow)
 	CAddress value;
 	int overflow = info->overflowInsns;
 	int changed = info->overflowChanged;
-	info->overflowInsns = 1;
-	info->overflowChanged = 1;
+	info->overflowInsns = -1;
+	info->overflowChanged = -1;
 	if(yyisa(node->expr, ILNode_LValue))
 	{
 		value = ILNode_CGenAddress((ILNode_LValue *)(node->expr), info);
@@ -2095,7 +2095,7 @@ ILNode_CGenAddress(ILNode_NoOverflow)
 	int overflow = info->overflowInsns;
 	int changed = info->overflowChanged;
 	info->overflowInsns = 0;
-	info->overflowChanged = 1;
+	info->overflowChanged = -1;
 	if(yyisa(node->expr, ILNode_LValue))
 	{
 		value = ILNode_CGenAddress((ILNode_LValue *)(node->expr), info);

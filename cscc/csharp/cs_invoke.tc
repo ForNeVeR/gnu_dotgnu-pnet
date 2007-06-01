@@ -500,7 +500,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 		savedNode->expr1 = savedChild1;
 		savedNode->expr2 = savedChild2;
 
-		info->inSemStatic = 1;
+		info->inSemStatic = -1;
 		method = ILNode_SemAnalysis(node->expr1,info, &(node->expr1)); 
 		info->inSemStatic = 0;
 

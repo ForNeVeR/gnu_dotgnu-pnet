@@ -169,7 +169,7 @@ static ILResourceEntry *ParseResourceDirectory
 		}
 		return 0;
 	}
-	dir->isDirectory = 1;
+	dir->isDirectory = -1;
 	dir->isMallocData = 0;
 	dir->isNumeric = 0;
 	dir->name = name;

@@ -168,7 +168,7 @@ int CCMain(int argc, char *argv[])
 		return 1;
 	}
 
-	CCCodeGen.semAnalysis = 1;
+	CCCodeGen.semAnalysis = -1;
 	CCCodeGen.optimizeFlag= (0x03) & optimize_flag;
 	CCPluginSemAnalysis();
 	CCCodeGen.semAnalysis = 0;
@@ -522,12 +522,12 @@ static int InitCodeGen(void)
 				  CCStringListGetValue(extension_flags, num_extension_flags,
 				  					   "target-assembly-name"),
 				  outfile, useBuiltinLibrary);
-	CCCodeGen.debugFlag = debug_flag;
+	CCCodeGen.debugFlag = debug_flag ? -1 : 0;
 
 	/* Set the default "checked" state */
 	if(CCStringListContains(extension_flags, num_extension_flags, "checked"))
 	{
-		CCCodeGen.overflowInsns = 1;
+		CCCodeGen.overflowInsns = -1;
 	}
 	else if(CCStringListContains(extension_flags, num_extension_flags,
 								 "unchecked"))

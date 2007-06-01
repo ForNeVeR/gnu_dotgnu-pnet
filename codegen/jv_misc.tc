@@ -33,7 +33,7 @@ JavaGenDiscard(ILNode_Comma)
 JavaGenDiscard(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	JavaGenDiscard(node->expr, info);
 	info->overflowInsns = oldOverflow;
 }
@@ -55,7 +55,7 @@ JavaGenDiscard(ILNode_NoOverflow)
 JavaGenDiscard(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	JavaGenDiscard(node->expr, info);
 	info->pedanticArith = oldPedantic;
 }
@@ -222,7 +222,7 @@ JavaGenValue(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
 	ILMachineType valueType;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	valueType = JavaGenValue(node->expr, info);
 	info->overflowInsns = oldOverflow;
 	return valueType;
@@ -248,7 +248,7 @@ JavaGenValue(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
 	ILMachineType valueType;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	valueType = JavaGenValue(node->expr, info);
 	info->pedanticArith = oldPedantic;
 	return valueType;
@@ -263,7 +263,7 @@ JavaGenValue(ILNode_NoPedantic)
 	ILMachineType valueType;
 	info->pedanticArith = 0;
 	valueType = JavaGenValue(node->expr, info);
-	info->overflowInsns = oldPedantic;
+	info->pedanticArith = oldPedantic;
 	return valueType;
 }
 
@@ -1797,7 +1797,7 @@ JavaGenElse(ILNode_ToConst)
 JavaGenThen(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	JavaGenThen(node->expr, info, label);
 	info->overflowInsns = oldOverflow;
 }
@@ -1808,7 +1808,7 @@ JavaGenThen(ILNode_Overflow)
 JavaGenElse(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	JavaGenElse(node->expr, info, label);
 	info->overflowInsns = oldOverflow;
 }
@@ -1841,7 +1841,7 @@ JavaGenElse(ILNode_NoOverflow)
 JavaGenThen(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	JavaGenThen(node->expr, info, label);
 	info->pedanticArith = oldPedantic;
 }
@@ -1852,7 +1852,7 @@ JavaGenThen(ILNode_Pedantic)
 JavaGenElse(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	JavaGenElse(node->expr, info, label);
 	info->pedanticArith = oldPedantic;
 }
@@ -2201,7 +2201,7 @@ JavaPrepare(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
 	ILMachineType valueType;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	valueType = JavaPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								    info, data1, data2);
 	info->overflowInsns = oldOverflow;
@@ -2229,7 +2229,7 @@ JavaPrepare(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
 	ILMachineType valueType;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	valueType = JavaPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								    info, data1, data2);
 	info->pedanticArith = oldPedantic;
@@ -2297,7 +2297,7 @@ JavaGetAndPrepare(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
 	ILMachineType valueType;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	valueType = JavaGetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								          info, leave, data1, data2);
 	info->overflowInsns = oldOverflow;
@@ -2325,7 +2325,7 @@ JavaGetAndPrepare(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
 	ILMachineType valueType;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	valueType = JavaGetAndPrepare_SubExpr((ILNode_LValueUnaryExpr *)node,
 								          info, leave, data1, data2);
 	info->pedanticArith = oldPedantic;
@@ -2387,7 +2387,7 @@ JavaStore(ILNode_AsIs)
 JavaStore(ILNode_Overflow)
 {
 	int oldOverflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	JavaStore_SubExpr((ILNode_LValueUnaryExpr *)node,
 					  info, leave, data1, data2);
 	info->overflowInsns = oldOverflow;
@@ -2411,7 +2411,7 @@ JavaStore(ILNode_NoOverflow)
 JavaStore(ILNode_Pedantic)
 {
 	int oldPedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	JavaStore_SubExpr((ILNode_LValueUnaryExpr *)node,
 					  info, leave, data1, data2);
 	info->pedanticArith = oldPedantic;

@@ -109,7 +109,7 @@ void CCPluginRestart(FILE *infile)
 void CCPluginSemAnalysis(void)
 {
 	/* Perform type gathering */
-	CCCodeGen.typeGather = 1;
+	CCCodeGen.typeGather = -1;
 	CCParseTree = CSTypeGather(&CCCodeGen, CCCodeGen.globalScope, CCParseTree);
 	CCCodeGen.typeGather = 0;
 

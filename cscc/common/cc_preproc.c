@@ -1171,7 +1171,7 @@ static int RefillLineBuffer(CCPreProc *preproc)
 				scope = (CCPreProcScope *)ILMalloc(sizeof(CCPreProcScope));
 				if(scope)
 				{
-					scope->active = cond;
+					scope->active = cond ? -1 : 0;
 					scope->previous = 0;
 					if(preproc->currentScope)
 					{
@@ -1180,7 +1180,7 @@ static int RefillLineBuffer(CCPreProc *preproc)
 					}
 					else
 					{
-						scope->ancestor = 1;
+						scope->ancestor = -1;
 					}
 					scope->sawElse = 0;
 					scope->number = lines[line].number;
@@ -1209,7 +1209,7 @@ static int RefillLineBuffer(CCPreProc *preproc)
 					}
 					else
 					{
-						preproc->currentScope->active = cond;
+						preproc->currentScope->active = cond ? -1 : 0;
 					}
 					if(preproc->currentScope->sawElse)
 					{
@@ -1238,14 +1238,14 @@ static int RefillLineBuffer(CCPreProc *preproc)
 					}
 					else
 					{
-						preproc->currentScope->active = 1;
+						preproc->currentScope->active = -1;
 					}
 					if(preproc->currentScope->sawElse)
 					{
 						Message(&(lines[line]), _("#else used after #else"), 0);
 						preproc->error = 1;
 					}
-					preproc->currentScope->sawElse = 1;
+					preproc->currentScope->sawElse = -1;
 				}
 				else
 				{

@@ -95,21 +95,22 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	ILMemPoolInitType(&(info->nodePool), ILNode, 0);
 	ILScopeInit(info);
 	info->nextLabel = 1;
-	info->overflowInsns = 1;
-	info->overflowGlobal = 1;
+	info->overflowInsns = -1;
+	info->overflowGlobal = -1;
 	info->overflowChanged = 0;
 	info->pedanticArith = 0;
 	info->clsCompliant = 0;
 	info->semAnalysis = 0;
 	info->typeGather = 0;
 	info->inSemType = 0;
+	info->inSemStatic = 0;
 	info->inAttrArg = 0;
 	info->useJavaLib = 0;
 	info->outputIsJava = 0;
 	info->debugFlag = 0;
 	info->hasUnsafe = 0;
 	info->needSwitchPop = 0;
-	info->hasGotoScopes = 1;
+	info->hasGotoScopes = -1;
 	info->resolvingAlias = 0;
 	info->decimalRoundMode = IL_DECIMAL_ROUND_HALF_EVEN;
 	info->stackHeight = 0;
@@ -151,7 +152,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 
 void ILGenInfoToJava(ILGenInfo *info)
 {
-	info->outputIsJava = 1;
+	info->outputIsJava = -1;
 	JavaGenInit(info);
 }
 

@@ -998,7 +998,7 @@ ILNode_SemAnalysisType(ILNode_Identifier)
 	CSSemValue value;
 	int savedState=info->inSemType;
 
-	info->inSemType=1;
+	info->inSemType = -1;
 	/* Resolve the simple name */
 	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, node->name, 1);
 	info->inSemType=savedState;
@@ -1025,7 +1025,7 @@ ILNode_SemAnalysisType(ILNode_AttrIdentifier)
 	const char *name;
 
 	/* Resolve the simple name */
-	info->inSemType=1;
+	info->inSemType = -1;
 	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, node->name, 1);
 	info->inSemType=savedState;
 
@@ -1043,9 +1043,9 @@ ILNode_SemAnalysisType(ILNode_AttrIdentifier)
 	name = ILInternAppendedString
 		(ILInternString(node->name, strlen(node->name)),
 		 ILInternString("Attribute", 9)).string;
-	info->inSemType=1;
+	info->inSemType = -1;
 	savedAliasState = info->resolvingAlias;
-	info->resolvingAlias = 1;
+	info->resolvingAlias = -1;
 	value = CSResolveSimpleNameQuiet(info, (ILNode *)node, name, 1);
 	info->resolvingAlias = savedAliasState;
 	info->inSemType=savedState;
@@ -1105,7 +1105,7 @@ ILNode_SemAnalysisType(ILNode_QualIdent)
 	}
 
 	/* Restrict lookups for types only (ie namespaces , types, nested types */
-	info->inSemType = 1;
+	info->inSemType = -1;
 
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysisType(node->left, info, &(node->left));
@@ -1140,7 +1140,7 @@ ILNode_SemAnalysisType(ILNode_AttrQualIdent)
 	int savedState = info->inSemType;
 
 	/* Restrict lookups for types only (ie namespaces , types, nested types */
-	info->inSemType = 1;
+	info->inSemType = -1;
 
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysis(node->left, info, &(node->left));
@@ -1323,7 +1323,7 @@ ILNode_SemAnalysisType(ILNode_MemberAccess)
 		return value;
 	}
 	
-	info->inSemType=1;
+	info->inSemType = -1;
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysisType(node->expr1, info, &(node->expr1));
 

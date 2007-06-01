@@ -40,7 +40,7 @@ ILResourceSection *ILResourceSectionCreateWriter(ILImage *image)
 			ILFree(section);
 			return 0;
 		}
-		section->rootDirectory->isDirectory = 1;
+		section->rootDirectory->isDirectory = -1;
 		section->rootDirectory->isMallocData = 0;
 		section->rootDirectory->isNumeric = 0;
 		section->rootDirectory->name = 0;
@@ -91,7 +91,7 @@ static void *InsertEntry(ILResourceEntry *parent, ILResourceEntry *prev,
 		{
 			return 0;
 		}
-		entry->isDirectory = (name[posn] == '/');
+		entry->isDirectory = (name[posn] == '/') ? -1 : 0;
 		entry->isMallocData = 0;
 		entry->isNumeric = isNumeric;
 		entry->name = ILDupNString(name, posn);
@@ -212,7 +212,7 @@ int ILResourceSectionAddBytes(void *_entry, const void *buffer, int len)
 		{
 			return 0;
 		}
-		entry->isMallocData = 1;
+		entry->isMallocData = -1;
 		entry->data = newData;
 		ILMemCpy(newData + entry->length, buffer, len);
 		entry->length += (unsigned long)(long)len;

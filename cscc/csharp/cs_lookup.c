@@ -1393,8 +1393,8 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 					ILNode *alias = ((ILNode_UsingAlias *)aliasNode)->ref;
 					int savedState = genInfo->inSemType;
 
-					genInfo->resolvingAlias = 1;
-					genInfo->inSemType = 1;
+					genInfo->resolvingAlias = -1;
+					genInfo->inSemType = -1;
 					value = ILNode_SemAnalysis(alias, genInfo, &aliasNode);
 					genInfo->inSemType = savedState;
 					genInfo->resolvingAlias = 0;

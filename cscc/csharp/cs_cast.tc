@@ -98,8 +98,8 @@ ILNode_SemAnalysis(ILNode_UserCast)
 			   "unchecked(x)" is required around the expression */
 			ILEvalValue evalValue2;
 			int result;
-			info->overflowInsns = 1;
-			info->overflowChanged = 1;
+			info->overflowInsns = -1;
+			info->overflowChanged = -1;
 			result = ILNode_EvalConst(*parent, info, &evalValue2);
 			info->overflowInsns = 0;
 			info->overflowChanged = 0;

@@ -1456,7 +1456,7 @@ ILNode_GenDiscard(ILNode_GotoLabel)
 			ILGenOutOfMemory(info);
 		}
 		entry->name = node->name;
-		entry->defined = 1;
+		entry->defined = -1;
 		entry->crossedTry = 0;
 		entry->loopStackSize = info->loopStackSize;
 		entry->scopeLevel = info->scopeLevel;
@@ -1630,7 +1630,7 @@ static void TrimGotoList(ILGenInfo *info, int tryScope)
 			/* Undefined label reference that is crossing a scope boundary */
 			if(tryScope)
 			{
-				entry->crossedTry = 1;
+				entry->crossedTry = -1;
 			}
 			entry->scopeLevel = info->scopeLevel;
 			prev = entry;

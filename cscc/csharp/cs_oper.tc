@@ -1617,7 +1617,7 @@ ILNode_SemAnalysis(ILNode_ToAttrConst)
 	ILNode_TypeOf *typeofNode;
 	int savedState=info->inAttrArg;
 
-	info->inAttrArg=1;
+	info->inAttrArg = -1;
 
 	/* Special case: types can be used as attribute constants */
 	if(yyisa(node->expr, ILNode_TypeOf))
@@ -2512,8 +2512,8 @@ ILNode_SemAnalysis(ILNode_Overflow)
 	CSSemValue value;
 	int overflow = info->overflowInsns;
 	int changed = info->overflowChanged;
-	info->overflowInsns = 1;
-	info->overflowChanged = 1;
+	info->overflowInsns = -1;
+	info->overflowChanged = -1;
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	info->overflowInsns = overflow;
 	info->overflowChanged = changed;
@@ -2529,7 +2529,7 @@ ILNode_SemAnalysis(ILNode_NoOverflow)
 	int overflow = info->overflowInsns;
 	int changed = info->overflowChanged;
 	info->overflowInsns = 0;
-	info->overflowChanged = 1;
+	info->overflowChanged = -1;
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	info->overflowInsns = overflow;
 	info->overflowChanged = changed;
@@ -2543,7 +2543,7 @@ ILNode_SemAnalysis(ILNode_Pedantic)
 {
 	CSSemValue value;
 	int pedantic = info->pedanticArith;
-	info->pedanticArith = 1;
+	info->pedanticArith = -1;
 	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
 	info->pedanticArith = pedantic;
 	return value;

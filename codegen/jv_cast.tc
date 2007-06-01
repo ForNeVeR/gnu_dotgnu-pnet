@@ -39,7 +39,7 @@ void JavaGenCastOverflow(ILGenInfo *info, ILMachineType fromType,
 						 ILMachineType toType)
 {
 	int overflow = info->overflowInsns;
-	info->overflowInsns = 1;
+	info->overflowInsns = -1;
 	JavaGenCast(info, fromType, toType);
 	info->overflowInsns = overflow;
 }

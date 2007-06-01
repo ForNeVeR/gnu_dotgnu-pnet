@@ -66,7 +66,7 @@ static int MapEntireFile(ILImage *image, FILE *file, long readAlready)
 						 (unsigned long)length, &(image->mapAddress),
 						 &(image->mapLength), &(image->data)))
 	{
-		image->mapped = 1;
+		image->mapped = -1;
 	}
 	else
 	{

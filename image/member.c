@@ -555,7 +555,7 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		code->javaLocals = (int)(IL_BREAD_UINT16(addr + 2));
 		code->headerSize = 12;
 		code->localVarSig = 0;
-		code->initLocals = 1;
+		code->initLocals = -1;
 		code->moreSections = 0;
 		addr += 8;
 		len -= 8;
@@ -578,7 +578,7 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		temp = (ILUInt32)(IL_BREAD_UINT16(addr));
 		if(temp != 0)
 		{
-			code->moreSections = 1;
+			code->moreSections = -1;
 		}
 
 		/* Ready to go */
@@ -605,8 +605,8 @@ int ILMethodGetCode(ILMethod *method, ILMethodCode *code)
 		{
 			return 0;
 		}
-		code->moreSections = ((*addr & 0x08) != 0);
-		code->initLocals = ((*addr & 0x10) != 0);
+		code->moreSections = ((*addr & 0x08) ? -1 : 0);
+		code->initLocals = ((*addr & 0x10) ? -1 : 0);
 		code->maxStack = (ILUInt32)(IL_READ_UINT16(addr + 2));
 		code->codeLen = (ILUInt32)(IL_READ_UINT32(addr + 4));
 		localVars = (ILToken)(IL_READ_UINT32(addr + 8));

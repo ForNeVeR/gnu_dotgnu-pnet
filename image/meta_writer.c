@@ -1496,7 +1496,7 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 	if(image->stringPoolSize > 65535)
 	{
 		sizeFlags |= IL_META_SIZE_FLAG_STRREF;
-		image->strRefBig = 1;
+		image->strRefBig = -1;
 	}
 	else
 	{
@@ -1505,7 +1505,7 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 	if(image->blobPoolSize > 65535)
 	{
 		sizeFlags |= IL_META_SIZE_FLAG_BLOBREF;
-		image->blobRefBig = 1;
+		image->blobRefBig = -1;
 	}
 	else
 	{
@@ -1514,7 +1514,7 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 	if(image->tokenCount[IL_META_TOKEN_MODULE >> 24] > (65535 / 3))
 	{
 		sizeFlags |= IL_META_SIZE_FLAG_GUIDREF;
-		image->guidRefBig = 1;
+		image->guidRefBig = -1;
 	}
 	else
 	{

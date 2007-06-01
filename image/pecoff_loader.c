@@ -915,11 +915,11 @@ noRuntimeHeader:
 	(*image)->loadFlags = flags;
 	(*image)->type = (isOBJ ? IL_IMAGETYPE_OBJ :
 						(isDLL ? IL_IMAGETYPE_DLL : IL_IMAGETYPE_EXE));
-	(*image)->secure = ((flags & IL_LOADFLAG_INSECURE) == 0);
-	(*image)->hadNative = hadNative;
-	(*image)->only32Bit = only32Bit;
-	(*image)->mapped = isMapped;
-	(*image)->inPlace = isInPlace;
+	(*image)->secure = ((flags & IL_LOADFLAG_INSECURE) ? 0 : -1);
+	(*image)->hadNative = hadNative ? -1 : 0;
+	(*image)->only32Bit = only32Bit ? -1 : 0;
+	(*image)->mapped = isMapped ? -1 : 0;
+	(*image)->inPlace = isInPlace ? -1 : 0;
 	(*image)->map = map;
 	(*image)->data = data;
 	(*image)->len = (maxAddress - minAddress);
@@ -938,7 +938,7 @@ noRuntimeHeader:
 	(*image)->rsrcSize = rsrcSize;
 
 	/* Mark the metadata as loading so that we can detect TypeRef recursion */
-	(*image)->loading = 1;
+	(*image)->loading = -1;
 	++(context->redoLevel);
 
 	/* Load the meta information from the image */

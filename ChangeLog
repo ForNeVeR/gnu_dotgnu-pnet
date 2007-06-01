@@ -1,3 +1,8 @@
+2007-06-01  Klaus Treichel  <ktreichel@web.de>
+
+	* image/java_loader.c, image/member.c, image/meta_writer.c,
+	image/pecoff_loader.c: Fix more signed bitfield assignments for gcc 4.2.0.
+
 2007-05-31  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/ilverify.c: Fix the verifier.

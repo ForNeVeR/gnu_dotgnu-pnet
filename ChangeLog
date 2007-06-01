@@ -1,5 +1,10 @@
 2007-06-01  Klaus Treichel  <ktreichel@web.de>
 
+	* cscc/common/cc_preproc.c, cscc/common/cc_preproc.h: Undo the changes
+	in cc_preproc.c and make the bitfields in cc_preproc.h unsigned instead.
+
+2007-06-01  Klaus Treichel  <ktreichel@web.de>
+
 	* image/java_loader.c, image/member.c, image/meta_writer.c,
 	image/pecoff_loader.c: Fix more signed bitfield assignments for gcc 4.2.0.
 

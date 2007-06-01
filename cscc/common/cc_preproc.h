@@ -56,10 +56,10 @@ typedef struct _tagCCPreProcLine
  */
 typedef struct _tagCCPreProcScope
 {
-	int					active : 1;		/* Actively including this scope */
-	int					previous : 1;	/* Previous branch already taken */
-	int					ancestor : 1;	/* Ancestor is actively including */
-	int					sawElse : 1;	/* Already seen '#else' */
+	unsigned			active : 1;		/* Actively including this scope */
+	unsigned			previous : 1;	/* Previous branch already taken */
+	unsigned			ancestor : 1;	/* Ancestor is actively including */
+	unsigned			sawElse : 1;	/* Already seen '#else' */
 	unsigned long		number;			/* Line number of the '#if' */
 	const char		   *filename;		/* Filename of the '#if' */
 	struct _tagCCPreProcScope *next;	/* Next outer scope level */

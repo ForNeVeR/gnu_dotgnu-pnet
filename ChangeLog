@@ -3,6 +3,8 @@
 	* cscc/common/cc_preproc.c, cscc/common/cc_preproc.h: Undo the changes
 	in cc_preproc.c and make the bitfields in cc_preproc.h unsigned instead.
 
+	* configure.in: Remove coremul/Makefile from the Makefiles to be created.
+
 2007-06-01  Klaus Treichel  <ktreichel@web.de>
 
 	* image/java_loader.c, image/member.c, image/meta_writer.c,

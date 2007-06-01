@@ -735,7 +735,6 @@ ilgac/Makefile
 csdoc/Makefile
 csant/Makefile
 clrwrap/Makefile
-coremul/Makefile
 samples/Makefile
 doc/Makefile
 tests/Makefile

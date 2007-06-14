@@ -1,3 +1,14 @@
+2007-06-14  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.h: Add definitions for user data table that allows us to
+	attach various additional data to pointer. Shortened some variable names.
+
+	* engine/debugger.c: Fixed socket recieving function. Reimplemented old
+	functions for parsing arguments. Implemented user data table. Changed
+	output for source files, members, types, libraries. They are now dumped
+	and referenced with id's to save traffic on debugger connection. Reformat
+	long lines.
+
 2007-06-01  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/common/cc_preproc.c, cscc/common/cc_preproc.h: Undo the changes

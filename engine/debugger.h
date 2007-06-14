@@ -45,6 +45,36 @@ extern	"C" {
 
 #define IL_DEBUGGER_COMMAND_MAX_ARG_COUNT	3
 
+
+/*
+ * Definitions for user data types.
+ */
+#define IL_USER_DATA_IMAGE_ID					0
+#define IL_USER_DATA_CLASS_ID					1
+#define IL_USER_DATA_SOURCE_FILE_ID			2
+#define IL_USER_DATA_SOURCE_FILE_IMAGE_ID		3
+#define IL_USER_DATA_MEMBER_ID					4
+
+#define IL_USER_DATA_TABLE_INIT_SIZE			509
+
+typedef struct _tagILUserDataEntry		ILUserDataEntry;
+typedef struct _tagILUserData			ILUserData;
+
+struct _tagILUserDataEntry
+{
+	int			type;
+	const void *ptr;
+	void       *data;
+};
+
+struct _tagILUserData
+{
+	int 				count;		/* Number of used entries */
+	int 				size;		/* Table size */
+	int 				shiftsMax;	/* Longest shift because of collisions */
+	ILUserDataEntry    *entries;	/* Pointer to the first entry */
+};
+
 /*
  * Determine if thread is unbreakable and untouchable in coder's debug hook.
  *
@@ -155,7 +185,10 @@ struct _tagILDebugger
 	ILDebuggerIO *io;
 
 	/* Current command */
-	char *currentCommand;
+	char *cmd;
+
+	/* Last argument for current command */
+	char *lastArg;
 
 	/* Used to signal that command execution finnished */
 	ILWaitHandle *event;
@@ -177,15 +210,17 @@ struct _tagILDebugger
 	/* Linked list of user breakpoints */
 	ILBreakpoint *breakpoint;
 
+	/* Table with additional data attached to various objects */
+	ILUserData *userData;
+
+	/* Smallest used id e.g. for project, source file or type */
+	int minId;
+
 	/* Flag used to stop all threads after break command */
 	int breakAll;
 
 	/* Return IL_HOOK_ABORT from hook function when this flag is set */ 
 	int volatile abort;
-
-	/* Arguments for current command */
-	char *args[IL_DEBUGGER_COMMAND_MAX_ARG_COUNT];
-	int argCount;
 
 };
 

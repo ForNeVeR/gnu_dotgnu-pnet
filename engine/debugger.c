@@ -178,7 +178,7 @@ static void SocketIO_Close(ILDebuggerIO *io)
  */
 static int SocketIO_Recieve(ILDebuggerIO *io)
 {
-	static char buffer[128];
+	char buffer[128];
 	int len;
 
 	/* Rewind input stream */
@@ -194,9 +194,7 @@ static int SocketIO_Recieve(ILDebuggerIO *io)
 			return 0;
 		}
 		fwrite(buffer, 1, len, io->input);
-	} while(len == 128);	/* whole buffer filled - more data are available */
-
-	putc(0, io->input);
+	} while(len == 128 || len == 0 || buffer[len-1] != 0);
 
 	return 1;
 }
@@ -208,7 +206,7 @@ static int SocketIO_Send(ILDebuggerIO *io)
 {
 	int len;
 	int count;
-	static char buffer[1024];
+	char buffer[1024];
 
 	/* Terminate output with 0 */
 	putc(0, io->output);
@@ -251,6 +249,56 @@ static int SocketIO_Send(ILDebuggerIO *io)
 }
 
 /*
+ * Return next argument for current command.
+ * Call with prev=0 to obtain first argument.
+ * Returns 0 after last argument is reached.
+ */
+static char *NextArg(ILDebugger *debugger, char *prev)
+{
+	if(prev == 0)
+	{
+		prev = debugger->cmd;
+	}
+
+	if(prev == debugger->lastArg)
+	{
+		return 0;
+	}
+
+	while(*prev != 0)
+	{
+		prev++;
+	}
+	prev++;
+
+	return prev;
+}
+
+/*
+ * Return first argument for current command.
+ */
+static char *FirstArg(ILDebugger *debugger)
+{
+	return NextArg(debugger, 0);
+}
+
+/*
+ * Return first and second argument for current command.
+ */
+static void First2Args(ILDebugger *debugger, char **arg1, char **arg2)
+{
+	*arg1 = FirstArg(debugger);
+	if(arg1)
+	{
+		*arg2 = NextArg(debugger, *arg1);
+	}
+	else
+	{
+		*arg2 = 0;
+	}
+}
+
+/*
  * Check if we are watching given image.
  */
 static int IsImageWatched(ILAssemblyWatch *watch, ILImage *image)
@@ -277,10 +325,220 @@ int ILDebuggerIsAssemblyWatched(ILDebugger *debugger, ILMethod *method)
 }
 
 /*
+ * Create entries for user data table.
+ * Return 0 if out of memory.
+ */
+static ILUserDataEntry *ILUserDataCreateEntries(int size)
+{
+	ILUserDataEntry *entries;
+
+	entries = (ILUserDataEntry *) ILMalloc(sizeof(ILUserDataEntry) * size);
+
+	if(entries)
+	{
+		ILMemSet(entries, 0, sizeof(ILUserDataEntry) * size);
+	}
+	return entries;
+}
+
+/*
+ * Create user data table with default size.
+ * Return 0 if out of memory.
+ */
+static ILUserData *ILUserDataCreate()
+{
+	ILUserData *userData;
+
+	userData = (ILUserData *) ILMalloc(sizeof(ILUserData));
+	if(userData == 0)
+	{
+		return 0;
+	}
+
+	userData->count = 0;
+	userData->size = IL_USER_DATA_TABLE_INIT_SIZE;
+	userData->shiftsMax = 0;
+	userData->entries = ILUserDataCreateEntries(userData->size);
+
+	if(userData->entries)
+	{
+		return userData;
+	}
+	else
+	{
+		ILFree(userData);
+		return 0;
+	}
+}
+
+/*
+ * Destroy user data table.
+ */
+static void ILUserDataDestroy(ILUserData *userData)
+{
+	ILFree(userData->entries);
+	ILFree(userData);
+}
+
+#define ILUserDataStartIndex(userData, ptr, type) \
+								(((unsigned int)(ptr + type)) % userData->size)
+
+/*
+ * Find entry of given type for given pointer.
+ * Return 0 if such entry does not exist.
+ */
+static ILUserDataEntry *ILUserDataFindEntry(ILUserData *userData,
+											const void *ptr, int type)
+{
+	int i = 0;
+	ILUserDataEntry *entry;
+	unsigned int index;
+
+	/* Search for given pointer and type in entries */
+	index = ILUserDataStartIndex(userData, ptr, type);
+	while(1)
+	{
+		entry = userData->entries + index;
+		if(entry->ptr == ptr && entry->type == type)
+		{
+			return entry;
+		}
+		if(++i > userData->shiftsMax)
+		{
+			return 0;		/* Entry not found */
+		}
+		index = (index + 1) % userData->size;
+	}
+}
+
+/*
+ * Assign data of given type to given pointer.
+ * Return 0 if out of memory.
+ */
+static int ILUserDataSet(ILUserData *userData, const void *ptr, int type,
+						 void *data)
+{
+	ILUserDataEntry *entry;
+	ILUserDataEntry *oldEntries;
+	ILUserDataEntry *newEntries;
+	int oldSize;
+	int newSize;
+	int i;
+	unsigned int index;
+
+	/* Do we have enough space? */
+	if(userData->size < userData->count * 2)
+	{
+		/* Double the size */
+		oldEntries = userData->entries;
+		oldSize = userData->size;
+
+		newSize = oldSize * 2 + 1;
+		newEntries = ILUserDataCreateEntries(newSize);
+
+		if(newEntries == 0)
+		{
+			return 0;
+		}
+
+		userData->count = 0;
+		userData->shiftsMax = 0;
+		userData->size = newSize;
+		userData->entries = newEntries;
+
+		/* Hash old entries into new table */
+		for(i = 0; i < oldSize; i++)
+		{
+			entry = oldEntries + i;
+			if(entry->ptr)
+			{
+				ILUserDataSet(userData, entry->ptr, entry->type, entry->data);
+			}
+		}
+	}
+
+	/* Find and change existing entry */
+	entry = ILUserDataFindEntry(userData, ptr, type);
+	if(!entry)
+	{
+		/* Find free entry and update maxShifts */
+		index = ILUserDataStartIndex(userData, ptr, type);
+		for(i = 0;; i++)
+		{
+			entry = userData->entries + index;
+			if(entry->ptr == 0)
+			{
+				if(i > userData->shiftsMax)
+				{
+					userData->shiftsMax = i;
+				}
+				break;
+			}
+			index = (index + 1) % userData->size;
+		}
+
+		entry->ptr = ptr;
+		entry->type = type;
+	}
+
+	/* Set data */
+	entry->data = data;
+
+	/* Icrease count */
+	userData->count++;
+	return 1;
+}
+
+/*
+ * Set user with out of memory check.
+ */
+static void SetUserData(ILDebugger *debugger, void *ptr, int type, void *data)
+{
+	if(!ILUserDataSet(debugger->userData, ptr, type, data))
+	{
+		ILDbOutOfMemory();
+	}
+}
+
+/*
+ * Return data of given type associated with given pointer.
+ */
+static void *GetUserData(ILDebugger *debugger, void *ptr, int type)
+{
+	ILUserDataEntry *entry;
+
+	entry = ILUserDataFindEntry(debugger->userData, ptr, type);
+
+	if(entry != 0)
+	{
+		return entry->data;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*
+ * Return id assigned to given pointer.
+ * If poineter has no id assigned then return and assign next free negative id.
+ */
+static int GetId(ILDebugger *debugger, void *ptr, int type)
+{
+	int id = (int) GetUserData(debugger, ptr, type);
+	if(id == 0)
+	{
+		id = --(debugger->minId);
+		SetUserData(debugger, ptr, type, (void *)id);
+	}
+	return id;
+}
+
+/*
  * Get method's location.
  */
-const char * GetLocation(ILMethod *method, ILInt32 offset,
-												ILUInt32 *line, ILUInt32 *col)
+const char *GetLocation(ILMethod *method, ILInt32 offset,
+						ILUInt32 *line, ILUInt32 *col)
 {
 	ILDebugContext *dbgc;
 	const char *result;
@@ -400,52 +658,73 @@ static void DumpParamMissingError(FILE *stream)
 static void DumpMessage(const char *message, FILE *stream)
 {
 	fputs("<Message>", stream);
-	fputs(message, stream);
+	DumpString(message, stream);
 	fputs("</Message>", stream);
+}
+
+/*
+ * Dump xml node for source file.
+ */
+static void DumpSourceFile(ILDebugger *debugger, FILE *stream,
+						   const char *path, int indent)
+{
+	int sourceFileId;
+	int imageId;
+
+	if(path)
+	{
+		Indent(stream, indent);
+
+		sourceFileId = GetId(debugger, (void *) path,
+												IL_USER_DATA_SOURCE_FILE_ID);
+
+		imageId = GetId(debugger, (void *) path,
+											IL_USER_DATA_SOURCE_FILE_IMAGE_ID);
+
+		fprintf(stream,
+						"<SourceFile Id=\"%d\" ProjectId=\"%d\" DebugPath=\"",
+														sourceFileId, imageId);
+
+		DumpString(path, stream);
+
+		fputs("\" />\n", stream);
+	}
 }
 
 /*
  * Dump current location. If debug info not available, dump empty location.
  */
-void DumpLocation(FILE *stream, const char *sourceFile, ILUInt32 line,
-													ILUInt32 col, int indent)
+static void DumpLocation(ILDebugger *debugger, FILE *stream,
+						 const char *sourceFile, ILUInt32 line,ILUInt32 col,
+						 int indent)
 {
+	int sourceFileId;
+
 	Indent(stream, indent);
-	fprintf(stream,
-				 "<Location Linenum=\"%d\" Col=\"%d\"><SourceFile Filename=\"",
-				  line, col);
+	fprintf(stream, "<Location Linenum=\"%d\" Col=\"%d\"", line, col);
 	if(sourceFile)
 	{
-		fputs(sourceFile, stream);
-	}
-	fputs("\" /></Location>\n", stream);
-}
+		sourceFileId = GetId(debugger, (void *) sourceFile,
+											IL_USER_DATA_SOURCE_FILE_ID);
 
-/*
- * Dump a class name to a stream.
- */
-static void DumpClassName(FILE *stream, ILClass *classInfo)
-{
-	const char *name = ILClass_Name(classInfo);
-	const char *namespace = ILClass_Namespace(classInfo);
-	if(namespace)
-	{
-		DumpString(namespace, stream);
-		putc('.', stream);
+		fprintf(stream, " SourceFileId=\"%d\"", sourceFileId);
 	}
-	DumpString(name, stream);
+	fputs(" />\n", stream);
 }
 
 /*
  * Generate documentation for a specific method definition.
  */
-static void DumpMethod(FILE *stream, ILMethod *method, int indent)
+static void DumpMethod(ILDebugger *debugger, FILE *stream, ILMethod *method,
+					   int dumpSignature, int indent)
 {
 	ILType *signature;
 	int isConstructor;
 	ILUInt32 line;
 	ILUInt32 col;
 	const char *sourceFile;
+	int memberId;
+	int classId;
 
 	/* Bail out on null */
 	if(!method)
@@ -453,33 +732,40 @@ static void DumpMethod(FILE *stream, ILMethod *method, int indent)
 		return;
 	}
 
+	/* Get member and class id */
+	memberId = GetId(debugger, (void *) method, IL_USER_DATA_MEMBER_ID);
+	classId = GetId(debugger, (void *) ILMethod_Owner(method),
+													IL_USER_DATA_CLASS_ID);
+
 	/* Output the member header */
 	Indent(stream, indent);
-	fputs("<Member MemberName=\"", stream);
+	fprintf(stream, "<Member Id=\"%d\" MemberName=\"", memberId);
 	DumpString(ILMethod_Name(method), stream);
-	fputs("\" OwnerName=\"", stream);
-	DumpClassName(stream, ILMethod_Owner(method));
-	fputs("\">\n", stream);
+	fprintf(stream, "\" TypeId=\"%d\">\n", classId);
 
 	/* Is this method a constructor? */
 	isConstructor = (!strcmp(ILMethod_Name(method), ".ctor") ||
 	   				 !strcmp(ILMethod_Name(method), ".cctor"));
 
 	/* Output the signature in ILASM form */
-	Indent(stream, indent + 2);
-	fputs("<MemberSignature Language=\"ILASM\" Value=\"", stream);
-	if(!isConstructor)
+	if(dumpSignature)
 	{
-		fputs(".method ", stream);
+		Indent(stream, indent + 2);
+		fputs("<MemberSignature Language=\"ILASM\" Value=\"", stream);
+		if(!isConstructor)
+		{
+			fputs(".method ", stream);
+		}
+		ILDumpFlags(stream, ILMethod_Attrs(method), ILMethodDefinitionFlags,
+																			0);
+		signature = ILMethod_Signature(method);
+		ILDumpMethodType(stream, ILProgramItem_Image(method), signature,
+						IL_DUMP_XML_QUOTING, 0, ILMethod_Name(method), method);
+		putc(' ', stream);
+		ILDumpFlags(stream, ILMethod_ImplAttrs(method),
+					ILMethodImplementationFlags, 0);
+		fputs("\"/>\n", stream);
 	}
-	ILDumpFlags(stream, ILMethod_Attrs(method), ILMethodDefinitionFlags, 0);
-	signature = ILMethod_Signature(method);
-	ILDumpMethodType(stream, ILProgramItem_Image(method), signature,
-			         IL_DUMP_XML_QUOTING, 0, ILMethod_Name(method), method);
-	putc(' ', stream);
-	ILDumpFlags(stream, ILMethod_ImplAttrs(method),
-				ILMethodImplementationFlags, 0);
-	fputs("\"/>\n", stream);
 
 	/* Output the member kind */
 	Indent(stream, indent + 2);
@@ -496,7 +782,7 @@ static void DumpMethod(FILE *stream, ILMethod *method, int indent)
 	sourceFile = GetLocation(method, 0, &line, &col);
 	if(sourceFile)
 	{
-		DumpLocation(stream, sourceFile, line, col, indent + 2);
+		DumpLocation(debugger, stream, sourceFile, line, col, indent + 2);
 	}
 
 	Indent(stream, indent);
@@ -506,19 +792,27 @@ static void DumpMethod(FILE *stream, ILMethod *method, int indent)
 /*
  * Dump position of execution.
  */
-void DumpExecPosition(FILE *stream, ILMethod *method,
+void DumpExecPosition(ILDebugger *debugger, FILE *stream, ILMethod *method,
 							ILUInt32 offset, void *pc, const char *sourceFile,
 							ILUInt32 line, ILUInt32 col, int indent)
 {
+	int memberId;
+	memberId = GetId(debugger, (void *) method, IL_USER_DATA_MEMBER_ID);
+
 	Indent(stream, indent);
-	fprintf(stream, "<ExecPosition Offset=\"%d\"", offset);
+	fprintf(stream, "<ExecPosition Offset=\"%d\" MemberId=\"%d\"",
+															offset, memberId);
 	if(pc != 0)
 	{
 		fprintf(stream, " PC=\"%p\"", pc);
 	}
 	fputs(">\n", stream);
-	DumpMethod(stream, method, indent + 2);
-	DumpLocation(stream, sourceFile, line, col, indent + 2);
+
+	if(memberId < 0)
+	{
+		DumpMethod(debugger, stream, method, 1, indent + 2); 
+	}
+	DumpLocation(debugger, stream, sourceFile, line, col, indent + 2);
 	Indent(stream, indent);
 	fputs("</ExecPosition>", stream);
 }
@@ -526,11 +820,14 @@ void DumpExecPosition(FILE *stream, ILMethod *method,
 /*
  * Dump breakpoint.
  */
-void DumpBreakpoint(FILE *stream, ILBreakpoint *breakpoint, int indent)
+void DumpBreakpoint(ILDebugger *debugger, FILE *stream,
+					ILBreakpoint *breakpoint, int indent)
 {
 	Indent(stream, indent);
 	fprintf(stream, "<Breakpoint Id=\"%d\" >\n", breakpoint->id);
-	DumpExecPosition(stream, breakpoint->method,
+	DumpExecPosition(debugger,
+							stream,
+							breakpoint->method,
 							breakpoint->offset,
 							0,
 							breakpoint->sourceFile,
@@ -545,7 +842,7 @@ void DumpBreakpoint(FILE *stream, ILBreakpoint *breakpoint, int indent)
  * Dump call frame (used only with CVM coder.)
  */
 static void DumpCallFrame(FILE *stream, ILDebugger *debugger,
-											ILCallFrame *frame, int indent)
+						  ILCallFrame *frame, int indent)
 {
 	unsigned char *start;
 	ILInt32 offset;
@@ -639,7 +936,7 @@ ILDebuggerThreadInfo *ILDebuggerThreadInfo_Create()
  * If not found return free info.
  */
 ILDebuggerThreadInfo *GetDbThreadInfo(ILDebugger *debugger,
-														ILExecThread *thread)
+									  ILExecThread *thread)
 {
 	ILDebuggerThreadInfo *info;
 
@@ -703,7 +1000,6 @@ static void UpdateDbThreadInfo(ILDebuggerThreadInfo *info, void *userData,
 	/* Set current jit stack trace */
 	info->jitStackTrace = jit_exception_get_stack_trace();
 #endif
-
 }
 
 /*
@@ -727,7 +1023,7 @@ ILBreakpoint *ILBreakpoint_Create()
  void DebuggerBreakpoint_Destroy(ILBreakpoint *breakpoint)
  {
 	ILBreakpoint *next;
-	
+
 	while(breakpoint)
 	{
 		next = breakpoint->next;
@@ -741,7 +1037,7 @@ ILBreakpoint *ILBreakpoint_Create()
  * If not found return free breakpoint.
  */
 ILBreakpoint *GetBreakpoint(ILDebugger *debugger, ILMethod *method,
-															ILUInt32 offset)
+							ILUInt32 offset)
 {
 	ILBreakpoint *breakpoint;
 
@@ -886,10 +1182,82 @@ ILMethod *FindMethodByLocation(ILDebugger *debugger, const char *sourceFile,
 }
 
 /*
+ * set_id command.
+ */
+void SetId(ILDebugger *debugger, FILE *stream)
+{
+	char *arg = 0;
+	int oldId;
+	int newId;
+	int size;
+	ILUserDataEntry *entry;
+	int found = 0;
+	int missingArg = 0;
+
+	while(1)
+	{
+		arg = NextArg(debugger, arg);
+		if(arg == 0)
+		{
+			break;
+		}
+		oldId = atoi(arg);
+
+		arg = NextArg(debugger, arg);
+		if(arg == 0)
+		{
+			missingArg = 1;
+			break;
+		}
+		newId = atoi(arg);
+
+		entry = debugger->userData->entries;
+		for(size = debugger->userData->size; size > 0; size--)
+		{
+			/* Find matching id */
+			if(entry->data == (void *) oldId)
+			{
+				/* Set new id when types match */
+				if(entry->type == IL_USER_DATA_SOURCE_FILE_ID ||
+					entry->type == IL_USER_DATA_SOURCE_FILE_IMAGE_ID ||
+					entry->type == IL_USER_DATA_MEMBER_ID ||
+					entry->type == IL_USER_DATA_CLASS_ID ||
+					entry->type == IL_USER_DATA_IMAGE_ID)
+				{
+					entry->data = (void *) newId;
+					found = 1;
+				}
+			}
+			entry++;
+		}
+
+		if(!found)
+		{
+			break;
+		}
+	}
+
+	if(missingArg)
+	{
+		DumpParamMissingError(stream);
+	}
+	else if(found)
+	{
+		DumpMessage("ok", stream);
+	}
+	else
+	{
+		DumpError("id not found", stream);
+	}
+}
+
+/*
  * Insert, remove or toggle breakpoint. Actions 0, 1, 2
  */
 void HandleBreakpointCommand(ILDebugger *debugger, FILE *stream, int command)
 {
+	char *arg0;
+	char *arg1;
 	ILUInt32 reqLine;
 	ILMethod *method;
 	ILUInt32 offset;
@@ -899,15 +1267,17 @@ void HandleBreakpointCommand(ILDebugger *debugger, FILE *stream, int command)
 	ILBreakpoint *breakpoint;
 
 	/* Validate and parse arguments */
-	if(debugger->argCount < 2)
+	First2Args(debugger, &arg0, &arg1);
+	if(arg1 == 0)
 	{
 		DumpParamMissingError(stream);
 		return;
 	}
-	reqLine = atoi(debugger->args[1]);
+
+	reqLine = atoi(arg1);
 
 	/* Find method for given source file and line */
-	method = FindMethodByLocation(debugger, debugger->args[0], reqLine,
+	method = FindMethodByLocation(debugger, arg0, reqLine,
 											&line, &col, &offset, &sourceFile);
 
 	if(!method)
@@ -932,7 +1302,7 @@ void HandleBreakpointCommand(ILDebugger *debugger, FILE *stream, int command)
 		else
 		{
 			/* On remove or toggle */
-			DumpBreakpoint(stream, breakpoint, 2);
+			DumpBreakpoint(debugger, stream, breakpoint, 2);
 			breakpoint->method = 0;
 			ILExecProcessUnwatchMethod(debugger->process, method);
 			DumpMessage("removed", stream);
@@ -957,7 +1327,7 @@ void HandleBreakpointCommand(ILDebugger *debugger, FILE *stream, int command)
 
 			/* Dump breakpoint - it's usefull because location
 			   may not be exactly the the same as user wanted */
-			DumpBreakpoint(stream, breakpoint, 2);
+			DumpBreakpoint(debugger, stream, breakpoint, 2);
 			DumpMessage("inserted", stream);
 		}
 	}
@@ -1001,7 +1371,8 @@ void Break(ILDebugger *debugger, FILE *stream)
  * Call DebuggerHelper.ExpressionToString() method for given expression.
  * Returns result as GC allocated string.
  */
-char *DebuggerHelper_ExpressionToString(ILExecThread *thread, const char *expression)
+char *DebuggerHelper_ExpressionToString(ILExecThread *thread,
+										const char *expression)
 {
 	ILString *str;
 	char *result;
@@ -1068,8 +1439,8 @@ void DebuggerHelper_AddLocal(ILExecThread *thread, const char *name,
 	clrType = _ILGetClrTypeForILType(thread, type);
 
 	ILExecThreadCallNamed(thread, "System.Private.DebuggerHelper",
-					"AddLocal", "(oSystem.String;oSystem.Type;oSystem.Object;)V",
-					(void *)0, str, clrType, obj);
+				"AddLocal", "(oSystem.String;oSystem.Type;oSystem.Object;)V",
+				(void *)0, str, clrType, obj);
 
 }
 
@@ -1247,10 +1618,12 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
  */
 void AddWatch(ILDebugger *debugger, FILE *stream)
 {
+	char *arg;
 	ILDebuggerWatch *watch;
 	ILDebuggerWatch *tail;
 
-	if(debugger->argCount < 1)
+	arg = FirstArg(debugger);
+	if(arg == 0)
 	{
 		DumpParamMissingError(stream);
 		return;
@@ -1278,7 +1651,7 @@ void AddWatch(ILDebugger *debugger, FILE *stream)
 		debugger->watches = watch;
 	}
 	
-	watch->expression = ILDupString(debugger->args[0]);
+	watch->expression = ILDupString(arg);
 	watch->next = 0;
 
 	DumpMessage("ok", stream);
@@ -1289,21 +1662,23 @@ void AddWatch(ILDebugger *debugger, FILE *stream)
  */
 void RemoveWatch(ILDebugger *debugger, FILE *stream)
 {
+	char *arg;
 	ILDebuggerWatch *watch;
 	ILDebuggerWatch *prev;
 
-	if(debugger->argCount < 1)
+	arg = FirstArg(debugger);
+	if(arg == 0)
 	{
 		DumpParamMissingError(stream);
 		return;
 	}
-	
+
 	/* Search the watch list for watch with given name */
 	prev = 0;
 	watch = debugger->watches;
 	while(watch != 0)
 	{
-		if(ILStrICmp(watch->expression, debugger->args[0]) == 0)
+		if(ILStrICmp(watch->expression, arg) == 0)
 		{
 			if(prev != 0)
 			{
@@ -1405,7 +1780,7 @@ void DumpCurrentLocation(ILDebugger *debugger, FILE *stream, int indent)
 	/* Update location in current thread info */
 	UpdateLocation(debugger);
 
-	DumpLocation(stream,
+	DumpLocation(debugger, stream,
 					 debugger->dbthread->sourceFile,
 					 debugger->dbthread->line,
 					 debugger->dbthread->col,
@@ -1418,7 +1793,7 @@ void DumpCurrentLocation(ILDebugger *debugger, FILE *stream, int indent)
 void ShowPosition(ILDebugger *debugger, FILE *stream)
 {
 	UpdateLocation(debugger);
-	DumpExecPosition(stream, debugger->dbthread->method,
+	DumpExecPosition(debugger, stream, debugger->dbthread->method,
 								debugger->dbthread->offset,
 								0,
 								debugger->dbthread->sourceFile,
@@ -1522,7 +1897,7 @@ void ShowStackTrace(ILDebugger *debugger, FILE *stream)
 				pc = jit_stack_trace_get_pc(stackTrace, current);
 
 				/* Dump the frame */
-				DumpExecPosition(stream, method, offset, pc,
+				DumpExecPosition(debugger, stream, method, offset, pc,
 												sourceFile, line, col, 4);
 			}
 		}
@@ -1538,12 +1913,14 @@ void ShowStackTrace(ILDebugger *debugger, FILE *stream)
  */
 void WatchAssembly(ILDebugger *debugger, FILE *stream)
 {
+	char *arg;
 	ILContext *context;
 	ILImage *image;
 	ILAssemblyWatch *watch;
 	int found = 0;
 
-	if(debugger->argCount < 1)
+	arg = FirstArg(debugger);
+	if(arg == 0)
 	{
 		DumpParamMissingError(stream);
 		return;
@@ -1554,7 +1931,7 @@ void WatchAssembly(ILDebugger *debugger, FILE *stream)
 	image = 0;
 	while((image = ILContextNextImage(context, image)) != 0)
 	{
-		if(strcmp(ILImageGetAssemblyName(image), debugger->args[0]) == 0)
+		if(strcmp(ILImageGetAssemblyName(image), arg) == 0)
 		{
 			found = 1;
 			break;
@@ -1620,7 +1997,8 @@ void ShowThreads(ILDebugger *debugger, FILE *stream)
 			continue;
 		}
 		Indent(stream, 2);
-		fprintf(stream, "<DebuggerThread Id=\"%d\" Address=\"%p\" RunType=\"%d\" Current=\"%d\" />\n",
+		fprintf(stream, "<DebuggerThread Id=\"%d\" Address=\"%p\""
+									" RunType=\"%d\" Current=\"%d\" />\n",
 									info->id, info->execThread,
 									info->runType, info == debugger->dbthread);
 		info = info->next;
@@ -1648,7 +2026,7 @@ void ShowBreakpoints(ILDebugger *debugger, FILE *stream)
 		}
 
 		/* Dump the breakpoint and move to next */
-		DumpBreakpoint(stream, breakpoint, 2);
+		DumpBreakpoint(debugger, stream, breakpoint, 2);
 		breakpoint = breakpoint->next;
 	}
 
@@ -1695,64 +2073,60 @@ static const char *GetLinkDir(ILImage *image)
 }
 
 /*
- * Definitions for hashtable of source files.
+ * show_projects command.
  */
-static unsigned long StringHashFunc(const void *elem)
-{
-	return ILHashString(0, ((const char *)(elem)), -1);
-}
-
-static int StringMatchFunc(const void *elem, const void *key)
-{
-	return !strcmp(((const char *)(elem)), (const char *)key);
-}
-
-static void StringFreeFunc(void *elem)
-{
-	/* Nothing to do here */
-}
-
-/*
- * show_libraries command - dumps also members - it's not currently needed.
- */
-void ShowLibraries(ILDebugger *debugger, FILE *stream)
+void ShowProjects(ILDebugger *debugger, FILE *stream)
 {
 	ILContext *context;
 	ILImage *image;
+	int imageId;
 	const char *linkDir;
+
+	/* Dump xml header */
+	fputs("  <Projects>\n", stream);
+
+	/* Iterate all images */
+	context = ILExecProcessGetContext(debugger->process);
+	image = 0;
+	while((image = ILContextNextImage(context, image)) != 0)
+	{
+		/* Dump image xml header */
+		fputs("    <Project AssemblyName=\"", stream);
+		DumpString(ILImageGetAssemblyName(image), stream);
+
+		imageId = GetId(debugger, (void *) image, IL_USER_DATA_IMAGE_ID);
+		fprintf(stream, "\" Id=\"%d", imageId);
+
+		linkDir = GetLinkDir(image);
+		if(linkDir != 0)
+		{
+			fputs("\" ProjectDir=\"", stream);
+			DumpString(linkDir, stream);
+		}
+		fputs("\" />\n", stream);
+	}
+	/* Output the library footer information */
+	fputs("  </Projects>", stream);
+}
+
+/*
+ * show_source_files command.
+ */
+void ShowSourceFiles(ILDebugger *debugger, FILE *stream)
+{
+	ILContext *context;
+	ILImage *image;
 	ILMember *member;
 	ILClass *classInfo;
-	ILHashTable *table;
-	ILHashIter iter;
 	ILUInt32 line;
 	ILUInt32 col;
 	const char *sourceFile;
-	int error = 0;
-	int dumpMembers;
+	int imageId;
+	int size;
+	ILUserDataEntry *entry;
 
-	/* Check if we should also dump members */
-	if(debugger->argCount > 0 && debugger->args[0][0] == '1')
-	{
-		dumpMembers = 1;
-	}
-	else
-	{
-		dumpMembers = 0;
-	}
-
-	/* Create source file hashtable */
-	table = ILHashCreate(0, StringHashFunc,
-							StringHashFunc,
-							StringMatchFunc,
-							StringFreeFunc);
-	if(table == 0)
-	{
-		DumpOutOfMemoryError(stream);
-		return;
-	}
-
-	/* Dump xml header */
-	fputs("<Libraries>\n", stream);
+	/* Dump files in table and clear the table */
+	fputs("<SourceFiles>\n", stream);
 
 	/* Iterate all images */
 	context = ILExecProcessGetContext(debugger->process);
@@ -1764,30 +2138,130 @@ void ShowLibraries(ILDebugger *debugger, FILE *stream)
 		{
 			continue;
 		}
-		/* Dump image xml header */
-		fputs("  <Types Library=\"", stream);
-		DumpString(ILImageGetAssemblyName(image), stream);
-		linkDir = GetLinkDir(image);
-		if(linkDir != 0)
-		{
-			fputs("\" LinkDir=\"", stream);
-			DumpString(linkDir, stream);
-		}
-		fputs("\">\n", stream);
+
+		imageId = GetId(debugger, (void *) image, IL_USER_DATA_IMAGE_ID);
+
 		/* Scan the TypeDef table and dump each top-level type */
 		classInfo = 0;
 		while((classInfo = (ILClass *)ILImageNextToken
 					(image, IL_META_TOKEN_TYPE_DEF, classInfo)) != 0)
 		{
-			if(dumpMembers)
+			member = 0;
+			while((member = ILClassNextMember(classInfo, member)) != 0)
 			{
-				Indent(stream, 4);
-				fputs("<Type Name=\"", stream);
-				DumpString(ILClass_Name(classInfo), stream);
-				fputs("\" >\n", stream);
-				Indent(stream, 6);
-				fputs("<Members>\n", stream);
+				if(ILMemberGetKind(member) == IL_META_MEMBERKIND_METHOD)
+				{
+					/* Get source file of method from debug info */
+					sourceFile = GetLocation((ILMethod *) member, 0,
+																&line, &col);
+
+					/* Skip if no debug info
+					* or if source file was already added */
+					if(sourceFile == 0)
+					{
+						continue;
+					}
+
+					/* This assigns id if needed */
+					GetId(debugger, (void *) sourceFile,
+												IL_USER_DATA_SOURCE_FILE_ID);
+
+					SetUserData(debugger, (void *) sourceFile,
+											IL_USER_DATA_SOURCE_FILE_IMAGE_ID,
+											(void *) imageId);
+				}
 			}
+		}
+
+		/* Dump files in user data table */
+		entry = debugger->userData->entries;
+		for(size = debugger->userData->size; size > 0; size--)
+		{
+			if(entry->type == IL_USER_DATA_SOURCE_FILE_ID)
+			{
+				DumpSourceFile(debugger, stream, (const char *) entry->ptr,
+																			4);
+			}
+			entry++;
+		}
+	}
+	fputs("</SourceFiles>", stream);
+}
+
+/*
+ * show_types command.
+ */
+void ShowTypes(ILDebugger *debugger, FILE *stream)
+{
+	ILContext *context;
+	ILImage *image;
+	ILClass *classInfo;
+	int classId;
+	int imageId;
+
+	/* Dump xml header */
+	fputs("  <Types>\n", stream);
+
+	/* Iterate all images */
+	context = ILExecProcessGetContext(debugger->process);
+	image = 0;
+	while((image = ILContextNextImage(context, image)) != 0)
+	{
+		/* Skip assemblies that are not watched */
+		if(!IsImageWatched(debugger->assemblyWatches, image))
+		{
+			continue;
+		}
+
+		/* Image id */
+		imageId = GetId(debugger, (void *) image, IL_USER_DATA_IMAGE_ID);
+
+		/* Scan the TypeDef table and dump each top-level type */
+		classInfo = 0;
+		while((classInfo = (ILClass *)ILImageNextToken
+					(image, IL_META_TOKEN_TYPE_DEF, classInfo)) != 0)
+		{
+			classId = GetId(debugger, (void *) classInfo,
+														IL_USER_DATA_CLASS_ID);
+			Indent(stream, 4);
+			fprintf(stream, "<Type Id=\"%d\" ImageId=\"%d\" Name=\"",
+															classId, imageId);
+			DumpString(ILClass_Name(classInfo), stream);
+			fputs("\">\n", stream);
+		}
+	}
+
+	fputs("  </Types>", stream);
+}
+
+/*
+ * show_members command.
+ */
+void ShowMembers(ILDebugger *debugger, FILE *stream)
+{
+	ILContext *context;
+	ILImage *image;
+	ILMember *member;
+	ILClass *classInfo;
+
+	/* Dump xml header */
+	fputs("  <Members>\n", stream);
+
+	/* Iterate all images */
+	context = ILExecProcessGetContext(debugger->process);
+	image = 0;
+	while((image = ILContextNextImage(context, image)) != 0)
+	{
+		/* Skip assemblies that are not watched */
+		if(!IsImageWatched(debugger->assemblyWatches, image))
+		{
+			continue;
+		}
+		/* Scan the TypeDef table and dump each top-level type */
+		classInfo = 0;
+		while((classInfo = (ILClass *)ILImageNextToken
+							(image, IL_META_TOKEN_TYPE_DEF, classInfo)) != 0)
+		{
 			member = 0;
 			while((member = ILClassNextMember(classInfo, member)) != 0)
 			{
@@ -1795,61 +2269,16 @@ void ShowLibraries(ILDebugger *debugger, FILE *stream)
 				{
 					case IL_META_MEMBERKIND_METHOD:
 					{
-						if(dumpMembers)
-						{
-							DumpMethod(stream, (ILMethod *) member, 8);
-						}
-						/* Get source file of method from debug info */
-						sourceFile = GetLocation((ILMethod *) member,
-															0, &line, &col);
-
-						/* Skip if no debug info 
-						 * or if source file was already added */
-						if(sourceFile == 0 || ILHashFind(table, sourceFile))
-						{
-							break;
-						}
-						if(!ILHashAdd(table, (void *)sourceFile))
-						{
-							error = 1;
-						}
+						DumpMethod
+							(debugger, stream, (ILMethod *) member, 0, 4);
 					}
 					break;
 				}
 			}
-
-			if(dumpMembers)
-			{
-				Indent(stream, 6);
-				fputs("</Members>\n", stream);
-				Indent(stream, 4);
-				fputs("</Type>\n", stream);
-			}
 		}
-		/* Dump files in table and clear the table */
-		Indent(stream, 6);
-		fputs("<SourceFiles>\n", stream);
-
-		ILHashIterInit(&iter, table);
-		while((sourceFile = ILHashIterNext(&iter)) != 0)
-		{
-			Indent(stream, 8);
-			fputs("<SourceFile Filename=\"", stream);
-			DumpString(sourceFile, stream);
-			fputs("\" />\n", stream);
-
-			/* Clearing hashtable */
-			ILHashRemove(table, (void *) sourceFile, 0);
-		}		
-		Indent(stream, 6);
-		fputs("</SourceFiles>\n", stream);
-
-		/* Dump image xml footer */
-		Indent(stream, 2);
-		fputs("</Types>\n", stream);
 	}
-	/* Output the library footer information */
-	fputs("</Libraries>\n", stream);
+
+	fputs("  </Members>", stream);
 }
 
 /*
@@ -1889,7 +2318,7 @@ void Resume(ILDebugger *debugger, int runType)
 }
 
 /*
- * c command (continue).
+ * continue command.
  */
 void Continue(ILDebugger *debugger, FILE *stream)
 {
@@ -2040,167 +2469,190 @@ void Quit(ILDebugger *debugger, FILE *stream)
 typedef struct
 {
 	const char *name;
-	int nameSize;
-	int argCount;
 	void (*func)(ILDebugger *debugger, FILE *stream);
-	char *helpName;
-	char *helpMsg;
-	char *desc;
+	char *usage;
+	char *shortDest;
+	char *longDesc;
 
 } Cmd;
 
 static Cmd const commands[] = {
-	{ "watch_assembly",				14,	1,	WatchAssembly,
+	{ "watch_assembly",							WatchAssembly,
 		"watch_assembly [assembly_name]",
 		"Watch assembly.",
 		"By default debugger breaks in every assembly. This can be slow, so you can specify just assemblies you are interested in (debugger can't break in other assemblies.) Only functions, that were not compiled yet are affected."
 	},
 	
-	{ "unwatch_all_assemblies",		22,	0,	UnwatchAllAssemblies,
+	{ "unwatch_all_assemblies",					UnwatchAllAssemblies,
 		"unwatch_all_assemblies",
 		"Remove all assembly watches.",
 		"Remove all assembly watches that were previously set with watch_assembly. This causes that debugger can break in any assembly again. Only functions, that were not compiled yet are affected."
 	},
 
-	{ "insert_breakpoint",			17,	2,	InsertBreakpoint,
+	{ "insert_breakpoint",						InsertBreakpoint,
 		"insert_breakpoint [source_file] [line]",
 		"Break when given location is reached.",
 		"Break when given location is reached."
 	},
 
-	{ "remove_breakpoint",			17,	2,	RemoveBreakpoint,
+	{ "remove_breakpoint",						RemoveBreakpoint,
 		"remove_breakpoint [source_file/breakpoint_id] [line]",
 		"Remove breakpoint.",
 		"Remove breakpoint."
 	},
 
-	{ "toggle_breakpoint",			17,	2,	ToggleBreakpoint,
+	{ "toggle_breakpoint",						ToggleBreakpoint,
 		"toggle_breakpoint [source_file/breakpoint_id] [line]",
 		"Toggle breakpoint.",
 		"Toggle breakpoint."
 	},
 
-	{ "add_watch",					9,	1,	AddWatch,
+	{ "add_watch",								AddWatch,
 		"add_watch [expression]",
 		"Add new watch.",
 		"Add new watch. Specify variable, field, property or function call e.g. i, this.x, this.X, this.ToString"
 	},
 
-	{ "remove_watch",				12,	1,	RemoveWatch,
+	{ "remove_watch",							RemoveWatch,
 		"remove_watch [expression]",
 		"Remove watch.",
 		"Remove watch with given id."
 	},
 
-	{ "remove_all_watches",			18,	1,	RemoveAllWatches,
+	{ "remove_all_watches",						RemoveAllWatches,
 		"remove_all_watches",
 		"Remove all watches.",
 		"Remove all watches."
 	},
 
-	{ "break",						5,	0,	Break,
+	{ "set_id",									SetId,
+		"set_id [old_id] [new_id] ...",
+		"Set id.",
+		"Set new id for given old id"
+	},
+
+	{ "break",									Break,
 		"break",
 		"Break execution.",
 		"Break execution of all threads."
 	},
 
-	{ "continue",					8,	0,	Continue,
+	{ "continue",								Continue,
 		"continue",
 		"Continue running your program.",
 		"Continue running your program."
 	},
 
-	{ "step",						4,	0,	Step,
+	{ "step",									Step,
 		"step",
 		"Step (into).",
 		"Step program until it reaches a different source line (steps into functions)."
 	},
 
-	{ "next",						4,	0,	Next,
+	{ "next",									Next,
 		"next",
 		"Next (step over).",
 		"Step program, over function calls."
 	},
 
-	{ "until",						5,	0,	Until,
+	{ "until",									Until,
 		"until",
 		"Until.",
 		"Execute until the program reaches a source line greater than the current."
 	},
 
-	{ "is_stopped",					10,	0,	IsStopped,
+	{ "is_stopped",								IsStopped,
 		"is_stopped",
 		"Report if execution is stopped.",
 		"Execution is stopped e.g when breakpoint is reached or break command is issued."
 	},
 
-	{ "is_stopped_in_watched_assembly",	30,	0,	IsStoppedInWatchedAssembly,
+	{ "is_stopped_in_watched_assembly",			IsStoppedInWatchedAssembly,
 		"is_stopped_in_watched_assembly",
 		"Is execution stopped in assembly that we watch?",
 		"This function is useful after initial break. We usually do step command to get to assembly that is user watching."
 	},	
 
-	{ "show_threads",				12,	0,	ShowThreads,
+	{ "show_threads",							ShowThreads,
 		"show_threads",
 		"List threads stopped in debugger.",
 		"List threads stopped in debugger."
 	},
 
-	{ "show_breakpoints",			16,	0,	ShowBreakpoints,
+	{ "show_breakpoints",						ShowBreakpoints,
 		"show_breakpoints",
 		"Show breakpoints.",
 		"Show breakpoints."
 	},
 
-	{ "show_locals",				11,	0,	ShowLocals,
+	{ "show_locals",							ShowLocals,
 		"show_locals",
 		"Show local variables.",
 		"Show local variables."
 	},
 
-	{ "show_watches",				12,	0,	ShowWatches,
+	{ "show_watches",							ShowWatches,
 		"show_watches",
 		"Show all watches.",
 		"Show all watches defined with add_watch command."
 	},
 
-	{ "show_position",				13,	0,	ShowPosition,
+	{ "show_position",							ShowPosition,
 		"show_position",
 		"Print position where execution stopped.",
 		"Print info about breakpoint where execution stopped."
 	},
 
-	{ "show_libraries",				14,	1,	ShowLibraries,
-		"show_libraries [dump_members]",
-		"Print information about watched assemblies.",
-		"Specify 1 as first parameter to get all members dumped"
+	{ "show_projects",							ShowProjects,
+		"show_projects",
+		"Show projects.",
+		"Show project information."
 	},
 
-	{ "show_stack_trace",			16,	0,	ShowStackTrace,
+	{ "show_source_files",						ShowSourceFiles,
+		"show_source_files",
+		"Show source files.",
+		"Show source files in watched assemblies."
+	},
+
+	{ "show_types",								ShowTypes,
+		"show_types",
+		"Show types.",
+		"Show all types in watched assemblies."
+	},
+
+
+	{ "show_members",							ShowMembers,
+		"show_members",
+		"Show members.",
+		"Show members for all types in watched assemblies."
+	},
+
+	{ "show_stack_trace",						ShowStackTrace,
 		"show_stack_trace",
 		"Print stacktrace for current thread.",
 		"Print stacktrace for current thread."
 	},
 
-	{ "show_dasm",					9,	0,	ShowDasm,
+	{ "show_dasm",								ShowDasm,
 		"show_dasm",
 		"Dissassemble current function in engine's internal format.",
 		"Dissassemble current function in engine's internal format."
 	},
 
-	{ "show_ildasm",				11,	0,	ShowIldasm,
+	{ "show_ildasm",							ShowIldasm,
 		"show_ildasm",
 		"Dissassemble current function in IL.",
 		"Dissassemble current function in IL."
 	},
 
-	{ "quit",						4,	0,	Quit,
+	{ "quit",									Quit,
 		"quit",
 		"Abort debugged program.",
 		"Abort debugged program."
 	},
 
-	{ "help",						4,	0,	Help,
+	{ "help",									Help,
 		"help [command]",
 		"Display this information or command help.",
 		"Display this information or command specific help."
@@ -2215,8 +2667,8 @@ static Cmd const commands[] = {
 static void Help(ILDebugger *debugger, FILE *stream)
 {
 	int i;
-	char *msg;
-	int size, maxSize; 
+	const char *name;
+	int size, maxSize;
 
 	/* Print the help header */
 	fputs("Usage: command [arguments]\n", stream);
@@ -2226,12 +2678,12 @@ static void Help(ILDebugger *debugger, FILE *stream)
 	maxSize = 0;
 	for(i = 0; i < num_commands; ++i)
 	{
-		msg = commands[i].helpName;
-		if(!msg)
+		name = commands[i].name;
+		if(!name)
 		{
 			continue;
 		}
-		size = strlen(msg);
+		size = strlen(name);
 		if(size > maxSize)
 		{
 			maxSize = size;
@@ -2245,15 +2697,9 @@ static void Help(ILDebugger *debugger, FILE *stream)
 		{
 			putc('\n', stream);
 		}
-		msg = commands[i].helpName;
-		if(!msg)
-		{
-			continue;
-		}
-		msg = msg;
-		size = 0;
-		fputs(msg, stream);
-		size = strlen(msg);
+		name = commands[i].name;
+		fputs(name, stream);
+		size = strlen(name);
 		while(size < maxSize)
 		{
 			putc(' ', stream);
@@ -2261,107 +2707,77 @@ static void Help(ILDebugger *debugger, FILE *stream)
 		}
 		putc(' ', stream);
 		putc(' ', stream);
-		msg = commands[i].helpMsg;
-		fputs(msg, stream);
+		fputs(commands[i].usage, stream);
 	}
 }
 
 /*
- * Check if commands are ok.
+ * Parse current command and return command index or -1 on error.
+ * Whitespaces that delimit args are replaced with nuls
+ * and debugger->lastArg is set.
  */
-static int CheckCommands()
-{
- 	int i;
-	for(i = 0; i < num_commands; ++i)
-	{
-		/* Compute nameSize if needed */
-		if(commands[i].nameSize != strlen(commands[i].name))
-		{
-			fprintf(stderr, "il_debugger: invalid nameSize for command %s\n",
-															commands[i].name);
-			return 0;
-		}
-		if(commands[i].argCount > IL_DEBUGGER_COMMAND_MAX_ARG_COUNT)
-		{
-			fprintf(stderr, "il_debugger: arg count for command %s exceeded\n",
-			 												commands[i].name);
-			return 0;	
-		}
-	}
-	return 1;
-}
-
-/*
- * Parse command from input text.
- * Set argCount and return command index or error code.
- * -1 command not found
- * -2 too many parameters for command
- */
-int ParseCommand(ILDebugger *debugger, char *text, int textLen)
+int ParseCommand(ILDebugger *debugger)
 {
 	int i, j;
-	debugger->argCount = 0;
-	for(i = 0; i < num_commands; ++i)
-	{
-		/* Text length is too small */
-		if(textLen < commands[i].nameSize)
-		{
-			continue;
-		}
-		
-		/* Lenghts match */
-		if(textLen == commands[i].nameSize)
-		{
-			if(strncmp(text, commands[i].name, commands[i].nameSize) == 0)
-			{
-				return i;
-			}
-			continue;
-		}
-		
-		/* Text is longer, check if there is whitespace after command */
-		if(isspace(text[commands[i].nameSize]))
-		{
-			if(strncmp(text, commands[i].name, commands[i].nameSize) == 0)
-			{
-				if(commands[i].argCount > 0)
-				{
-					/* Parse parameters */
-					debugger->argCount = 0;
-					for(j = commands[i].nameSize; j < textLen; j++)
-					{
-						/* replace whitespace with nul
-						 * so that arguments are well terminated */
-						if(isspace(text[j]))
-						{
-							text[j] = 0;
-							continue;
-						}
-						
-						/* whitespace followed by word */
-						if(text[j-1] == 0)
-						{
-							debugger->args[debugger->argCount++] = &text[j];
-						}
-					}
+	char *cmd;
+	const char *name;
+	int match;
 
-					if(debugger->argCount > commands[i].argCount)
-					{
-						/* Too many parameters */
-						return -2;
-					}
-				}
+	cmd = debugger->cmd;
+
+	for(i = 0; i < num_commands; i++)
+	{
+		name = commands[i].name;
+		match = 0;
+
+		/* Compare names */
+		for(j = 0;; j++)
+		{
+			if(name[j] == cmd[j] && (name[j] != 0 || cmd[j] != 0))
+			{
+				continue;
+			}
+			if(cmd[j] == 0 || isspace(cmd[j]))
+			{
+				match = 1;
+			}
+			break;
+		}
+
+		/* If not match try next command */
+		if(!match)
+		{
+			continue;
+		}
+
+		/* Set last arg to command so that NextArg() works */
+		debugger->lastArg = cmd;
+
+		while(1)
+		{
+			if(cmd[j] == 0)
+			{
 				return i;
 			}
+			/* Replace whitespace with nul
+			 * so that arguments are well terminated,
+			 * remember last argument */
+			if(isspace(cmd[j]))
+			{
+				cmd[j] = 0;
+				debugger->lastArg = cmd + j + 1;
+			}
+			j++;
 		}
 	}
+
 	return -1;
 }
 
 /*
  * Parse, execute and free current debugger command.
  * Returns:
- *   1 if next command is expected 
+ *   1 if next command is expected
  *   0 to continue execution (e.g. after step command)
  */
 static void ParseAndExecuteCurrentCommand(ILDebugger *debugger)
@@ -2377,8 +2793,7 @@ static void ParseAndExecuteCurrentCommand(ILDebugger *debugger)
 	else
 	{
 		/* Parse command */
-		cmdIndex = ParseCommand(debugger, debugger->currentCommand,
-												strlen(debugger->currentCommand));
+		cmdIndex = ParseCommand(debugger);
 
 		if(cmdIndex >= 0)
 		{
@@ -2386,19 +2801,15 @@ static void ParseAndExecuteCurrentCommand(ILDebugger *debugger)
 			(*(commands[cmdIndex].func))(debugger, outputStream);
 			
 		}
-		else if(cmdIndex == -1)
+		else
 		{
 			DumpError("Unknown command", outputStream);
-		}
-		else if(cmdIndex == -2)
-		{
-			DumpError("Too many parameters for command", outputStream);
 		}
 	}
 
 	/* Free command text, since it was allocated on heap */
-	ILFree(debugger->currentCommand);
-	debugger->currentCommand = 0;
+	ILFree(debugger->cmd);
+	debugger->cmd = 0;
  }
 
 /*
@@ -2418,8 +2829,8 @@ static void CommandLoop(ILDebugger *debugger)
 		}
 
 		/* Read command text from input stream */
-		debugger->currentCommand = ReadStream(debugger->io->input);
-		if(debugger->currentCommand == 0)
+		debugger->cmd = ReadStream(debugger->io->input);
+		if(debugger->cmd == 0)
 		{
 			debugger->abort = 1;
 			break;
@@ -2460,7 +2871,8 @@ static void CommandLoop(ILDebugger *debugger)
 		}
 
 		/* Is next command expected?*/
-		nextCommand = debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED;
+		nextCommand =
+				debugger->dbthread->runType == IL_DEBUGGER_RUN_TYPE_STOPPED;
 	}
 	while(nextCommand && debugger->abort == 0);
 }
@@ -2496,8 +2908,7 @@ int StartIOThread(ILDebugger *debugger)
 	}
 
 	/* Create command loop thread  */
-	debugger->ioThread = ILThreadCreate(IOThreadFn,
-														(void *) debugger);
+	debugger->ioThread = ILThreadCreate(IOThreadFn, (void *) debugger);
 
 	if(debugger->ioThread == 0)
 	{
@@ -2579,7 +2990,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 				stop = (breakpoint->method != 0);
 			}
 			break;
-	
+
 			case IL_DEBUGGER_RUN_TYPE_STEP:
 			{
 				/* Stop if current method or location changed */
@@ -2588,7 +2999,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 					(col != debugger->dbthread->col);
 			}
 			break;
-	
+
 			case IL_DEBUGGER_RUN_TYPE_NEXT:
 			{
 				/* Stop in the same method when location changed
@@ -2605,7 +3016,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 				}
 			}
 			break;
-			
+
 			case IL_DEBUGGER_RUN_TYPE_UNTIL:
 			{
 				/* Stop in the same method when location moves further
@@ -2622,7 +3033,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 				}
 			}
 			break;
-			
+
 			case IL_DEBUGGER_RUN_TYPE_FINISH:
 			{
 				/* Stop on the last instrucion of current method. TODO */
@@ -2672,7 +3083,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 			ILWaitOne(info->event, -1);
 
 			/* Check if we were resumed for executing current command */
-			if(debugger->currentCommand != 0 && info == debugger->dbthread)
+			if(debugger->cmd != 0 && info == debugger->dbthread)
 			{
 				/* Execute and signal that the command was handled */
 				ParseAndExecuteCurrentCommand(debugger);
@@ -2787,6 +3198,10 @@ void ILDebuggerDestroy(ILDebugger *debugger)
 	{
 		ILMutexDestroy(debugger->lock);
 	}
+	if(debugger->userData)
+	{
+		ILUserDataDestroy(debugger->userData);
+	}
 	if(debugger->dbthread)
 	{
 		ILDebuggerThreadInfo_Destroy(debugger->dbthread);
@@ -2816,19 +3231,13 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 {
 	ILDebugger *debugger;
 
-	/* Check if command table is ok - useful for for debuging */
-	if(!CheckCommands())
-	{
-		return 0;
-	}
-
 	/* Allocate and initialize debugger structure */
 	debugger = (ILDebugger *) ILMalloc(sizeof(ILDebugger));
 	if(debugger == 0)
 	{
 		return 0;
 	}
-	memset(debugger, 0, sizeof(ILDebugger));
+	ILMemSet(debugger, 0, sizeof(ILDebugger));
 
 	/* Assign reference to exec process */
 	debugger->process = process;
@@ -2838,6 +3247,15 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	if(!(debugger->lock))
 	{
 		fprintf(stderr, "il_debugger: failed to create mutex\n");
+		ILDebuggerDestroy(debugger);
+		return 0;
+	}
+
+	/* Create user data table */
+	debugger->userData = ILUserDataCreate();
+	if(debugger->userData == 0)
+	{
+		fprintf(stderr, "il_debugger: failed to create user data\n");
 		ILDebuggerDestroy(debugger);
 		return 0;
 	}
@@ -2873,7 +3291,8 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	/* Register debug hook function */
 	if(ILExecProcessDebugHook(process, DebugHook, 0) == 0)
 	{
-		fprintf(stderr, "il_debugger: the runtime engine does not support debugging.\n");
+		fprintf(stderr, 
+			"il_debugger: the runtime engine does not support debugging.\n");
 		ILDebuggerDestroy(debugger);
 		return 0;
 	}

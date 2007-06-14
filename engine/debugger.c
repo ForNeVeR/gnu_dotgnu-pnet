@@ -876,7 +876,7 @@ static void DumpCallFrame(FILE *stream, ILDebugger *debugger,
 	}
 
 	/* Dump the frame */
-	DumpExecPosition(stream, frame->method,
+	DumpExecPosition(debugger, stream, frame->method,
 						offset, 0, sourceFile,
 						line, col, indent);
 }

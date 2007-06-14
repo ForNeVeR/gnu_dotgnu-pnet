@@ -1,3 +1,7 @@
+2007-06-14  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/debugger.c: Fix build with cvm interpreter.
+
 2007-06-14  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/jitc_locals.c: Added missing if(coder->markBreakpoints).

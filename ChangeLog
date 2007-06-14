@@ -1,5 +1,9 @@
 2007-06-14  Radek Polak  <psonek2@seznam.cz>
 
+	* engine/jitc_locals.c: Added missing if(coder->markBreakpoints).
+
+2007-06-14  Radek Polak  <psonek2@seznam.cz>
+
 	* engine/debugger.h: Add definitions for user data table that allows us to
 	attach various additional data to pointer. Shortened some variable names.
 

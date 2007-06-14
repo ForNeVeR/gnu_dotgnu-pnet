@@ -681,16 +681,19 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 				param->refValue = 0;
 
 #ifdef IL_DEBUGGER
-				if(markThis)
+				if(coder->markBreakpoints)
 				{
-					_ILJitLocalsMarkDebug(coder, param->value,
+					if(markThis)
+					{
+						_ILJitLocalsMarkDebug(coder, param->value,
 												JIT_DEBUGGER_DATA1_THIS_ADDR);
-					markThis = 0;
-				}
-				else
-				{
-					_ILJitLocalsMarkDebug(coder, param->value,
+						markThis = 0;
+					}
+					else
+					{
+						_ILJitLocalsMarkDebug(coder, param->value,
 												JIT_DEBUGGER_DATA1_PARAM_ADDR);
+					}
 				}
 #endif
 			}

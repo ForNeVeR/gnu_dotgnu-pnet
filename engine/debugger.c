@@ -381,7 +381,7 @@ static void ILUserDataDestroy(ILUserData *userData)
 }
 
 #define ILUserDataStartIndex(userData, ptr, type) \
-								(((unsigned int)(ptr + type)) % userData->size)
+								(((ILNativeUInt)(ptr + type)) % userData->size)
 
 /*
  * Find entry of given type for given pointer.
@@ -392,7 +392,7 @@ static ILUserDataEntry *ILUserDataFindEntry(ILUserData *userData,
 {
 	int i = 0;
 	ILUserDataEntry *entry;
-	unsigned int index;
+	ILNativeUInt index;
 
 	/* Search for given pointer and type in entries */
 	index = ILUserDataStartIndex(userData, ptr, type);
@@ -424,7 +424,7 @@ static int ILUserDataSet(ILUserData *userData, const void *ptr, int type,
 	int oldSize;
 	int newSize;
 	int i;
-	unsigned int index;
+	ILNativeUInt index;
 
 	/* Do we have enough space? */
 	if(userData->size < userData->count * 2)

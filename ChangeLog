@@ -1,3 +1,7 @@
+2007-06-15  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Fix warning on x86_64.
+
 2007-06-14  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/debugger.c: Fix build with cvm interpreter.

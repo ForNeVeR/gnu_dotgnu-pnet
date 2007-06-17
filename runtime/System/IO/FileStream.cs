@@ -269,6 +269,11 @@ public class FileStream : Stream
 			{
 				if(canSeek)
 				{
+					if(bufferPosn < bufferLen)
+					{
+						FileMethods.Seek(handle, bufferPosn - bufferLen,
+														SeekOrigin.Current);
+					}
 					bufferPosn = 0;
 					bufferLen = 0;
 				}

@@ -1,3 +1,8 @@
+2007-06-18  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/IO/FileStream.cs: Move position to the last unread byte
+	after flush (bug #20195).
+
 2007-06-01  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Form/Label.cs: set the correct default for ImageAlign to

@@ -895,6 +895,8 @@ public class ListBox : ListControl
 				this.selectedIndices.Clear();
 			if(value != -1)
 				this.selectedIndices.Add(value);
+			this.FocusedItem = value;
+			this.EnsureFocusedItemVisible();
 		}
 	}
 

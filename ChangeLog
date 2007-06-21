@@ -1,3 +1,8 @@
+2007-06-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Form/ListBox.cs: Scroll list box and select item, if 
+	SelectedIndex was changed.
+
 2007-06-18  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/IO/FileStream.cs: Move position to the last unread byte

@@ -109,7 +109,7 @@ public sealed class Registry
 				}
 			}
 
-#if CONFIG_FRAMEWORK_1_2
+#if CONFIG_FRAMEWORK_2_0
 
 	// Get a registry key from a full path.
 	private static RegistryKey GetKey(String keyName, bool writable)
@@ -208,7 +208,7 @@ public sealed class Registry
 				}
 			}
 
-#endif // CONFIG_FRAMEWORK_1_2
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // class Registry
 

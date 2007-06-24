@@ -22,7 +22,7 @@
 namespace Microsoft.Win32.SafeHandles
 {
 
-#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 using System;
 using System.Runtime.InteropServices;
@@ -54,6 +54,6 @@ public sealed class SafeFileHandle : SafeHandleZeroOrMinusOneIsInvalid
 
 }; // class SafeFileHandle
 
-#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 }; // namespace Microsoft.Win32.SafeHandles

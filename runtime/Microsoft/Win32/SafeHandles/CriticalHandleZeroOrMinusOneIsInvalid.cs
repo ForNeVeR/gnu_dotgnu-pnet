@@ -22,7 +22,7 @@
 namespace Microsoft.Win32.SafeHandles
 {
 
-#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 using System;
 using System.Runtime.InteropServices;
@@ -30,7 +30,7 @@ using System.Runtime.InteropServices;
 public abstract class CriticalHandleZeroOrMinusOneIsInvalid : CriticalHandle
 {
 	// Constructor.
-	public CriticalHandleZeroOrMinusOneIsInvalid()
+	protected CriticalHandleZeroOrMinusOneIsInvalid()
 			: base(new IntPtr(-1L)) {}
 
 	// Determine if the handle is invalid.
@@ -45,6 +45,6 @@ public abstract class CriticalHandleZeroOrMinusOneIsInvalid : CriticalHandle
 
 }; // class CriticalHandleZeroOrMinusOneIsInvalid
 
-#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 }; // namespace Microsoft.Win32.SafeHandles

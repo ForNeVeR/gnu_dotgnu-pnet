@@ -1,3 +1,22 @@
+2007-06-24  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/Microsoft/Win32/RegistryKeyPermissionCheck.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeWaitHandle.cs: Add stubbs for the
+	2.0 classes.
+
+	* runtime/Microsoft/Win32/Registry.cs,
+	runtime/Microsoft/Win32/RegistryHive.cs,
+	runtime/Microsoft/Win32/RegistryValueKind.cs,
+	runtime/Microsoft/Win32/RegistryValueOptions.cs,
+	runtime/Microsoft/Win32/SafeHandles/CriticalHandleMinusOneIsValid.cs,
+	runtime/Microsoft/Win32/SafeHandles/CriticalHandleZeroOrMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeFileHandle.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeHandleMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeHandleZeroOrMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeWaitHandle.cs: Change
+	CONFIG_FRAMEWORK_1_2 to CONFIG_FRAMEWORK_2_0 and fix some minor
+	incompatibilities.
+
 2007-06-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Form/ListBox.cs: Scroll list box and select item, if 

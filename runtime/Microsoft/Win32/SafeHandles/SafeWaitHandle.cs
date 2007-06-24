@@ -1,8 +1,8 @@
 /*
- * SafeHandleZeroOrMinusOneIsInvalid.cs - Implementation of the
- *	"Microsoft.Win32.SafeHandles.SafeHandleZeroOrMinusOneIsInvalid" class.
+ * SafeWaitHandle.cs - Implementation of the
+ *	"Microsoft.Win32.SafeHandles.SafeWaitHandle" class.
  *
- * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,24 +26,33 @@ namespace Microsoft.Win32.SafeHandles
 
 using System;
 using System.Runtime.InteropServices;
+#if CONFIG_FRAMEWORK_2_0
+using System.Runtime.ConstrainedExecution;
+#else
+using System.Runtime.Reliability;
+#endif
 
-public abstract class SafeHandleZeroOrMinusOneIsInvalid : SafeHandle
+public sealed class SafeWaitHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
 	// Constructor.
-	protected SafeHandleZeroOrMinusOneIsInvalid(bool ownsHandle)
-			: base(new IntPtr(-1L), ownsHandle) {}
-
-	// Determine if the handle is invalid.
-	public override bool IsInvalid
+	public SafeWaitHandle(IntPtr existingHandle, bool ownsHandle)
+			: base(ownsHandle)
 			{
-				get
-				{
-					return (handle == new IntPtr(-1L) ||
-							handle == IntPtr.Zero);
-				}
+				SetHandle(existingHandle);
 			}
 
-}; // class SafeHandleZeroOrMinusOneIsInvalid
+	// Close the handle, using the Win32 api's.
+	[DllImport("kernel32.dll")]
+	extern private static bool CloseHandle(IntPtr handle);
+
+	// Release the handle.
+	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	protected override bool ReleaseHandle()
+			{
+				return CloseHandle(handle);
+			}
+
+}; // class SafeWaitHandle
 
 #endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 

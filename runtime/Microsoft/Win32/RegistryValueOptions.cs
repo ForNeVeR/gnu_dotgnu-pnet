@@ -24,7 +24,7 @@ namespace Microsoft.Win32
 using System;
 using System.Runtime.InteropServices;
 
-#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 [ComVisible(false)]
@@ -32,11 +32,10 @@ using System.Runtime.InteropServices;
 [Flags]
 public enum RegistryValueOptions
 {
-	None						  = 0x0000,
-	DoNotExpandedEnvironmentNames = 0x0001
-	
+	None						= 0x0000,
+	DoNotExpandEnvironmentNames	= 0x0001
 }; // enum RegistryValueOptions
 
-#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 }; // namespace Microsoft.Win32

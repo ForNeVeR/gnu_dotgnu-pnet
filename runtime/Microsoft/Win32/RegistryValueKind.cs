@@ -22,11 +22,11 @@
 namespace Microsoft.Win32
 {
 
-#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 public enum RegistryValueKind
 {
-	Unknown			= -1,
+	Unknown			= 0,
 	String			= 1,
 	ExpandString	= 2,
 	Binary			= 3,
@@ -36,6 +36,6 @@ public enum RegistryValueKind
 
 }; // enum RegistryValueKind
 
-#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_1_2
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 }; // namespace Microsoft.Win32

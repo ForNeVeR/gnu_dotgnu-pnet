@@ -1,8 +1,8 @@
 /*
- * RegistryHive.cs - Implementation of the
- *			"Microsoft.Win32.RegistryHive" class.
+ * RegistryKeyPermissionCheck.cs - Implementation of the
+ *			"Microsoft.Win32.RegistryKeyPermissionCheck" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,26 +22,17 @@
 namespace Microsoft.Win32
 {
 
-#if CONFIG_WIN32_SPECIFICS
-
-using System;
 using System.Runtime.InteropServices;
 
-[Serializable]
-[ComVisible(true)]
-public enum RegistryHive
+#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
+
+public enum RegistryKeyPermissionCheck
 {
+	Default				= 0,
+	ReadSubTree			= 1,
+	ReadWriteSubTree	= 2
+}; // enum RegistryKeyPermissionCheck
 
-	ClassesRoot			= unchecked((int)0x80000000),
-	CurrentUser			= unchecked((int)0x80000001),
-	LocalMachine		= unchecked((int)0x80000002),
-	Users				= unchecked((int)0x80000003),
-	PerformanceData		= unchecked((int)0x80000004),
-	CurrentConfig		= unchecked((int)0x80000005),
-	DynData				= unchecked((int)0x80000006)
-
-}; // enum RegistryHive
-
-#endif // CONFIG_WIN32_SPECIFICS
+#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
 
 }; // namespace Microsoft.Win32

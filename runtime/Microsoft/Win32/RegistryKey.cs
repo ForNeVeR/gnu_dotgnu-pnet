@@ -168,6 +168,23 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				}
 				return new RegistryKey(key, true);
 			}
+#if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	public RegistryKey CreateSubKey(String subkey,
+								  RegistryKeyPermissionCheck permissionCheck)
+			{
+				return CreateSubKey(subkey);
+			}
+#if CONFIG_ACCESS_CONTROL
+	[TODO]
+	public RegistryKey CreateSubKey(String subkey,
+								  RegistryKeyPermissionCheck permissionCheck,
+								  RegistryRights rights)
+			{
+				return CreateSubKey(subkey);
+			}
+#endif // CONFIG_ACCESS_CONTROL
+#endif // CONFIG_FRAMEWORK_2_0
 #if CONFIG_ACCESS_CONTROL
 	public RegistryKey CreateSubKey
 				(String subkey, RegistrySecurity registrySecurity)
@@ -382,15 +399,15 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 			{
 				return GetValue(name, null);
 			}
-#if CONFIG_FRAMEWORK_1_2
-	[Obsolete("Use the RegisterValueOptions variant of GetValue instead")]
+#if CONFIG_FRAMEWORK_2_0
+	[Obsolete("Use the RegistryValueOptions variant of GetValue instead")]
 	public Object GetValue(String name, Object defaultValue, bool doNotExpand)
 			{
 				if(doNotExpand)
 				{
 					return GetValue
 						(name, defaultValue,
-						 RegistryValueOptions.DoNotExpandedEnvironmentNames);
+						 RegistryValueOptions.DoNotExpandEnvironmentNames);
 				}
 				else
 				{
@@ -413,7 +430,7 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 				// TODO
 				return RegistryValueKind.String;
 			}
-#endif
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Get the names of all values underneath this registry key.
 	public String[] GetValueNames()
@@ -513,6 +530,23 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 			{
 				return OpenSubKey(name, false);
 			}
+#if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	public RegistryKey OpenSubKey(String name,
+								  RegistryKeyPermissionCheck permissionCheck)
+			{
+				return OpenSubKey(name, false);
+			}
+#if CONFIG_ACCESS_CONTROL
+	[TODO]
+	public RegistryKey OpenSubKey(String name,
+								  RegistryKeyPermissionCheck permissionCheck,
+								  RegistryRights rights)
+			{
+				return OpenSubKey(name, false);
+			}
+#endif // CONFIG_ACCESS_CONTROL
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Set a value under this registry key.
 	public void SetValue(String name, Object value)
@@ -539,7 +573,7 @@ public sealed class RegistryKey : MarshalByRefObject, IDisposable
 					throw new IOException(_("IO_RegistryKeyClosed"));
 				}
 			}
-#if CONFIG_FRAMEWORK_1_2
+#if CONFIG_FRAMEWORK_2_0
 	public void SetValue
 				(String name, Object value, RegistryValueKind valueKind)
 			{

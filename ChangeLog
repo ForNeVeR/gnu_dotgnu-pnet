@@ -17,6 +17,9 @@
 	CONFIG_FRAMEWORK_1_2 to CONFIG_FRAMEWORK_2_0 and fix some minor
 	incompatibilities.
 
+	* runtime/Microsoft/Win32/RegistryKey.cs: Change CONFIG_FRAMEWORK_1_2 to
+	CONFIG_FRAMEWORG_2_0 and stub out some new 2.0 methods.
+ 
 2007-06-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Form/ListBox.cs: Scroll list box and select item, if 

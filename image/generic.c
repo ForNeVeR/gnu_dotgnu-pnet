@@ -131,6 +131,14 @@ ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar, ILProgramIt
 	(*last)->constraint = constraint;
 	(*last)->nextConstraint = 0;
 
+	/* Assign a token code to the GenericConstraint information block */
+	if(!_ILImageSetToken(genPar->ownedItem.programItem.image,
+						 &((*last)->ownedItem.programItem), 0,
+						 IL_META_TOKEN_GENERIC_CONSTRAINT))
+	{
+		return 0;
+	}
+
 	return (*last);
 }
 

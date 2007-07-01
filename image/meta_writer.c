@@ -711,7 +711,7 @@ static void Format_GenericConstraint(ILWriter *writer, ILImage *image,
 									 ILGenericConstraint *genCon)
 {
 	values[IL_OFFSET_GENERICCON_PARAM] =
-			(genCon->parameter ? genCon->parameter->token : 0);
+			(genCon->parameter ? ((ILProgramItem *)genCon->parameter)->token : 0);
 	values[IL_OFFSET_GENERICCON_CONSTRAINT] =
 			(genCon->constraint ? genCon->constraint->token : 0);
 }
@@ -1295,6 +1295,54 @@ static int Sort_NestedClass(ILNestedInfo **nested1, ILNestedInfo **nested2)
 }
 
 /*
+ * Sort the GenericPar table.
+ */
+static int Sort_GenericPar(ILGenericPar **genPar1, ILGenericPar **genPar2)
+{
+	ILToken token1 = (*genPar1)->ownedItem.owner->token;
+	ILToken token2 = (*genPar2)->ownedItem.owner->token;
+	ILToken tokenNum1 = (token1 & ~IL_META_TOKEN_MASK);
+	ILToken tokenNum2 = (token2 & ~IL_META_TOKEN_MASK);
+
+	/* Compare the bottom parts of the token first, because
+	   the table must be sorted on its encoded value, not
+	   on the original value.  Encoded values put the token
+	   type in the low order bits */
+	if(tokenNum1 < tokenNum2)
+	{
+		return -1;
+	}
+	else if(tokenNum1 > tokenNum2)
+	{
+		return 1;
+	}
+	else if(token1 < token2)
+	{
+		return -1;
+	}
+	else if(token1 > token2)
+	{
+		return 1;
+	}
+	else
+	{
+		if((*genPar1)->number < (*genPar2)->number)
+		{
+			return -1;
+		}
+		else if((*genPar1)->number > (*genPar2)->number)
+		{
+			return 1;
+		}
+		else
+		{
+			/* We never should get here. */
+			return 0;
+		}
+	}
+}
+
+/*
  * Array of all sorting routines for the known token types.
  */
 typedef int (*ILSortFunc)(const void *e1, const void *e2);
@@ -1341,9 +1389,9 @@ static ILSortFunc const SortFuncs[64] = {
 	0,
 	0,											/* 28 */
 	(ILSortFunc)Sort_NestedClass,
+	(ILSortFunc)Sort_GenericPar,
+	0,
 	(ILSortFunc)Sort_OwnedItem,
-	0,
-	0,
 	0,
 	0,
 	0,
@@ -1532,7 +1580,11 @@ int _ILWriteMetadataIndex(ILWriter *writer, ILImage *image)
 
 	/* Write the metadata index header */
 	IL_WRITE_UINT32(buffer, 0);				/* Reserved */
+#if IL_VERSION_MAJOR > 1
+	buffer[4] = 0x02;						/* Major version */
+#else
 	buffer[4] = 0x01;						/* Major version */
+#endif
 	buffer[5] = 0x00;						/* Minor version */
 	buffer[6] = (unsigned char)sizeFlags;	/* Section size flags */
 	buffer[7] = 0x00;						/* Reserved */

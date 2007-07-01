@@ -36,6 +36,16 @@ extern	"C" {
 #define	ILASM_NESTED_CLASS_SEP_STR	"\377"
 
 /*
+ * Parsed generic type constraint.
+ */
+typedef struct _tagILAsmGenericTypeConstraint ILAsmGenericTypeConstraint;
+struct _tagILAsmGenericTypeConstraint
+{
+	ILType					   *type;
+	ILAsmGenericTypeConstraint *next;
+};
+
+/*
  * Parsed parameter information.
  */
 typedef struct _tagILAsmParamInfo ILAsmParamInfo;
@@ -46,6 +56,7 @@ struct _tagILAsmParamInfo
 	ILUInt32		parameterAttrs;
 	const char	   *name;
 	ILAsmParamInfo *next;
+	ILAsmGenericTypeConstraint *firstTypeConstraint;
 };
 
 /*
@@ -137,6 +148,11 @@ void ILAsmBuildPopScope(void);
  */
 void ILAsmSplitName(const char *str, int len, const char **name,
 					const char **namespace);
+
+/*
+ * Add generic parameters to a type or method.
+ */
+void ILAsmAddGenericPars(ILProgramItem *owner, ILAsmParamInfo *genericParams);
 
 /*
  * Create a new class and push it onto the class stack.

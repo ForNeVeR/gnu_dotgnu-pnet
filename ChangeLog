@@ -1,3 +1,23 @@
+2007-07-01  Klaus Treichel  <ktreichel@web.de>
+
+	* ilasm/ilasm_build.c: Add the function ILAsmAddGenericPars to add
+	generic parameters and their constraints to a Type or Method.
+	Use this function in ILAsmBuildNewClass now.
+
+	* ilasm/ilasm_build.h: Add the type ILAsmGenericTypeConstraint.
+	Add the prototype for ILAsmAddGenericPars.
+
+	* ilasm/ilasm_grammar.y: Sort the keywords alphabetically and add the
+	new ECMA 4 keywords. Redo the handling of generic parameters and 
+	generic parameter constraints ECMA compliant. Add the override
+	directive for overriding generic virtual methods.
+	
+	* image/generic.c: Set the token in the generic constraint on creation
+	so that it will be written to the metadata.
+
+	* image/meta_writer.c: Add a function to sort the generic parameters.
+	Set the major metadata version to 2 if the IL_VERSION_MAJOR is > 1.
+
 2007-07-01  Ivan de Jesus Daras Tabora  <ideras@gmail.com>
 
 	* csdoc/il2doc.c: Replace the code for printing the generic parameters

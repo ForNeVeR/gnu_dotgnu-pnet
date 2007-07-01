@@ -620,6 +620,19 @@ int ILTypeIdentical(ILType *type1, ILType *type2)
 				{
 					return 0;
 				}
+#if IL_VERSION_MAJOR > 1
+				/* Check if the number of generic parameters match */
+				if((type1->kind__ & IL_TYPE_COMPLEX_METHOD) != 0)
+				{
+					if((ILType_CallConv(type1) & IL_META_CALLCONV_GENERIC) != 0)
+					{
+						if(ILType_NumGen(type1) != ILType_NumGen(type2))
+						{
+							return 0;
+						}
+					}
+				}
+#endif
 				if(!ILTypeIdentical(type1->un.method__.retType__,
 									type2->un.method__.retType__))
 				{

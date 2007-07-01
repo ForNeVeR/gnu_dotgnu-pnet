@@ -249,29 +249,37 @@ static ILModule *FindModuleRef(ILImage *image, const char *name)
 }
 
 /*
+ * Get the number of params.
+ */
+static int GetNumParams(ILAsmParamInfo *params)
+{
+	ILUInt32 numParams = 0;
+
+	while(params != 0)
+	{
+		++numParams;
+		params = params->next;
+	}
+
+	return numParams;
+}
+
+/*
  * Create a method signature type.
  */
 static ILType *CreateMethodSig(ILInt64 callingConventions,
 							   ILType *returnType,
 							   ILAsmParamInfo *params,
-							   ILAsmParamInfo *genericParams,
+							   int numGenericParams,
 							   int freeParams)
 {
 	ILType *type;
 	ILAsmParamInfo *nextParam;
-	ILUInt32 numGenericParams;
 
 	/* Set the "generic" flag if there are generic parameters */
-	numGenericParams = 0;
-	if(genericParams)
+	if(numGenericParams > 0)
 	{
 		callingConventions |= IL_META_CALLCONV_GENERIC;
-		nextParam = genericParams;
-		while(nextParam != 0)
-		{
-			++numGenericParams;
-			nextParam = nextParam->next;
-		}
 	}
 
 	/* Create the main method type block */
@@ -315,7 +323,7 @@ static ILType *CreateMethodSig(ILInt64 callingConventions,
 /*
  * Create a method specification token.
  */
-static ILToken CreateMethodSpec(ILToken method, ILAsmParamInfo *params)
+static ILToken CreateMethodSpec(ILToken method, ILAsmParamInfo *genericParams)
 {
 	ILMember *member;
 	ILType *signature;
@@ -330,7 +338,7 @@ static ILToken CreateMethodSpec(ILToken method, ILAsmParamInfo *params)
 
 	/* Create the method instantiation signature */
 	signature = CreateMethodSig(IL_META_CALLCONV_INSTANTIATION,
-								ILType_Invalid, params, 0, 1);
+								ILType_Invalid, genericParams, 0, 1);
 
 	/* Create the MethodSpec token */
 	spec = ILMethodSpecCreate(ILAsmImage, 0, member, signature);
@@ -675,6 +683,7 @@ static void FinishDataLabels()
  */
 %union {
 	ILInt64			integer;
+	ILInt16			genParAttrib;
 	ILIntString		strValue;
 	ILDouble		real;
 	struct {
@@ -735,7 +744,7 @@ static void FinishDataLabels()
 	}				datalabel;
 	ILAsmOutException *exception;
 	ILToken			token;
-
+	ILAsmGenericTypeConstraint *typeConstraint;
 }
 
 /*
@@ -781,10 +790,12 @@ static void FinishDataLabels()
 %token D_HASH				"`.hash'"
 %token D_IMAGEBASE			"`.imagebase'"
 %token D_IMPLICITCOM		"`.implicitcom'"
+%token D_IMPORT				"`.import'"
 %token D_LANGUAGE			"`.language'"
 %token D_LIBRARY			"`.library'"
 %token D_LINE				"`.line'"
 %token D_LOCALE				"`.locale'"
+%token D_LOCALIZED			"`.localized'"
 %token D_LOCALS				"`.locals'"
 %token D_MANIFESTRES		"`.manifestres'"
 %token D_MAXSTACK			"`.maxstack'"
@@ -799,6 +810,7 @@ static void FinishDataLabels()
 %token D_OVERRIDE			"`.override'"
 %token D_PACK				"`.pack'"
 %token D_PARAM				"`.param'"
+%token D_PDIRECT			"`.pdirect'"
 %token D_PERMISSION			"`.permission'"
 %token D_PERMISSIONSET		"`.permissionset'"
 %token D_PROCESSOR			"`.processor'"
@@ -820,186 +832,196 @@ static void FinishDataLabels()
 /*
  * Keywords.
  */
-%token K_AT					"`at'"
+%token K_ABSTRACT			"`abstract'"
+%token K_ALGORITHM			"`algorithm'"
+%token K_ALIGNMENT			"`alignment'"
+%token K_ANSI				"`ansi'"
+%token K_ANY				"`any'"
+%token K_ARGLIST			"`arglist'"
+%token K_ARRAY				"`array'"
 %token K_AS					"`as'"
+%token K_ASSEMBLY			"`assembly'"
+%token K_ASSERT				"`assert'"
+%token K_AT					"`at'"
+%token K_AUTO				"`auto'"
+%token K_AUTOCHAR			"`autochar'"
+%token K_BEFOREFIELDINIT    "`beforefieldinit'"
+%token K_BLOB				"`blob'"
+%token K_BLOB_OBJECT		"`blob_object'"
+%token K_BOOL				"`bool'"
+%token K_BOXED				"`boxed'"
+%token K_BSTR				"`bstr'"
+%token K_BYTEARRAY			"`bytearray'"
+%token K_BYVALSTR			"`byvalstr'"
+%token K_CALLMOSTDERIVED	"`callmostderived'"
+%token K_CARRAY				"`carray'"
+%token K_CATCH				"`catch'"
+%token K_CDECL				"`cdecl'"
+%token K_CF					"`cf'"
+%token K_CHAR				"`char'"
+%token K_CIL				"`cil'"
+%token K_CLASS				"`class'"
+%token K_CLSID				"`clsid'"
+%token K_COMPILERCONTROLLED	"`compilercontrolled'"
+%token K_CONST				"`const'"
+%token K_CURRENCY			"`currency'"
+%token K_CUSTOM				"`custom'"
+%token K_DATE				"`date'"
+%token K_DECIMAL			"`decimal'"
+%token K_DEFAULT			"`default'"
+%token K_DEMAND				"`demand'"
+%token K_DENY				"`deny'"
+%token K_DISABLEJITOPTIMIZER "`disablejitoptimizer'"
+%token K_ENABLEJITTRACKING	"`enablejittracking'"
+%token K_ENDMAC				"`endmac'"
+%token K_ENUM				"`enum'"
+%token K_ERROR				"`error'"
+%token K_EXPLICIT			"`explicit'"
+%token K_EXTENDS			"`extends'"
+%token K_EXTERN				"`extern'"
+%token K_FALSE				"`false'"
+%token K_FAMANDASSEM		"`famandassem'"
+%token K_FAMILY				"`family'"
+%token K_FAMORASSEM			"`famorassem'"
+%token K_FASTCALL			"`fastcall'"
+%token K_FAULT				"`fault'"
+%token K_FIELD				"`field'"
+%token K_FILETIME			"`filetime'"
+%token K_FILTER				"`filter'"
+%token K_FINAL				"`final'"
+%token K_FINALLY			"`finally'"
+%token K_FIXED				"`fixed'"
+%token K_FLOAT				"`float'"
+%token K_FLOAT32			"`float32'"
+%token K_FLOAT64			"`float64'"
+%token K_FORWARDREF			"`forwardref'"
+%token K_FROMUNMANAGED		"`fromunmanaged'"
+%token K_FULLORIGIN			"`fullorigin'"
+%token K_HANDLER			"`handler'"
+%token K_HIDEBYSIG			"`hidebysig'"
+%token K_HRESULT			"`hresult'"
+%token K_IDISPATCH			"`idispatch'"
+%token K_IL					"`il'"
+%token K_IMPLEMENTS			"`implements'"
 %token K_IMPLICITCOM		"`implicitcom'"
 %token K_IMPLICITRES		"`implicitres'"
-%token K_NOAPPDOMAIN		"`noappdomain'"
-%token K_NOPROCESS			"`noprocess'"
-%token K_NOMACHINE			"`nomachine'"
-%token K_EXTERN				"`extern'"
-%token K_INSTANCE			"`instance'"
-%token K_EXPLICIT			"`explicit'"
-%token K_DEFAULT			"`default'"
-%token K_VARARG				"`vararg'"
-%token K_UNMANAGED			"`unmanaged'"
-%token K_CDECL				"`cdecl'"
-%token K_STDCALL			"`stdcall'"
-%token K_THISCALL			"`thiscall'"
-%token K_FASTCALL			"`fastcall'"
-%token K_MARSHAL			"`marshal'"
-%token K_IN					"`in'"
-%token K_OUT				"`out'"
-%token K_OPT				"`opt'"
-%token K_LCID				"`lcid'"
-%token K_RETVAL				"`retval'"
-%token K_STATIC				"`static'"
-%token K_PUBLIC				"`public'"
-%token K_PRIVATE			"`private'"
-%token K_FAMILY				"`family'"
-%token K_INITONLY			"`initonly'"
-%token K_RTSPECIALNAME		"`rtspecialname'"
-%token K_SPECIALNAME		"`specialname'"
-%token K_ASSEMBLY			"`assembly'"
-%token K_FAMANDASSEM		"`famandassem'"
-%token K_FAMORASSEM			"`famorassem'"
-%token K_PRIVATESCOPE		"`privatescope'"
-%token K_LITERAL			"`literal'"
-%token K_NOTSERIALIZED		"`notserialized'"
-%token K_VALUE				"`value'"
-%token K_NOT_IN_GC_HEAP		"`not_in_gc_heap'"
-%token K_INTERFACE			"`interface'"
-%token K_SEALED				"`sealed'"
-%token K_ABSTRACT			"`abstract'"
-%token K_AUTO				"`auto'"
-%token K_SEQUENTIAL			"`sequential'"
-%token K_ANSI				"`ansi'"
-%token K_UNICODE			"`unicode'"
-%token K_AUTOCHAR			"`autochar'"
 %token K_IMPORT				"`import'"
-%token K_SERIALIZABLE		"`serializable'"
-%token K_NESTED				"`nested'"
-%token K_LATEINIT			"`lateinit'"
-%token K_EXTENDS			"`extends'"
-%token K_IMPLEMENTS			"`implements'"
-%token K_FINAL				"`final'"
-%token K_VIRTUAL			"`virtual'"
-%token K_HIDEBYSIG			"`hidebysig'"
-%token K_NEWSLOT			"`newslot'"
-%token K_UNMANAGEDEXP		"`unmanagedexp'"
-%token K_PINVOKEIMPL		"`pinvokeimpl'"
-%token K_NOMANGLE			"`nomangle'"
-%token K_OLE				"`ole'"
-%token K_LASTERR			"`lasterr'"
-%token K_WINAPI				"`winapi'"
-%token K_NATIVE				"`native'"
-%token K_IL					"`il'"
-%token K_OPTIL				"`optil'"
-%token K_MANAGED			"`managed'"
-%token K_FORWARDREF			"`forwardref'"
-%token K_RUNTIME			"`runtime'"
-%token K_INTERNALCALL		"`internalcall'"
-%token K_SYNCHRONIZED		"`synchronized'"
-%token K_NOINLINING			"`noinlining'"
-%token K_CUSTOM				"`custom'"
-%token K_FIXED				"`fixed'"
-%token K_SYSSTRING			"`sysstring'"
-%token K_ARRAY				"`array'"
-%token K_VARIANT			"`variant'"
-%token K_CURRENCY			"`currency'"
-%token K_SYSCHAR			"`syschar'"
-%token K_VOID				"`void'"
-%token K_BOOL				"`bool'"
-%token K_INT8				"`int8'"
+%token K_IN					"`in'"
+%token K_INF				"`inf'"
+%token K_INHERITCHECK		"`inheritcheck'"
+%token K_INIT				"`init'"
+%token K_INITONLY			"`initonly'"
+%token K_INSTANCE			"`instance'"
+%token K_INT				"``int''"
 %token K_INT16				"`int16'"
 %token K_INT32				"`int32'"
 %token K_INT64				"`int64'"
-%token K_FLOAT32			"`float32'"
-%token K_FLOAT64			"`float64'"
-%token K_ERROR				"`error'"
-%token K_UNSIGNED			"`unsigned'"
-%token K_DECIMAL			"`decimal'"
-%token K_DATE				"`date'"
-%token K_BSTR				"`bstr'"
-%token K_LPSTR				"`lpstr'"
-%token K_LPWSTR				"`lpwstr'"
-%token K_LPTSTR				"`lptstr'"
-%token K_OBJECTREF			"`objectref'"
+%token K_INT8				"`int8'"
+%token K_INTERFACE			"`interface'"
+%token K_INTERNALCALL		"`internalcall'"
 %token K_IUNKNOWN			"`iunknown'"
-%token K_IDISPATCH			"`idispatch'"
-%token K_STRUCT				"`struct'"
-%token K_SAFEARRAY			"`safearray'"
-%token K_INT				"``int''"
-%token K_BYVALSTR			"`byvalstr'"
-%token K_TBSTR				"`tbstr'"
-%token K_LPVOID				"`lpvoid'"
-%token K_ANY				"`any'"
-%token K_FLOAT				"`float'"
-%token K_LPSTRUCT			"`lpstruct'"
-%token K_NULL				"`null'"
-%token K_VECTOR				"`vector'"
-%token K_HRESULT			"`hresult'"
-%token K_CARRAY				"`carray'"
-%token K_USERDEFINED		"`userdefined'"
-%token K_RECORD				"`record'"
-%token K_FILETIME			"`filetime'"
-%token K_BLOB				"`blob'"
-%token K_STREAM				"`stream'"
-%token K_STORAGE			"`storage'"
-%token K_STREAMED_OBJECT	"`streamed_object'"
-%token K_STORED_OBJECT		"`stored_object'"
-%token K_BLOB_OBJECT		"`blob_object'"
-%token K_CF					"`cf'"
-%token K_CLSID				"`clsid'"
-%token K_METHOD				"`method'"
-%token K_CLASS				"`class'"
-%token K_PINNED				"`pinned'"
-%token K_MODREQ				"`modreq'"
-%token K_MODOPT				"`modopt'"
-%token K_TYPEDREF			"`typedref'"
-%token K_WCHAR				"`wchar'"
-%token K_CHAR				"`char'"
-%token K_FROMUNMANAGED		"`fromunmanaged'"
-%token K_CALLMOSTDERIVED	"`callmostderived'"
-%token K_BYTEARRAY			"`bytearray'"
-%token K_WITH				"`with'"
-%token K_INIT				"`init'"
-%token K_TO					"`to'"
-%token K_CATCH				"`catch'"
-%token K_FILTER				"`filter'"
-%token K_FINALLY			"`finally'"
-%token K_FAULT				"`fault'"
-%token K_HANDLER			"`handler'"
-%token K_TLS				"`tls'"
-%token K_FIELD				"`field'"
-%token K_REQUEST			"`request'"
-%token K_DEMAND				"`demand'"
-%token K_ASSERT				"`assert'"
-%token K_DENY				"`deny'"
-%token K_PERMITONLY			"`permitonly'"
+%token K_JAVA				"`java'"
+%token K_LASTERR			"`lasterr'"
+%token K_LATEINIT			"`lateinit'"
+%token K_LCID				"`lcid'"
 %token K_LINKCHECK			"`linkcheck'"
-%token K_INHERITCHECK		"`inheritcheck'"
+%token K_LITERAL			"`literal'"
+%token K_LPSTR				"`lpstr'"
+%token K_LPTSTR				"`lptstr'"
+%token K_LPSTRUCT			"`lpstruct'"
+%token K_LPVOID				"`lpvoid'"
+%token K_LPWSTR				"`lpwstr'"
+%token K_MANAGED			"`managed'"
+%token K_MARSHAL			"`marshal'"
+%token K_METHOD				"`method'"
+%token K_MODOPT				"`modopt'"
+%token K_MODREQ				"`modreq'"
+%token K_NAN				"`nan'"
+%token K_NATIVE				"`native'"
+%token K_NESTED				"`nested'"
+%token K_NEWSLOT			"`newslot'"
+%token K_NOAPPDOMAIN		"`noappdomain'"
+%token K_NOINLINING			"`noinlining'"
+%token K_NOMACHINE			"`nomachine'"
+%token K_NOMANGLE			"`nomangle'"
+%token K_NOMETADATA			"`nometadata'"
+%token K_NONCASDEMAND		"`noncasdemand'"
+%token K_NONCASINHERITANCE	"`noncasinheritance'"
+%token K_NONCASLINKDEMAND	"`noncaslinkdemand'"
+%token K_NOPROCESS			"`noprocess'"
+%token K_NOT_IN_GC_HEAP		"`not_in_gc_heap'"
+%token K_NOTREMOTABLE		"`notremotable'"
+%token K_NOTSERIALIZED		"`notserialized'"
+%token K_NULL				"`null'"
+%token K_NULLREF			"`nullref'"
+%token K_OBJECT				"`object'"
+%token K_OBJECTREF			"`objectref'"
+%token K_OLE				"`ole'"
+%token K_OPT				"`opt'"
+%token K_OPTIL				"`optil'"
+%token K_OUT				"`out'"
+%token K_PERMITONLY			"`permitonly'"
+%token K_PINNED				"`pinned'"
+%token K_PINVOKEIMPL		"`pinvokeimpl'"
+%token K_PREJITDENY			"`prejitdeny'"
+%token K_PREJITGRANT		"`prejitgrant'"
+%token K_PRESERVESIG        "`preservesig'"
+%token K_PRIVATE			"`private'"
+%token K_PRIVATESCOPE		"`privatescope'"
+%token K_PROTECTED			"`protected'"
+%token K_PUBLIC				"`public'"
+%token K_PUBLICKEY			"`publickey'"
+%token K_READONLY			"`readonly'"
+%token K_RECORD				"`record'"
 %token K_REQMIN				"`reqmin'"
 %token K_REQOPT				"`reqopt'"
 %token K_REQREFUSE			"`reqrefuse'"
-%token K_PREJITGRANT		"`prejitgrant'"
-%token K_PREJITDENY			"`prejitdeny'"
-%token K_NONCASDEMAND		"`noncasdemand'"
-%token K_NONCASLINKDEMAND	"`noncaslinkdemand'"
-%token K_NONCASINHERITANCE	"`noncasinheritance'"
-%token K_READONLY			"`readonly'"
-%token K_NOMETADATA			"`nometadata'"
-%token K_ALGORITHM			"`algorithm'"
-%token K_FULLORIGIN			"`fullorigin'"
-%token K_NAN				"`nan'"
-%token K_INF				"`inf'"
-%token K_PUBLICKEY			"`publickey'"
-%token K_ENABLEJITTRACKING	"`enablejittracking'"
-%token K_DISABLEJITOPTIMIZER "`disablejitoptimizer'"
-%token K_PRESERVESIG        "`preservesig'"
-%token K_BEFOREFIELDINIT    "`beforefieldinit'"
-%token K_COMPILERCONTROLLED	"`compilercontrolled'"
-%token K_CIL				"`cil'"
-%token K_VALUETYPE			"`valuetype'"
-%token K_BOXED				"`boxed'"
-%token K_STRING				"`string'"
-%token K_OBJECT				"`object'"
-%token K_ALIGNMENT			"`alignment'"
 %token K_REQSECOBJ			"`reqsecobj'"
+%token K_REQUEST			"`request'"
+%token K_RETVAL				"`retval'"
+%token K_RTSPECIALNAME		"`rtspecialname'"
+%token K_RUNTIME			"`runtime'"
+%token K_SAFEARRAY			"`safearray'"
+%token K_SEALED				"`sealed'"
+%token K_SEQUENTIAL			"`sequential'"
+%token K_SERIALIZABLE		"`serializable'"
+%token K_SPECIAL			"`special'"
+%token K_SPECIALNAME		"`specialname'"
+%token K_STATIC				"`static'"
+%token K_STDCALL			"`stdcall'"
+%token K_STORAGE			"`storage'"
+%token K_STORED_OBJECT		"`stored_object'"
+%token K_STREAM				"`stream'"
+%token K_STREAMED_OBJECT	"`streamed_object'"
+%token K_STRING				"`string'"
+%token K_STRUCT				"`struct'"
+%token K_SYNCHRONIZED		"`synchronized'"
+%token K_SYSCHAR			"`syschar'"
+%token K_SYSSTRING			"`sysstring'"
+%token K_TBSTR				"`tbstr'"
+%token K_THISCALL			"`thiscall'"
+%token K_TLS				"`tls'"
+%token K_TO					"`to'"
 %token K_TRUE				"`true'"
-%token K_FALSE				"`false'"
-%token K_JAVA				"`java'"
-%token K_NULLREF			"`nullref'"
+%token K_TYPEDREF			"`typedref'"
+%token K_UNICODE			"`unicode'"
+%token K_UNMANAGED			"`unmanaged'"
+%token K_UNMANAGEDEXP		"`unmanagedexp'"
+%token K_UNSIGNED			"`unsigned'"
+%token K_UNUSED				"`unused'"
+%token K_USERDEFINED		"`userdefined'"
+%token K_VALUE				"`value'"
+%token K_VALUETYPE			"`valuetype'"
+%token K_VARARG				"`vararg'"
+%token K_VARIANT			"`variant'"
+%token K_VECTOR				"`vector'"
+%token K_VIRTUAL			"`virtual'"
+%token K_VOID				"`void'"
+%token K_VOLATILE			"`volatile'"
+%token K_WCHAR				"`wchar'"
+%token K_WINAPI				"`winapi'"
+%token K_WITH				"`with'"
+%token K_WRAPPER			"`wrapper'"
 
 /*
  * Instruction types.
@@ -1059,9 +1081,15 @@ static void FinishDataLabels()
 %type <token>		GenericMethodReference CustomOwner
 %type <integer>		DataItemCount
 %type <params>		FormalGenericParamsOpt FormalGenericParams
-%type <params>		FormalGenericParam MethodRefGenericParamsOpt
-%type <params>		MethodRefGenericParams
+%type <params>		FormalGenericParam
+%type <params>		MethodRefGenericParamsOpt MethodRefGenericParams
 %type <type>		ActualGenericParams
+%type <integer>		GenericArityOpt
+%type <genParAttrib> FormalGenericParamAttribute
+%type <genParAttrib> FormalGenericParamAttributes
+%type <genParAttrib> FormalGenericParamAttributesOpt
+%type <typeConstraint> FormalGenericTypeConstraintList
+%type <typeConstraint> FormalGenericTypeConstraintsOpt
 
 %expect 9
 
@@ -1375,7 +1403,7 @@ FormalGenericParams
 	;
 
 FormalGenericParam
-	: '(' TypeSpecification ')' Identifier	{
+	: FormalGenericParamAttributesOpt FormalGenericTypeConstraintsOpt Identifier	{
 				/* Generic parameter with a type constraint */
 				ILAsmParamInfo *param;
 				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
@@ -1383,32 +1411,86 @@ FormalGenericParam
 				{
 					ILAsmOutOfMemory();
 				}
-				param->type = $2.type;
-				param->nativeType.string = "";
-				param->nativeType.len = 0;
-				param->parameterAttrs = 0;
-				param->name = $4.string;
+				param->type = 0;
+				param->name = $3.string;
+				param->parameterAttrs = $1;
+				param->firstTypeConstraint = $2;
 				param->next = 0;
 				$$.paramFirst = param;
 				$$.paramLast = param;
 			}
-	| Identifier	{
-				/* Generic parameter with no constraints */
-				ILAsmParamInfo *param;
-				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
-				if(!param)
+	;
+
+FormalGenericTypeConstraintsOpt
+	: /* empty */								{ $$ = 0; }
+	| '(' FormalGenericTypeConstraintList ')'	{ $$ = $2; }
+	;
+
+FormalGenericTypeConstraintList
+	: TypeSpecification		{
+				ILAsmGenericTypeConstraint *constraint;
+
+				constraint = (ILAsmGenericTypeConstraint *)ILMalloc(sizeof(ILAsmGenericTypeConstraint));
+				if(!constraint)
 				{
 					ILAsmOutOfMemory();
 				}
-				param->type = 0;
-				param->nativeType.string = "";
-				param->nativeType.len = 0;
-				param->parameterAttrs = 0;
-				param->name = $1.string;
-				param->next = 0;
-				$$.paramFirst = param;
-				$$.paramLast = param;
+				constraint->type = $1.type;
+				constraint->next = 0;
+				$$ = constraint;
 			}
+	| FormalGenericTypeConstraintList ',' TypeSpecification	{
+				ILAsmGenericTypeConstraint *constraint;
+				ILAsmGenericTypeConstraint *constraintEntry = $1;
+
+				constraint = (ILAsmGenericTypeConstraint *)ILMalloc(sizeof(ILAsmGenericTypeConstraint));
+				if(!constraint)
+				{
+					ILAsmOutOfMemory();
+				}
+				constraint->type = $3.type;
+				constraint->next = 0;
+				/* Append the new type at the end of the list. */
+				while(constraintEntry->next != 0)
+				{
+					constraintEntry = constraintEntry->next;
+				}
+				constraintEntry->next = constraint;
+				$$ = $1;
+			}
+	;
+
+FormalGenericParamAttributesOpt
+	: /* empty */					{ $$ = IL_META_GENPARAM_NONE; }
+	| FormalGenericParamAttributes	{ $$ = $1; }
+	;
+
+FormalGenericParamAttributes
+	: FormalGenericParamAttribute	{ $$ = $1; }
+	| FormalGenericParamAttributes FormalGenericParamAttribute	{
+				if(($1 & $2) != 0)
+				{
+						yyerror("duplicate generic parameter attribute");
+				}
+				else if(($2 & (IL_META_GENPARAM_CLASS_CONST |
+							   IL_META_GENPARAM_VALUETYPE_CONST)) != 0)
+				{
+					if(($1 & (IL_META_GENPARAM_CLASS_CONST |
+							  IL_META_GENPARAM_VALUETYPE_CONST)) != 0)
+					{
+						yyerror("only either class or valuetype constraint can be specified");
+					}
+				}
+				$$ = ($1 | $2);
+			}
+	;
+
+FormalGenericParamAttribute
+	: '+'								{ $$ = IL_META_GENPARAM_COVARIANT; }
+	| '-'								{ $$ = IL_META_GENPARAM_CONTRAVARIANT; }
+	| K_CLASS							{ $$ = IL_META_GENPARAM_CLASS_CONST; }
+	| K_VALUETYPE						{ $$ = IL_META_GENPARAM_VALUETYPE_CONST; }
+	| D_CTOR							{ $$ = IL_META_GENPARAM_CTOR_CONST; }
 	;
 
 ClassAttributes
@@ -1568,6 +1650,42 @@ ClassDeclaration
 
 				/* Create a MemberRef for the second part of the override */
 				token = ILAsmResolveMember($8.item, $10.string, sig,
+										   IL_META_MEMBERKIND_METHOD);
+				body = ILMethod_FromToken(ILAsmImage, token);
+
+				/* Create the override block */
+				if(decl && body)
+				{
+					over = ILOverrideCreate(ILAsmClass, 0, decl, body);
+					if(!over)
+					{
+						ILAsmOutOfMemory();
+					}
+				}
+			}
+	| D_OVERRIDE K_METHOD CallingConventions Type TypeSpecification COLON_COLON
+			MethodName GenericArityOpt '(' OptSignatureArguments ')' K_WITH
+			K_METHOD CallingConventions Type TypeSpecification COLON_COLON
+			MethodName GenericArityOpt '(' OptSignatureArguments ')'	{
+				ILType *sig;
+				ILOverride *over;
+				ILToken token;
+				ILMethod *decl;
+				ILMethod *body;
+
+				/* Create a signature block for the method to override */
+				sig = CreateMethodSig($3, $4, $10.paramFirst, $8, 1);
+
+				/* Create a MemberRef for the first part of the override */
+				token = ILAsmResolveMember($5.item, $7.string, sig,
+										   IL_META_MEMBERKIND_METHOD);
+				decl = ILMethod_FromToken(ILAsmImage, token);
+
+				/* Create a signature block for the overriding method */
+				sig = CreateMethodSig($14, $15, $21.paramFirst, $19, 1);
+
+				/* Create a MemberRef for the second part of the override */
+				token = ILAsmResolveMember($16.item, $18.string, sig,
 										   IL_META_MEMBERKIND_METHOD);
 				body = ILMethod_FromToken(ILAsmImage, token);
 
@@ -2030,12 +2148,6 @@ MethodHeading
 				ILType *sig;
 				ILMethod *method;
 				ILUInt32 callConv;
-				ILAsmParamInfo *genericParams;
-				ILAsmParamInfo *nextGeneric;
-				ILUInt32 genericNum;
-				ILGenericPar *genPar;
-				ILProgramItem *constraint;
-				ILTypeSpec *spec;
 
 				/* Create the method definition */
 				callConv = (ILUInt32)($3);
@@ -2047,7 +2159,7 @@ MethodHeading
 					callConv |= IL_META_CALLCONV_HASTHIS;
 				}
 				sig = CreateMethodSig(callConv, $5.type, $9.paramFirst,
-									  $7.paramFirst, 0);
+									  GetNumParams($7.paramFirst), 0);
 				method = ILAsmMethodCreate
 							(ILAsmClass, $6.string, $2.flags, sig);
 				ILMethodSetImplAttrs(method, ~0, (ILUInt16)($11));
@@ -2065,45 +2177,7 @@ MethodHeading
 				}
 
 				/* Add the formal generic parameters to the method */
-				genericNum = 0;
-				genericParams = $7.paramFirst;
-				while(genericParams != 0)
-				{
-					nextGeneric = genericParams->next;
-					genPar = ILGenericParCreate
-						(ILAsmImage, 0, ILToProgramItem(method), genericNum);
-					if(!genPar)
-					{
-						ILAsmOutOfMemory();
-					}
-					if(!ILGenericParSetName(genPar, genericParams->name))
-					{
-						ILAsmOutOfMemory();
-					}
-					if(genericParams->type)
-					{
-						if(ILType_IsClass(genericParams->type) ||
-			   			   ILType_IsValueType(genericParams->type))
-						{
-							constraint = ILToProgramItem
-								(ILType_ToClass(genericParams->type));
-						}
-						else
-						{
-							spec = ILTypeSpecCreate
-								(ILAsmImage, 0, genericParams->type);
-							if(!spec)
-							{
-								ILAsmOutOfMemory();
-							}
-							constraint = ILToProgramItem(spec);
-						}
-						ILGenericParAddConstraint(genPar, constraint);
-					}
-					ILFree(genericParams);
-					genericParams = nextGeneric;
-					++genericNum;
-				}
+				ILAsmAddGenericPars(ILToProgramItem(method), $7.paramFirst);
 
 				/* The current scope is now the method */
 				ILAsmBuildPushScope(method);
@@ -2260,6 +2334,11 @@ ImplementationAttributeName
 	| K_INTERNALCALL		{ $$ = IL_META_METHODIMPL_INTERNAL_CALL; }
 	| K_SYNCHRONIZED		{ $$ = IL_META_METHODIMPL_SYNCHRONIZED; }
 	| K_NOINLINING			{ $$ = IL_META_METHODIMPL_NO_INLINING; }
+	;
+
+GenericArityOpt
+	: /* empty */			{ $$ = 0; }
+	| '<' '[' Integer32 ']' '>'	{ $$ = $3; }
 	;
 
 MethodDeclarations
@@ -2649,7 +2728,8 @@ GenericMethodReference
 			MethodName MethodRefGenericParamsOpt
 			'(' OptSignatureArguments ')'	{
 				ILType *sig;
-				sig = CreateMethodSig($1, $2, $8.paramFirst, $6.paramFirst, 1);
+				sig = CreateMethodSig($1, $2, $8.paramFirst,
+									  GetNumParams($6.paramFirst), 1);
 				$$ = ILAsmResolveMember($3.item, $5.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
 				if($6.paramFirst)
@@ -2660,8 +2740,8 @@ GenericMethodReference
 	| CallingConventions Type MethodName MethodRefGenericParamsOpt
 			'(' OptSignatureArguments ')' {
 				/* Reference a method in the global module class */
-				ILType *sig = CreateMethodSig
-						($1, $2, $6.paramFirst, $4.paramFirst, 1);
+				ILType *sig = CreateMethodSig($1, $2, $6.paramFirst,
+											  GetNumParams($4.paramFirst), 1);
 				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
 									    $3.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
@@ -2678,7 +2758,8 @@ InstanceMethodReference
 			'(' OptSignatureArguments ')'	{
 				ILType *sig;
 				sig = CreateMethodSig($1 | IL_META_CALLCONV_HASTHIS,
-									  $2, $8.paramFirst, $6.paramFirst, 1);
+									  $2, $8.paramFirst,
+									  GetNumParams($6.paramFirst), 1);
 				$$ = ILAsmResolveMember($3.item, $5.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
 				if($6.paramFirst)
@@ -2691,7 +2772,7 @@ InstanceMethodReference
 				/* Reference a method in the global module class */
 				ILType *sig = CreateMethodSig
 						($1 | IL_META_CALLCONV_HASTHIS,
-					     $2, $6.paramFirst, $4.paramFirst, 1);
+					     $2, $6.paramFirst, GetNumParams($4.paramFirst), 1);
 				$$ = ILAsmResolveMember(ILToProgramItem(ILAsmModuleClass),
 									    $3.string, sig,
 								        IL_META_MEMBERKIND_METHOD);
@@ -2709,37 +2790,35 @@ MethodRefGenericParamsOpt
 
 MethodRefGenericParams
 	: Type			{
-				ILAsmParamInfo *param;
-				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
-				if(!param)
+				ILAsmParamInfo *genericParam;
+				genericParam = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
+				if(!genericParam)
 				{
 					ILAsmOutOfMemory();
 				}
-				param->type = $1;
-				param->nativeType.string = "";
-				param->nativeType.len = 0;
-				param->parameterAttrs = 0;
-				param->name = 0;
-				param->next = 0;
-				$$.paramFirst = param;
-				$$.paramLast = param;
+				genericParam->type = $1;
+				genericParam->parameterAttrs = 0;
+				genericParam->name = 0;
+				genericParam->firstTypeConstraint = 0;
+				genericParam->next = 0;
+				$$.paramFirst = genericParam;
+				$$.paramLast = genericParam;
 			}
 	| MethodRefGenericParams ',' Type	{
-				ILAsmParamInfo *param;
-				param = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
-				if(!param)
+				ILAsmParamInfo *genericParam;
+				genericParam = (ILAsmParamInfo *)ILMalloc(sizeof(ILAsmParamInfo));
+				if(!genericParam)
 				{
 					ILAsmOutOfMemory();
 				}
-				param->type = $3;
-				param->nativeType.string = "";
-				param->nativeType.len = 0;
-				param->parameterAttrs = 0;
-				param->name = 0;
-				param->next = 0;
-				$1.paramLast->next = param;
+				genericParam->type = $3;
+				genericParam->parameterAttrs = 0;
+				genericParam->name = 0;
+				genericParam->firstTypeConstraint = 0;
+				genericParam->next = 0;
+				$1.paramLast->next = genericParam;
 				$$.paramFirst = $1.paramFirst;
-				$$.paramLast = param;
+				$$.paramLast = genericParam;
 			}
 	;
 
@@ -3394,6 +3473,7 @@ SignatureArgument
 				param->nativeType.len = 0;
 				param->parameterAttrs = 0;
 				param->name = 0;
+				param->firstTypeConstraint = 0;
 				param->next = 0;
 				$$.paramFirst = param;
 				$$.paramLast = param;
@@ -3409,6 +3489,7 @@ SignatureArgument
 				param->nativeType = $2.nativeType;
 				param->parameterAttrs = $1;
 				param->name = 0;
+				param->firstTypeConstraint = 0;
 				param->next = 0;
 				$$.paramFirst = param;
 				$$.paramLast = param;
@@ -3424,6 +3505,7 @@ SignatureArgument
 				param->nativeType = $2.nativeType;
 				param->parameterAttrs = $1;
 				param->name = $3.string;
+				param->firstTypeConstraint = 0;
 				param->next = 0;
 				$$.paramFirst = param;
 				$$.paramLast = param;

@@ -2098,7 +2098,7 @@ MethodHeading
 							}
 							constraint = ILToProgramItem(spec);
 						}
-						ILGenericParSetConstraint(genPar, constraint);
+						ILGenericParAddConstraint(genPar, constraint);
 					}
 					ILFree(genericParams);
 					genericParams = nextGeneric;

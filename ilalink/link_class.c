@@ -46,6 +46,7 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 	ILUInt32 genericNum;
 	ILGenericPar *genPar;
 	ILGenericPar *newGenPar;
+	ILGenericConstraint *genConstr;
 	ILProgramItem *constraint;
 	ILTypeSpec *spec;
 
@@ -248,25 +249,33 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 			_ILLinkerOutOfMemory(linker);
 			return 0;
 		}
-		constraint = ILGenericPar_Constraint(genPar);
-		if(constraint)
+		genConstr = ILGenericParNextConstraint(genPar, 0);
+		if(genConstr)
 		{
-			spec = ILProgramItemToTypeSpec(constraint);
-			if(spec)
+			while (genConstr)
 			{
-				constraint = ILToProgramItem
-					(_ILLinkerConvertTypeSpec(linker, ILTypeSpec_Type(spec)));
+				constraint = ILConstraint_Type(genConstr);
+				spec = ILProgramItemToTypeSpec(constraint);
+				if(spec)
+				{
+					constraint = ILToProgramItem
+						(_ILLinkerConvertTypeSpec(linker, ILTypeSpec_Type(spec)));
+				}
+				else
+				{
+					constraint = ILToProgramItem
+						(_ILLinkerConvertClassRef(linker, (ILClass *)constraint));
+				}
+				if(!constraint)
+				{
+					return 0;
+				}
+				if (!ILGenericParAddConstraint(newGenPar, constraint))
+				{
+					return 0;
+				}
+				genConstr = ILGenericParNextConstraint(genPar, genConstr);
 			}
-			else
-			{
-				constraint = ILToProgramItem
-					(_ILLinkerConvertClassRef(linker, (ILClass *)constraint));
-			}
-			if(!constraint)
-			{
-				return 0;
-			}
-			ILGenericParSetConstraint(newGenPar, constraint);
 		}
 		++genericNum;
 	}

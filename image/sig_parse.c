@@ -122,6 +122,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 							  ILMetaDataRead *reader, int *kind,
 							  int depth);
 
+int LoadForwardTypeDef(ILImage *image, ILToken token);
 /*
  * Parse an element type.  "depth" is used to control the
  * recursion depth so that malicious parties cannot cause
@@ -266,6 +267,20 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 			if(value != 0)
 			{
 				info = (ILClass *)ILImageTokenInfo(image, value);
+				if(info == 0)
+				{
+					int error;
+					/* 
+					 * When this class is referenced as a actual generic parameter for a base class,
+					 * and it is not already loaded we can get to this point.
+					 */
+					error = LoadForwardTypeDef(image, value);
+					if(error != 0)
+					{
+						return 0;
+					}
+					info = (ILClass *)ILImageTokenInfo(image, value);
+				}
 				if(info != 0)
 				{
 					type = ILType_FromClass(info);

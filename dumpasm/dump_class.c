@@ -352,11 +352,6 @@ static void DumpClassName(FILE *outstream, ILImage *image,
 						  ILClass *info, int flags, int withNamespace)
 {
 	ILType *type;
-	ILUInt32 genericNum;
-	ILGenericPar *genPar;
-	const char *name;
-	ILProgramItem *constraint;
-	ILTypeSpec *spec;
 
 	/* Use a different approach if the class is a type specification */
 	type = ILClassGetSynType(info);
@@ -377,49 +372,8 @@ static void DumpClassName(FILE *outstream, ILImage *image,
 	}
 
 	/* Dump the generic parameters, if any are present */
-	genericNum = 0;
-	genPar = ILGenericParGetFromOwner(ILToProgramItem(info), genericNum);
-	if(genPar)
-	{
-		putc('<', outstream);
-		do
-		{
-			if(genericNum > 0)
-			{
-				fputs(", ", outstream);
-			}
-			constraint = ILGenericPar_Constraint(genPar);
-			if(constraint)
-			{
-				putc('(', outstream);
-				spec = ILProgramItemToTypeSpec(constraint);
-				if(spec)
-				{
-					ILDumpType(outstream, image, ILTypeSpec_Type(spec), flags);
-				}
-				else
-				{
-					ILDumpType(outstream, image,
-							   ILClassToType((ILClass *)constraint), flags);
-				}
-				putc(')', outstream);
-			}
-			name = ILGenericPar_Name(genPar);
-			if(name)
-			{
-				ILDumpIdentifier(outstream, name, 0, flags);
-			}
-			else
-			{
-				fprintf(outstream, "G_%d", (int)(genericNum + 1));
-			}
-			++genericNum;
-			genPar = ILGenericParGetFromOwner
-					(ILToProgramItem(info), genericNum);
-		}
-		while(genPar != 0);
-		putc('>', outstream);
-	}
+	ILAsmDumpGenericParams(image, outstream,
+						   ILToProgramItem(info), flags);
 }
 
 /*
@@ -457,7 +411,7 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 		DumpClassName(outstream, image, info, flags, 0);
 		if(ILClass_Parent(info))
 		{
-			fputs(" extends ", outstream);
+			fputs("\n    extends ", outstream);
 			DumpClassName(outstream, image, ILClass_Parent(info), flags, 1);
 		}
 		first = 1;
@@ -467,13 +421,15 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 			interface = ILImplementsGetInterface(impl);
 			if(first)
 			{
-				fputs(" implements ", outstream);
+				fputs("\n    implements ", outstream);
 				first = 0;
 			}
 			else
 			{
-				fputs(", ", outstream);
+				fputs(",\n", outstream);
+				fputs("               ", outstream);
 			}
+			interface = ILClassResolve(interface);
 			DumpClassName(outstream, image, interface, flags, 1);
 		}
 		fputs("\n{\n", outstream);

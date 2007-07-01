@@ -677,21 +677,20 @@ struct _tagILGenericPar
 	ILUInt16		number;				/* Parameter number */
 	ILUInt16		flags;				/* Parameter flags */
 	const char     *name;				/* Parameter name */
-	ILProgramItem  *kind;				/* Parameter kind */
-	ILProgramItem  *constraint;			/* Parameter constraint */
-
+	ILGenericConstraint  *firstConstraint;	/* Parameter constraints */
+	
 };
 
 /*
  * Information about a generic constraint.
  */
-typedef struct _tagILGenericConstraint ILGenericConstraint;
 struct _tagILGenericConstraint
 {
 	ILOwnedItem		ownedItem;			/* Parent class fields */
 	ILProgramItem  *parameter;			/* Generic parameter to modify */
 	ILProgramItem  *constraint;			/* Constraint to apply */
-
+	ILGenericConstraint *nextConstraint;    /* Next constraint for this parameter */
+	
 };
 
 /*

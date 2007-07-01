@@ -696,11 +696,6 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 	ILUInt32 callingConventions;
 	ILType *synType;
 	int dumpGenerics;
-	ILUInt32 genericNum;
-	ILGenericPar *genPar;
-	const char *name;
-	ILProgramItem *constraint;
-	ILTypeSpec *spec;
 	unsigned long numWithParams;
 	unsigned long withParam;
 
@@ -748,51 +743,8 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 	/* Dump the generic method parameters if necessary */
 	if(dumpGenerics && methodInfo)
 	{
-		genericNum = 0;
-		genPar = ILGenericParGetFromOwner
-				(ILToProgramItem(methodInfo), genericNum);
-		if(genPar)
-		{
-			putc('<', stream);
-			do
-			{
-				if(genericNum > 0)
-				{
-					fputs(", ", stream);
-				}
-				constraint = ILGenericPar_Constraint(genPar);
-				if(constraint)
-				{
-					putc('(', stream);
-					spec = ILProgramItemToTypeSpec(constraint);
-					if(spec)
-					{
-						_ILDumpType(stream, image,
-								   ILTypeSpec_Type(spec), flags);
-					}
-					else
-					{
-						_ILDumpType(stream, image,
-							   	   ILClassToType((ILClass *)constraint), flags);
-					}
-					putc(')', stream);
-				}
-				name = ILGenericPar_Name(genPar);
-				if(name)
-				{
-					ILDumpIdentifier(stream, name, 0, flags);
-				}
-				else
-				{
-					fprintf(stream, "G_%d", (int)(genericNum + 1));
-				}
-				++genericNum;
-				genPar = ILGenericParGetFromOwner
-					(ILToProgramItem(methodInfo), genericNum);
-			}
-			while(genPar != 0);
-			putc('>', stream);
-		}
+		ILAsmDumpGenericParams(image, stream,
+							   ILToProgramItem(methodInfo), flags);
 	}
 	else if(withTypes)
 	{

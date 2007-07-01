@@ -43,8 +43,7 @@ ILGenericPar *ILGenericParCreate(ILImage *image, ILToken token,
 	genPar->number = (ILUInt16)number;
 	genPar->flags = 0;
 	genPar->name = 0;
-	genPar->kind = 0;
-	genPar->constraint = 0;
+	genPar->firstConstraint = 0;
 
 	/* Assign a token code to the GenericPar information block */
 	if(!_ILImageSetToken(image, &(genPar->ownedItem.programItem), token,
@@ -96,24 +95,53 @@ int ILGenericParSetName(ILGenericPar *genPar, const char *name)
 	return (genPar->name != 0);
 }
 
-ILProgramItem *ILGenericParGetKind(ILGenericPar *genPar)
+ILGenericConstraint *ILGenericParNextConstraint(ILGenericPar *genPar, ILGenericConstraint *last)
 {
-	return genPar->kind;
+	if(last)
+	{
+		return last->nextConstraint;
+	}
+	else if(genPar)
+	{
+		return genPar->firstConstraint;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
-void ILGenericParSetKind(ILGenericPar *genPar, ILProgramItem *type)
+ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar, ILProgramItem *constraint)
 {
-	genPar->kind = type;
+	ILGenericConstraint **last = &(genPar->firstConstraint);
+
+	while (*last != 0)
+	{
+		last = &((*last)->nextConstraint);
+	}
+	(*last) = ILMemStackAlloc(&(constraint->image->memStack), ILGenericConstraint);
+	if(!(*last))
+	{
+		return 0;
+	}
+
+	(*last)->ownedItem.programItem.image = genPar->ownedItem.programItem.image;
+	(*last)->ownedItem.owner = ILToProgramItem(genPar);
+	(*last)->parameter = ILToProgramItem(genPar);
+	(*last)->constraint = constraint;
+	(*last)->nextConstraint = 0;
+
+	return (*last);
 }
 
-ILProgramItem *ILGenericParGetConstraint(ILGenericPar *genPar)
+ILGenericPar *ILConstraintGetParam(ILGenericConstraint *constraint)
 {
-	return genPar->constraint;
+	return (ILGenericPar *)constraint->parameter;
 }
 
-void ILGenericParSetConstraint(ILGenericPar *genPar, ILProgramItem *type)
+ILProgramItem *ILConstraintGetType(ILGenericConstraint *constraint)
 {
-	genPar->constraint = type;
+	return constraint->constraint;
 }
 
 /*

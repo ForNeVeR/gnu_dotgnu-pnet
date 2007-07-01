@@ -186,6 +186,96 @@ void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 	}
 }
 
+void ILAsmDumpGenericParams(ILImage *image, FILE *outstream,
+							ILProgramItem *item, int flags)
+{
+	ILUInt32 genericNum, genParFlags;
+	ILGenericPar *genPar;
+	ILGenericConstraint *genConstr;
+	ILProgramItem *constraint;
+	ILTypeSpec *spec;
+	const char *name;
+	
+	genericNum = 0;
+	genPar = ILGenericParGetFromOwner(item, genericNum);
+	if(genPar)
+	{
+		putc('<', outstream);
+		do
+		{
+			if(genericNum > 0)
+			{
+				fputs(", ", outstream);
+			}
+			genParFlags = ILGenericParGetFlags(genPar);
+			if ((genParFlags & IL_META_GENPARAM_VARIANCE_MASK) != 0)
+			{
+				/* This generic parameter is a variance */
+				if (genParFlags & IL_META_GENPARAM_COVARIANT)
+				{
+					fputs("+ ", outstream);
+				}
+				else if (genParFlags & IL_META_GENPARAM_CONTRAVARIANT)
+				{
+					fputs("- ", outstream);
+				}
+			}
+			if ((genParFlags & IL_META_GENPARAM_SPECIAL_CONST_MASK) != 0)
+			{
+				/* This generic parameter has special constraints */
+				if (genParFlags & IL_META_GENPARAM_CTOR_CONST)
+				{
+					fputs(".ctor ", outstream);
+				}
+				if (genParFlags & IL_META_GENPARAM_CLASS_CONST)
+				{
+					fputs("class ", outstream);
+				}
+				if (genParFlags & IL_META_GENPARAM_VALUETYPE_CONST)
+				{
+					fputs("valuetype ", outstream);
+				}
+			}
+			genConstr = ILGenericParNextConstraint(genPar, 0);
+			if(genConstr)
+			{
+				putc('(', outstream);
+				while(genConstr)
+				{
+					constraint = ILConstraint_Type(genConstr);
+					spec = ILProgramItemToTypeSpec(constraint);
+					if(spec)
+					{
+						ILDumpType(outstream, image, ILTypeSpec_Type(spec), flags);
+					}
+					else
+					{
+						ILDumpType(outstream, image,
+								   ILClassToType((ILClass *)constraint), flags);
+					}
+					genConstr = ILGenericParNextConstraint(genPar, genConstr);
+					if(genConstr)
+						fputs(", ", outstream);
+				}
+				putc(')', outstream);
+			}
+			name = ILGenericPar_Name(genPar);
+			if(name)
+			{
+				ILDumpIdentifier(outstream, name, 0, flags);
+			}
+			else
+			{
+				fprintf(outstream, "G_%d", (int)(genericNum + 1));
+			}
+			++genericNum;
+			genPar = ILGenericParGetFromOwner(item, genericNum);
+		}
+		while(genPar != 0);
+		putc('>', outstream);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

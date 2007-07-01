@@ -1,3 +1,48 @@
+2007-07-01  Ivan de Jesus Daras Tabora  <ideras@gmail.com>
+
+	* csdoc/il2doc.c: Replace the code for printing the generic parameters
+	with a call to ILAsmDumpGenericParams.
+
+	* dumpasm/dump_class.c: Replace the code for printing the generic
+	parameters with a call to ILAsmDumpGenericParams. Do some adjustments in
+	the output.
+
+	* dumpasm/dump_type.c:  Replace the code for printing the generic
+	parameters with a call to ILAsmDumpGenericParams.
+
+	* dumpasm/dump_utils.c: Add the method ILAsmDumpGenericParams for dumping
+	generic parameters.
+
+	* ilasm/ilasm_build.c, ilasm/ilasm_grammar.y: Replace the calls to
+	ILGenericParSetConstraint with ILGenericParAddConstraint.
+
+	* ilalink/link_class.c, ilalink/link_method.c: Fix the processing of
+	generic constraints to allow processing of more than one constraint per
+	generic parameter.
+
+	* image/generic.c: Redo the generic type constraints to allow more than
+	one type constraint per generic parameter.
+
+	* image/meta_build.c: Make LoadForwardTypeDef public. Remove the 'Gyro'
+	code.  Replace the calls to ILGenericParSetConstraint with
+	ILGenericParAddConstraint.
+
+	* image/meta_writer.c: Fix formatting of the GenericParameter.
+
+	* image/program.h: Add the member firstConstraint to ILGenericParameter
+	and nextConstraint to ILGenericConstraint for handling more than one
+	constraint per parameter.
+
+	* image/sig_parse.c: Use LoadForwardTypeDef to reslove types in the image
+	that are used before they are loaded.
+
+	* include/il_dumpasm.h: Add the prototype for ILAsmDumpGenericParams.
+
+	* include/il_meta.h: Add the definitions for generic parameter attributes.
+
+	* include/il_program.h: Fix the declarations for generic constraint
+	handling.
+
 2007-06-15  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: Fix warning on x86_64.

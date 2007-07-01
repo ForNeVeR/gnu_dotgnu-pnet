@@ -701,10 +701,6 @@ static void Format_GenericPar(ILWriter *writer, ILImage *image,
 	values[IL_OFFSET_GENERICPAR_FLAGS] = genPar->flags;
 	values[IL_OFFSET_GENERICPAR_OWNER] = genPar->ownedItem.owner->token;
 	values[IL_OFFSET_GENERICPAR_NAME] = GetPersistString(image, genPar->name);
-	values[IL_OFFSET_GENERICPAR_KIND] =
-			(genPar->kind ? genPar->kind->token : 0);
-	values[IL_OFFSET_GENERICPAR_CONSTRAINT] =
-			(genPar->constraint ? genPar->constraint->token : 0);
 }
 
 /*

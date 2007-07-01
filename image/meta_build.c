@@ -1013,7 +1013,7 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
  * Load a reference to a type definition token that is
  * further along in the file from where we currently are.
  */
-static int LoadForwardTypeDef(ILImage *image, ILToken token)
+int LoadForwardTypeDef(ILImage *image, ILToken token)
 {
 	ILUInt32 values[IL_IMAGE_TOKEN_COLUMNS];
 	ILUInt32 valuesNext[IL_IMAGE_TOKEN_COLUMNS];
@@ -3243,18 +3243,6 @@ static int Load_GenericPar(ILImage *image, ILUInt32 *values,
 	{
 		return IL_LOADERR_MEMORY;
 	}
-	if(values[IL_OFFSET_GENERICPAR_KIND])
-	{
-		ILGenericParSetKind(genPar, ILProgramItem_FromToken
-				(image, values[IL_OFFSET_GENERICPAR_KIND]));
-	}
-
-	/* Note: in Gyro, the constraint is stored in the GenericPar
-	   table, but in the .NET Framework SDK 2.0 beta it is stored
-	   in a separate GenericConstraint table.  This code handles
-	   the Gyro case.  See "Load_GenericConstraint" for the other */
-	ILGenericParSetConstraint(genPar, ILProgramItem_FromToken
-			(image, values[IL_OFFSET_GENERICPAR_CONSTRAINT]));
 
 	/* Done */
 	return 0;
@@ -3277,9 +3265,12 @@ static int Load_GenericConstraint(ILImage *image, ILUInt32 *values,
 		return IL_LOADERR_BAD_META;
 	}
 
-	/* Set the record's properties */
-	ILGenericParSetConstraint(genPar, ILProgramItem_FromToken
-			(image, values[IL_OFFSET_GENERICCON_CONSTRAINT]));
+	/* Add the generic constraint to the parameter */
+	if (!ILGenericParAddConstraint(genPar, ILProgramItem_FromToken (image, 
+										values[IL_OFFSET_GENERICCON_CONSTRAINT])))
+	{
+		return IL_LOADERR_MEMORY;
+	}
 
 	/* Done */
 	return 0;

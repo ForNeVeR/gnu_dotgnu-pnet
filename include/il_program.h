@@ -62,6 +62,7 @@ typedef struct _tagILFileDecl		ILFileDecl;
 typedef struct _tagILManifestRes	ILManifestRes;
 typedef struct _tagILExportedType	ILExportedType;
 typedef struct _tagILGenericPar		ILGenericPar;
+typedef struct _tagILGenericConstraint ILGenericConstraint;
 typedef struct _tagILMethodSpec		ILMethodSpec;
 
 /*
@@ -2321,24 +2322,14 @@ const char *ILGenericParGetName(ILGenericPar *genPar);
 int ILGenericParSetName(ILGenericPar *genPar, const char *name);
 
 /*
- * Get the kind associated with a generic parameter.
+ * Get the next constraint associated with generic parameter.
  */
-ILProgramItem *ILGenericParGetKind(ILGenericPar *genPar);
+ILGenericConstraint *ILGenericParNextConstraint(ILGenericPar *genPar, ILGenericConstraint *last);
 
 /*
- * Set the kind associated with a generic parameter.
+ * Add a constraint to a generic parameter.
  */
-void ILGenericParSetKind(ILGenericPar *genPar, ILProgramItem *type);
-
-/*
- * Get the constraint associated with a generic parameter.
- */
-ILProgramItem *ILGenericParGetConstraint(ILGenericPar *genPar);
-
-/*
- * Set the constraint associated with a generic parameter.
- */
-void ILGenericParSetConstraint(ILGenericPar *genPar, ILProgramItem *type);
+ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar, ILProgramItem *constraint);
 
 /*
  * Get a generic parameter record for a particular owner and number.
@@ -2361,8 +2352,22 @@ ILUInt32 ILGenericParGetNumParams(ILProgramItem *owner);
 #define	ILGenericPar_Flags(genPar)		(ILGenericParGetFlags((genPar)))
 #define	ILGenericPar_Owner(genPar)		(ILGenericParGetOwner((genPar)))
 #define	ILGenericPar_Name(genPar)		(ILGenericParGetName((genPar)))
-#define	ILGenericPar_Kind(genPar)		(ILGenericParGetKind((genPar)))
-#define	ILGenericPar_Constraint(genPar)	(ILGenericParGetConstraint((genPar)))
+
+/*
+ * Return the associated Parameter to the generic constraint
+ */
+ILGenericPar *ILConstraintGetParam(ILGenericConstraint *constraint);
+
+/*
+ * Return the type associated specified by the generic constraint
+ */
+ILProgramItem *ILConstraintGetType(ILGenericConstraint *constraint);
+
+/*
+ * Helper macros for querying information about generic constraints.
+ */
+#define ILConstraint_Param(constraint) (ILConstraintGetParam(constraint))
+#define ILConstraint_Type(constraint) (ILConstraintGetType(constraint))
 
 /*
  * Create a method specification record.

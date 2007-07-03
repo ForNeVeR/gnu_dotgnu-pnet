@@ -536,23 +536,23 @@ int ILAsmMain(int argc, char *argv[], FILE *newStdin)
 	/* Exit if errors occurred during the parse */
 	if(ILAsmErrors)
 	{
+		reset();
 		if(outfile != NULL)
 		{
 			fclose(outfile);
 			ILDeleteFile(outputFile);
 		}
-		reset();
 		return 1;
 	}
 
 	/* Finalize the output */
 	if(!ILAsmOutDestroy())
 	{
+		reset();
 		if(outfile != NULL)
 		{
 			fclose(outfile);
 		}
-		reset();
 		return 1;
 	}
 	if(outfile != NULL)

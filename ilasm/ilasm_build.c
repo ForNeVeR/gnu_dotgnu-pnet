@@ -1090,6 +1090,21 @@ ILParameter *ILAsmFindParameter(ILMethod *method, ILUInt32 paramNum)
 	return 0;
 }
 
+ILGenericPar *ILAsmFindGenericParameter(ILProgramItem *owner,
+										ILUInt32 paramNum)
+{
+	ILGenericPar *genPar = ILGenericParGetFromOwner(owner, paramNum);
+
+	if(!genPar)
+	{
+		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+		  "no generic parameter parameter numbered %lu for the current method",
+						  (unsigned long)paramNum);
+		ILAsmErrors = 1;
+	}
+	return genPar;
+}
+
 void ILAsmAddSemantics(int type, ILToken token)
 {
 	if(token)

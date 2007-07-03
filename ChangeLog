@@ -1,3 +1,28 @@
+2007-07-03  Klaus Treichel  <ktreichel@web.de>
+
+	* ilasm/ilasm_build.c: Add the function ILAsmFindGenericParameter to
+	fins an ILGenericPar by owner and zero based parameter number.
+
+	* ilasm/ilasm_build.h: Add the prototype for ILAsmFindGenericParameter.
+
+	* ilasm/ilasm_grammar.y: Add support for the .param type [n] directive
+	to set the custom attribute scope to a generic parameter of the class or
+	method.
+
+	* ilasm/ilasm_scanner.l: Add the `type' keyword.
+
+	* ilasm(ilasm_main.c: Fix segfaults if the il file was compiled with
+	errors. Call the reset() function pior to closing the output file because
+	reset() calls a function that writes to the file.
+
+	* image/item.c: Add the function ILProgramItemToGenericConstraint.
+
+	* image/meta_index.c: Add the generic parameter to the possible owners of
+	a custom attribute.
+
+	* include/il_program.h: Add the prototype for
+	ILProgramtemToGenericConstraint.
+
 2007-07-01  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_build.c: Add the function ILAsmAddGenericPars to add

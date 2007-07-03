@@ -1003,6 +1003,7 @@ static void FinishDataLabels()
 %token K_TLS				"`tls'"
 %token K_TO					"`to'"
 %token K_TRUE				"`true'"
+%token K_TYPE				"`type'"
 %token K_TYPEDREF			"`typedref'"
 %token K_UNICODE			"`unicode'"
 %token K_UNMANAGED			"`unmanaged'"
@@ -1493,6 +1494,20 @@ FormalGenericParamAttribute
 	| D_CTOR							{ $$ = IL_META_GENPARAM_CTOR_CONST; }
 	;
 
+GenericTypeParamDirective
+	: D_PARAM K_TYPE '[' Integer32 ']'	{
+				ILGenericPar *genPar;
+				genPar = ILAsmFindGenericParameter(ILToProgramItem(ILAsmCurrScope),
+										   (ILUInt32)($4 - 1));
+				if(genPar)
+				{
+					/* Set the last token, to allow custom attributes
+					   to be attached to the parameter */
+					ILAsmLastToken = ILProgramItem_Token(ILToProgramItem(genPar));
+				}
+			}
+	;
+
 ClassAttributes
 	: /* empty */			{ $$ = 0; }
 	| ClassAttributeList	{ $$ = $1; }
@@ -1699,6 +1714,7 @@ ClassDeclaration
 					}
 				}
 			}
+	| GenericTypeParamDirective
 	;
 
 /*
@@ -2446,6 +2462,7 @@ MethodDeclaration
 					ILAsmLastToken = ILParameter_Token(param);
 				}
 			}
+	| GenericTypeParamDirective
 	;
 
 JavaMethodDeclarations

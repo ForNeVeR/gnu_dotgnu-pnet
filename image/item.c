@@ -908,6 +908,23 @@ ILMethodSpec *ILProgramItemToMethodSpec(ILProgramItem *item)
 	}
 }
 
+ILGenericConstraint *ILProgramItemToGenericConstraint(ILProgramItem *item)
+{
+	if(!item)
+	{
+		return 0;
+	}
+	else if((item->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_GENERIC_CONSTRAINT)
+	{
+		return (ILGenericConstraint *)item;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+
 #ifdef	__cplusplus
 };
 #endif

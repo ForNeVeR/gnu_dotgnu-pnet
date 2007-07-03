@@ -236,6 +236,14 @@ void ILAsmSecurityCreate(ILInt64 action, const void *str, int len);
 ILParameter *ILAsmFindParameter(ILMethod *method, ILUInt32 paramNum);
 
 /*
+ * Find the generic parameter with the 0 based paramNum for the class or
+ * method.
+ * Returns NULL if not found.
+ */
+ILGenericPar *ILAsmFindGenericParameter(ILProgramItem *owner,
+										ILUInt32 paramNum);
+
+/*
  * Add semantics to an event or property.
  */
 void ILAsmAddSemantics(int type, ILToken token);

@@ -149,6 +149,7 @@ ILManifestRes *ILProgramItemToManifestRes(ILProgramItem *item);
 ILExportedType *ILProgramItemToExportedType(ILProgramItem *item);
 ILGenericPar *ILProgramItemToGenericPar(ILProgramItem *item);
 ILMethodSpec *ILProgramItemToMethodSpec(ILProgramItem *item);
+ILGenericConstraint *ILProgramItemToGenericConstraint(ILProgramItem *item);
 
 /*
  * Helper macros for querying information about a program item.

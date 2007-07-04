@@ -1,3 +1,9 @@
+2007-07-04  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/Form.cs: Do not destroy form, when shown Modal, only
+	destroy handle.
+	* System.Drawing/Image.cs: fixed getting size of image, if image is gif.
+	
 2007-06-24  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/Microsoft/Win32/RegistryKeyPermissionCheck.cs,

@@ -479,7 +479,7 @@ public abstract class Image
 				this.dgImage = dgImage;
 				// If we are loading an icon, set the size of the image
 				// to the size of the first icon
-				if (rawFormat == ImageFormat.Icon)
+				if (rawFormat == ImageFormat.Icon || rawFormat == ImageFormat.Gif )
 				{
 					width = dgImage.GetFrame(0).Width;
 					height = dgImage.GetFrame(0).Height;

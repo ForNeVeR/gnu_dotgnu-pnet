@@ -963,7 +963,10 @@ public class Form : ContainerControl
 
 					// Enter a message loop until the dialog result is set.
 					Application.InnerMessageLoop(this);
-					Dispose();	// must call Dispose, when closing the dialog
+					
+					if( toolkitWindow != null ) {
+						DestroyHandle(); // close handle
+					}
 				}
 				finally
 				{
@@ -1676,7 +1679,7 @@ public class Form : ContainerControl
 				{
 					dialogResultIsSet = true;	// must be set here, or Application.InnerMessageLoop won't end
 					OnClosed(EventArgs.Empty);
-					Dispose();
+					if( !Modal) Dispose();
 				}
 			}
 

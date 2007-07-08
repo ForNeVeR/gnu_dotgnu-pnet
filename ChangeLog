@@ -1,3 +1,7 @@
+2007-07-08  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Fix invalid xml in show_types command.
+
 2007-07-03  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_build.c: Add the function ILAsmFindGenericParameter to

@@ -2224,10 +2224,10 @@ void ShowTypes(ILDebugger *debugger, FILE *stream)
 			classId = GetId(debugger, (void *) classInfo,
 														IL_USER_DATA_CLASS_ID);
 			Indent(stream, 4);
-			fprintf(stream, "<Type Id=\"%d\" ImageId=\"%d\" Name=\"",
+			fprintf(stream, "<Type Id=\"%d\" ProjectId=\"%d\" Name=\"",
 															classId, imageId);
 			DumpString(ILClass_Name(classInfo), stream);
-			fputs("\">\n", stream);
+			fputs("\" />\n", stream);
 		}
 	}
 

@@ -280,6 +280,32 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 	return info;
 }
 
+/*
+ * Create a reference to a synthetic class in the current image.
+ */
+static ILClass *CreateClassRef(ILProgramItem *scope,
+							   const char *name,
+							   const char *namespace,
+							   ILType *synthetic)
+{
+	ILClass *info;
+
+	/* Create a new class information block */
+	info = CreateClass(scope->image, name, namespace, 0, scope);
+	if(!info)
+	{
+		return 0;
+	}
+
+	/* Mark the class as a reference */
+	info->attributes |= IL_META_TYPEDEF_REFERENCE;
+
+	/* set the synthetic type. */
+	info->synthetic = synthetic;
+
+	return info;
+}
+
 ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
 					   const char *namespace, ILClass *parent)
 {
@@ -493,8 +519,17 @@ ILClass *ILClassImport(ILImage *image, ILClass *info)
 	}
 
 	/* Create a new reference */
-	newInfo = ILClassCreateRef(scope, 0, info->className->name,
-							   info->className->namespace);
+	if(info->synthetic)
+	{
+		newInfo = CreateClassRef(scope, info->className->name,
+								 info->className->namespace,
+								 info->synthetic);
+	}
+	else
+	{
+		newInfo = ILClassCreateRef(scope, 0, info->className->name,
+								   info->className->namespace);
+	}
 	if(!newInfo)
 	{
 		return 0;

@@ -511,11 +511,12 @@ SIGN			[+-]
 <INITIAL,JAVAMODE>"false"				{ return K_FALSE; }
 <INITIAL,JAVAMODE>"java"				{ return K_JAVA; }
 <INITIAL,JAVAMODE>"nullref"				{ return K_NULLREF; }
-<INITIAL,JAVAMODE>"type"				{ return K_TYPE; }
+"type"									{ return K_TYPE; }
 
 <INITIAL,JAVAMODE>"::"					{ return COLON_COLON; }
 <INITIAL,JAVAMODE>"..."					{ return DOT_DOT_DOT; }
 <INITIAL,JAVAMODE>".."					{ return DOT_DOT; }
+"!!"									{ return EXCL_EXCL; }
 
 "add"					{ OPCODE_NONE(ADD); }	/* Opcodes with no args */
 "add.ovf"				{ OPCODE_NONE(ADD_OVF); }
@@ -1023,12 +1024,22 @@ SIGN			[+-]
 <JAVAMODE>"multianewarray"	{ yylval.opcode = JAVA_OP_MULTIANEWARRAY;
 						      return I_MULTINEWARRAY; }
 
-<INITIAL,JAVAMODE>{IDALPHA}({DIGIT}|{IDALPHA})*	{
+{IDALPHA}({DIGIT}|{IDALPHA}|"`")*	{
 			yylval.strValue = ILInternString(yytext, strlen(yytext));
 			return IDENTIFIER;
 		}
 
-<INITIAL,JAVAMODE>"."{IDALPHA}({DIGIT}|{IDALPHA})*	{
+"."{IDALPHA}({DIGIT}|{IDALPHA}|"`")*	{
+			yylval.strValue = ILInternString(yytext, strlen(yytext));
+			return DOT_IDENTIFIER;
+		}
+
+<JAVAMODE>{IDALPHA}({DIGIT}|{IDALPHA})*	{
+			yylval.strValue = ILInternString(yytext, strlen(yytext));
+			return IDENTIFIER;
+		}
+
+<JAVAMODE>"."{IDALPHA}({DIGIT}|{IDALPHA})*	{
 			yylval.strValue = ILInternString(yytext, strlen(yytext));
 			return DOT_IDENTIFIER;
 		}

@@ -1,3 +1,21 @@
+2007-07-08  Klaus Treickel  <ktreichel@web.de>
+
+	* ilasm/ilasm_grammar.y: Set the abstract attribute automatically for
+	interface declarations. Change the reference for method generic parameters
+	from '!' '!' to "!!".
+
+	* ilasm/ilasm_scanner.l: Change the "type" keyword to IL only. Add the "`"
+	to the allowed characters in IL identifiers for the generic arity.
+
+	* image/class.c: Add the static metod CreateClassRef for creating a class
+	reference in the current image for synthetic classes to avoid a TypeRef
+	being created in the image. Call this function in ILClassImport for
+	synthetic classes.
+
+	* samples/phone.il: Add the ECMA phone sample for generics.
+
+	* samples/Makefile.am: Add the phone sample to the built samples.
+
 2007-07-08  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: Fix invalid xml in show_types command.

@@ -760,6 +760,7 @@ static void FinishDataLabels()
 %token COLON_COLON			"::"
 %token DOT_DOT_DOT			"..."
 %token DOT_DOT				".."
+%token EXCL_EXCL			"!!"
 
 /*
  * Directives.
@@ -1510,7 +1511,13 @@ GenericTypeParamDirective
 
 ClassAttributes
 	: /* empty */			{ $$ = 0; }
-	| ClassAttributeList	{ $$ = $1; }
+	| ClassAttributeList	{ 
+				$$ = $1;
+				if($$ & IL_META_TYPEDEF_INTERFACE)
+				{
+					$$ |= IL_META_TYPEDEF_ABSTRACT;
+				}
+			}
 	;
 
 ClassAttributeList
@@ -3216,10 +3223,10 @@ Type
 				$$ = ILTypeCreateVarNum
 						(ILAsmContext, IL_TYPE_COMPLEX_VAR, (int)($2));
 			}
-	| '!' '!' Integer32					{
+	| EXCL_EXCL Integer32					{
 				/* Reference to a method generic parameter */
 				$$ = ILTypeCreateVarNum
-						(ILAsmContext, IL_TYPE_COMPLEX_MVAR, (int)($3));
+						(ILAsmContext, IL_TYPE_COMPLEX_MVAR, (int)($2));
 			}
 	| Type '<' ActualGenericParams '>'	{
 				/* Reference to a generic type instantiation */

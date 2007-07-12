@@ -1566,7 +1566,12 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				if(((Object)s) == null || s.Length == 0) { return; }
 
 				// make a little inset around the text dependent of the font size
-				layoutRectangle.Inflate((int)(-font.SizeInPoints*DpiX/369.7184), 0);
+				// (only for non-typographic format) 
+				if(format == null || !format.IsTypographic)
+				{
+					layoutRectangle.Inflate(
+								(int)(-font.SizeInPoints*DpiX/369.7184), 0);
+				}
 
 				// convert the layout into device coordinates
 				Point[] rect = ConvertRectangle
@@ -2916,7 +2921,11 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					else
 					{
 						// set the maximum x to the maximum width
-						xMax = (layout.Width - 1 - (int)(font.SizeInPoints*graphics.DpiX/369.7184));
+						xMax = (layout.Width - 1);
+						if(!format.IsTypographic)
+						{
+							xMax -= (int)(font.SizeInPoints*graphics.DpiX/369.7184);
+						}
 
 						// set the maximum y to the maximum height
 						yMax = (layout.Height - 1);
@@ -3088,7 +3097,15 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					int initialPos = currentPos;
 
 					// set the default x position
-					int x = (int)(f.SizeInPoints*g.DpiX/369.7184);
+					int x;
+					if(format.IsTypographic)
+					{
+						x = 0;
+					}
+					else
+					{
+						x = (int)(f.SizeInPoints*g.DpiX/369.7184);
+					}
 
 					// set the default y position
 					int y = 0;
@@ -3274,6 +3291,17 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				// get the layout width
 				float width = layoutArea.Width;
 
+				// constant that is added (only for non-typographic formats)
+				float inset;
+				if(format.IsTypographic)
+				{
+					inset = 0;
+				}
+				else
+				{
+					inset = font.SizeInPoints*DpiX/184.8592F;
+				}
+
 				// return the size information based on wrapping behavior
 				if((format.FormatFlags & StringFormatFlags.NoWrap) == 0 &&
 				   ((size.Width >= width && width != 0.0f) || containsNL))
@@ -3295,7 +3323,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					// calculate and return the bounds of the text
 					SizeF s = calculator.GetBounds
 						(out charactersFitted, out linesFilled);
-					s.Width += font.SizeInPoints*DpiX/184.8592F;
+					s.Width += inset;
 					return s;
 				}
 				else
@@ -3314,7 +3342,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					linesFilled = 1;
 
 					// return the size of the text
-					return new SizeF(size.Width + font.SizeInPoints*DpiX/184.8592f, font.Height);
+					return new SizeF(size.Width + inset, font.Height);
 				}
 			}
 

@@ -38,7 +38,7 @@ public sealed class StringFormat
 	internal CharacterRange[] ranges;
 	private float firstTabOffset;
 	private float[] tabStops;
-
+	internal bool IsTypographic;
 
 	// Constructors.
 	public StringFormat()
@@ -61,6 +61,7 @@ public sealed class StringFormat
 				this.ranges = format.ranges;
 				this.firstTabOffset = format.firstTabOffset;
 				this.tabStops = format.tabStops;
+				this.IsTypographic = format.IsTypographic;
 			}
 	public StringFormat(StringFormatFlags options)
 			{
@@ -80,6 +81,7 @@ public sealed class StringFormat
 				{
 					this.options = (StringFormatFlags.LineLimit |
 					                StringFormatFlags.NoClip);
+					this.IsTypographic = true;
 				}
 				else
 				{

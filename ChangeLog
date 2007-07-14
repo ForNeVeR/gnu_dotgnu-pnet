@@ -1,3 +1,8 @@
+2007-07-14  Klaus Treichel  <ktreichel@web.de>
+
+	* System/Text/RegularExpressions/regex.cs,
+	DotGNU.XmlRpc/XmlRpcException.cs: Fix build with the mscompact profile.
+
 2007-07-12  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Drawing/StringFormat.cs: Remember and internally expose whether

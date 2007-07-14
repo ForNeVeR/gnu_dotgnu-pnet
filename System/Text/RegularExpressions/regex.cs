@@ -60,8 +60,16 @@ namespace System.Text.RegularExpressions {
 		CultureInvariant		= 0x200 
 	}
 	
+#if CONFIG_SERIALIZATION
 	[Serializable]
-	public class Regex : ISerializable {
+#endif
+	public class Regex
+#if CONFIG_SERIALIZATION
+		: ISerializable
+#endif
+	{
+
+	#if CONFIG_REFLECTION_EMIT
 		public static void CompileToAssembly
 			(RegexCompilationInfo[] regexes, AssemblyName aname)
 		{
@@ -110,6 +118,7 @@ namespace System.Text.RegularExpressions {
 			asmBuilder.Save(aname.Name);
 			*/
 		}
+	#endif	// CONFIG_REFLECTION_EMIT
 		
 		public static string Escape (string str) {
 			return Parser.Escape (str);
@@ -233,10 +242,12 @@ namespace System.Text.RegularExpressions {
 			}
 		}
 
+	#if CONFIG_SERIALIZATION
 		private Regex (SerializationInfo info, StreamingContext context) :
 			this (info.GetString ("pattern"), 
 			      (RegexOptions) info.GetValue ("options", typeof (RegexOptions))) {
 		}
+	#endif	// CONFIG_SERIALIZATION
 
 		// fixes public API signature
 		~Regex ()
@@ -493,11 +504,13 @@ namespace System.Text.RegularExpressions {
 			return pattern;
 		}
 
+	#if CONFIG_SERIALIZATION
 		// ISerializable interface
 		void ISerializable.GetObjectData (SerializationInfo info, StreamingContext context) {
 			info.AddValue ("pattern", this.ToString (), typeof (string));
 			info.AddValue ("options", this.Options, typeof (RegexOptions));
 		}
+	#endif	// CONFIG_SERIALIZATION
 
 		// internal
 
@@ -534,7 +547,9 @@ namespace System.Text.RegularExpressions {
 		protected internal RegexRunnerFactory factory;
 	}
 
+#if CONFIG_SERIALIZATION
 	[Serializable]
+#endif	// CONFIG_SERIALIZATION
 	public class RegexCompilationInfo {
 		public RegexCompilationInfo (string pattern, RegexOptions options, string name, string nspace, bool isPublic)
 		{

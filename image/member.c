@@ -249,6 +249,88 @@ ILMember *ILMemberImport(ILImage *image, ILMember *member)
 }
 
 /*
+ * Create a MemberRef.
+ */
+ILMemberRef *ILMemberRefCreate(ILProgramItem *owner, ILToken token,
+							   ILUInt32 kind, const char *name,
+							   ILType *signature)
+{
+	ILTypeSpec *spec;
+	ILMember *member;
+	ILMemberRef *memberRef = 0;
+	ILImage *image = owner->image;
+
+	/* There shall be no duplicates in the MemberRefs. */
+	while((memberRef = (ILMemberRef *)ILImageNextToken(image,
+													   IL_META_TOKEN_MEMBER_REF,
+													   memberRef)))
+	{
+		ILClass *oldOwner = memberRef->member.owner;
+		ILToken oldToken = ILClass_Token(oldOwner);
+
+		if(owner->token != oldToken)
+		{
+			continue;
+		}
+		if(strcmp(name, memberRef->member.name))
+		{
+			continue;
+		}
+		if(!ILTypeIdentical(memberRef->member.signature, signature))
+		{
+			continue;
+		}
+		/* The MemberRef found is identical. */
+		return memberRef;
+	}
+
+	memberRef = ILMemStackAlloc(&(image->memStack), ILMemberRef);
+	if(!memberRef)
+	{
+		return 0;
+	}
+
+	memberRef->member.name = _ILContextPersistString(image, name);
+	if(!(memberRef->member.name))
+	{
+		return 0;
+	}
+
+	if((spec = ILProgramItemToTypeSpec(owner)) != 0)
+	{
+		memberRef->member.owner = ILTypeSpecGetClass(spec);
+	}
+	else if((member = ILProgramItemToMember(owner)) != 0)
+	{
+		memberRef->member.owner = ILMemberGetOwner(member);
+	}
+	else
+	{
+		memberRef->member.owner = 0;
+	}
+	if(memberRef->member.owner == 0)
+	{
+		return 0;
+	}
+	memberRef->member.nextMember = 0;
+	memberRef->member.programItem.image = image;
+	memberRef->member.kind = kind;
+	memberRef->member.attributes = 0;
+	memberRef->member.signature = signature;
+	memberRef->member.signatureBlob = 0;
+
+	/* Set the token for the MemberRef */
+	if(token != 0 || image->type == IL_IMAGETYPE_BUILDING)
+	{
+		if(!_ILImageSetToken(image, &(memberRef->member.programItem), token, IL_META_TOKEN_MEMBER_REF))
+		{
+			return 0;
+		}
+	}
+	return memberRef;
+}
+
+/*
  * Common function for creating members and attaching them to a class.
  */
 static ILMember *MemberCreate(ILClass *info, ILToken token,

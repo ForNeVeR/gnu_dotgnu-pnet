@@ -1,4 +1,25 @@
-2007-07-08  Klaus Treickel  <ktreichel@web.de>
+2007-07-15  Klaus Treichel  <ktreichel@web.de>
+
+	* ilasm/ilasm_build.c: Handle TypeSpec parents for MemberRefs in
+	ILAsmResolveMember. (Needed to access members of generic classes).
+
+	* image/class.c: Add the function ILClassCreateWrapper for creating
+	wrapper classes around TypeSpecs (Generic classes and Arrays) which can be
+	used as MemberRef parents.
+
+	* image/member.c: Add the function ILMemberRefCreate for creating
+	MemberRefs.
+
+	* image/misc_token.c: Make sure that there are no duplicate TypeSpecs in
+	the image (as required by the ECMA specs).
+
+	* image/program.h: Remove the declaration of ILMemberRef.
+
+	* include/il_program.h: Add the declaration of ILMemberRef. Add the
+	prototypes for ILClassCreateWrapper and ILMemberRefCreate. Add some helper
+	macros for accessing members of MemberRefs.
+
+2007-07-08  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_grammar.y: Set the abstract attribute automatically for
 	interface declarations. Change the reference for method generic parameters

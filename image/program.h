@@ -437,7 +437,6 @@ struct _tagILOverride
 /*
  * Information about a reference member.
  */
-typedef struct _tagILMemberRef ILMemberRef;
 struct _tagILMemberRef
 {
 	ILMember		member;				/* Common member fields */

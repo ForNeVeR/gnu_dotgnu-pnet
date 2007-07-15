@@ -306,6 +306,34 @@ static ILClass *CreateClassRef(ILProgramItem *scope,
 	return info;
 }
 
+ILClass *ILClassCreateWrapper(ILProgramItem *scope, ILToken token,
+							  ILType *type)
+{
+	ILImage *image = scope->image;
+	ILClass *info;
+
+	/* Allocate space for the class information block */
+	info = ILMemStackAlloc(&(image->memStack), ILClass);
+	if(!info)
+	{
+		return 0;
+	}
+
+	/* Initialize the class fields */
+	info->programItem.image = image;
+
+	/* Set the token code for the class */
+	info->programItem.token = token;
+
+	/* Set the synthetic type */
+	info->synthetic = type;
+
+	info->parent = 0;
+	info->ext = 0;
+
+	return info;
+}
+
 ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
 					   const char *namespace, ILClass *parent)
 {

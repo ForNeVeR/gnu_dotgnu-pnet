@@ -28,6 +28,22 @@ ILTypeSpec *ILTypeSpecCreate(ILImage *image, ILToken token, ILType *type)
 {
 	ILTypeSpec *spec;
 
+	if(token == 0)
+	{		
+		/* There shall be no duplicates in the TypeSpecs. */
+		spec = 0;
+
+		while((spec = (ILTypeSpec *)ILImageNextToken(image,
+													 IL_META_TOKEN_TYPE_SPEC,
+													 spec)))
+		{
+			if(ILTypeIdentical(spec->type, type))
+			{
+				return spec;
+			}
+		}
+	}
+
 	/* Allocate space for the TypeSpec block from the memory stack */
 	spec = ILMemStackAlloc(&(image->memStack), ILTypeSpec);
 	if(!spec)

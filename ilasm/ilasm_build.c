@@ -803,8 +803,6 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 	ILTypeSpec *spec;
 	ILClass *classInfo;
 	ILMember *member;
-	ILMethod *method;
-	ILField *field;
 
 	/* Convert TypeSpec tokens into class tokens */
 	if((spec = ILProgramItemToTypeSpec(scope)) != 0)
@@ -829,7 +827,24 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 	/* Look for a name and signature match on a member */
 	if((member = ILClassNextMemberMatch(classInfo, 0, kind, name, sig)) != 0)
 	{
-		return ILMember_Token(member);
+		if(spec)
+		{
+			ILMemberRef *memberRef = ILMemberRefCreate(ILToProgramItem(spec),
+													   0, kind, name, sig);
+
+			if(!memberRef)
+			{
+				ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+								  "cannot create member ref `%s'", name);
+				ILAsmErrors = 1;
+				return 0;
+			}
+			return ILMemberRef_Token(memberRef);
+		}
+		else
+		{
+			return ILMember_Token(member);
+		}
 	}
 
 	/* Ignore the "class complete" check if this is a vararg call site,
@@ -852,6 +867,8 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 	   be fixed up later when we encounter the real definition */
 	if(kind == IL_META_MEMBERKIND_METHOD)
 	{
+		ILMethod *method;
+
 		method = ILMethodCreate(classInfo, (ILToken)IL_MAX_UINT32,
 								name, 0);
 		if(!method)
@@ -860,10 +877,29 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 		}
 		ILMemberSetSignature((ILMember *)method, sig);
 		ILMethodSetCallConv(method, ILType_CallConv(sig));
-		return ILMethod_Token(method);
+		if(spec)
+		{
+			ILMemberRef *memberRef = ILMemberRefCreate(ILToProgramItem(spec),
+													   0, kind, name, sig);
+
+			if(!memberRef)
+			{
+				ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+								  "cannot create member ref `%s'", name);
+				ILAsmErrors = 1;
+				return 0;
+			}
+			return ILMemberRef_Token(memberRef);
+		}
+		else
+		{
+			return ILMethod_Token(method);
+		}
 	}
 	else
 	{
+		ILField *field;
+
 		field = ILFieldCreate(classInfo, (ILToken)IL_MAX_UINT32,
 							  name, 0);
 		if(!field)
@@ -871,7 +907,24 @@ ILToken ILAsmResolveMember(ILProgramItem *scope, const char *name,
 			ILAsmOutOfMemory();
 		}
 		ILMemberSetSignature((ILMember *)field, sig);
-		return ILField_Token(field);
+		if(spec)
+		{
+			ILMemberRef *memberRef = ILMemberRefCreate(ILToProgramItem(spec),
+													   0, kind, name, sig);
+
+			if(!memberRef)
+			{
+				ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+								  "cannot create member ref `%s'", name);
+				ILAsmErrors = 1;
+				return 0;
+			}
+			return ILMemberRef_Token(memberRef);
+		}
+		else
+		{
+			return ILField_Token(field);
+		}
 	}
 }
 

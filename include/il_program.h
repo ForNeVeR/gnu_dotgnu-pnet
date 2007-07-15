@@ -64,6 +64,7 @@ typedef struct _tagILExportedType	ILExportedType;
 typedef struct _tagILGenericPar		ILGenericPar;
 typedef struct _tagILGenericConstraint ILGenericConstraint;
 typedef struct _tagILMethodSpec		ILMethodSpec;
+typedef struct _tagILMemberRef		ILMemberRef;
 
 /*
  * Iterate over the list of attributes that are associated
@@ -485,6 +486,14 @@ ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
  */
 ILClass *ILClassCreateRef(ILProgramItem *scope, ILToken token,
 						  const char *name, const char *nspace);
+
+/*
+ * Create a wrapper class for a type (usually a TypeSpec) in the same
+ * image as the type. The class has no classname.
+ * Returns NULL if out of memory.
+ */
+ILClass *ILClassCreateWrapper(ILProgramItem *scope, ILToken token,
+							  ILType *type);
 
 /*
  * Resolve cross-image links for a class.
@@ -923,6 +932,13 @@ ILClass *ILClassGetUnderlying(ILClass *info);
 #define	IL_META_MEMBERKIND_REF			7
 
 /*
+ * Create a MemberRef.
+ */
+ILMemberRef *ILMemberRefCreate(ILProgramItem *owner, ILToken token,
+							   ILUInt32 kind, const char *name,
+							   ILType *signature);
+
+/*
  * Create a reference member from a regular member.
  */
 ILMember *ILMemberCreateRef(ILMember *member, ILToken token);
@@ -1013,6 +1029,14 @@ ILMember *ILMemberGetBase(ILMember *member);
 	(ILMemberGetKind((ILMember *)(member)) == IL_META_MEMBERKIND_OVERRIDE)
 #define	ILMember_IsRef(member)	\
 	(ILMemberGetKind((ILMember *)(member)) == IL_META_MEMBERKIND_REF)
+
+/*
+ * Helper Macros for querying information about MemberRefs.
+ */
+#define	ILMemberRef_Token(memberRef)		(ILProgramItem_Token((memberRef)))
+#define	ILMemberRef_Name(memberRef)			(ILMemberGetName((ILMember *)(memberRef)))
+#define	ILMemberRef_Signature(memberRef)	(ILMemberGetSignature((ILMember *)(memberRef)))
+
 
 /*
  * Create a new method and attach it to a class.

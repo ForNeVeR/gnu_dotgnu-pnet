@@ -111,7 +111,41 @@ ILGenericConstraint *ILGenericParNextConstraint(ILGenericPar *genPar, ILGenericC
 	}
 }
 
-ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar, ILProgramItem *constraint)
+ILGenericConstraint *ILConstraintCreate(ILImage *image, ILToken token,
+										ILProgramItem *owner,
+										ILProgramItem *classInfo)
+{
+	ILGenericConstraint *constraint;
+
+
+	constraint = ILMemStackAlloc(&(image->memStack), ILGenericConstraint);
+	if(!constraint)
+	{
+		return 0;
+	}
+	constraint->ownedItem.programItem.image = owner->image;
+	constraint->ownedItem.owner = owner;
+	constraint->parameter = owner;
+	constraint->constraint = classInfo;
+	constraint->nextConstraint = 0;
+
+	/* Assign a token code to the GenericConstraint information block */
+	if(token != 0 || image->type == IL_IMAGETYPE_BUILDING)
+	{
+		if(!_ILImageSetToken(image,
+						 &(constraint->ownedItem.programItem), token,
+						 IL_META_TOKEN_GENERIC_CONSTRAINT))
+		{
+			return 0;
+		}
+	}
+
+	return constraint;
+}
+
+ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar,
+											   ILToken token,
+											   ILProgramItem *constraint)
 {
 	ILGenericConstraint **last = &(genPar->firstConstraint);
 
@@ -119,25 +153,15 @@ ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar, ILProgramIt
 	{
 		last = &((*last)->nextConstraint);
 	}
-	(*last) = ILMemStackAlloc(&(constraint->image->memStack), ILGenericConstraint);
+	(*last) = ILConstraintCreate(genPar->ownedItem.programItem.image,
+								 token,
+								 ILToProgramItem(genPar),
+								 constraint);
 	if(!(*last))
 	{
 		return 0;
 	}
 
-	(*last)->ownedItem.programItem.image = genPar->ownedItem.programItem.image;
-	(*last)->ownedItem.owner = ILToProgramItem(genPar);
-	(*last)->parameter = ILToProgramItem(genPar);
-	(*last)->constraint = constraint;
-	(*last)->nextConstraint = 0;
-
-	/* Assign a token code to the GenericConstraint information block */
-	if(!_ILImageSetToken(genPar->ownedItem.programItem.image,
-						 &((*last)->ownedItem.programItem), 0,
-						 IL_META_TOKEN_GENERIC_CONSTRAINT))
-	{
-		return 0;
-	}
 
 	return (*last);
 }

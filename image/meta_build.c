@@ -3266,7 +3266,9 @@ static int Load_GenericConstraint(ILImage *image, ILUInt32 *values,
 	}
 
 	/* Add the generic constraint to the parameter */
-	if (!ILGenericParAddConstraint(genPar, ILProgramItem_FromToken (image, 
+	if (!ILGenericParAddConstraint(genPar,
+								   token,
+								   ILProgramItem_FromToken (image, 
 										values[IL_OFFSET_GENERICCON_CONSTRAINT])))
 	{
 		return IL_LOADERR_MEMORY;

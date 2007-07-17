@@ -301,7 +301,7 @@ void ILAsmAddGenericPars(ILProgramItem *owner, ILAsmParamInfo *genericParams)
 					}
 					constraint = ILToProgramItem(spec);
 				}
-				ILGenericParAddConstraint(genPar, constraint);
+				ILGenericParAddConstraint(genPar, 0, constraint);
 			}
 			ILFree(typeConstraint);
 			typeConstraint = nextTypeConstraint;

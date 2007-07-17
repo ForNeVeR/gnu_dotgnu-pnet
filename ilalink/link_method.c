@@ -867,7 +867,7 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 				{
 					return 0;
 				}
-				if (!ILGenericParAddConstraint(newGenPar, constraint))
+				if (!ILGenericParAddConstraint(newGenPar, 0, constraint))
 				{
 					return 0;
 				}

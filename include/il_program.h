@@ -2354,7 +2354,9 @@ ILGenericConstraint *ILGenericParNextConstraint(ILGenericPar *genPar, ILGenericC
 /*
  * Add a constraint to a generic parameter.
  */
-ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar, ILProgramItem *constraint);
+ILGenericConstraint *ILGenericParAddConstraint(ILGenericPar *genPar,
+											   ILToken token,
+											   ILProgramItem *constraint);
 
 /*
  * Get a generic parameter record for a particular owner and number.
@@ -2377,6 +2379,13 @@ ILUInt32 ILGenericParGetNumParams(ILProgramItem *owner);
 #define	ILGenericPar_Flags(genPar)		(ILGenericParGetFlags((genPar)))
 #define	ILGenericPar_Owner(genPar)		(ILGenericParGetOwner((genPar)))
 #define	ILGenericPar_Name(genPar)		(ILGenericParGetName((genPar)))
+
+/*
+ * Create a generic constraint.
+ */
+ILGenericConstraint *ILConstraintCreate(ILImage *image, ILToken token,
+										ILProgramItem *owner,
+										ILProgramItem *classInfo);
 
 /*
  * Return the associated Parameter to the generic constraint

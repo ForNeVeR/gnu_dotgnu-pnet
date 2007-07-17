@@ -1,3 +1,19 @@
+2007-07-17  Klaus Treichel  <ktreichel@web.de>
+
+	* ilalink/link_class.c, ilalink/link_method.c, ilasm/ilasm_build.c: Add the
+	NULL token to the parameters for ILGenericParAddConstraint.
+
+	* image/generic.c: Add the function ILConstraintCreate to make the api
+	more consistent. Use this function in ILGenericParAddConstraint.
+	Add the token to ILGenericParAddConstraint to fix an image load error
+	when loading generic constraints.
+
+	image/meta_build.c: Pass the token in the call to ILGenericParAddConstraint
+	to fix the image load error.
+
+	* include/il_program.h: Add the prototype for ILConstraintCreate. Add the
+	token to the prototype for ILGenericParAddConstraint.
+
 2007-07-15  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_build.c: Handle TypeSpec parents for MemberRefs in
@@ -16,6 +32,7 @@
 	* image/program.h: Remove the declaration of ILMemberRef.
 
 	* include/il_program.h: Add the declaration of ILMemberRef. Add the
+
 	prototypes for ILClassCreateWrapper and ILMemberRefCreate. Add some helper
 	macros for accessing members of MemberRefs.
 

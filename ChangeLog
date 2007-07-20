@@ -1,3 +1,17 @@
+2007-07-20  Klaus Treichel  <ktreichel@web.de>
+
+	* image/writer.c: Get the default metadata version string from the profile
+	used.
+
+	* profiles/compact, profiles/compact-fp, profiles/kernel,
+	profiles/kernel-fp, profiles/tiny: Set the framework major version
+	supported to 1. Add the default metadata version string v1.1.4322 .
+
+	* profiles/full, profiles/full-tl: Add the default metadata version string
+	v2.0.50727 .
+
+	* samples/phone.il: Reformat the sample and add a .ctor.
+
 2007-07-17  Klaus Treichel  <ktreichel@web.de>
 
 	* ilalink/link_class.c, ilalink/link_method.c, ilasm/ilasm_build.c: Add the

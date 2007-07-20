@@ -101,8 +101,10 @@ IL_CONFIG_FILESYSTEM=n
 IL_CONFIG_ECMA=y
 
 # Major CLR/Framework Version to support (1 .. 3)
-IL_VERSION_MAJOR=3
+IL_VERSION_MAJOR=1
 
 # Minor CLR/Framework Version to support
 IL_VERSION_MINOR=0
 
+# Default version string to store in the metadata
+IL_VERSION_METADATA="v1.1.4322"

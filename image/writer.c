@@ -30,10 +30,11 @@ extern	"C" {
 
 /*
  * Default version data to embed in the metadata header.
- * Must be padded to a multiple of 4 in size.
+ * It will be padded with NULL bytes to a multiple of 4 in size.
+ * There has to be at least one NULL byte at the end.
  */
-#define	VERSION_STRING		"v1.1.4322\0\0\0"
-#define	VERSION_STRING_LEN	12
+#define	VERSION_STRING		IL_VERSION_METADATA "\0\0\0"
+#define	VERSION_STRING_LEN	((sizeof(IL_VERSION_METADATA) + 3) & ~3)
 
 void _ILWBufferListInit(ILWBufferList *list)
 {

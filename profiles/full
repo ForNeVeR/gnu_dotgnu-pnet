@@ -109,3 +109,6 @@ IL_VERSION_MAJOR=3
 # Minor CLR/Framework Version to support
 IL_VERSION_MINOR=0
 
+# Default version string to store in the metadata
+IL_VERSION_METADATA="v2.0.50727"
+

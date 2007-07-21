@@ -235,6 +235,7 @@ void ILAsmSecurityCreate(ILInt64 action, const void *str, int len);
  */
 ILParameter *ILAsmFindParameter(ILMethod *method, ILUInt32 paramNum);
 
+
 /*
  * Find the generic parameter with the 0 based paramNum for the class or
  * method.
@@ -242,6 +243,32 @@ ILParameter *ILAsmFindParameter(ILMethod *method, ILUInt32 paramNum);
  */
 ILGenericPar *ILAsmFindGenericParameter(ILProgramItem *owner,
 										ILUInt32 paramNum);
+
+/*
+ * Resolve the generic parameter for the scope by name.
+ * Returns NULL if there is no generic parameter with the given name
+ * for the scope.
+ */
+ILGenericPar *ILAsmResolveGenericPar(ILProgramItem *scope,
+									 const char *name);
+
+/*
+ * Create a generic class var type reference to the generic class parameter
+ * with the given name.
+ * Returns 0 if the scope is not in a class or a generic parameter with the
+ * name could not be found.
+ */
+ILType *ILAsmResolveGenericClassPar(ILProgramItem *scope,
+									const char *name);
+
+/*
+ * Create a generic method var type reference to the generic method parameter
+ * with the given name.
+ * Returns 0 if the scope is not a method or a generic parameter with the
+ * name could not be found.
+ */
+ILType *ILAsmResolveGenericMethodPar(ILProgramItem *scope,
+									 const char *name);
 
 /*
  * Add semantics to an event or property.

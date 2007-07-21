@@ -1,3 +1,19 @@
+2007-07-21  Klaus Treichel  <ktreichel@web.de>
+
+	* ilasm/ilasm_build.h, ilasm/ilasm_build.h: Add the functions for resolving
+	generic parameters by name.
+
+	* ilasm/ilasm_grammar.y: Add the D_STACKRESERVE keyword and add the
+	resolution of generic parameters by name (which is undocumented in the ECMA
+	specs but supported by MS ilasm). The resolution of method generic
+	parameters by name in method parameters and returntypes is still TODO.
+
+	* ilasm/ilasm_scanner.l: Add the keyword D_STACKRESERVE (.stackreserve is
+	in the output of MS ildasm).
+
+	* image/class.c: Import the parent class in to the image of the subclass
+	instead of it's own image.
+
 2007-07-20  Klaus Treichel  <ktreichel@web.de>
 
 	* image/writer.c: Get the default metadata version string from the profile

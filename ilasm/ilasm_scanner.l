@@ -322,6 +322,7 @@ SIGN			[+-]
 <INITIAL,JAVAMODE>".removeon"			{ return D_REMOVEON; }
 <INITIAL,JAVAMODE>".set"				{ return D_SET; }
 <INITIAL,JAVAMODE>".size"				{ return D_SIZE; }
+<INITIAL,JAVAMODE>".stackreserve"		{ return D_STACKRESERVE; }
 <INITIAL,JAVAMODE>".subsystem"			{ return D_SUBSYSTEM; }
 <INITIAL,JAVAMODE>".title"				{ return D_TITLE; }
 <INITIAL,JAVAMODE>".try"				{ return D_TRY; }

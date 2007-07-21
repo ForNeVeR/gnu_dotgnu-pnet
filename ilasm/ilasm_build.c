@@ -1151,11 +1151,98 @@ ILGenericPar *ILAsmFindGenericParameter(ILProgramItem *owner,
 	if(!genPar)
 	{
 		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
-		  "no generic parameter parameter numbered %lu for the current method",
+		  "no generic parameter numbered %lu for the current method",
 						  (unsigned long)paramNum);
 		ILAsmErrors = 1;
 	}
 	return genPar;
+}
+
+static ILGenericPar *FindGenericParByName(ILProgramItem *owner, const char *name)
+{
+	ILUInt32 parNum = 0;
+	ILGenericPar *par;
+
+	while((par = ILGenericParGetFromOwner(owner, parNum)) != 0)
+	{
+		if(!strcmp(ILGenericParGetName(par), name))
+		{
+			return par;
+		}
+		parNum++;
+	}
+	return 0;
+}
+
+ILGenericPar *ILAsmResolveGenericPar(ILProgramItem *scope, const char *name)
+{
+	return FindGenericParByName(scope, name);
+}
+
+ILType *ILAsmResolveGenericClassPar(ILProgramItem *scope, const char *name)
+{
+	ILClass *info;
+
+	if((info = ILProgramItemToClass(scope)) == 0)
+	{
+		/* We might be in a method declaration */
+		ILMethod *method;
+
+		if((method = ILProgramItemToMethod(scope)) != 0)
+		{
+			info = ILMethod_Owner(method);
+		}
+	}
+	if(info)
+	{
+		ILGenericPar *par = FindGenericParByName(ILToProgramItem(info), name);
+
+		if(par)
+		{
+			return ILTypeCreateVarNum(ILAsmContext,
+									  IL_TYPE_COMPLEX_VAR,
+									  ILGenericParGetNumber(par));
+		}
+		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+			  "no generic class parameter with the name %s in the current class",
+						  name);
+		ILAsmErrors = 1;
+	}
+	else
+	{
+		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+			  "generic class parameter reference outside a class");
+		ILAsmErrors = 1;
+	}
+	return 0;
+}
+
+ILType *ILAsmResolveGenericMethodPar(ILProgramItem *scope, const char *name)
+{
+	ILMethod *method;
+
+	if((method = ILProgramItemToMethod(scope)) != 0)
+	{
+		ILGenericPar *par = FindGenericParByName(scope, name);
+
+		if(par)
+		{
+			return ILTypeCreateVarNum(ILAsmContext,
+									  IL_TYPE_COMPLEX_MVAR,
+									  ILGenericParGetNumber(par));
+		}
+		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+			  "no generic method parameter with the name %s in the current method",
+						  name);
+		ILAsmErrors = 1;
+	}
+	else
+	{
+		ILAsmPrintMessage(ILAsmFilename, ILAsmLineNum,
+			  "generic method parameter reference outside a method");
+		ILAsmErrors = 1;
+	}
+	return 0;
 }
 
 void ILAsmAddSemantics(int type, ILToken token)

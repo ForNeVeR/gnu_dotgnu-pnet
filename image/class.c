@@ -600,7 +600,7 @@ void ILClassSetParent(ILClass *info, ILClass *parent)
 		return;
 	}
 
-	image = ILClassToImage(parent);
+	image = ILClassToImage(info);
 	parent = ILClassImport(image, parent);
 	info->parent = parent;
 }

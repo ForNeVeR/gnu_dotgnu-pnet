@@ -821,6 +821,7 @@ static void FinishDataLabels()
 %token D_REMOVEON			"`.removeon'"
 %token D_SET				"`.set'"
 %token D_SIZE				"`.size'"
+%token D_STACKRESERVE		"`.stackreserve'"
 %token D_SUBSYSTEM			"`.subsystem'"
 %token D_TITLE				"`.title'"
 %token D_TRY				"`.try'"
@@ -1068,7 +1069,7 @@ static void FinishDataLabels()
 %type <opcode>		I_NEWARRAY I_MULTINEWARRAY
 %type <floatValue>	Float64 InstructionFloat
 %type <byteList>	ByteList
-%type <classInfo>	ExtendsClause ClassName CatchClause ClassNameTypeSpec
+%type <classInfo>	ClassName CatchClause ClassNameTypeSpec
 %type <type>		Type ArrayBounds Bounds
 %type <marshType>	MarshalledType
 %type <typeSpec>	TypeSpecification
@@ -1162,6 +1163,7 @@ CommentDeclaration
 	| D_CORFLAGS INTEGER_CONSTANT
 	| D_IMAGEBASE INTEGER_CONSTANT
 	| D_FILE K_ALIGNMENT INTEGER_CONSTANT
+	| D_STACKRESERVE INTEGER_CONSTANT
 	;
 
 LanguageDeclaration
@@ -1381,13 +1383,13 @@ ModuleHeading
  */
 
 ClassHeading
-	: D_CLASS ClassAttributes Identifier FormalGenericParamsOpt ExtendsClause {
+	: D_CLASS ClassAttributes Identifier FormalGenericParamsOpt {
 				/* Create the new class */
 				ILAsmBuildNewClass($3.string, $4.paramFirst,
-								   $5, (ILUInt32)($2));
+								   0, (ILUInt32)($2));
 				ILAsmBuildPushScope(ILAsmClass);
 			}
-	  ImplementsClause
+	  ExtendsClause ImplementsClause
 	;
 
 FormalGenericParamsOpt
@@ -1507,6 +1509,17 @@ GenericTypeParamDirective
 					ILAsmLastToken = ILProgramItem_Token(ILToProgramItem(genPar));
 				}
 			}
+	| D_PARAM K_TYPE Identifier			{
+				ILGenericPar *genPar;
+				genPar = ILAsmResolveGenericPar(ILToProgramItem(ILAsmCurrScope),
+												($3).string);
+				if(genPar)
+				{
+					/* Set the last token, to allow custom attributes
+					   to be attached to the parameter */
+					ILAsmLastToken = ILProgramItem_Token(ILToProgramItem(genPar));
+				}
+			}
 	;
 
 ClassAttributes
@@ -1557,11 +1570,10 @@ ClassAttributeName
 ExtendsClause
 	: /* empty */			{
 				/* Probably "System.Object" or an interface */
-				$$ = 0;
 			}
 	| K_EXTENDS ClassNameTypeSpec	{
 				/* Extend a named class */
-				$$ = $2;
+				ILClassSetParent(ILAsmClass, $2);
 			}
 	;
 
@@ -3223,10 +3235,18 @@ Type
 				$$ = ILTypeCreateVarNum
 						(ILAsmContext, IL_TYPE_COMPLEX_VAR, (int)($2));
 			}
-	| EXCL_EXCL Integer32					{
+	| '!' Identifier				{
+				/* Reference to a class generic parameter */
+				$$ = ILAsmResolveGenericClassPar(ILAsmCurrScope, ($2).string);
+			}
+	| EXCL_EXCL Integer32			{
 				/* Reference to a method generic parameter */
 				$$ = ILTypeCreateVarNum
 						(ILAsmContext, IL_TYPE_COMPLEX_MVAR, (int)($2));
+			}
+	| EXCL_EXCL Identifier			{
+				/* Reference to a method generic parameter */
+				$$ = ILAsmResolveGenericMethodPar(ILAsmCurrScope, ($2).string);
 			}
 	| Type '<' ActualGenericParams '>'	{
 				/* Reference to a generic type instantiation */

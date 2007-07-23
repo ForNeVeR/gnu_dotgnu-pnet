@@ -1,3 +1,9 @@
+2007-07-23  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Drawing.Win32/Win32.cs: Set CharSet.Auto for all pinvokes. This
+	is important mainly for RegisterClass() fucntion because otherwise ANSI
+	WndProc gets called with unicode strings.
+
 2007-07-14  Klaus Treichel  <ktreichel@web.de>
 
 	* System/Text/RegularExpressions/regex.cs,

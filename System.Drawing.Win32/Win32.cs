@@ -468,7 +468,7 @@ internal class Api
 
 	public const uint CBM_INIT = 0x04;
 
-	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
+	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Auto)]
 	public struct WNDCLASS 
 	{
 		public WindowClassStyle style;
@@ -493,8 +493,17 @@ internal class Api
 				}
 				else
 				{
-					lpszMenuName__ =
-						Marshal.StringToHGlobalAnsi(value);
+					if((GetVersion() & 0xC0000000) != 0)
+					{
+						// Windows 9x and less.							
+						lpszMenuName__ =
+							Marshal.StringToHGlobalAnsi(value);
+					}
+					else
+					{
+						lpszMenuName__ =
+							Marshal.StringToHGlobalUni(value);
+					}
 				}
 			}
 		}
@@ -508,8 +517,17 @@ internal class Api
 				}
 				else
 				{
-					lpszClassName__ =
-						Marshal.StringToHGlobalAnsi(value);
+					if((GetVersion() & 0xC0000000) != 0)
+					{
+						// Windows 9x and less.
+						lpszClassName__ =
+							Marshal.StringToHGlobalAnsi(value);
+					}
+					else
+					{
+						lpszClassName__ =
+							Marshal.StringToHGlobalUni(value);
+					}
 				}
 			}
 		}
@@ -710,7 +728,7 @@ internal class Api
 		}
 	}
 
-	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Ansi)]
+	[StructLayout(LayoutKind.Sequential,CharSet=CharSet.Auto)]
 	public struct TEXTMETRIC 
 	{ 
 		public int tmHeight; 
@@ -795,7 +813,7 @@ internal class Api
 
 	public delegate void TimerProc(IntPtr hwnd, uint uMsg, uint idEvent, uint dwTime);
 
-	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
+	[DllImport("user32", EntryPoint="RegisterClass", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern int RegisterClassA(ref WNDCLASS wc);
 
 	[DllImport("user32", EntryPoint="DefWindowProc", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
@@ -915,19 +933,19 @@ internal class Api
 	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern int GetSystemMetrics (SystemMetricsType nIndex);
 
-	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
+	[DllImport("user32", EntryPoint="SystemParametersInfo", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out RECT pvParam, uint fWinIni );
 
-	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
+	[DllImport("user32", EntryPoint="SystemParametersInfo", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, out int pvParam, uint fWinIni );
 		
-	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
+	[DllImport("user32", EntryPoint="SystemParametersInfo", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(SystemParametersAction uiAction, uint uiParam, [MarshalAs(UnmanagedType.Bool)] out bool pvParam, uint fWinIni );
 		
-	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
+	[DllImport("user32", EntryPoint="SystemParametersInfo", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	[return: MarshalAs(UnmanagedType.Bool)]
 	public static extern bool SystemParametersInfoA(uint uiAction, uint uiParam, ref NONCLIENTMETRICS pvParam,uint fWinIni);
 
@@ -972,7 +990,7 @@ internal class Api
 	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]
 	public static extern IntPtr SetCursor( IntPtr hCursor);
 		
-	[DllImport("user32", CallingConvention = CallingConvention.Winapi)] //ANSI
+	[DllImport("user32", EntryPoint="LoadCursor", CharSet=CharSet.Auto, ExactSpelling=false, CallingConvention = CallingConvention.Winapi)] //Auto
 	public static extern IntPtr LoadCursorA( IntPtr hInstance, CursorName lpCursorName);
 
 	[DllImport("user32", CallingConvention = CallingConvention.Winapi)]

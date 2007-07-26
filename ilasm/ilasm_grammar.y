@@ -686,6 +686,7 @@ static void FinishDataLabels()
 	ILInt16			genParAttrib;
 	ILIntString		strValue;
 	ILDouble		real;
+	char		   *quoteString;
 	struct {
 		ILUInt8		fbytes[4];
 		ILUInt8		dbytes[8];
@@ -1037,7 +1038,8 @@ static void FinishDataLabels()
  * Define the yylval types of the various non-terminals.
  */
 %type <integer>		INTEGER_CONSTANT HEX_BYTE
-%type <strValue>	SQUOTE_STRING DQUOTE_STRING ComposedString NativeType
+%type <quoteString> DQUOTE_STRING SQUOTE_STRING
+%type <strValue>	ComposedString NativeType
 %type <strValue>	QualifiedName Identifier MethodName IDENTIFIER Bytes
 %type <strValue>	SlashedName DOT_IDENTIFIER AssemblyName
 %type <real>		FLOAT_CONSTANT
@@ -1178,7 +1180,7 @@ LanguageDeclaration
 
 Identifier
 	: IDENTIFIER	{ $$ = $1; }
-	| SQUOTE_STRING	{ $$ = $1; }
+	| SQUOTE_STRING	{ $$ = ILAsmParseString($1); }
 	;
 
 Integer32
@@ -1293,9 +1295,11 @@ QualifiedName
 	;
 
 ComposedString
-	: DQUOTE_STRING	{ $$ = $1; }
+	: DQUOTE_STRING					{
+				$$ = ILAsmParseString($1);
+			}
 	| ComposedString '+' DQUOTE_STRING {
-				$$ = ILInternAppendedString($1, $3);
+				$$ = ILInternAppendedString($1, ILAsmParseString($3));
 			}
 	;
 
@@ -3596,16 +3600,20 @@ CallingConventions
 
 ExternalSourceSpecification
 	: D_LINE INTEGER_CONSTANT SQUOTE_STRING	{
-				ILAsmDebugLine((ILUInt32)($2), 0, $3.string);
+				ILAsmDebugLine((ILUInt32)($2), 0,
+							   ILInternString($3, -1).string);
 			}
 	| D_LINE INTEGER_CONSTANT ':' INTEGER_CONSTANT SQUOTE_STRING	{
-				ILAsmDebugLine((ILUInt32)($2), (ILUInt32)($4), $5.string);
+				ILAsmDebugLine((ILUInt32)($2), (ILUInt32)($4),
+							   ILInternString($5, -1).string);
 			}
 	| D_LINE INTEGER_CONSTANT DQUOTE_STRING	{
-				ILAsmDebugLine((ILUInt32)($2), 0, $3.string);
+				ILAsmDebugLine((ILUInt32)($2), 0,
+							   ILInternString($3, -1).string);
 			}
 	| D_LINE INTEGER_CONSTANT ':' INTEGER_CONSTANT DQUOTE_STRING	{
-				ILAsmDebugLine((ILUInt32)($2), (ILUInt32)($4), $5.string);
+				ILAsmDebugLine((ILUInt32)($2), (ILUInt32)($4),
+							   ILInternString($5, -1).string);
 			}
 	| D_LINE INTEGER_CONSTANT	{
 				ILAsmDebugLine((ILUInt32)($2), 0, ILAsmDebugLastFile);
@@ -4123,14 +4131,14 @@ ManifestResDeclaration
 SecurityDeclaration
 	: D_PERMISSION SecurityAction ClassName '(' NameValuePairs ')'
 	| D_CAPABILITY SecurityAction SQUOTE_STRING	{
-				ILIntString unicode = PackUnicodeString($3);
+				ILIntString unicode = PackUnicodeString(ILAsmParseString($3));
 				ILAsmSecurityCreate($2, unicode.string, unicode.len);
 			}
 	| D_CAPABILITY SecurityAction '=' Bytes		{
 				ILAsmSecurityCreate($2, $4.string, $4.len);
 			}
 	| D_PERMISSIONSET SecurityAction SQUOTE_STRING	{
-				ILIntString unicode = PackUnicodeString($3);
+				ILIntString unicode = PackUnicodeString(ILAsmParseString($3));
 				ILAsmSecurityCreate($2, unicode.string, unicode.len);
 			}
 	| D_PERMISSIONSET SecurityAction '=' Bytes	{

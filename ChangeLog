@@ -1,3 +1,14 @@
+2007-07-26  Klaus Treichel  <ktreichel@web.de>
+
+	* ilasm/ilasm_scanner.l, ilasm/ilasm_build.c: Move ParseString from
+	ilasm_scanner.l to ILAsmParseString.c in ilasm_build.c but remove the
+	quotes still in ilasm_scanner.l.
+
+	* ilasm/ilasm_build.h: Add the prototype for ILAsmParseString.
+
+	* ilasm/ilasm_grammar.y: Call ILAsmParseString in the places (Identifiers
+	and string constants) where control sequences have to be processed.
+
 2007-07-21  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_build.h, ilasm/ilasm_build.h: Add the functions for resolving

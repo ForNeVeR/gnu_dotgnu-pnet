@@ -144,6 +144,11 @@ void _ILAsmBuildPushScope(ILProgramItem *item);
 void ILAsmBuildPopScope(void);
 
 /*
+ * Parse a quoted string.
+ */
+ILIntString ILAsmParseString(char *text);
+
+/*
  * Split a string into name and namespace.
  */
 void ILAsmSplitName(const char *str, int len, const char **name,

@@ -112,87 +112,6 @@ static ILInt64 ParseOctInt(const char *text)
 }
 
 /*
- * Parse a quoted string.
- */
-static ILIntString ParseString(char *text, int *len)
-{
-	char *save = text;
-	char *out = text;
-	int ch, numDigits;
-	static char const escapes[] =
-			"\007\010cd\033\014ghijklm\012opq\015s\011u\013wxyz";
-
-	/* Remove the quote characters */
-	++text;
-	text[strlen(text) - 1] = '\0';
-
-	/* Collapse escape sequences in the string */
-	while(*text != '\0')
-	{
-		if(*text == '\\')
-		{
-			++text;
-			if(*text == '\0')
-			{
-				/* Truncated escape sequence */
-				break;
-			}
-			else if(*text == 'x')
-			{
-				/* Hex character */
-				++text;
-				ch = 0;
-				numDigits = 0;
-				while(numDigits < 2 && *text != '\0')
-				{
-					if(*text >= '0' && *text <= '9')
-						ch = ch * 16 + (*text++ - '0');
-					else if(*text >= 'A' && *text <= 'F')
-						ch = ch * 16 + (*text++ - 'A' + 10);
-					else if(*text >= 'a' && *text <= 'f')
-						ch = ch * 16 + (*text++ - 'a' + 10);
-					else
-						break;
-					++numDigits;
-				}
-				*out++ = (char)ch;
-			}
-			else if(*text >= 'a' && *text <= 'z')
-			{
-				/* Ordinary C-style escape */
-				*out++ = escapes[*text - 'a'];
-				++text;
-			}
-			else if(*text >= '0' && *text <= '7')
-			{
-				/* Octal character */
-				numDigits = 1;
-				ch = *text++ - '0';
-				while(numDigits < 3 && *text >= '0' && *text <= '7')
-				{
-					ch = ch * 8 + (*text++ - '0');
-					++numDigits;
-				}
-				*out++ = (char)ch;
-			}
-			else
-			{
-				/* Normal escaped character */
-				*out++ = *text++;
-			}
-		}
-		else
-		{
-			/* Normal character */
-			*out++ = *text++;
-		}
-	}
-
-	/* Internalise the string */
-	return ILInternString(save, (int)(out - save));
-}
-
-/*
  * Helper macros for returning opcodes of various types.
  */
 #define	OPCODE_NONE(name)	yylval.opcode = IL_OP_##name; \
@@ -1084,11 +1003,17 @@ SIGN			[+-]
 		}
 
 <INITIAL,JAVAMODE>'(\\.|[^\\'])*'		{
-			yylval.strValue = ParseString(yytext, &(yylval.strValue.len));
+			/* Remove the quote characters */
+			char *str = yytext + 1;
+			str[strlen(str) - 1] = '\0';
+			yylval.quoteString = str;
 			return SQUOTE_STRING;
 		}
 <INITIAL,JAVAMODE>\"(\\.|[^\\"])*\"		{
-			yylval.strValue = ParseString(yytext, &(yylval.strValue.len));
+			/* Remove the quote characters */
+			char *str = yytext + 1;
+			str[strlen(str) - 1] = '\0';
+			yylval.quoteString = str;
 			return DQUOTE_STRING;
 		}
 

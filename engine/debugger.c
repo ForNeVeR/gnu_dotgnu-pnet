@@ -1547,7 +1547,16 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 				name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
 												paramDebugIndex | 0x80000000);
 			}
-			DebuggerHelper_AddLocal(thread, name, type, watch->addr);
+			if(ILType_IsComplex(type) &&
+									ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
+			{
+				DebuggerHelper_AddLocal(thread, name, ILType_Ref(type),
+													*((void **)(watch->addr)));
+			}
+			else
+			{
+				DebuggerHelper_AddLocal(thread, name, type, watch->addr);
+			}
 			currentParam++;
 			paramDebugIndex++;
 		}

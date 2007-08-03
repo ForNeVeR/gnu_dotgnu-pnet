@@ -1,3 +1,7 @@
+2007-08-03  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Handle ref and out parameters.
+
 2007-07-26  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_scanner.l, ilasm/ilasm_build.c: Move ParseString from

@@ -1,5 +1,11 @@
 2007-08-03  Radek Polak  <psonek2@seznam.cz>
 
+	* engine/jitc.c: Added function ILJitPrintMethod that can be used from gdb
+	to print ILMethod at given pc. Works only when _IL_JIT_ENABLE_DEBUG is
+	enabled.
+
+2007-08-03  Radek Polak  <psonek2@seznam.cz>
+
 	* engine/debugger.c: Handle ref and out parameters.
 
 2007-07-26  Klaus Treichel  <ktreichel@web.de>

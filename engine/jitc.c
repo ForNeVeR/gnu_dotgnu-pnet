@@ -4484,6 +4484,76 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 
 #endif /* !IL_CONFIG_REDUCE_CODE */
 
+#ifdef _IL_JIT_ENABLE_DEBUG
+
+/*
+ * Print ILMethod at given pc.
+ * This function is used for printing stacktrace of jitted ILMethods in gdb.
+ * Do not use otherwise!
+ *
+ * Usage:
+ *
+ * 1/ When gdb stops you can use: p ILJitPrintMethod (0x1234567)
+ * where 0x1234567 is frame from bt command.
+ *
+ * 2/ add lines [1] to your ~/.gdbinit
+ * to define new command for printing stacktrace.
+ *
+ * iljit_bt 5 in stopped gdb prints method names in first 5 frames.
+ *
+ * [1]:
+
+ define iljit_bt
+ select-frame 0
+ set $i = 0
+ while ($i < $arg0)
+   set $foo = ILJitPrintMethod ($pc)
+   printf "#%d %s\n", $i, $foo
+   up-silently
+   set $i = $i + 1
+ end
+end
+
+ */
+char *ILJitPrintMethod(void *pc)
+{
+	ILExecThread *thread;
+	ILJITCoder *coder;
+	jit_function_t fn;
+	void *handler = 0;
+	ILMethod *method;
+	char *methodName;
+	char *className;
+	char *result;
+
+	thread = ILExecThreadCurrent();
+	if(thread == 0)
+	{
+		return "unable to get current thread";
+	}
+	coder = (ILJITCoder *)(thread->process->coder);
+	fn = jit_function_from_pc(coder->context, pc, &handler);
+	if(fn == 0)
+	{
+		return "function at given pc not found";
+	}
+	method = (ILMethod *)jit_function_get_meta(fn, IL_JIT_META_METHOD);
+	methodName = ILMethod_Name(method);
+	className = ILClass_Name(ILMethod_Owner(method));
+	result = (char *) ILMalloc(strlen(methodName) + strlen(className) + 2);
+	if(result)
+	{
+		sprintf(result, "%s.%s", className, methodName);
+		return result;
+	}
+	else
+	{
+		return "out of memory";
+	}
+}
+
+#endif /* _IL_JIT_ENABLE_DEBUG */
+
 #define	IL_JITC_FUNCTIONS
 #include "jitc_diag.c"
 #include "jitc_locals.c"

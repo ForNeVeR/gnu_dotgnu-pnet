@@ -1319,9 +1319,6 @@ internal sealed class NumberParser
 			s = tmp;
 		}
 
-		str = s.ToCharArray();
-		end = str.Length - 1;
-
 		// skip whitespaces and handle currency symbol and parenthesis
 		SkipWhiteSpace(ref str, nfi.CurrencySymbol, style, ref stridx, ref end,
 						 ref hasSign, ref negative, ref hasCurrency);
@@ -1673,7 +1670,7 @@ internal sealed class NumberParser
 				{
 					int currencyStart = end - currencySymbol.Length + 1;
 					// check for currencysymbol
-					if(currencyStart <= end)
+					if(currencyStart <= end && currencyStart >= 0)
 					{
 						hasCurrency = CheckString(ref str, currencySymbol,
 													ref currencyStart, end);

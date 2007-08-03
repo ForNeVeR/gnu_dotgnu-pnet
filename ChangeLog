@@ -1,3 +1,8 @@
+2007-08-03  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/Private/NumberParser.cs: Fix index out of range while doing
+	decimal.Parse("1") with currency Kc. Removed two duplicate lines.
+
 2007-07-23  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Drawing.Win32/Win32.cs: Set CharSet.Auto for all pinvokes. This

@@ -53,6 +53,37 @@ static void Dump_PInvoke(FILE *outstream, ILPInvoke *pinvoke, ILMember *member)
 }
 
 /*
+ * Dump custom attributes for generic parameters
+ */
+static void Dump_GenericParCustomAttrs(ILImage *image, FILE *outstream,
+									   int flags, int indent,
+									   ILProgramItem *owner)
+{
+	ILUInt32 numGenericParams = ILGenericParGetNumParams(owner);
+	ILUInt32 current = 0;
+
+	for(current = 0; current < numGenericParams; current++)
+	{
+		ILGenericPar *genPar = ILGenericParGetFromOwner(owner, current);
+
+		if(ILProgramItemNextAttribute(ILToProgramItem(genPar), 0) != 0)
+		{
+			if(indent == 1)
+			{
+				fputs("\t", outstream);
+			}
+			else if(indent == 2)
+			{
+				fputs("\t\t", outstream);
+			}
+			fprintf(outstream, ".param type[%X]\n", current + 1);
+			ILDAsmDumpCustomAttrs(image, outstream, flags, indent,
+								  ILToProgramItem(genPar));
+		}
+	}
+}
+
+/*
  * Dump a method definition.
  */
 static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
@@ -117,6 +148,10 @@ static void Dump_MethodDef(ILImage *image, FILE *outstream, int flags,
 		ILDumpIdentifier(outstream, ILMethod_Name(decl), 0, flags);
 		putc('\n', outstream);
 	}
+
+	/* Dump the custom attributes for the generic parameters if present */
+	Dump_GenericParCustomAttrs(image, outstream, flags, 2,
+							   ILToProgramItem(method));
 
 	/* If we have an RVA, then we need to dump the method's contents */
 	if(rva && (flags & ILDASM_NO_IL) == 0)
@@ -462,6 +497,10 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 			ILDAsmDumpCustomAttrs(image, outstream, flags, 1,
 								  ILToProgramItem(info));
 		}
+
+		/* Dump the custom attributes for the generic parameters if present */
+		Dump_GenericParCustomAttrs(image, outstream, flags, 1,
+								   ILToProgramItem(info));
 	}
 	else
 	{

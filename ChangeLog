@@ -1,3 +1,8 @@
+2007-08-13  Klaus Treichel  <ktreichel@web.de>
+
+	* dumpasm/dump_class.c: Add dumping custom attributes for generic
+	parameters.
+
 2007-08-03  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/jitc.c: Added function ILJitPrintMethod that can be used from gdb

@@ -1,3 +1,13 @@
+2007-08-15  Klaus Treichel  <ktreichel@web.de>
+
+	* image/program.h: Add the member refInfo to the ILTypeSpec. The
+	refInfo references the generic type instanciated by the TypeSpec.
+
+	* image/misc_token.c: Create a synthetic wrapper class around a
+	TypeSpec in ILTypeSpecGetClass which is used as owner of members
+	accessed in generic types. Use the refInfo in ILTypeSpecGetClassRef to
+	store the referenced generic class.
+
 2007-08-13  Klaus Treichel  <ktreichel@web.de>
 
 	* dumpasm/dump_class.c: Add dumping custom attributes for generic

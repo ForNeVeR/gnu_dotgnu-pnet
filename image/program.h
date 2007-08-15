@@ -512,6 +512,7 @@ struct _tagILTypeSpec
 	ILType		   *type;				/* Type associated with the TypeSpec */
 	ILUInt32		typeBlob;			/* Index into blob heap of the type */
 	ILClass		   *classInfo;			/* Class block for the TypeSpec */
+	ILClass		   *refInfo;			/* Class referenced by the TypeSpec */
 
 };
 

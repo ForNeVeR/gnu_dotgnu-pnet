@@ -4189,7 +4189,8 @@ ILJitFunction ILJitFunctionFromILMethod(ILMethod *method)
  */
 static ILJitType _ILJitTypeSpecials(ILClassName *className)
 {
-	if(className->namespace && !strcmp(className->namespace, "System"))
+	if(className && className->namespace &&
+	   !strcmp(className->namespace, "System"))
 	{
 		if(!strcmp(className->name, "IntPtr"))
 		{

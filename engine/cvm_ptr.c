@@ -84,6 +84,12 @@ static int CanCastClass(ILImage *image, ILClass *fromClass, ILClass *toClass)
 			return ILTypeAssignCompatibleNonBoxing
 			  (image, ILTypeGetElemType(fromType), ILTypeGetElemType(toType));
 		}
+		else if(ILType_IsWith(fromType) && ILType_IsWith(toType))
+		{
+			/* TODO: perform a real check of assignment compatibility as
+			   described in ECMA 334 Version 4 Partition I 8.7 */
+			return ILTypeIdentical(fromType, toType);
+		}
 		else
 		{
 			return 0;

@@ -929,9 +929,9 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 											 boxClass);
 		value = jit_insn_load_relative(jitCoder->jitFunction, ptr, 0, jitType);
 	}
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	else
 	{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 		if (jitCoder->flags & IL_CODER_FLAG_STATS)
 		{
 			ILMutexLock(globalTraceMutex);
@@ -941,9 +941,9 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 				size);
 			ILMutexUnlock(globalTraceMutex);
 		}
+#endif
 		value = _ILJitStackItemValue(stackItem);
 	}
-#endif
 
 	/* Allocate the object. */
 	newObj = _ILJitAllocObjectGen(jitCoder->jitFunction, boxClass);
@@ -959,6 +959,41 @@ static void JITCoder_Box(ILCoder *coder, ILClass *boxClass,
 
 	/* and push the boxed object onto the stack. */
 	_ILJitStackPushNotNullValue(jitCoder, newObj);
+}
+
+static void JITCoder_BoxPtr(ILCoder *coder, ILClass *boxClass,
+							ILUInt32 size, ILUInt32 pos)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitStackItem *stackItem;
+	ILJitValue ptr;
+	ILJitValue newObj;
+	ILJitValue jitSize = jit_value_create_nint_constant(jitCoder->jitFunction,
+														_IL_JIT_TYPE_NINT,
+														(jit_nint)size);
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+				"BoxPtr: %s Size: %i\n", 
+				ILClass_Name(boxClass),
+				size);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	stackItem = _ILJitStackItemGetTop(jitCoder, pos);
+	ptr = _ILJitStackItemValue(*stackItem);
+
+	/* Allocate the object. */
+	newObj = _ILJitAllocObjectGen(jitCoder->jitFunction, boxClass);
+
+	/* replace the pointer on the stack with the boxed value. */
+	_ILJitStackItemInitWithNotNullValue(*stackItem, newObj);
+
+	/* and copy the value to the boxed representation */
+	_ILJitStackItemMemCpy(jitCoder, *stackItem, ptr, jitSize);
 }
 
 static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,

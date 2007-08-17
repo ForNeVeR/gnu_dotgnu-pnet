@@ -1046,6 +1046,21 @@ static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	}
 }
 
+static void CVMCoder_BoxPtr(ILCoder *coder, ILClass *boxClass,
+							ILUInt32 size, ILUInt32 pos)
+{
+	if(pos == 0)
+	{
+		CVM_OUT_WIDE_PTR(COP_BOX_PTR, size, boxClass);
+	}
+	else
+	{
+		CVM_OUT_WIDE(COP_DUP_WORD_N, pos);
+		CVM_OUT_WIDE_PTR(COP_BOX_PTR, size, boxClass);
+		CVMP_OUT_WORD(COP_PREFIX_REPL_WORD_N, pos+1);		
+	}
+}
+
 static void CVMCoder_Unbox(ILCoder *coder, ILClass *boxClass)
 {
 	/* We don't have to do anything here: the object reference

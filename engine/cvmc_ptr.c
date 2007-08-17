@@ -537,6 +537,23 @@ static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
 }
 
 /*
++ * Handle a pointer indirection opcode.
++ */
+void CVMCoder_PtrDeref(ILCoder *coder, int pos)
+{
+	if(pos == 0)
+	{
+		CVMCoder_PtrAccess(coder, IL_OP_LDIND_REF);
+	}
+	else
+	{
+		CVM_OUT_WIDE(COP_DUP_WORD_N, pos);
+		CVMCoder_PtrAccess(coder, IL_OP_LDIND_REF);
+		CVMP_OUT_WORD(COP_PREFIX_REPL_WORD_N, pos+1);
+	}
+}
+
+/*
  * Handle a pointer indirection opcode for a managed value.
  */
 static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,

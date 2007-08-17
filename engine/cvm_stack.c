@@ -436,4 +436,29 @@ VMCASE(COP_PREFIX_LOCAL_ALLOC):
 }
 VMBREAK(COP_PREFIX_LOCAL_ALLOC);
 
+/**
+ * <opcode name="repl_word_n" group="Stack manipulation">
+ *   <operation>Replace a stack word that is <i>N</i> words
+ *				down the stack with the value at top of the stack</operation>
+ *
+ *   <format>prefix<fsep/>repl_word_n</format>
+ *   <dformat>{repl_word_n}</dformat>
+ *
+ *   <form name="repl_word_n" code="COP_REPL_WORD_N"/>
+ *
+ *   <before>..., value, word1, ..., wordN-1, wordN</before>
+ *   <after>..., wordN, word1, ..., wordN-1</after>
+ *
+ *   <description>Replace the <i>value</i> that is <i>N</i> words
+ *   down the stack with the value on top of the stack and then pop stack.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_REPL_WORD_N):
+{
+	tempNum = ((ILInt32)CVMP_ARG_WORD) + 1;
+	stacktop[-tempNum] = stacktop[-1];
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, -1);
+}
+VMBREAK(COP_PREFIX_REPL_WORD_N);
+
 #endif /* IL_CVM_PREFIX */

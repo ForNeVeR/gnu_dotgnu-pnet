@@ -464,6 +464,15 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 			return;
 		}
 		jitFunction = ILJitFunctionFromILMethod(methodInfo);
+		if(!jitFunction)
+		{
+			/* This can be a generic method instance. */
+			if(!ILJitFunctionCreate(ILExecThreadCurrent()->process->coder, methodInfo))
+			{
+				return;
+			}
+			jitFunction = ILJitFunctionFromILMethod(methodInfo);
+		}
 	}
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
@@ -986,6 +995,15 @@ static void JITCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 			return;
 		}
 		func = ILJitFunctionFromILMethod(methodInfo);
+		if(!func)
+		{
+			/* This can be a generic method instance. */
+			if(!ILJitFunctionCreate(ILExecThreadCurrent()->process->coder, methodInfo))
+			{
+				return;
+			}
+			func = ILJitFunctionFromILMethod(methodInfo);
+		}
 	}
 
 #ifdef IL_JIT_THREAD_IN_SIGNATURE

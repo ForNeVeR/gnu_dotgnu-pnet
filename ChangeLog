@@ -1,3 +1,42 @@
+2007-08-17  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+
+	* engine/cvm.h: Define the new cvm opcode COP_PREFIX_REPL_WORD_N to
+	replace a word on the stack with the stacktop.
+
+	* engine/cvm_ptr.c: Handle generic types in CanCastClass.
+
+	* engine/cvm_stack.c: Implement the new cvm opcode COP_PREFIX_REPL_WORD_N.
+
+	* engine/cvmc.c: Add the new coder functions PtrDeref and BoxPtr to the
+	cvm coder structure.
+
+	* engine/cvmc_obj.c: Add the function CVMCoder_BoxPtr to box a value
+	referenced by a pointer somewhere on the stack and replace the reference
+	with the boxed valuetype.
+
+	* engine/cvmc_ptr.c: Add the function CVMCoder_PtrDeref to dereference a
+	pointer somewhere on the stack.
+
+	* engine/jitc.c: Handle creation of jitFunctions for instanciations of
+	generic methods. Add the new coder functions PtrDeref and BoxPtr to the
+	jit coder structure.
+
+	* engine/jitc_call.c: Handle creation of jitFunctions for instanciations of
+	generic methods.
+
+	* engine/jitc_obj.c: Add the function JITCoder_BoxPtr to box a value
+	referenced by a pointer somewhere on the stack and replace the reference
+	with the boxed valuetype.
+
+	* engine/jitc_ptr.c: Add the function JITCoder_PtrDeref to dereference a
+	pointer somewhere on the stack.
+
+	* engine/null_coder.c: Add the new coder functions PtrDeref and BoxPtr to
+	the null coder structure and the stubs for the new functions.
+
+	* include/il_coder.h:  Add the new coder functions PtrDeref and BoxPtr to
+	the coder structure and the helper macros for the new functions.
+
 2007-08-15  Klaus Treichel  <ktreichel@web.de>
 
 	* image/program.h: Add the member refInfo to the ILTypeSpec. The
@@ -169,7 +208,7 @@
 	* image/meta_writer.c: Add a function to sort the generic parameters.
 	Set the major metadata version to 2 if the IL_VERSION_MAJOR is > 1.
 
-2007-07-01  Ivan de Jesus Daras Tabora  <ideras@gmail.com>
+2007-07-01  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
 
 	* csdoc/il2doc.c: Replace the code for printing the generic parameters
 	with a call to ILAsmDumpGenericParams.

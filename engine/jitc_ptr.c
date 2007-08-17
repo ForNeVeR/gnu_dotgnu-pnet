@@ -238,6 +238,40 @@ static void JITCoder_PtrAccess(ILCoder *coder, int opcode)
 }
 
 /*
+ * Handle a pointer indirection opcode.
+ */
+static void JITCoder_PtrDeref(ILCoder *coder, int pos)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+	ILJitStackItem *stackItem;
+	ILJitValue obj;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	if (jitCoder->flags & IL_CODER_FLAG_STATS)
+	{
+		ILMutexLock(globalTraceMutex);
+		fprintf(stdout,
+				"PtrDeref: %i\n",
+				pos);
+		ILMutexUnlock(globalTraceMutex);
+	}
+#endif
+	stackItem = _ILJitStackItemGetTop(jitCoder, pos);
+
+	/* Do a check for Null even if this shouldn't be needed here. */
+	_ILJitStackItemCheckNull(jitCoder, *stackItem);
+
+	/* Dereference the pointer */
+	obj = jit_insn_load_relative(jitCoder->jitFunction,
+								 _ILJitStackItemValue(*stackItem),
+								 (jit_nint)0,
+								 _IL_JIT_TYPE_VPTR);
+
+	/* And replace the pointer with the dereferenced object reference. */
+	_ILJitStackItemInitWithValue(*stackItem, obj);
+}
+
+/*
  * Handle a pointer indirection opcode for a managed value.
  */
 static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,

@@ -1637,6 +1637,12 @@ ILInt32 ILRuntimeCanCastClass(ILMethod *method, ILObject *object, ILClass *toCla
 			return ILTypeAssignCompatibleNonBoxing
 			  (image, ILTypeGetElemType(fromType), ILTypeGetElemType(toType));
 		}
+		else if(ILType_IsWith(fromType) && ILType_IsWith(toType))
+		{
+			/* TODO: perform a real check of assignment compatibility as
+			   described in ECMA 334 Version 4 Partition I 8.7 */
+			return ILTypeIdentical(fromType, toType);
+		}
 		else
 		{
 			return 0;
@@ -4141,6 +4147,15 @@ int ILJitCallMethod(ILExecThread *thread, ILMethod *method, void **jitArgs, void
 			return 0;
 		}
 		jitFunction = ILJitFunctionFromILMethod(method);
+		if(!jitFunction)
+		{
+			/* This can be a generic method instance. */
+			if(!ILJitFunctionCreate(thread->process->coder, method))
+			{
+				return 0;
+			}
+			jitFunction = ILJitFunctionFromILMethod(method);
+		}
 	}
 
 	if(!jit_function_apply(jitFunction, jitArgs, result))
@@ -4620,6 +4635,7 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_Pop,
 	JITCoder_ArrayAccess,
 	JITCoder_PtrAccess,
+	JITCoder_PtrDeref,
 	JITCoder_PtrAccessManaged,
 	JITCoder_Branch,
 	JITCoder_SwitchStart,
@@ -4644,6 +4660,7 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_InitObject,
 	JITCoder_InitBlock,
 	JITCoder_Box,
+	JITCoder_BoxPtr,
 	JITCoder_BoxSmaller,
 	JITCoder_Unbox,
 	JITCoder_MakeTypedRef,

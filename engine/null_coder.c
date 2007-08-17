@@ -133,6 +133,9 @@ static void Coder_ArrayAccess(ILCoder *coder, int opcode,
 static void Coder_PtrAccess(ILCoder *coder, int opcode)
 {
 }
+static void Coder_PtrDeref(ILCoder *coder, int pos)
+{
+}
 static void Coder_PtrAccessManaged(ILCoder *coder, int opcode,
 								   ILClass *classInfo)
 {
@@ -224,6 +227,10 @@ static void Coder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 }
 static void Coder_Box(ILCoder *coder, ILClass *boxClass,
 					  ILEngineType valueType, ILUInt32 size)
+{
+}
+static void Coder_BoxPtr(ILCoder *coder, ILClass *boxClass,
+					     ILUInt32 size, ILUInt32 pos)
 {
 }
 static void Coder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
@@ -463,6 +470,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_Pop,
 	Coder_ArrayAccess,
 	Coder_PtrAccess,
+	Coder_PtrDeref,
 	Coder_PtrAccessManaged,
 	Coder_Branch,
 	Coder_SwitchStart,
@@ -487,6 +495,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_InitObject,
 	Coder_InitBlock,
 	Coder_Box,
+	Coder_BoxPtr,
 	Coder_BoxSmaller,
 	Coder_Unbox,
 	Coder_MakeTypedRef,

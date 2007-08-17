@@ -335,6 +335,11 @@ struct _tagILCoderClass
 	void (*ptrAccess)(ILCoder *coder, int opcode);
 
 	/*
+	 * Access a value by dereferencing a pointer at the specified position.
+	 */
+	void (*ptrDeref)(ILCoder *coder, int pos);
+
+	/*
 	 * Access a managed value by dereferencing a pointer.
 	 */
 	void (*ptrAccessManaged)(ILCoder *coder, int opcode,
@@ -492,6 +497,11 @@ struct _tagILCoderClass
 	void (*box)(ILCoder *coder, ILClass *boxClass,
 				ILEngineType valueType, ILUInt32 size);
 
+	/*
+	 * Box a ptr value which is already in its natural representation.
+	 */
+	void (*boxPtr)(ILCoder *coder, ILClass *boxClass,
+				   ILUInt32 size, ILUInt32 pos);
 	/*
 	 * Box a value which needs to be converted into a smaller
 	 * representation before being copied to the final object.
@@ -912,6 +922,8 @@ struct _tagILCoderClass
 #define	ILCoderArrayAccess(coder,opcode,itype,etype)	\
 			((*((coder)->classInfo->arrayAccess))((coder), (opcode), \
 												  (itype), (etype)))
+#define	ILCoderPtrDeref(coder,pos)	\
+			((*((coder)->classInfo->ptrDeref))((coder), (pos)))
 #define	ILCoderPtrAccess(coder,opcode)	\
 			((*((coder)->classInfo->ptrAccess))((coder), (opcode)))
 #define	ILCoderPtrAccessManaged(coder,opcode,_classInfo)	\
@@ -981,6 +993,9 @@ struct _tagILCoderClass
 #define	ILCoderBox(coder,boxClass,valueType,size) \
 			((*((coder)->classInfo->box))((coder), (boxClass), \
 										  (valueType), (size)))
+#define	ILCoderBoxPtr(coder,boxClass,size,pos) \
+			((*((coder)->classInfo->boxPtr))((coder), (boxClass), \
+										     (size), (pos)))
 #define	ILCoderBoxSmaller(coder,boxClass,valueType,smallerType) \
 			((*((coder)->classInfo->boxSmaller))((coder), (boxClass), \
 										         (valueType), (smallerType)))

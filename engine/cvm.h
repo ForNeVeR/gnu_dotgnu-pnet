@@ -577,6 +577,11 @@ extern	"C" {
 #define COP_PREFIX_UNROLL_STACK_RETURN		0x8C
 
 /*
+* Replace a word in the stack.
+*/
+#define COP_PREFIX_REPL_WORD_N			0x8D
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

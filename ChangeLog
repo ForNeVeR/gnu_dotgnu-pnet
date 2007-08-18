@@ -1,3 +1,18 @@
+2007-08-18  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+
+	* engine/verify.c: Add the check for generic types in IsObjectRef. Add
+	the local constraintType to handle the constrained prefix.
+
+	* engine/verify_call.c: Add support for the constrained prefix.
+
+	* engine/verify_obj.c: Add the function BoxPtr to box a valuetype
+	referenced by a pointer somewhere on the stack.
+
+	* engine/verify_ptr.c: Add support for the LDELEM opcode.
+
+	* include/il_coder.h: Swap the definition of two macros to match the order
+	in the coder struct.
+
 2007-08-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_stack.c: Fix the opcode COP_PREFIX_REPL_WORD_N on x86_64

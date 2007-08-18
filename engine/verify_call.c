@@ -1984,15 +1984,83 @@ case IL_OP_RET:
 }
 break;
 
+case IL_OP_PREFIX + IL_PREFIX_OP_CONSTRAINED:
+{	
+	classInfo = GetClassToken(method, pc);
+	if (classInfo)
+	{		
+		constraintType = ILClassToType(classInfo);
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+	/* TODO: Verify that next instruction is callvirt */
+}
+break;
+
 case IL_OP_CALLVIRT:
 {
 	/* Call a virtual or interface method */
 	methodInfo = GetMethodToken(_ILExecThreadProcess(thread), method, pc, &methodSignature);
 	if(methodInfo)
 	{
+		ILType *_constraintType = constraintType;
+		
+		constraintType = 0;
 		classInfo = ILMethod_Owner(method);
 		if(ILMemberAccessible((ILMember *)methodInfo, classInfo))
 		{
+			if(_constraintType)
+			{
+				ILEngineStackItem *item;
+				numParams = ILTypeNumParams(methodSignature);
+				item = &(stack[stackSize - numParams - 1]);
+				if ((item->engineType == ILEngineType_M ||
+					item->engineType == ILEngineType_T) &&
+					ILTypeIdentical(_constraintType, item->typeInfo))
+				{
+					ILClass *thisClass = ILClassFromType(ILProgramItem_Image(method),
+														 0, _constraintType, 0);
+
+					if(!ILClassIsValueType(thisClass))
+					{
+						ILCoderPtrDeref(coder, numParams);
+						item->engineType = ILEngineType_O;
+						item->typeInfo = ILType_FromClass(thisClass);
+					}
+					else
+					{
+						ILMember *member = ILClassNextMemberMatch(thisClass, 0,
+																  IL_META_MEMBERKIND_METHOD,
+																  ILMethod_Name(methodInfo),
+																  ILMethod_Signature(methodInfo));
+						if (member)
+						{
+							methodInfo = (ILMethod *)member;
+							item->engineType = ILEngineType_M;
+							item->typeInfo = _constraintType;
+						}
+						else
+						{
+							if(BoxPtr(_ILExecThreadProcess(thread), 
+									  _constraintType, thisClass, numParams))
+							{
+								item->engineType = ILEngineType_O;
+								item->typeInfo = ILType_FromClass(thisClass);
+							}
+							else
+							{
+								VERIFY_TYPE_ERROR();
+							}
+						}
+					}
+				}
+				else
+				{
+					VERIFY_TYPE_ERROR();
+				}
+			}
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
@@ -2009,7 +2077,8 @@ case IL_OP_CALLVIRT:
 				{
 					stack[stackSize].engineType = ILEngineType_Invalid;
 				}
-				if(!ILMethod_IsVirtual(methodInfo))
+				if(!ILMethod_IsVirtual(methodInfo) ||
+				   (_constraintType && ILType_IsPrimitive(_constraintType)))
 				{
 					goto callNonvirtualFromVirtual;
 				}

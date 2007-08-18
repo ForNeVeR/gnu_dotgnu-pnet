@@ -329,6 +329,32 @@ VERIFY_STIND(I,  ILType_Int,     ILEngineType_I);
 VERIFY_STIND(R4, ILType_Float32, ILEngineType_F);
 VERIFY_STIND(R8, ILType_Float64, ILEngineType_F);
 
+case IL_OP_LDELEM:
+{
+	classType = GetTypeToken(method, pc);
+	if(STK_BINARY_1 == ILEngineType_O)
+	{
+		elemType = ArrayElementType(stack[stackSize - 2].typeInfo);
+
+		if(elemType && ILTypeIdentical(classType, elemType))
+		{
+			ILCoderArrayAccess(coder, IL_OP_LDELEM, STK_BINARY_2, elemType);
+			STK_BINARY_1 = TypeToEngineType(elemType);
+			STK_TYPEINFO_1 = elemType;
+			--stackSize;
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
 case IL_OP_LDIND_REF:
 {
 	/* Load an object reference from a pointer */

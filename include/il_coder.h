@@ -922,10 +922,10 @@ struct _tagILCoderClass
 #define	ILCoderArrayAccess(coder,opcode,itype,etype)	\
 			((*((coder)->classInfo->arrayAccess))((coder), (opcode), \
 												  (itype), (etype)))
-#define	ILCoderPtrDeref(coder,pos)	\
-			((*((coder)->classInfo->ptrDeref))((coder), (pos)))
 #define	ILCoderPtrAccess(coder,opcode)	\
 			((*((coder)->classInfo->ptrAccess))((coder), (opcode)))
+#define	ILCoderPtrDeref(coder,pos)	\
+			((*((coder)->classInfo->ptrDeref))((coder), (pos)))
 #define	ILCoderPtrAccessManaged(coder,opcode,_classInfo)	\
 			((*((coder)->classInfo->ptrAccessManaged))((coder), (opcode), \
 													   (_classInfo)))

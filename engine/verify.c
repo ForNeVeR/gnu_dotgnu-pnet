@@ -269,6 +269,10 @@ static int IsObjectRef(ILType *type)
 	{
 		return 1;
 	}
+	else if(ILType_IsWith(type))
+	{
+		return IsObjectRef(ILTypeGetWithMain(type));
+	}
 	else
 	{
 		return 0;
@@ -665,6 +669,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	int coderFlags;
 	unsigned int tryInlineOpcode;
 	unsigned char *tryInlinePc;
+	ILType *constraintType;
 #ifdef IL_CONFIG_DEBUG_LINES
 	int haveDebug = ILDebugPresent(ILProgramItem_Image(method));
 #else
@@ -701,6 +706,7 @@ restart:
 	labelList = 0;
 	hasRethrow = 0;
 	isReadOnly = 0;
+	constraintType = 0;
 
 	/* Initialize the memory allocator that is used for temporary
 	   allocation during bytecode verification */

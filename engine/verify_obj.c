@@ -185,6 +185,31 @@ static int BoxValue(ILExecProcess *process, ILEngineType valueType,
 }
 
 /*
+ * Process a "box" operation on a value.  Returns zero if
+ * invalid parameters.
+ */
+static int BoxPtr(ILExecProcess *process, ILType *typeInfo, 
+				  ILClass *boxClass, ILUInt32 pos)
+{
+	ILUInt32 size;
+	ILType *rawType;
+
+	/* Determine the raw version of the boxing type */
+	rawType = ILTypeGetEnumType(ILClassToType(boxClass));
+
+	/* Get the size of the value type */
+	size = _ILSizeOfTypeLocked(process, rawType);
+
+	if(ILTypeIdentical(typeInfo, ILClassToType(boxClass)))
+	{
+		ILCoderBoxPtr(process->coder, boxClass, size, pos);
+		return 1;
+	}
+
+	return 0;
+}
+
+/*
  * Get a particular system value type.
  */
 static ILType *GetSystemValueType(ILMethod *method, const char *name)

@@ -455,8 +455,7 @@ VMBREAK(COP_PREFIX_LOCAL_ALLOC);
  */
 VMCASE(COP_PREFIX_REPL_WORD_N):
 {
-	tempNum = ((ILInt32)CVMP_ARG_WORD) + 1;
-	stacktop[-tempNum] = stacktop[-1];
+	stacktop[-(((ILInt32)CVMP_ARG_WORD) + 1)] = stacktop[-1];
 	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, -1);
 }
 VMBREAK(COP_PREFIX_REPL_WORD_N);

@@ -1,3 +1,8 @@
+2007-08-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_stack.c: Fix the opcode COP_PREFIX_REPL_WORD_N on x86_64
+	systems.
+
 2007-08-17  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
 
 	* engine/cvm.h: Define the new cvm opcode COP_PREFIX_REPL_WORD_N to

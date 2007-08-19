@@ -806,7 +806,7 @@ char *ILTypeToName(ILType *type)
 	}
 	else
 	{
-		switch(type->kind__)
+		switch(ILType_Kind(type))
 		{
 			case IL_TYPE_COMPLEX_PTR:
 			{

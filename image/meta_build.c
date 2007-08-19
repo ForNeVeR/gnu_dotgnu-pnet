@@ -3329,6 +3329,31 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
 		return IL_LOADERR_BAD_META;
 	}
 
+	/* See if we already have a definition using this name */
+	info = ILClassLookup(scope, name, namespace);
+	if(info)
+	{
+		if(!ILClassIsRef(info))
+		{
+			META_VAL_ERROR("type defined multiple times");
+			return IL_LOADERR_BAD_META;
+		}
+	}
+
+	/* Create the class, which will convert the reference if necessary */
+	info = ILClassCreate(scope, token, name, namespace, 0);
+	if(!info)
+	{
+		return IL_LOADERR_MEMORY;
+	}
+	/* 
+	   Note: We create the class before loading its parent because the 
+	   class itself can be used as part of the parent class. This can happen
+	   when the parent class is generic. Ex.
+	   class P<T> {}
+	   class E: P<E> {}
+     */
+
 	/* Locate the parent class */
 	if(values[IL_OFFSET_TYPEDEF_PARENT])
 	{
@@ -3361,23 +3386,8 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
 		parent = 0;
 	}
 
-	/* See if we already have a definition using this name */
-	info = ILClassLookup(scope, name, namespace);
-	if(info)
-	{
-		if(!ILClassIsRef(info))
-		{
-			META_VAL_ERROR("type defined multiple times");
-			return IL_LOADERR_BAD_META;
-		}
-	}
-
-	/* Create the class, which will convert the reference if necessary */
-	info = ILClassCreate(scope, token, name, namespace, parent);
-	if(!info)
-	{
-		return IL_LOADERR_MEMORY;
-	}
+	/* Set the class parent */
+	info->parent = parent;
 
 	/* Set the attributes for the class */
 	ILClassSetAttrs(info, ~0, values[IL_OFFSET_TYPEDEF_ATTRS]);

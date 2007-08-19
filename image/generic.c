@@ -511,7 +511,7 @@ ILType *ILTypeInstantiate(ILContext *context, ILType *type,
 			if(inner)
 			{
 				inner = ILTypeInstantiate
-					(context, type, classParams, methodParams);
+					(context, inner, classParams, methodParams);
 				if(!inner)
 				{
 					return ILType_Invalid;
@@ -524,10 +524,10 @@ ILType *ILTypeInstantiate(ILContext *context, ILType *type,
 			}
 			newType->kind__ = type->kind__;
 			num = ILTypeNumParams(type);
-			for(posn = 0; posn < num; ++posn)
+			for(posn = 1; posn <= num; ++posn)
 			{
-				inner = ILTypeInstantiate(context, ILTypeGetParamWithPrefixes
-														(type, posn),
+				inner = ILTypeInstantiate(context,
+										  ILTypeGetParamWithPrefixes(type, posn),
 										  classParams, methodParams);
 				if(!inner || !ILTypeAddParam(context, newType, inner))
 				{

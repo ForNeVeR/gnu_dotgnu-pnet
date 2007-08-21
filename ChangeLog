@@ -1,3 +1,11 @@
+2007-08-20  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+
+	* image/meta_types.c: Bug fixed in function ILTypeToName that prevented
+	methods signature to be converted to string.
+
+	* image/class.c: Change in Load_TypeDef function to register the class
+	before its parent is loaded.  Read note in the function for further details.
+
 2007-08-18  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
 
 	* engine/verify.c: Add the check for generic types in IsObjectRef. Add

@@ -317,8 +317,8 @@ break;
 case IL_OP_BOX:
 {
 	/* Box a value into an object */
-	classInfo = GetValueTypeToken(method, pc);
-	if(classInfo)
+	classInfo = GetClassToken(method, pc);
+	if(classInfo && ILClassIsValueType(classInfo))
 	{
 		if(BoxValue(_ILExecThreadProcess(thread), stack[stackSize - 1].engineType,
 					stack[stackSize - 1].typeInfo, classInfo))
@@ -331,7 +331,7 @@ case IL_OP_BOX:
 			VERIFY_TYPE_ERROR();
 		}
 	}
-	else
+	else if(!classInfo)
 	{
 		VERIFY_TYPE_ERROR();
 	}

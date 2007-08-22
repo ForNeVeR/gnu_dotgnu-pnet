@@ -96,6 +96,82 @@ static ILType *ArrayElementType(ILType *type)
 	}
 }
 
+#define LDELEM_PRIMITIVE_TYPE(name) case IL_META_ELEMTYPE_##name: return IL_OP_LDELEM_##name
+#define LDELEM_PRIMITIVE_TYPE_OPCODE(name, opcode) case IL_META_ELEMTYPE_##name: return IL_OP_LDELEM_##opcode
+
+/*
+ * Return the corresponding LD_ELEM_* opcode corresponding to the type.
+ */
+static int TypeToLdElemOpcode(ILType *type)
+{
+	type = ILTypeGetEnumType(type);
+	if(ILType_IsPrimitive(type))
+	{
+		switch(ILType_ToElement(type))
+		{
+			LDELEM_PRIMITIVE_TYPE_OPCODE(BOOLEAN, I1);
+			LDELEM_PRIMITIVE_TYPE(I1);
+			LDELEM_PRIMITIVE_TYPE(U1);
+			LDELEM_PRIMITIVE_TYPE(I2);
+			LDELEM_PRIMITIVE_TYPE(U2);
+			LDELEM_PRIMITIVE_TYPE_OPCODE(CHAR, U2);
+			LDELEM_PRIMITIVE_TYPE(I4);
+			LDELEM_PRIMITIVE_TYPE(U4);
+			LDELEM_PRIMITIVE_TYPE(I8);
+			LDELEM_PRIMITIVE_TYPE(I);
+			LDELEM_PRIMITIVE_TYPE(R4);
+			LDELEM_PRIMITIVE_TYPE(R8);
+		}
+		return IL_OP_NOP;
+	}
+	else if(ILType_IsValueType(type))
+	{
+		return IL_OP_LDELEMA;
+	}
+	else if(ILType_IsClass(type))
+	{
+		return IL_OP_LDELEM_REF;
+	}
+	
+	return IL_OP_NOP;
+}
+
+#define STELEM_PRIMITIVE_TYPE(name) case IL_META_ELEMTYPE_##name: return IL_OP_STELEM_##name
+#define STELEM_PRIMITIVE_TYPE_OPCODE(name, opcode) case IL_META_ELEMTYPE_##name: return IL_OP_STELEM_##opcode
+
+/*
+ * Return the corresponding ST_ELEM_* opcode corresponding to the type.
+ */
+static int TypeToStElemOpcode(ILType *type)
+{
+	type = ILTypeGetEnumType(type);
+	if(ILType_IsPrimitive(type))
+	{
+		switch(ILType_ToElement(type))
+		{
+			STELEM_PRIMITIVE_TYPE_OPCODE(BOOLEAN, I1);
+			STELEM_PRIMITIVE_TYPE(I1);
+			STELEM_PRIMITIVE_TYPE_OPCODE(U1, I1);
+			STELEM_PRIMITIVE_TYPE(I2);
+			STELEM_PRIMITIVE_TYPE_OPCODE(U2, I2);
+			STELEM_PRIMITIVE_TYPE_OPCODE(CHAR, I2);
+			STELEM_PRIMITIVE_TYPE(I4);
+			STELEM_PRIMITIVE_TYPE_OPCODE(U4, I4);
+			STELEM_PRIMITIVE_TYPE(I8);
+			STELEM_PRIMITIVE_TYPE(I);
+			STELEM_PRIMITIVE_TYPE(R4);
+			STELEM_PRIMITIVE_TYPE(R8);
+		}
+		return IL_OP_NOP;
+	}
+	else if(ILType_IsClass(type))
+	{
+		return IL_OP_STELEM_REF;
+	}
+	
+	return IL_OP_NOP;
+}
+
 /*
  * Get a class token from the instruction stream.  Returns NULL
  * if not an accessible class token for the current method.
@@ -332,16 +408,60 @@ VERIFY_STIND(R8, ILType_Float64, ILEngineType_F);
 case IL_OP_LDELEM:
 {
 	classType = GetTypeToken(method, pc);
-	if(STK_BINARY_1 == ILEngineType_O)
+	if(classType && (STK_BINARY_1 == ILEngineType_O) &&
+	   (STK_BINARY_2 == ILEngineType_I4 || STK_BINARY_2 == ILEngineType_I) &&
+	   (elemType = ArrayElementType(stack[stackSize - 2].typeInfo)) != 0)
 	{
-		elemType = ArrayElementType(stack[stackSize - 2].typeInfo);
-
-		if(elemType && ILTypeIdentical(classType, elemType))
+		if(ILTypeIdentical(classType, elemType))
 		{
-			ILCoderArrayAccess(coder, IL_OP_LDELEM, STK_BINARY_2, elemType);
-			STK_BINARY_1 = TypeToEngineType(elemType);
-			STK_TYPEINFO_1 = elemType;
-			--stackSize;
+			int opcode = TypeToLdElemOpcode(elemType);
+			if(opcode != IL_OP_NOP)
+			{
+				ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType);
+				STK_BINARY_1 = TypeToEngineType(elemType);
+				STK_TYPEINFO_1 = elemType;
+				--stackSize;
+			}
+			else
+			{
+				VERIFY_TYPE_ERROR();
+			}
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
+	}
+	else
+	{
+		VERIFY_TYPE_ERROR();
+	}
+}
+break;
+
+case IL_OP_STELEM:
+{
+	classType = GetTypeToken(method, pc);
+	if(classType && (STK_TERNARY_1 == ILEngineType_O) &&
+	   (STK_TERNARY_2 == ILEngineType_I4 || STK_TERNARY_2 == ILEngineType_I) &&
+	   (elemType = ArrayElementType(stack[stackSize - 3].typeInfo)) != 0)
+	{
+		if(elemType == ILType_Void || PtrCompatible(elemType, classType))
+		{
+			int opcode = TypeToStElemOpcode(classType);
+			if(opcode != IL_OP_NOP)
+			{
+				ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType);
+			}
+			else if(ILType_IsValueType(classType))
+			{
+				/* TODO: Handle value types */
+			}
+			else
+			{
+				VERIFY_TYPE_ERROR();
+			}
+			stackSize -= 3;
 		}
 		else
 		{

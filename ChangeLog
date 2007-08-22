@@ -1,9 +1,17 @@
+2007-08-22  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+
+	* engine/verify_obj.c: Fixed IL_OP_BOX to be ECMA 335 compliant.  Now
+	the box operation is valid on reference and values types.
+	
+	* engine/verify_ptr.c: Implemented IL_OP_STELEM and fixed IL_OP_LDELEM, this two
+	operations are used with generics arrays.
+
 2007-08-20  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
 
 	* image/meta_types.c: Bug fixed in function ILTypeToName that prevented
 	methods signature to be converted to string.
 
-	* image/class.c: Change in Load_TypeDef function to register the class
+	* image/meta_build.c: Change in Load_TypeDef function to register the class
 	before its parent is loaded.  Read note in the function for further details.
 
 2007-08-18  Ivan de Jesus Deras Tabora  <ideras@gmail.com>

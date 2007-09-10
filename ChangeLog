@@ -8,6 +8,8 @@
 	creating the member owner if the passed owner is a TypeSpec in
 	ILMemberRefCreate.
 
+	* image/class.c: Optimize ILClassNextMember and ILClassNextMemberByKind.
+
 2007-09-10  Radek Polak  <psonek2@seznam.cz>
 
 	* configure.in: Added check for clock_gettime.

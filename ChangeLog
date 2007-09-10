@@ -1,3 +1,12 @@
+2007-09-10  Radek Polak  <psonek2@seznam.cz>
+
+	* configure.in: Added check for clock_gettime.
+
+	* support/time.c: Replaced code that is computing tick count using
+	bootime and current time with apropriate system calls. Computing ticks
+	from current time can't work good when date or time is changed.
+	Original patch by Brubbel - thanks.
+
 2007-08-22  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
 
 	* engine/verify_obj.c: Fixed IL_OP_BOX to be ECMA 335 compliant.  Now

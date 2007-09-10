@@ -49,14 +49,12 @@
 	|| defined(__linux) || defined(__linux__))
 	
 	#include <sys/sysinfo.h>
-	#define USE_BOOTTIME 1
 #endif
 
 #if defined(HAVE_SYS_SYSCTL_H) && defined(HAVE_SYSCTL) \
 	&& defined(__FreeBSD__)
 	
 	#include <sys/sysctl.h>
-	#define USE_BOOTTIME 1
 #endif
 
 #ifdef	__cplusplus
@@ -111,10 +109,6 @@ void ILGetCurrTime(ILCurrTime *timeValue)
 #endif
 }
 
-#if defined(USE_BOOTTIME)
-static ILCurrTime bootTime;
-#endif
-
 int ILGetSinceRebootTime(ILCurrTime *timeValue)
 {
 #ifdef IL_WIN32_PLATFORM
@@ -126,80 +120,39 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 	timeValue->nsecs = (tick % 1000) * 1000000;
 
 	return 1;
-#elif defined(USE_BOOTTIME) && defined(__FreeBSD__) 
+#elif defined(__FreeBSD__)
 	int len, mib[2];	
 	struct timeval tv;
 
-	ILGetCurrTime(timeValue);
+	mib[0] = CTL_KERN;
+	mib[1] = KERN_BOOTTIME;
 
-	if (bootTime.secs == 0 && bootTime.nsecs == 0)
+	len = sizeof(struct timeval);
+
+	if (sysctl(mib, 2, &tv, &len, 0, 0) != 0)
 	{
-		mib[0] = CTL_KERN;
-		mib[1] = KERN_BOOTTIME;
-
-		len = sizeof(struct timeval);
-
-		if (sysctl(mib, 2, &tv, &len, 0, 0) != 0)
-		{
-			return 0;
-		}
-
-		ILThreadAtomicStart();
-
-		bootTime.secs = ((ILInt64)(tv.tv_sec)) + EPOCH_ADJUST;
-		bootTime.nsecs = (ILUInt32)(tv.tv_usec * 1000);
-
-		ILThreadAtomicEnd();
+		return 0;
 	}
-	
-#elif defined(USE_BOOTTIME) && (defined(linux) \
-	|| defined(__linux) || defined(__linux__))
 
-	struct sysinfo si;
-	
-	ILGetCurrTime(timeValue);
-
-	if (bootTime.secs == 0 && bootTime.nsecs == 0)
-	{
-		if (sysinfo(&si) != 0)
-		{
-			return 0;
-		}
-		
-		ILThreadAtomicStart();		
-		bootTime.secs = timeValue->secs - si.uptime;
-
-		/* sysinfo() is only accurate to the second so
-		   use the nsec value from the curren time.
-		   This allows subsequent calls to this function
-		   to get nsec time-differential precision  */
-
-		bootTime.nsecs = timeValue->nsecs;
-		ILThreadAtomicEnd();
-	}
-#endif
-
-#if defined(USE_BOOTTIME)
-	/* Subtract the current time from the time since the system
-	   was started */
-
-	if(timeValue->nsecs < bootTime.nsecs)
-	{
-		timeValue->nsecs = 
-			timeValue->nsecs - bootTime.nsecs + 1000000000;
-		timeValue->secs =
-			timeValue->secs - bootTime.secs - 1;
-	}
-	else
-	{
-		timeValue->nsecs =
-			timeValue->nsecs - bootTime.nsecs;			
-		timeValue->secs =
-			timeValue->secs - bootTime.secs;
-	}	
+	timeValue.secs = ((ILInt64)(tv.tv_sec));
+	timeValue.nsecs = (ILUInt32)(tv.tv_usec * 1000);
 
 	return 1;
-	
+
+#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_MONOTONIC)
+
+	struct timespec tp;
+
+	if(clock_gettime(CLOCK_MONOTONIC, &tp) != 0)
+	{
+		return 0;
+	}
+
+	timeValue->secs = tp.tv_sec;
+	timeValue->nsecs = tp.tv_nsec;
+
+	return 1;
+
 #else
 	return 0;
 #endif

@@ -366,6 +366,7 @@ fi
 AC_CHECK_LIB(dl, dlopen)
 AC_CHECK_LIB(socket, connect)
 AC_CHECK_LIB(nsl, gethostbyname)
+AC_CHECK_LIB(rt, clock_gettime)
 have_libz=no
 if test "x$suppress_libm" = "xno" ; then
 	AC_CHECK_LIB(z, inflate,
@@ -606,6 +607,7 @@ AC_CHECK_FUNCS(get_current_dir_name dlopen strerror fcntl ftruncate)
 AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
 AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
 AC_CHECK_FUNCS(wctomb wcrtomb mbtowc mbrtowc nl_langinfo setlocale)
+AC_CHECK_FUNCS(clock_gettime)
 AC_CHECK_FUNCS(usleep gethostbyname gethostbyaddr isatty getpwuid geteuid)
 AC_CHECK_FUNCS(opendir readdir readdir_r closedir chdir access)
 AC_CHECK_FUNCS(cygwin_conv_to_win32_path snprintf rename utime)

@@ -298,7 +298,7 @@ ILMemberRef *ILMemberRefCreate(ILProgramItem *owner, ILToken token,
 
 	if((spec = ILProgramItemToTypeSpec(owner)) != 0)
 	{
-		memberRef->member.owner = ILTypeSpecGetClass(spec);
+		memberRef->member.owner = ILTypeSpecGetClassWrapper(spec);
 	}
 	else if((member = ILProgramItemToMember(owner)) != 0)
 	{

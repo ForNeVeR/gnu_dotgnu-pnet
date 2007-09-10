@@ -1,3 +1,13 @@
+2007-09-10  Klaus Treichel  <ktreichel@web.de>
+
+	* image/misc_token.c, include/il_program.h: Revert the changes in
+	ILTypeSpecGetClass and ILTypeSpecGetClassRef. Add the new function
+	ILTypeSpecGetClassWrapper instead.
+
+	* image/member.c Call the new function ILTypeSpecGetClassWrapper for
+	creating the member owner if the passed owner is a TypeSpec in
+	ILMemberRefCreate.
+
 2007-09-10  Radek Polak  <psonek2@seznam.cz>
 
 	* configure.in: Added check for clock_gettime.

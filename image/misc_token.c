@@ -80,6 +80,42 @@ void ILTypeSpecSetClass(ILTypeSpec *spec, ILClass *classInfo)
 }
 
 ILClass *ILTypeSpecGetClass(ILTypeSpec *spec)
+ {
+	if(spec)
+	{
+		if(!(spec->refInfo))
+		{
+			/* Make a synthetic class that corresponds to the type */
+			spec->refInfo = ILClassFromType(spec->programItem.image, 0,
+											spec->type, ILClassResolveSystem);
+		}
+		return spec->refInfo;
+	}
+	return 0;
+}
+
+ILClass *ILTypeSpecGetClassRef(ILTypeSpec *spec)
+{
+	if(spec)
+	{
+		ILClass *info = ILTypeSpecGetClass(spec);
+
+		if(!info || info->programItem.image == spec->programItem.image)
+		{
+			return info;
+		}
+		info = ILClassImport(spec->programItem.image, info);
+		if(info)
+		{
+			info->programItem.token = spec->programItem.token;
+			info->synthetic = spec->type;
+		}
+		return info;
+	}
+	return 0;
+}
+
+ILClass *ILTypeSpecGetClassWrapper(ILTypeSpec *spec)
 {
 	if(spec)
 	{
@@ -91,36 +127,6 @@ ILClass *ILTypeSpecGetClass(ILTypeSpec *spec)
 												   spec->type);
 		}
 		return spec->classInfo;
-	}
-	return 0;
-}
-
-ILClass *ILTypeSpecGetClassRef(ILTypeSpec *spec)
-{
-	if(spec)
-	{
-		if(!(spec->refInfo))
-		{
-			ILClass *info = ILClassFromType(spec->programItem.image, 0,
-											spec->type, ILClassResolveSystem);
-
-			if(!info || info->programItem.image == spec->programItem.image)
-			{
-				spec->refInfo = info;
-			}
-			else
-			{
-				info = ILClassImport(spec->programItem.image, info);
-				if(!info)
-				{
-					return 0;
-				}
-				info->programItem.token = spec->programItem.token;
-				info->synthetic = spec->type;
-				spec->refInfo = info;
-			}
-		}
-		return spec->refInfo;
 	}
 	return 0;
 }

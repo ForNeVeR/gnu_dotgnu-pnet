@@ -1860,6 +1860,14 @@ ILClass *ILTypeSpecGetClass(ILTypeSpec *spec);
 ILClass *ILTypeSpecGetClassRef(ILTypeSpec *spec);
 
 /*
+ * Get the wrapper class information block that correspondends to the TypeSpec.
+ * The returned wrapper class is guaranteed to be in the same image.
+ * The wrapper class in intended to be used as owner of MemberRefs during
+ * image building.
+ */
+ILClass *ILTypeSpecGetClassWrapper(ILTypeSpec *spec);
+
+/*
  * Helper macros for querying information about a TypeSpec's.
  */
 #define	ILTypeSpec_FromToken(image,token)	\

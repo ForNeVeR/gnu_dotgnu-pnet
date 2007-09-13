@@ -815,6 +815,13 @@ char *ILTypeToName(ILType *type)
 			}
 			/* Not reached */
 
+			case IL_TYPE_COMPLEX_BYREF:
+			{
+				name = ILTypeToName(type->un.refType__);
+				return AppendString(name, " &");
+			}
+			/* Not reached */
+
 			case IL_TYPE_COMPLEX_ARRAY:
 			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 			{
@@ -880,7 +887,16 @@ char *ILTypeToName(ILType *type)
 
 			case IL_TYPE_COMPLEX_METHOD:
 			{
-				name = ILTypeToName(ILTypeGetReturn(type));
+				ILType *returnType = ILTypeGetReturn(type);
+
+				if(returnType == ILType_Invalid)
+				{
+					name = ILDupString("");
+				}
+				else
+				{
+					name = ILTypeToName(returnType);
+				}
 				if(ILType_HasThis(type))
 				{
 					name = AppendString(name, " * instance (");

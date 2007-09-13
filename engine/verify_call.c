@@ -2006,6 +2006,7 @@ case IL_OP_CALLVIRT:
 	if(methodInfo)
 	{
 		ILType *_constraintType = constraintType;
+		int callNonVirtual = 0;
 		
 		constraintType = 0;
 		classInfo = ILMethod_Owner(method);
@@ -2014,10 +2015,12 @@ case IL_OP_CALLVIRT:
 			if(_constraintType)
 			{
 				ILEngineStackItem *item;
+
 				numParams = ILTypeNumParams(methodSignature);
 				item = &(stack[stackSize - numParams - 1]);
-				if ((item->engineType == ILEngineType_M ||
-					item->engineType == ILEngineType_T) &&
+				if (((item->engineType == ILEngineType_M) ||
+					 (item->engineType == ILEngineType_CM) ||
+					 (item->engineType == ILEngineType_T)) &&
 					ILTypeIdentical(_constraintType, item->typeInfo))
 				{
 					ILClass *thisClass = ILClassFromType(ILProgramItem_Image(method),
@@ -2040,6 +2043,7 @@ case IL_OP_CALLVIRT:
 							methodInfo = (ILMethod *)member;
 							item->engineType = ILEngineType_M;
 							item->typeInfo = _constraintType;
+							callNonVirtual = 1;
 						}
 						else
 						{
@@ -2077,8 +2081,7 @@ case IL_OP_CALLVIRT:
 				{
 					stack[stackSize].engineType = ILEngineType_Invalid;
 				}
-				if(!ILMethod_IsVirtual(methodInfo) ||
-				   (_constraintType && ILType_IsPrimitive(_constraintType)))
+				if(!ILMethod_IsVirtual(methodInfo) || callNonVirtual)
 				{
 					goto callNonvirtualFromVirtual;
 				}

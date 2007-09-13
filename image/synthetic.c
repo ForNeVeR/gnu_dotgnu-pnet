@@ -540,10 +540,10 @@ ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type)
 }
 
 ILClass *_ILTypeToSyntheticInstantiation
-		(ILImage *image, ILType *type, ILType *classParams)
+		(ILImage *image, ILType *type, ILType *classArgs, ILType *methodArgs)
 {
 	/* TODO: do this without calling ILTypeInstantiate */
-	type = ILTypeInstantiate(image->context, type, classParams, 0);
+	type = ILTypeInstantiate(image->context, type, classArgs, methodArgs);
 	if(!type)
 	{
 		return 0;

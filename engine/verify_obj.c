@@ -969,12 +969,26 @@ break;
 case IL_OP_PREFIX + IL_PREFIX_OP_INITOBJ:
 {
 	/* Initialize a value type */
-	classInfo = GetValueTypeToken(method, pc);
-	if(classInfo &&
-	   IsCPPointer(STK_UNARY, stack[stackSize - 1].typeInfo, classInfo))
+	classInfo = GetClassToken(method, pc);
+	if(classInfo)
 	{
-		ILCoderInitObject(coder, STK_UNARY, classInfo);
-		--stackSize;
+		if (ILClassIsValueType(classInfo) &&
+		    IsCPPointer(STK_UNARY, stack[stackSize - 1].typeInfo, classInfo))
+		{
+			ILCoderInitObject(coder, STK_UNARY, classInfo);
+			--stackSize;
+		}
+		else if (STK_UNARY == ILEngineType_M || STK_UNARY == ILEngineType_T)
+		{
+			/* Let's do a ldnull followed by stind.ref */
+			ILCoderConstant(coder, IL_OP_LDNULL, pc + 1);
+			ILCoderPtrAccess(coder, IL_OP_STIND_REF);
+			--stackSize;
+		}
+		else
+		{
+			VERIFY_TYPE_ERROR();
+		}
 	}
 	else
 	{

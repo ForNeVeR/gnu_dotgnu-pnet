@@ -1,3 +1,19 @@
+2007-09-11  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+	* engine/cvm_stack.c Fixed CVM documentation for COP_PREFIX_REPL_WORD_N.
+	* engine/verify_call.c Constrained callvirt for value types should be handled as
+	a normal call (non virtual).
+	* engine/verify_obj.c Fixed INITOBJ CIL opcode to be ECMA compliant.  Now it can
+	be applied to ref types.
+	* engine/verify_ptr.c Fixed IL_OP_LDELEM for value types. Also added a missing break
+	when handling LDSFLDA.
+	* image/generic.c _ILTypeToSyntheticInstantiation now receive an extra parameters, the 
+	method type parameters.
+	* image/image.h _ILTypeToSyntheticInstantiation now receive an extra parameters, the 
+	method type parameters.
+	* image/meta_types.c ILTypeToName now handle BYREF types and Method Type Parameters.
+	* image/synthetic.c _ILTypeToSyntheticInstantiation now receive an extra parameters, the 
+	method type parameters.
+
 2007-09-10  Klaus Treichel  <ktreichel@web.de>
 
 	* image/misc_token.c, include/il_program.h: Revert the changes in

@@ -418,6 +418,11 @@ case IL_OP_LDELEM:
 			if(opcode != IL_OP_NOP)
 			{
 				ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType);
+				if(opcode == IL_OP_LDELEMA)
+				{
+					ILClass *classInfo = ILClassFromType(ILProgramItem_Image(method), 0, classType, 0);
+					ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo);
+				}
 				STK_BINARY_1 = TypeToEngineType(elemType);
 				STK_TYPEINFO_1 = elemType;
 				--stackSize;
@@ -785,6 +790,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_READONLY:
 		VERIFY_INSN_ERROR();
 	}
 }
+break;
 
 case IL_OP_NEWARR:
 {

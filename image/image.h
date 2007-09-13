@@ -607,7 +607,7 @@ ILClass *_ILTypeToSyntheticOther(ILImage *image, ILType *type);
  * Returns NULL if not possible, or out of memory.
  */
 ILClass *_ILTypeToSyntheticInstantiation
-		(ILImage *image, ILType *type, ILType *classParams);
+		(ILImage *image, ILType *type, ILType *classArgs, ILType *methodArgs);
 
 #ifdef IL_USE_WRITER
 

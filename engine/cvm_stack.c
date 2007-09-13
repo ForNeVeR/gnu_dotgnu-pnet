@@ -444,7 +444,7 @@ VMBREAK(COP_PREFIX_LOCAL_ALLOC);
  *   <format>prefix<fsep/>repl_word_n</format>
  *   <dformat>{repl_word_n}</dformat>
  *
- *   <form name="repl_word_n" code="COP_REPL_WORD_N"/>
+ *   <form name="repl_word_n" code="COP_PREFIX_REPL_WORD_N"/>
  *
  *   <before>..., value, word1, ..., wordN-1, wordN</before>
  *   <after>..., wordN, word1, ..., wordN-1</after>

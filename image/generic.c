@@ -751,7 +751,7 @@ ILClass *ILClassInstantiate(ILImage *image, ILType *classType,
 	   form of the class type, in case we already instantiated
 	   this class previously.  We do this in such a way that we
 	   won't need to call "ILTypeInstantiate" unless necessary */
-	classInfo = _ILTypeToSyntheticInstantiation(image, classType, classParams);
+	classInfo = _ILTypeToSyntheticInstantiation(image, classType, classParams, 0);
 	if(classInfo)
 	{
 		if((classInfo->attributes & IL_META_TYPEDEF_CLASS_EXPANDED) == 0)

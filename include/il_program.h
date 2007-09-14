@@ -39,6 +39,7 @@ typedef struct _tagILNestedInfo		ILNestedInfo;
 typedef struct _tagILImplements		ILImplements;
 typedef struct _tagILMember			ILMember;
 typedef struct _tagILMethod			ILMethod;
+typedef struct _tagILMethodInstance	ILMethodInstance;
 typedef struct _tagILParameter		ILParameter;
 typedef struct _tagILField			ILField;
 typedef struct _tagILEvent			ILEvent;
@@ -821,7 +822,7 @@ void ILClassAttachMember(ILClass *info, ILMember *member);
  * if insufficient memory to perform the instantiation.
  */
 ILClass *ILClassInstantiate(ILImage *image, ILType *classType,
-							ILType *classParams);
+							ILType *classArgs, ILType *methodArgs);
 
 /*
  * Determine if a namespace is valid for a context.  A namespace
@@ -833,6 +834,76 @@ int ILClassNamespaceIsValid(ILContext *context, const char *nspace);
  * Get the underlying class from a generic class reference.
  */
 ILClass *ILClassGetUnderlying(ILClass *info);
+
+/*
+ * Get the generic type parameters used to instantiate the class.
+ */
+ILType *ILClassGetTypeArguments(ILClass *info);
+
+/*
+ * Return the generic definition associated with the class instance.
+ * NULL is this is not a class instance.
+ */
+ILClass *ILClassGetGenericDef(ILClass *info);
+
+/*
+ * Expand a class instance.
+ */
+ILClass *ILClassExpand(ILImage *image, ILClass *classInfo,
+					   ILType *classArgs, ILType *methodArgs);
+
+/*
+ * Return true is the generic class is already expanded.
+ */
+int ILClassIsExpanded(ILClass *info);
+
+/*
+ * Return a class instance corresponding to a class definition.
+ */
+ILClass *ILClassResolveToInstance(ILClass *classInfo, ILMethod *methodCaller);
+
+/*
+ * Lookup a method instance in a class instance. Return NULL if such an instance doesn't exist.
+ */
+ILMethod *ILClassLookupMethodInstance(ILClass *owner, const char *name,
+									  ILType *signature, ILType  *methodArgs);
+
+/*
+ * Resolve a member definition to the corresponding member instance.
+ */
+ILMember *ILMemberResolveToInstance(ILMember *member, ILMethod *methodCaller);
+
+/*
+ * Resolve a method spec to a method instance.
+ */
+ILMethod *ILMethodSpecToMethod(ILMethodSpec *mspec, ILMethod *methodCaller);
+
+/*
+ * Set the method virtual ancestor and initialize the vtable.
+ */
+int ILMethodSetVirtualAncestor(ILMethod *method, ILMethod *virtualAncestor);
+
+/*
+ * Return the corresponding method instance, or NULL if such instance doesn't exist.
+ */
+ILMethod *ILMethodGetInstance(ILMethod *method, int index);
+
+/*
+ * Add a method instance to the generic method vtable.
+ */
+int ILMethodAddInstance(ILMethod *method, ILMethod *instance);
+
+/*
+ * Return the class type params associated with the method instance. Return NULL if this
+ * isn't a generic method instance.
+ */
+ILType *ILMethodGetClassTypeArguments(ILMethod *method);
+
+/*
+ * Return the method type params associated with the method instance. Return NULL if this
+ * isn't a generic method instance.
+ */
+ILType *ILMethodGetMethodTypeArguments(ILMethod *method);
 
 /*
  * Helper macros for querying information about a class.
@@ -919,7 +990,8 @@ ILClass *ILClassGetUnderlying(ILClass *info);
 			((ILClassGetAttrs((info)) & IL_META_TYPEDEF_LATE_INIT) != 0)
 #define	ILClass_HasRTSpecialName(info)	\
 			((ILClassGetAttrs((info)) & IL_META_TYPEDEF_RT_SPECIAL_NAME) != 0)
-
+#define	ILClass_IsGenericInstance(info)	\
+			ILClassIsExpanded(info)
 /*
  * Member kinds.
  */
@@ -1015,6 +1087,8 @@ ILMember *ILMemberGetBase(ILMember *member);
 #define	ILMember_Name(member)		(ILMemberGetName((ILMember *)(member)))
 #define	ILMember_Signature(member)	(ILMemberGetSignature((ILMember *)(member)))
 #define	ILMember_Attrs(member)		(ILMemberGetAttrs((ILMember *)(member)))
+#define	ILMember_IsGenericInstance(member)	\
+	ILMemberIsGenericInstance((ILMember *)(member))
 #define	ILMember_IsMethod(member)	\
 	(ILMemberGetKind((ILMember *)(member)) == IL_META_MEMBERKIND_METHOD)
 #define	ILMember_IsField(member)	\
@@ -1279,7 +1353,9 @@ ILMethod *ILMethodResolveCallSite(ILMethod *method);
 	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_JAVA_FP_STRICT) != 0)
 #define	ILMethod_IsJava(method)	\
 	((ILMethodGetImplAttrs((method)) & IL_META_METHODIMPL_JAVA) != 0)
-
+#define ILMethod_IsVirtualGeneric(method) \
+	(((ILMethod_CallConv(method) & IL_META_CALLCONV_GENERIC) != 0) && \
+	 ((ILMemberGetAttrs((ILMember *)(method)) & IL_META_METHODDEF_VIRTUAL) != 0))
 /*
  * Create a new parameter and attach it to a method.
  * Returns NULL if out of memory.

@@ -45,7 +45,11 @@ static ILField *GetFieldToken(ILExecProcess *process, ILMethod *method, unsigned
 	{
 		return 0;
 	}
-	fieldInfo = (ILField *)ILMemberResolve((ILMember *)fieldInfo);
+	fieldInfo = (ILField *)ILMemberResolveToInstance((ILMember *)fieldInfo, method);
+	if(!fieldInfo)
+	{
+		return 0;
+	}
 
 	/* Check the accessibility of the field */
 	if(!ILMemberAccessible((ILMember *)fieldInfo, ILMethod_Owner(method)))

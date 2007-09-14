@@ -1183,8 +1183,18 @@ static ILInt32 NameOutputClassName(ILUInt16 *buf, ILClass *classInfo,
 								   int fullyQualified)
 {
 	ILClass *nestedParent;
+	ILClass *info;
 	ILInt32 len;
 	const char *namespace;
+	if(ILClass_IsGenericInstance(classInfo))
+	{
+		info = classInfo;
+		classInfo = ILClassGetGenericDef(classInfo);
+	}
+	else
+	{
+		info = 0;
+	}
 	if(fullyQualified)
 	{
 		nestedParent = ILClass_NestedParent(classInfo);
@@ -1228,12 +1238,64 @@ static ILInt32 NameOutputClassName(ILUInt16 *buf, ILClass *classInfo,
 	}
 	if(buf != 0)
 	{
-		return len + NameOutputString(buf + len, ILClass_Name(classInfo), 1);
+		len += NameOutputString(buf + len, ILClass_Name(classInfo), 1);
 	}
 	else
 	{
-		return len + NameOutputString(0, ILClass_Name(classInfo), 1);
+		len += NameOutputString(0, ILClass_Name(classInfo), 1);
 	}
+	if(info)
+	{
+		int numParams, posn;
+		ILType *type;
+		ILType *subType;
+
+		type = ILClassGetTypeArguments(info);
+		if(buf != 0)
+		{
+			buf[len++] = (ILUInt16)'[';
+		}
+		else
+		{
+			++len;
+		}
+		numParams = ILTypeNumWithParams(type);
+		for(posn = 1; posn <= numParams; posn++)
+		{
+			if(posn != 1)
+			{
+				if(buf != 0)
+				{
+					buf[len++] = (ILUInt16)',';
+				}
+				else
+				{
+					++len;
+				}
+			}
+			subType = ILTypeGetWithParamWithPrefixes(type, posn);
+			classInfo = ILClassFromType(ILClassToImage(info),
+										0, subType, 0);
+			if(buf != 0)
+			{
+				len += NameOutputClassName(buf + len, classInfo, fullyQualified);
+			}
+			else
+			{
+				len += NameOutputClassName(0, classInfo, fullyQualified);
+			}
+		}
+		if(buf != 0)
+		{
+			buf[len++] = (ILUInt16)']';
+		}
+		else
+		{
+			++len;
+		}		
+	}
+
+	return len;
 }
 
 /*

@@ -64,6 +64,16 @@ int ILMemberAccessible(ILMember *member, ILClass *scope)
 	ILClass *info = member->owner;
 	ILMethod *accessor;
 	scope = (ILClass *)(_ILProgramItemResolve(&(scope->programItem)));
+	/* FIXME: This is not really correct */
+	if (ILClass_IsGenericInstance(info))
+	{
+		info = ILClassGetGenericDef(info);
+	}
+	/* FIXME: This is not really correct */
+	if (ILClass_IsGenericInstance(scope))
+	{
+		scope = ILClassGetGenericDef(scope);
+	}
 	if(!ILClassAccessible(info, scope))
 	{
 		return 0;
@@ -526,6 +536,7 @@ ILMethod *ILMethodCreate(ILClass *info, ILToken token,
 	method->callingConventions = 0;
 	method->rva = 0;
 	method->parameters = 0;
+	method->vtable = 0;
 
 	/* Return the block to the caller */
 	return method;

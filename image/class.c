@@ -328,6 +328,17 @@ ILClass *ILClassCreateWrapper(ILProgramItem *scope, ILToken token,
 	/* Set the synthetic type */
 	info->synthetic = type;
 
+	/* Set the class name */
+    if(ILType_IsWith(type))
+    {
+			ILClass *classInfo = ILType_ToClass(ILTypeGetWithMainWithPrefixes(type));
+            info->className = classInfo->className;
+    }
+	else
+	{
+		info->className = 0;
+	}
+
 	info->parent = 0;
 	info->ext = 0;
 

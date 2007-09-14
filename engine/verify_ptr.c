@@ -204,13 +204,12 @@ static ILClass *GetClassToken(ILMethod *method, unsigned char *pc)
 		((ILProgramItem *)ILImageTokenInfo(ILProgramItem_Image(method), token));
 	if(classInfo)
 	{
-		classInfo = ILClassResolve(classInfo);
+		classInfo = ILClassResolveToInstance(classInfo, method);
 	}
 	if(!classInfo || ILClassIsRef(classInfo))
 	{
 		return 0;
 	}
-
 	/* Check the accessibility of the class */
 	if(!ILClassAccessible(classInfo, ILMethod_Owner(method)))
 	{

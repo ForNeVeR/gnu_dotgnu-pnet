@@ -27,6 +27,8 @@
 extern	"C" {
 #endif
 
+#define METHOD_VTABLE_ITEM_COUNT	4
+
 /*
  * Common fields for program items.
  */
@@ -342,6 +344,29 @@ struct _tagILMember
 void _ILMemberSetSignatureIndex(ILMember *member, ILUInt32 index);
 
 /*
+ * Information about a generic method vtable item.
+ */
+typedef struct _tagILMethodVTableItem ILMethodVTableItem;
+struct _tagILMethodVTableItem
+{
+       ILMethod *data[METHOD_VTABLE_ITEM_COUNT];
+	   ILMethodVTableItem *nextItem;
+};
+
+/*
+ * Information about a generic method vtable.
+ */
+typedef struct _tagILMethodVTable ILMethodVTable;
+struct _tagILMethodVTable
+{
+	ILMethod			*virtualAncestor;	/* The virtual ancestor of the method. */
+	ILMethodVTableItem	firstItem;
+	ILMethodVTableItem	*lastItem;
+	int					numSlots;
+	int					numItems;
+};
+
+/*
  * Information about a method.
  */
 struct _tagILMethod
@@ -351,12 +376,24 @@ struct _tagILMethod
 	ILUInt16		callingConventions;	/* Calling conventions for method */
 	ILUInt32		rva;				/* Address of the method's code */
 	ILParameter    *parameters;			/* Parameter definitions */
+	ILMethodVTable *vtable;				/* VTable for generic methods. */
 	void           *userData;			/* User data for the runtime engine */
 	ILUInt32		index;				/* Data added by the runtime engine */
 	ILUInt32		count;				/* Profile count for the engine */
 #ifdef ENHANCED_PROFILER
 	ILUInt32		time;				/* Profile time counter for the engine */
 #endif
+};
+
+/*
+ * Information about a generic method instance.
+ */
+struct _tagILMethodInstance
+{
+	ILMethod		method;					/* Method fields */
+	ILMethod		*genMethod;				/* Corresponding generic Method definition */
+	ILType			*classTypeArguments;	/* Class type arguments.  */
+	ILType			*methodTypeArguments;	/* Method type arguments. */
 };
 
 /*

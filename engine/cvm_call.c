@@ -1905,6 +1905,116 @@ VMCASE(COP_PREFIX_TAIL_CALLINTF):
 VMBREAK(COP_PREFIX_TAIL_CALLINTF);
 
 /**
+ * <opcode name="call_virtual_generic" group="Call management instructions">
+ *   <operation>Call a virtual generic method instance</operation>
+ *
+ *   <format>call_virtual_generic<fsep/>N[1]<fsep/>M[1]</format>
+ *   <format>wide<fsep/>call_virtual_generic<fsep/>N[4]<fsep/>M[4]</format>
+ *   <dformat>{call_virtual_generic}<fsep/>N<fsep/>M</dformat>
+ *
+ *   <form name="call_virtual_generic" code="COP_PREFIX_CALL_VIRTGEN"/>
+ *
+ *   <description>The <i>call_virtual_generic</i> instruction effects a
+ *   virtual generic method instance call.  The value <i>N</i> indicates the
+ *   position of the <code>this</code> pointer on the stack:
+ *   1 indicates the top of stack, 2 indicates the stack word
+ *   just below the top-most stack word, etc.  The value <i>M</i>
+ *   is the offset into the generic method vtable for the method instance.</description>
+ *
+ *   <notes>See the description of the <i>call</i> instruction for
+ *   a full account of frame handling, argument handling, etc.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     the <code>this</code> pointer is <code>null</code>.</exception>
+ *     <exception name="System.Security.VerificationException">Raised if
+ *     the method could not be translated into CVM bytecode.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_CALL_VIRTGEN):
+{
+	/* Call a virtual method */
+	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_SMALL)].ptrValue;
+	BEGIN_NULL_CHECK(tempptr)
+	{
+		/* Locate the method to be called */
+		tempNum = CVM_ARG_DWIDE2_SMALL;
+		methodToCall = (GetObjectClassPrivate(tempptr))
+							->vtable[tempNum & 0xFFFF];
+		if(methodToCall)
+		{
+			methodToCall = ILMethodGetInstance(methodToCall, ((tempNum >> 16) & 0xFFFF));
+			if(!methodToCall)
+			{
+				MISSING_METHOD_EXCEPTION();
+			}
+		}
+		else
+		{
+			MISSING_METHOD_EXCEPTION();
+		}
+
+		/* Has the method already been converted? */
+		if(methodToCall->userData)
+		{
+			/* It is converted: allocate a new call frame */
+			ALLOC_CALL_FRAME();
+
+			/* Fill in the call frame details */
+			callFrame->method = method;
+			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(pc);
+			callFrame->frame = frame;
+			callFrame->exceptHeight = thread->exceptHeight;
+			callFrame->permissions = 0;
+			DO_PROFILE_START();
+
+			/* Pass control to the new method */
+			pc = (unsigned char *)(methodToCall->userData);
+			method = methodToCall;
+			CVM_OPTIMIZE_BLOCK();
+		}
+		else
+		{
+			/* Copy the state back into the thread object */
+			COPY_STATE_TO_THREAD();
+
+			/* Convert the method */
+			BEGIN_NATIVE_CALL();
+
+			IL_CONVERT_METHOD(tempptr, thread, methodToCall);
+			if(!tempptr)
+			{
+				END_NATIVE_CALL();
+
+				CONVERT_FAILED_EXCEPTION();
+			}
+
+			END_NATIVE_CALL();
+
+			/* Allocate a new call frame */
+			ALLOC_CALL_FRAME();
+
+			/* Fill in the call frame details */
+			callFrame->method = method;
+			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(thread->pc);
+			callFrame->frame = thread->frame;
+			callFrame->exceptHeight = thread->exceptHeight;
+			callFrame->permissions = 0;
+			DO_PROFILE_START();
+
+			/* Restore the state information and jump to the new method */
+			RESTORE_STATE_FROM_THREAD();
+			pc = (unsigned char *)tempptr;
+			method = methodToCall;
+			CVM_OPTIMIZE_BLOCK();
+		}
+	}
+	END_NULL_CHECK();
+}
+VMBREAK(COP_PREFIX_CALL_VIRTGEN);
+
+/**
  * <opcode name="ldftn" group="Call management instructions">
  *   <operation>Load the address of a function method onto the stack</operation>
  *

@@ -380,14 +380,31 @@ static ILMethod *GetMethodToken(ILExecProcess *process, ILMethod *method,
 		token = IL_READ_UINT32(pc + 2);
 	}
 
-	/* Get the token and resolve it */
-	methodInfo = ILProgramItemToMethod((ILProgramItem *)
-						ILImageTokenInfo(ILProgramItem_Image(method), token));
+	if((token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_SPEC)
+	{
+		ILMethodSpec *mspec = ILMethodSpec_FromToken(ILProgramItem_Image(method), token);
+
+		if(!mspec)
+		{
+			return 0;
+		}
+		methodInfo = ILMethodSpecToMethod(mspec, method);
+	}
+	else
+	{
+		/* Get the token and resolve it */
+		methodInfo = ILProgramItemToMethod((ILProgramItem *)
+							ILImageTokenInfo(ILProgramItem_Image(method), token));
+		if(!methodInfo)
+		{
+			return 0;
+		}
+		methodInfo = (ILMethod *)ILMemberResolveToInstance((ILMember *)methodInfo, method);
+	}
 	if(!methodInfo)
 	{
 		return 0;
 	}
-	methodInfo = (ILMethod *)ILMemberResolve((ILMember *)methodInfo);
 
 	/* Make sure that the method's class has been laid out */
 	if(!_ILLayoutClass(process, ILMethod_Owner(methodInfo)))

@@ -1154,6 +1154,17 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	{
 		/* Use "ILClassGetParent" to resolve cross-image links */
 		parent = ILClassGetParent(info);
+		if(ILClassNeedsExpansion(parent))
+		{
+			/* This can happen when a non-generic class inherits from a generic class */
+			parent = ILClassExpand(ILClassToImage(info), parent, ILClassToType(parent), 0);
+			if(!parent)
+			{
+				info->userData = 0;
+				return 0;
+			}
+			info->parent = parent;
+		}
 		if(!LayoutClass(process, parent, layout))
 		{
 			info->userData = 0;
@@ -1184,7 +1195,25 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	implements = info->implements;
 	while(implements != 0)
 	{
-		if(!LayoutClass(process, ILClassResolve(implements->interface), &typeLayout))
+		ILClass *interface = implements->interface;
+
+		if(ILClassNeedsExpansion(interface))
+		{
+			/* This can happen when a non-generic class implements a generic interface */
+			interface = ILClassExpand(ILClassToImage(info), interface,
+									  ILClassToType(interface), 0);
+			if(!interface)
+			{
+				info->userData = 0;
+				return 0;
+			}
+			implements->interface = interface;
+		}
+		else
+		{
+			interface = ILClassResolve(interface);
+		}
+		if(!LayoutClass(process, interface, &typeLayout))
 		{
 			info->userData = 0;
 			return 0;
@@ -1455,11 +1484,22 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 			/* Allocate a vtable slot */
 			method->index = layout->vtableSize;
 			++(layout->vtableSize);
+			/* Initialize the metod vtable if this is a generic method */
+			if(!ILMethodSetVirtualAncestor(method, ancestor))
+			{
+				info->userData = 0;
+				return 0;
+			}
 		}
 		else
 		{
 			/* Find the method in an ancestor class that this one overrides */
 			ancestor = FindVirtualAncestor(info, parent, method);
+			if(!ILMethodSetVirtualAncestor(method, ancestor))
+			{
+				info->userData = 0;
+				return 0;
+			}
 			if(ancestor)
 			{
 				/* Use the same index as the ancestor */

@@ -22,6 +22,7 @@
 #include "il_coder.h"
 #include "il_opcodes.h"
 #include "il_utils.h"
+#include "il_program.h"
 #ifdef IL_DEBUGGER
 #include "debugger.h"
 #endif

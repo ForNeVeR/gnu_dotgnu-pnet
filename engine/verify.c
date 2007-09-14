@@ -1027,6 +1027,17 @@ restart:
 	{
 		localVars = ILStandAloneSigGetType(code->localVarSig);
 		numLocals = ILTypeNumLocals(localVars);
+		if(ILTypeNeedsInstantiation(localVars) &&
+		   ILMember_IsGenericInstance(method))
+		{
+			ILType *classTypeArgs = ILMethodGetClassTypeArguments(method);
+			ILType *methodTypeArgs = ILMethodGetMethodTypeArguments(method);
+
+			localVars = ILTypeInstantiate(ILImageToContext(ILProgramItem_Image(method)),
+										  localVars,
+										  classTypeArgs, 
+										  methodTypeArgs);
+		}
 	}
 	else
 	{

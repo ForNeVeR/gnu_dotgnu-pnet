@@ -136,17 +136,37 @@ static void CVMCoder_CallVirtual(ILCoder *coder, ILCoderMethodInfo *info,
 								 ILMethod *methodInfo)
 {
 	ILUInt32 argSize = ComputeStackSize(coder, info->args, info->numBaseArgs);
+	ILUInt32 index = methodInfo->index;
+	int isVirtualGenericCall = 0;
 	if(info->hasParamArray)
 	{
 		++argSize;
 	}
-	if(info->tailCall)
+	if(ILMember_IsGenericInstance(methodInfo))
 	{
-		CVMP_OUT_WORD2(COP_PREFIX_TAIL_CALLVIRT, argSize, methodInfo->index);
+		if(ILMethod_IsVirtualGeneric(methodInfo))
+		{
+			ILMethodInstance *methodInst = (ILMethodInstance *)methodInfo;
+
+			/* This is an instance of a virtual generic method. */
+			index = (index << 16) | methodInst->genMethod->index;
+			isVirtualGenericCall = 1;
+		}
+	}
+	if(isVirtualGenericCall)
+	{
+		CVMP_OUT_WORD2(COP_PREFIX_CALL_VIRTGEN, argSize, index);
 	}
 	else
 	{
-		CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, methodInfo->index);
+		if(info->tailCall)
+		{
+			CVMP_OUT_WORD2(COP_PREFIX_TAIL_CALLVIRT, argSize, index);
+		}
+		else
+		{
+			CVM_OUT_DWIDE(COP_CALL_VIRTUAL, argSize, index);
+		}
 	}
 	AdjustForCall(coder, info, returnItem);
 }

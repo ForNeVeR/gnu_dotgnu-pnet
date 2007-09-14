@@ -16,6 +16,8 @@ libILImage_a_SOURCES = assembly.c \
 					   debug_writer.c \
 					   errors.c \
 					   generic.c \
+					   generic_member.c \
+					   generic_class.c \
 					   image.c \
 					   image.h \
 					   item.c \

@@ -582,6 +582,11 @@ extern	"C" {
 #define COP_PREFIX_REPL_WORD_N			0x8D
 
 /*
+* Used to called an instance of a virtual generic method.
+*/
+#define COP_PREFIX_CALL_VIRTGEN			0x8E
+
+/*
  * Definition of a CVM stack word which can hold
  * either 32-bit quantities or pointers.
  */

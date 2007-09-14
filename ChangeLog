@@ -1,4 +1,40 @@
 2007-09-11  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+	* engine/cvm.h: Define the new cvm opcode COP_PREFIX_CALL_VIRTGEN to
+	call a instance of a virtual generic method.
+	* engine/cvm_call.c Implementing the new opcode COP_PREFIX_CALL_VIRTGEN.
+	* engine/cvmc.c Added a new include il_program.h
+	* engine/cvmc_call.c CVMCoder_CallVirtual now handle virtual generic method instances.
+	* engine/layout.c LayoutClass now handles classes that inherits or implements generic 
+	classes or interfaces.
+	* engine/lib_type.c NameOutputClassName now handles generic instance classes.
+	* engine/verify.c Handling of generic local variables in methods.
+	* engine/verify_call.c GetMethodToken handles generic method references.
+	* engine/verify_obj.c GetFieldToken now handles generic field references.
+	* engine/verify_ptr.c GetClassToken now handles generic class references.
+	* image/class.c Set the class name when creating a wrapper.
+	* image/generic.c Split of the code into two different files: generic_member.c for
+	functions related to generic class members and generic_class.c for functions related to 
+	generic classes.
+	* image/generic_member.c New file for functions related to generic member classes.
+	* image/generic_class.c New file for functions related to generic classes.
+	* image/member.c ILMemberAccessible now handles generic members.
+	* image/meta_types.c ILGetEnumType now handles generic enum types.
+	* image/program.h Added a new define for the initial size of the method vtable.
+	Added two new structures ILMethodVTableItem and ILMethodVTable to support dynamic
+	vtables for virtual generic methods.
+	Added a new member to the ILMethod struct to support vtables in methods.
+	Added a new struct ILMethodInstance that represent a method instance.
+	* include/il_program.h Added a new typedef for ILMethodInstance.
+	ILClassInstantiate now receive the method type arguments as parameter.
+	Added function prototypes for the following functions: ILClassGetTypeArguments,
+	ILClassGetGenericDef, ILClassExpand, ILClassIsExpanded, ILClassResolveToInstance,
+	ILClassLookupMethodInstance, ILMemberResolveToInstance, ILMethodSpecToMethod,
+	ILMethodSetVirtualAncestor, ILMethodGetInstance, ILMethodAddInstance,
+	ILMethodGetClassTypeArguments, ILMethodGetMethodTypeArguments.
+	Added the following macros ILMember_IsGenericInstance, ILMethod_IsVirtualGeneric,
+	ILClass_IsGenericInstance
+	* image/Makefile.am added new source files generic_member.c and generic_class.c
+2007-09-11  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
 	* engine/cvm_stack.c Fixed CVM documentation for COP_PREFIX_REPL_WORD_N.
 	* engine/verify_call.c Constrained callvirt for value types should be handled as
 	a normal call (non virtual).

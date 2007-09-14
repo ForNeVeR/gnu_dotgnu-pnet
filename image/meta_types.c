@@ -979,9 +979,29 @@ char *ILTypeToName(ILType *type)
 
 ILType *ILTypeGetEnumType(ILType *type)
 {
-	if(ILType_IsValueType(type))
+	ILClass *classInfo = 0;
+
+	if(ILType_IsWith(type))
+	{		
+		ILType *valueType = ILTypeGetWithMain(type);
+
+		if(ILType_IsValueType(valueType))
+		{
+			ILClass *genInfo = ILClassResolve(ILType_ToValueType(valueType));
+
+			classInfo = ILClassInstantiate(ILClassToImage(genInfo), type, type, 0);
+			if(!classInfo)
+			{
+				return 0;
+			}
+		}
+	}
+	else if(ILType_IsValueType(type))
 	{
-		ILClass *classInfo = ILClassResolve(ILType_ToValueType(type));
+		classInfo = ILClassResolve(ILType_ToValueType(type));
+	}
+	if(classInfo)
+	{
 		ILClass *parent = ILClass_Parent(classInfo);
 		if(parent)
 		{

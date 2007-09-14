@@ -62,6 +62,7 @@ extern	"C" {
  * To enable parameter / locals optimizations uncomment the following define.
  */
 /* #define _IL_JIT_OPTIMIZE_LOCALS 1 */
+#define _IL_JIT_OPTIMIZE_LOCALS 1
 
 /*
  * To defer the initialization of the locals uncomment the following define.

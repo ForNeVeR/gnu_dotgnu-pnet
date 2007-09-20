@@ -37,13 +37,16 @@ TREECC_UNUSED_SRCOUT = \
 
 TREECC_OUTPUT = $(TREECC_SRCOUT) $(TREECC_UNUSED_SRCOUT) cs_defs.h
 
-EXTRA_DIST = $(TREECC_INPUTS)
+CS_LOOKUP_INPUTS = cs_lookup_member.c
+
+EXTRA_DIST = $(TREECC_INPUTS) $(CS_LOOKUP_INPUTS)
 
 libILCSharp_a_SOURCES  = cs_attrs.c \
 						 cs_gather.c \
 						 cs_grammar.y \
 						 cs_internal.h \
 						 cs_lookup.c \
+						 cs_lookup_member.h \
 						 cs_modifiers.c \
 						 cs_rename.h \
 						 cs_scanner.l \

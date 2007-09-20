@@ -1175,6 +1175,18 @@ ILNode_SemAnalysisType(ILNode_AttrQualIdent)
 }
 
 /*
+ * Perform semantic analysis for generic parameters.
+ */
+ILNode_SemAnalysis(ILNode_GenericTypeParameter),
+ILNode_SemAnalysis(ILNode_GenericTypeParameters),
+ILNode_SemAnalysis(ILNode_GenericConstraint)
+{
+	/* This should never be called because they are handled
+	   during type gathering */
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for local and argument variables.
  */
 ILNode_SemAnalysis(ILNode_LocalVar),

@@ -87,12 +87,13 @@ int CCPluginInit(void)
 	{
 		CSNoHideBySig = 0;
 	}
+	CSMemberInfoInit();
 	return 1;
 }
 
 void CCPluginShutdown(int status)
 {
-	/* Nothing to do here */
+	CSMemberInfoDestroy();
 }
 
 int CCPluginParse(void)

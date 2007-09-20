@@ -22,6 +22,7 @@
  */
 
 #include <codegen/cg_nodes.h>
+#include <il_profile.h>
 #include "il_dumpasm.h"
 
 /*
@@ -168,26 +169,12 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 		ILDumpIdentifier(info->asmOutput, ILClass_Name(classInfo), 0,
 						 IL_DUMP_QUOTE_NAMES);
 
+	#if IL_VERSION_MAJOR > 1
 		/* Output the generic parameters, if any */
-		if(ILGenericParGetNumParams(ILToProgramItem(classInfo)) > 0)
-		{
-			ILUInt32 number = 0;
-			ILGenericPar *genPar;
-			putc('<', info->asmOutput);
-			while((genPar = ILGenericParGetFromOwner
-					(ILToProgramItem(classInfo), number)) != 0)
-			{
-				if(number > 0)
-				{
-					fputs(", ", info->asmOutput);
-				}
-				/* TODO: generic type constraints */
-				ILDumpIdentifier(info->asmOutput, ILGenericPar_Name(genPar),
-								 0, IL_DUMP_QUOTE_NAMES);
-				++number;
-			}
-			putc('>', info->asmOutput);
-		}
+		ILDAsmDumpGenericParams(info->image, info->asmOutput,
+								ILToProgramItem(classInfo),
+								IL_DUMP_QUOTE_NAMES);
+	#endif /* IL_VERSION_MAJOR > 1 */
 
 		/* Output the name of the parent class */
 		if(ILClass_ParentRef(classInfo) != 0)
@@ -799,7 +786,11 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	}
 	ILDumpMethodType(outstream, info->image,
 					 ILMethod_Signature(method),
+#if IL_VERSION_MAJOR > 1
+					 IL_DUMP_QUOTE_NAMES | IL_DUMP_GENERIC_PARAMS, 0,
+#else	/* IL_VERSION_MAJOR == 1 */
 					 IL_DUMP_QUOTE_NAMES, 0,
+#endif	/* IL_VERSION_MAJOR == 1 */
 					 ILMethod_Name(method), method);
 	putc(' ', outstream);
 	ILDumpFlags(outstream, ILMethod_ImplAttrs(method),

@@ -600,6 +600,18 @@ struct _tagILSwitchValue
 	int baseAccess;
 	%nocreate long saveStack = {0};
 }
+%node ILNode_GenericTypeParameter ILNode_Dummy =
+{
+	ILUInt32	num;
+	const char *name;
+	ILUInt32	constraint;
+	ILNode_List *typeConstraints;
+}
+%node ILNode_GenericTypeParameters ILNode_Dummy =
+{
+	ILUInt32	numTypeParams;
+	ILNode_List *typeParams;
+}
 
 %output "cg_ainit.c"
 
@@ -877,6 +889,7 @@ struct _tagILSwitchValue
 	ILUInt32	modifiers;
 	ILNode	   *type;
 	ILNode	   *name;
+	ILNode	   *typeFormals;	
 	ILNode	   *params;
 	ILNode     *body;
 	%nocreate ILMethod *methodInfo  = {0};

@@ -1144,6 +1144,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 											IL_META_METHODDEF_HIDE_BY_SIG,
 											0,
 											ILQualIdentSimple("Main"),
+											0,
 											list,
 											helperBody);
 			}

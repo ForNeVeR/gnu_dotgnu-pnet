@@ -20,176 +20,11 @@
 
 #include "cs_internal.h"
 
+#include "cs_lookup_member.c"
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
-
-/*
- * Extra member kinds.
- */
-#define	CS_MEMBERKIND_TYPE			20
-#define	CS_MEMBERKIND_TYPE_NODE		21
-#define	CS_MEMBERKIND_NAMESPACE		22
-
-/*
- * A list of members that results from a lookup on a type.
- */
-typedef struct _tagCSMemberInfo CSMemberInfo;
-struct _tagCSMemberInfo
-{
-	ILProgramItem *member;
-	ILClass       *owner;
-	short		   kind;
-	short		   form;
-	CSMemberInfo  *next;
-};
-#define	CS_MEMBER_LOOKUP_MAX	4
-typedef struct _tagCSMemberLookupInfo CSMemberLookupInfo;
-struct _tagCSMemberLookupInfo
-{
-	int			   num;
-	CSMemberInfo  *members;
-	CSMemberInfo  *lastMember;
-
-};
-
-/*
- * Iterator control structure for CSMemberLookupInfo.
- */
-typedef struct
-{
-	CSMemberLookupInfo *info;
-	CSMemberInfo       *current;
-	CSMemberInfo       *last;
-
-} CSMemberLookupIter;
-
-/*
- * Initialize a member results set.
- */
-static void InitMembers(CSMemberLookupInfo *results)
-{
-	results->num = 0;
-	results->members = 0;
-	results->lastMember = 0;
-}
-
-/*
- * Add a member to a results set.
- */
-static void AddMember(CSMemberLookupInfo *results,
-					  ILProgramItem *member, ILClass *owner,
-					  int kind)
-{
-	CSMemberInfo *info;
-
-	/* Check to make sure that the member isn't already in the list.
-	   This can happen when the same member is located along different
-	   paths in an interface inheritance hierarchy */
-	info = results->members;
-	while(info != 0)
-	{
-		if(info->member == member)
-		{
-			return;
-		}
-		info = info->next;
-	}
-
-	/* Add the new member to the list */
-	info = (CSMemberInfo *)ILMalloc(sizeof(CSMemberInfo));
-	if(!info)
-	{
-		CCOutOfMemory();
-	}
-	info->member = member;
-	info->owner = owner;
-	info->kind = kind;
-	info->form = 0;
-	info->next = 0;
-	if(results->lastMember)
-	{
-		results->lastMember->next = info;
-	}
-	else
-	{
-		results->members = info;
-	}
-	results->lastMember = info;
-	++(results->num);
-}
-
-/*
- * Free the contents of a member lookup results list.
- */
-static void FreeMembers(CSMemberLookupInfo *results)
-{
-	CSMemberInfo *info, *next;
-	info = results->members;
-	while(info != 0)
-	{
-		next = info->next;
-		ILFree(info);
-		info = next;
-	}
-	results->num = 0;
-	results->members = 0;
-	results->lastMember = 0;
-}
-
-/*
- * Initialize a member iterator.
- */
-static void MemberIterInit(CSMemberLookupIter *iter,
-						   CSMemberLookupInfo *results)
-{
-	iter->info = results;
-	iter->current = 0;
-	iter->last = 0;
-}
-
-/*
- * Get the next item from a member iterator.
- */
-static CSMemberInfo *MemberIterNext(CSMemberLookupIter *iter)
-{
-	if(iter->current)
-	{
-		iter->last = iter->current;
-		iter->current = iter->current->next;
-	}
-	else
-	{
-		iter->current = iter->info->members;
-		iter->last = 0;
-	}
-	return iter->current;
-}
-
-/*
- * Remove the current item from a member iterator.
- */
-static void MemberIterRemove(CSMemberLookupIter *iter)
-{
-	if(iter->current == iter->info->lastMember)
-	{
-		iter->info->lastMember = iter->last;
-	}
-	if(iter->last)
-	{
-		iter->last->next = iter->current->next;
-		ILFree(iter->current);
-		iter->current = iter->last;
-	}
-	else
-	{
-		iter->info->members = iter->current->next;
-		ILFree(iter->current);
-		iter->current = 0;
-		iter->last = 0;
-	}
-	--(iter->info->num);
-}
 
 /*
  * Get the method underlying a member, for permission and access checks.
@@ -523,7 +358,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 						/* Remove "testMember" from the method group */
 						tempMember = testMember->next;
 						prevMember->next = tempMember;
-						ILFree(testMember);
+						CSMemberInfoFree(testMember);
 						testMember = tempMember;
 						--(results->num);
 						continue;
@@ -1051,10 +886,15 @@ ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule)
 {
 	if(genInfo->currentMethod)
 	{
-		return ILMethod_Owner
-		  (((ILNode_MethodDeclaration *)(genInfo->currentMethod))->methodInfo);
+		ILNode_MethodDeclaration *method;
+
+		method = (ILNode_MethodDeclaration *)(genInfo->currentMethod);
+		if(method->methodInfo)
+		{
+			return ILMethod_Owner(method->methodInfo);
+		}
 	}
-	else if(genInfo->currentClass &&
+	if(genInfo->currentClass &&
 	        ((ILNode_ClassDefn *)(genInfo->currentClass))->classInfo)
 	{
 		return ((ILNode_ClassDefn *)(genInfo->currentClass))->classInfo;
@@ -1249,12 +1089,79 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	ILNode_ClassDefn *nestedParent;
 	ILNode *child;
 	ILNode_ListIter iter;
-	int formalNum;
 	ILType *formalType;
 	CSSemValue value;
 	ILMethod *caller;
 	int switchToStatics;
 	ILNode *aliasNode;
+
+#if IL_VERSION_MAJOR > 1
+	/* Scan the method type formals for a match */
+	if(genInfo->currentMethod)
+	{
+		ILNode_GenericTypeParameters *genParams;
+
+		genParams =  
+			(ILNode_GenericTypeParameters *)
+				((ILNode_MethodDeclaration *)(genInfo->currentMethod))->typeFormals;
+		if(genParams && (genParams->numTypeParams > 0))
+		{
+			ILNode_GenericTypeParameter *genParam;
+
+			ILNode_ListIter_Init(&iter, genParams->typeParams);
+			while((genParam = (ILNode_GenericTypeParameter *)ILNode_ListIter_Next(&iter)) != 0)
+			{
+				if(!strcmp(genParam->name, name))
+				{
+					formalType = ILTypeCreateVarNum
+						(genInfo->context, IL_TYPE_COMPLEX_MVAR, genParam->num);
+					if(!formalType)
+					{
+						CCOutOfMemory();
+					}
+					CSSemSetType(value, formalType);
+					return value;
+				}
+			}
+		}
+	}
+
+	if(genInfo->currentClass)
+	{
+		ILNode_ClassDefn *defn = (ILNode_ClassDefn *)(genInfo->currentClass);
+
+		while(defn)
+		{
+			ILNode_GenericTypeParameters *genParams;
+
+			genParams =  
+				(ILNode_GenericTypeParameters *)(defn->typeFormals);
+
+			if(genParams)
+			{
+				/* Scan the type formals for a match */
+				ILNode_GenericTypeParameter *genParam;
+
+				ILNode_ListIter_Init(&iter, genParams->typeParams);
+				while((genParam = (ILNode_GenericTypeParameter *)ILNode_ListIter_Next(&iter)) != 0)
+				{
+					if(!strcmp(genParam->name, name))
+					{
+						formalType = ILTypeCreateVarNum
+							(genInfo->context, IL_TYPE_COMPLEX_VAR, genParam->num);
+						if(!formalType)
+						{
+							CCOutOfMemory();
+						}
+						CSSemSetType(value, formalType);
+						return value;
+					}
+				}
+			}
+			defn = defn->nestedParent;
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* If we are within type gathering, then search the nesting
 	   parents for a nested type that matches our requirements */
@@ -1271,25 +1178,6 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 			}
 			nestedParent = nestedParent->nestedParent;
 		}
-	}
-
-	/* Scan the method formals for a match */
-	ILNode_ListIter_Init(&iter, genInfo->currentMethodFormals);
-	formalNum = 0;
-	while((child = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		if(!strcmp(ILQualIdentName(child, 0), name))
-		{
-			formalType = ILTypeCreateVarNum
-				(genInfo->context, IL_TYPE_COMPLEX_MVAR, formalNum);
-			if(!formalType)
-			{
-				CCOutOfMemory();
-			}
-			CSSemSetType(value, formalType);
-			return value;
-		}
-		++formalNum;
 	}
 
 	/* Find the type to start looking at and the scope to use for accesses */
@@ -1342,25 +1230,6 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 
 	/* Clear the results buffer */
 	InitMembers(&results);
-
-	/* Scan the type formals for a match */
-	ILNode_ListIter_Init(&iter, genInfo->currentTypeFormals);
-	formalNum = 0;
-	while((child = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		if(!strcmp(ILQualIdentName(child, 0), name))
-		{
-			formalType = ILTypeCreateVarNum
-				(genInfo->context, IL_TYPE_COMPLEX_VAR, formalNum);
-			if(!formalType)
-			{
-				CCOutOfMemory();
-			}
-			CSSemSetType(value, formalType);
-			return value;
-		}
-		++formalNum;
-	}
 
 	/* Scan all namespaces that enclose the current context */
 	namespace = (ILNode_Namespace *)(genInfo->currentNamespace);
@@ -1813,94 +1682,6 @@ CSSemValue CSResolveIndexers(ILGenInfo *genInfo, ILNode *node,
 	/* There are no applicable indexers */
 	CSSemSetValueKind(value, CS_SEMKIND_VOID, ILType_Invalid);
 	return value;
-}
-
-void *CSCreateMethodGroup(ILMethod *method)
-{
-	CSMemberLookupInfo results;
-
-	/* Clear the results buffer */
-	InitMembers(&results);
-
-	/* Add the method as a group member */
-	AddMember(&results, ILToProgramItem(method),
-			  ILMethod_Owner(method), IL_META_MEMBERKIND_METHOD);
-
-	/* Return the group to the caller */
-	return results.members;
-}
-
-ILProgramItem *CSGetGroupMember(void *group, unsigned long n)
-{
-	CSMemberInfo *member = (CSMemberInfo *)group;
-	while(member != 0)
-	{
-		if(n <= 0)
-		{
-			return (ILProgramItem *)(member->member);
-		}
-		--n;
-		member = member->next;
-	}
-	return 0;
-}
-
-void *CSRemoveGroupMember(void *group, unsigned long n)
-{
-	CSMemberInfo *member = (CSMemberInfo *)group;
-	CSMemberInfo *last = 0;
-	while(member != 0)
-	{
-		if(n <= 0)
-		{
-			if(last)
-			{
-				last->next = member->next;
-				ILFree(member);
-				return group;
-			}
-			else
-			{
-				last = member->next;
-				ILFree(member);
-				return (void *)last;
-			}
-		}
-		--n;
-		last = member;
-		member = member->next;
-	}
-	return group;
-}
-
-void CSSetGroupMemberForm(void *group, unsigned long n, int form)
-{
-	CSMemberInfo *member = (CSMemberInfo *)group;
-	while(member != 0)
-	{
-		if(n <= 0)
-		{
-			member->form = (short)form;
-			return;
-		}
-		--n;
-		member = member->next;
-	}
-}
-
-int CSGetGroupMemberForm(void *group, unsigned long n)
-{
-	CSMemberInfo *member = (CSMemberInfo *)group;
-	while(member != 0)
-	{
-		if(n <= 0)
-		{
-			return member->form;
-		}
-		--n;
-		member = member->next;
-	}
-	return 0;
 }
 
 #ifdef	__cplusplus

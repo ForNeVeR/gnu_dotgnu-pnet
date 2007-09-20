@@ -186,8 +186,8 @@ void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 	}
 }
 
-void ILAsmDumpGenericParams(ILImage *image, FILE *outstream,
-							ILProgramItem *item, int flags)
+void ILDAsmDumpGenericParams(ILImage *image, FILE *outstream,
+							 ILProgramItem *item, int flags)
 {
 	ILUInt32 genericNum, genParFlags;
 	ILGenericPar *genPar;

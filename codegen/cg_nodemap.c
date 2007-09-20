@@ -192,8 +192,10 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 	context->currentScope = info->currentScope;
 	context->currentClass = info->currentClass;
 	context->currentNamespace = info->currentNamespace;
+#if IL_VERSION_MAJOR > 1
 	context->currentTypeFormals = info->currentTypeFormals;
 	context->currentMethodFormals = info->currentMethodFormals;
+#endif	/* IL_VERSION_MAJOR > 1 */
 	context->overflowInsns = info->overflowInsns;
 	context->overflowChanged = info->overflowChanged;
 
@@ -238,14 +240,18 @@ ILNode *ILEnterProgramItemContext(ILGenInfo *info, ILProgramItem *item,
 		{
 			info->currentScope = globalScope;
 		}
+	#if IL_VERSION_MAJOR > 1
 		info->currentTypeFormals = classNode->typeFormals;
 		info->currentMethodFormals = 0;
+	#endif	/* IL_VERSION_MAJOR > 1 */
 	}
 	else
 	{
 		info->currentScope = globalScope;
+	#if IL_VERSION_MAJOR > 1
 		info->currentTypeFormals = 0;
 		info->currentMethodFormals = 0;
+	#endif	/* IL_VERSION_MAJOR > 1 */
 	}
 	info->overflowInsns = info->overflowGlobal;
 	info->overflowChanged = 0;
@@ -259,8 +265,10 @@ void ILLeaveProgramItemContext(ILGenInfo *info, ILGenItemContext *context)
 	info->currentScope = context->currentScope;
 	info->currentClass = context->currentClass;
 	info->currentNamespace = context->currentNamespace;
+#if IL_VERSION_MAJOR > 1
 	info->currentTypeFormals = context->currentTypeFormals;
 	info->currentMethodFormals = context->currentMethodFormals;
+#endif	/* IL_VERSION_MAJOR > 1 */
 	info->overflowInsns = context->overflowInsns;
 	info->overflowChanged = context->overflowChanged;
 }

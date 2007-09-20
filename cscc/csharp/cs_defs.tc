@@ -94,8 +94,15 @@
 }
 %node ILNode_GenericReference ILNode_Dummy =
 {
-	ILNode *type;
-	ILNode *actuals;
+	ILNode	   *type;
+	ILUInt32	numArgs;
+	ILNode	   *typeArguments;
+}
+%node ILNode_GenericConstraint ILNode_Dummy =
+{
+	const char  *name;
+	ILUInt32	constraint;
+	ILNode_List *typeConstraints;
 }
 
 /*

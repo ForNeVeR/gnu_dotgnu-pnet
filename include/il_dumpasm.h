@@ -216,8 +216,8 @@ void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 /*
  * Dump the generic parameters of a generic class or method.
  */
-void ILAsmDumpGenericParams(ILImage *image, FILE *outstream,
-							ILProgramItem *item, int flags);
+void ILDAsmDumpGenericParams(ILImage *image, FILE *outstream,
+							 ILProgramItem *item, int flags);
 
 /*
  * Dump the ".data" and ".tls" sections.

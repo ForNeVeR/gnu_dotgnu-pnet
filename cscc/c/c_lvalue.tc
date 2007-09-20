@@ -28,6 +28,16 @@ ILNode_CSemAnalysis(ILNode_Identifier)
 	return CSemValueError;
 }
 
+/*
+ * Perform semantic analysis for generic parameters.
+ */
+ILNode_CSemAnalysis(ILNode_GenericTypeParameter),
+ILNode_CSemAnalysis(ILNode_GenericTypeParameters)
+{
+	/* This is not used in C */
+	return CSemValueError;
+}
+
 %{
 
 /*

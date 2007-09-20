@@ -21,8 +21,10 @@
 #ifndef	_CSCC_CS_INTERNAL_H
 #define	_CSCC_CS_INTERNAL_H
 
+#include <il_profile.h>
 #include <cscc/csharp/cs_defs.h>
 #include <cscc/common/cc_main.h>
+#include <cscc/csharp/cs_lookup_member.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -273,7 +275,8 @@ void CSAddDefaultMemberAttr(ILGenInfo *info, ILClass *classInfo,
  * Insert generic type actuals into an expression node at
  * the right-most position.
  */
-ILNode *CSInsertGenericReference(ILNode *mainNode, ILNode *actuals);
+ILNode *CSInsertGenericReference(ILNode *mainNode, ILUInt32 numActuals,
+								 ILNode *actuals);
 
 /*
  * Insert a type at the beginning of a type actuals list.

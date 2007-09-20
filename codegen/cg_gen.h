@@ -21,6 +21,8 @@
 #ifndef	_CODEGEN_CG_GEN_H
 #define	_CODEGEN_CG_GEN_H
 
+#include "il_profile.h"
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -146,8 +148,10 @@ struct _tagILGenInfo
 	ILArrayInit    *arrayInit;			/* Array initialization information */
 	ILHashTable    *itemHash;			/* Hash program items to nodes */
 	ILVarUsageTable *varUsage;			/* Variable usage table */
+#if IL_VERSION_MAJOR > 1
 	ILNode		   *currentTypeFormals;	/* Current generic type formals */
 	ILNode		   *currentMethodFormals; /* Current generic method formals */
+#endif	/* IL_VERSION_MAJOR > 1 */
 	ILLabel			gotoPtrLabel;		/* Label for "goto *" operations */
 
 };

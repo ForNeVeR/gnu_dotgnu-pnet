@@ -33,8 +33,10 @@ typedef struct
 	ILScope	*currentScope;
 	ILNode	*currentClass;
 	ILNode	*currentNamespace;
+#if IL_VERSION_MAJOR > 1
 	ILNode	*currentTypeFormals;
 	ILNode	*currentMethodFormals;
+#endif	/* IL_VERSION_MAJOR > 1 */
 	int		 overflowInsns;
 	int		 overflowChanged;
 

@@ -407,8 +407,8 @@ static void DumpClassName(FILE *outstream, ILImage *image,
 	}
 
 	/* Dump the generic parameters, if any are present */
-	ILAsmDumpGenericParams(image, outstream,
-						   ILToProgramItem(info), flags);
+	ILDAsmDumpGenericParams(image, outstream,
+							ILToProgramItem(info), flags);
 }
 
 /*

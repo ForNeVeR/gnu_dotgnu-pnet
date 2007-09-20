@@ -1378,10 +1378,7 @@ ILMember *ILClassNextMember(ILClass *info, ILMember *last)
 			return info->firstMember;
 		}
 	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 ILMember *ILClassNextMemberByKind(ILClass *info, ILMember *last, int kind)

@@ -999,7 +999,7 @@ ClassDeclaration
 									(ILNode_BaseInit_create(), 0)));
 			ILNode *ctor = ILNode_MethodDeclaration_create
 						  (0, JavaModifiersToConstructorAttrs(cname, ctorMods),
-						   0 /* "void" */, cname,
+						   0 /* "void" */, cname, 0,
 						   ILNode_Empty_create(), body);
 			if(!classBody)
 			{
@@ -1143,6 +1143,7 @@ ConstructorDeclaration
 											attrs,		/* modifiers */
 											0, 			/* "void" */
 											cname,  	/* name */
+											0,			/* typeFormals */
 											$3, 		/* params */
 											$5);		/* body */
 		CloneLine($$, $2);
@@ -1168,6 +1169,7 @@ MethodDeclaration
 											attrs,		/* modifiers */
 											$2,			/* retval */
 											cname,  	/* name */
+											0,			/* typeFormals */
 											$4, 		/* params */
 											$6);		/* body */
 		CloneLine($$, $2);
@@ -1270,7 +1272,7 @@ InterfaceMethodDeclarator
 		ILUInt32 attrs =JavaModifiersToMethodAttrs($3,$1);
 		attrs = attrs | IL_META_METHODDEF_ABSTRACT;
 		$$ = ILNode_MethodDeclaration_create
-					(NULL, attrs, $2, $3, $4, 0);
+					(NULL, attrs, $2, $3, 0, $4, 0);
 		CloneLine($$, $3);
 	}
 	| ModifiersOpt error Identifier FormalParameters ';' {

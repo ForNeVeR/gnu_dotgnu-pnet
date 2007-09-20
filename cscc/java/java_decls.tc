@@ -172,6 +172,7 @@ ILNode_JSemAnalysis(ILNode_ClassDefn)
 						IL_META_METHODDEF_RT_SPECIAL_NAME,
 					 0 /* void */,
 					 ILQualIdentSimple(ILInternString(".cctor", 6).string),
+					 0 /* no type formals */,
 					 0 /* no parameters */,
 					 ILNode_NewScope_create(node->staticCtors));
 			methodInfo = ILMethodCreate(node->classInfo, 0, ".cctor",
@@ -620,6 +621,7 @@ void JavaAddInitCtor(ILGenInfo *info, ILNode *stmt)
 						IL_META_METHODDEF_HIDE_BY_SIG,
 					 0 /* void */,
 					 ILQualIdentSimple(ILInternString(".init", 5).string),
+					 0 /* no type formals */,
 					 0 /* no parameters */,
 					 ILNode_NewScope_create(bodyList));
 			methodInfo = ILMethodCreate(defn->classInfo, 0, ".init",

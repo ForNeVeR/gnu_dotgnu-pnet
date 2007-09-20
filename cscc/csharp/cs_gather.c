@@ -118,6 +118,238 @@ static const char *GetFullAndBasicNames(ILNode *name, const char **basicName)
 	return result;
 }
 
+#if IL_VERSION_MAJOR > 1
+/*
+ * Add the generic type contraints to the generic type parameter.
+ */
+static void AddGenericConstraints(ILGenInfo *info,
+								  ILGenericPar *genPar,
+								  ILNode_List *constraints)
+{
+	if(constraints)
+	{
+		ILUInt32 first = 1;
+		ILNode_ListIter iter;
+		ILNode *constraint;
+
+		ILNode_ListIter_Init(&iter, (ILNode *)constraints);
+		while((constraint = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILType *constraintType;
+
+			constraintType = CSSemType(constraint, info, &constraint);
+			if(constraintType)
+			{
+				ILClass *constraintClass = ILType_ToClass(constraintType);
+
+				if(first)
+				{
+					if(!ILClass_IsInterface(constraintClass))
+					{
+						if(ILGenericParGetFlags(genPar) & (IL_META_GENPARAM_CLASS_CONST |
+														   IL_META_GENPARAM_VALUETYPE_CONST))
+						{
+							CCErrorOnLine(yygetfilename(constraint), yygetlinenum(constraint),
+										  "either class or valuetype or a non interface class can be supplied");
+						}
+					}
+					first = 0;
+				}
+				else
+				{
+					if(!ILClass_IsInterface(constraintClass))
+					{
+						CCErrorOnLine(yygetfilename(constraint), yygetlinenum(constraint),
+									  "only one non interface class can be supplied");
+					}
+				}
+
+				constraintClass = ILClassImport(info->image, constraintClass);
+
+				if(!ILGenericParAddConstraint(genPar, 0, 
+											  ILToProgramItem(constraintClass)))
+				{
+					CCOutOfMemory();
+				}
+			}
+		}
+	}
+}
+
+/*
+ * Add the given generic parameters to the program item.
+ */
+static void AddTypeFormals(ILGenInfo *info,
+						   ILProgramItem *owner,
+						   ILNode *typeFormals)
+{
+	if(owner && typeFormals)
+	{
+		ILNode_ListIter iter;
+		ILNode_GenericTypeParameter *genParam;
+		ILNode_GenericTypeParameters *genParams;
+
+		genParams = (ILNode_GenericTypeParameters *)typeFormals;
+		ILNode_ListIter_Init(&iter, genParams->typeParams);
+		while((genParam = 
+			(ILNode_GenericTypeParameter *)ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILGenericPar *genPar = ILGenericParCreate(info->image, 0,
+													  owner, genParam->num);
+			if(!genPar)
+			{
+				CCOutOfMemory();
+			}
+			if(!ILGenericParSetName(genPar, genParam->name))
+			{
+				CCOutOfMemory();
+			}
+			ILGenericParSetFlags(genPar, IL_MAX_UINT32, genParam->constraint);
+			AddGenericConstraints(info, genPar, genParam->typeConstraints);
+		}
+	}
+}
+
+static void _AddTypeFormalWithCheck(ILGenInfo *info,
+									ILProgramItem *owner,
+									ILNode_GenericTypeParameter *genParam,
+									ILUInt32 offset,
+									ILUInt32 *overridden)
+{
+	ILUInt32 current;
+	ILGenericPar *genPar;
+
+	genPar = ILGenericParCreate(info->image, 0, owner, genParam->num + offset);
+	if(!genPar)
+	{
+		CCOutOfMemory();
+	}
+	if(!ILGenericParSetName(genPar, genParam->name))
+	{
+		CCOutOfMemory();
+	}
+	ILGenericParSetFlags(genPar, IL_MAX_UINT32, genParam->constraint);
+
+	/* Check for duplicate names */
+	for(current = 0; current < offset; current++)
+	{
+		ILGenericPar *genParCheck = ILGenericParGetFromOwner(owner, current);
+
+		if(genParCheck)
+		{
+			if(!strcmp(ILGenericParGetName(genParCheck), genParam->name))
+			{
+				char buffer[31];
+
+				sprintf(buffer, "<_P%i>", *overridden);
+				if(!ILGenericParSetName(genParCheck, buffer))
+				{
+					CCOutOfMemory();
+				}
+				(*overridden)++;
+			}
+		}
+	}
+	AddGenericConstraints(info, genPar, genParam->typeConstraints);
+}
+
+static void _AddTypeFormalsToClassInner(ILGenInfo *info,
+										ILNode_ClassDefn *defn,
+										ILProgramItem *owner,
+										ILUInt32 *offset,
+										ILUInt32 *overridden)
+{
+	if(defn->nestedParent)
+	{
+		/* Add the deneric parameters of the nested parents first. */
+		_AddTypeFormalsToClassInner(info, defn->nestedParent,
+									owner, offset, overridden);
+	}
+	if(defn->typeFormals)
+	{
+		ILNode_ListIter iter;
+		ILNode_GenericTypeParameter *genParam;
+		ILNode_GenericTypeParameters *genParams;
+
+		genParams = (ILNode_GenericTypeParameters *)(defn->typeFormals);
+		ILNode_ListIter_Init(&iter, genParams->typeParams);
+		while((genParam = 
+			(ILNode_GenericTypeParameter *)ILNode_ListIter_Next(&iter)) != 0)
+		{
+			 _AddTypeFormalWithCheck(info, owner, genParam,
+									 *offset, overridden);
+		}
+		*offset += genParams->numTypeParams;
+	}
+}
+
+/*
+ * Add the generic parameters to a class.
+ * Handle the generic parameters consistent with the ECMA specs.
+ */
+static void AddTypeFormalsToClass(ILGenInfo *info,
+								  ILNode_ClassDefn *defn)
+{	
+	ILUInt32 overridden = 0;
+	ILUInt32 offset = 0;
+
+	if(defn->nestedParent)
+	{
+		_AddTypeFormalsToClassInner(info, defn->nestedParent,
+									ILToProgramItem(defn->classInfo),
+									&offset, &overridden);
+	}
+	if(defn->typeFormals)
+	{
+		ILNode_ListIter iter;
+		ILNode_GenericTypeParameter *genParam;
+		ILNode_GenericTypeParameters *genParams;
+
+		genParams = (ILNode_GenericTypeParameters *)(defn->typeFormals);
+		ILNode_ListIter_Init(&iter, genParams->typeParams);
+		while((genParam = 
+			(ILNode_GenericTypeParameter *)ILNode_ListIter_Next(&iter)) != 0)
+		{
+			 _AddTypeFormalWithCheck(info, ILToProgramItem(defn->classInfo),
+									 genParam, offset, &overridden);
+
+			/* Adjust the generic parameter number */
+			genParam->num += offset;
+		}
+	}
+}
+
+static void AddGenericParametersToClass(ILGenInfo *info, ILNode *classDefn)
+{
+	if(yyisa(classDefn, ILNode_ClassDefn))
+	{
+		ILNode *savedNamespace;
+		ILNode *savedClass;
+		ILNode_ClassDefn *defn = (ILNode_ClassDefn *)classDefn;
+
+		if(!(defn->classInfo) ||
+		   (defn->classInfo == (ILClass *)1) ||
+		   (defn->classInfo == (ILClass *)2))
+		{
+			return;
+		}
+
+		/* Set the namespace and class to use for resolving type names */
+		savedNamespace = info->currentNamespace;
+		info->currentNamespace = defn->namespaceNode;
+		savedClass = info->currentClass;
+		info->currentClass = classDefn;
+
+		/* Add the generic type parameters to the class */
+		AddTypeFormalsToClass(info, defn);
+
+		/* Restore the previous values. */
+		info->currentClass = savedClass;
+		info->currentNamespace = savedNamespace;
+	}
+}
+#endif	/* IL_VERSION_MAJOR > 1 */
+
 /*
  * Create the program structure for a type and all of its base types.
  * Returns the new end of the top-level type list.
@@ -140,12 +372,12 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	ILNode_ClassDefn *defn;
 	ILNode *savedNamespace;
 	ILNode *savedClass;
+#if IL_VERSION_MAJOR > 1
 	ILNode *savedTypeFormals;
+#endif	/* IL_VERSION_MAJOR > 1 */
 	ILProgramItem *nestedScope;
 	ILNode *node;
 	ILNode_ListIter iter;
-	ILUInt32 formalNum;
-	ILGenericPar *genPar;
 	ILClass *underlying;
 
 	/* Get the name and namespace for the type, for error reporting */
@@ -204,8 +436,10 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	info->currentNamespace = defn->namespaceNode;
 	savedClass = info->currentClass;
 	info->currentClass = (ILNode *)(defn->nestedParent);
+#if IL_VERSION_MAJOR > 1
 	savedTypeFormals = info->currentTypeFormals;
 	info->currentTypeFormals = defn->typeFormals;
+#endif	/* IL_VERSION_MAJOR > 1 */
 
 	/* Create all of the base classes */
 	numBases = CountBaseClasses(defn->baseClass);
@@ -335,7 +569,9 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	/* Restore the namespace, class, and type formals */
 	info->currentNamespace = savedNamespace;
 	info->currentClass = savedClass;
+#if IL_VERSION_MAJOR > 1
 	info->currentTypeFormals = savedTypeFormals;
+#endif	/* IL_VERSION_MAJOR > 1 */
 
 	/* Output an error if attempting to inherit from a sealed class */
 	if(parent)
@@ -383,24 +619,6 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 				CCOutOfMemory();
 			}
 		}
-	}
-
-	/* Add the type formals to the class definition */
-	ILNode_ListIter_Init(&iter, defn->typeFormals);
-	formalNum = 0;
-	while((node = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		genPar = ILGenericParCreate
-			(info->image, 0, ILToProgramItem(classInfo), formalNum);
-		if(!genPar)
-		{
-			CCOutOfMemory();
-		}
-		if(!ILGenericParSetName(genPar, ILQualIdentName(node, 0)))
-		{
-			CCOutOfMemory();
-		}
-		++formalNum;
 	}
 
 	/* Clean up */
@@ -955,6 +1173,14 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILClass *interface;
 	ILMember *interfaceMember;
 	ILClass *class1, *class2;
+#if IL_VERSION_MAJOR > 1
+	ILNode *savedMethod;
+
+	/* Save the current method context. */
+	savedMethod = info->currentMethod;
+	/* and set the method context for generic type parameter resolution */
+	info->currentMethod = (ILNode *)method;
+#endif	/* IL_VERSION_MAJOR > 1 */
 
 	/* Get the name of the method, and the interface member (if any) */
 	interface = 0;
@@ -1155,6 +1381,25 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		ILMethodSetCallConv(methodInfo, ILType_CallConv(signature));
 	}
 
+#if IL_VERSION_MAJOR > 1
+	/* Set the number of generic parameters in the method signature */
+	/* and mark the method as "generic" if generic type parameters are */
+	/* present */
+	if(method->typeFormals)
+	{
+		ILNode_GenericTypeParameters *genParams;
+
+		genParams = (ILNode_GenericTypeParameters *)(method->typeFormals);
+		ILTypeSetCallConv(signature, ILType_CallConv(signature) |
+									 IL_META_CALLCONV_GENERIC);
+		ILType_SetNumGen(signature, genParams->numTypeParams);
+		ILMethodSetCallConv(methodInfo, ILType_CallConv(signature));
+
+		AddTypeFormals(info, ILToProgramItem(methodInfo),
+					   method->typeFormals);
+	}
+#endif	/* IL_VERSION_MAJOR > 1 */
+
 	/* Set the signature for the method */
 	ILMemberSetSignature((ILMember *)methodInfo, signature);
 
@@ -1315,6 +1560,10 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 			ReportUnnecessaryNew(method->name, name);
 		}
 	}
+#if IL_VERSION_MAJOR > 1
+	/* Restore the previous method context */
+	info->currentMethod = savedMethod;
+#endif	/* IL_VERSION_MAJOR > 1 */
 }
 
 /*
@@ -2098,7 +2347,7 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 			IL_META_METHODDEF_HIDE_BY_SIG,
 		 member->returnType,
 		 ILQualIdentSimple(ILInternString("Invoke", -1).string),
-		 member->params, 0);
+		 0, member->params, 0);
 	
 	yysetfilename((ILNode*)decl,yygetfilename(member));
 	yysetlinenum((ILNode*)decl, yygetlinenum(member));
@@ -2131,6 +2380,7 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 			IL_META_METHODDEF_COMPILER_CONTROLLED,
 			ILNode_SystemType_create("IAsyncResult"),
 			ILQualIdentSimple(ILInternString("BeginInvoke", -1).string),
+			0,
 			(ILNode*)params,
 			0);
 
@@ -2164,6 +2414,7 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 			IL_META_METHODDEF_COMPILER_CONTROLLED,
 			member->returnType,
 			ILQualIdentSimple(ILInternString("EndInvoke", -1).string),
+			0,
 			(ILNode*)params,
 			0);
 	
@@ -2436,6 +2687,24 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 			
 			aliasScope=((ILNode_Namespace*)(defn->namespaceNode))->localScope;
 			
+		#if IL_VERSION_MAJOR > 1
+			if(defn->typeFormals)
+			{
+				/* Adjust the type name to be CLSCompliant. */
+				ILUInt32 numTypeParams;
+
+				numTypeParams = ((ILNode_GenericTypeParameters *)(defn->typeFormals))->numTypeParams;
+				if(numTypeParams > 0)
+				{
+					char buffer[261];
+
+					sprintf(buffer, "%s`%i", name, numTypeParams);
+			 		name = ILInternString(buffer, -1).string;
+					defn->name = name;
+				}
+			}
+		#endif	/* IL_VERSION_MAJOR > 1 */
+
 			error = ILScopeDeclareType(parentScope, child,
 								   	   name, namespace, &scope,
 								   	   &origDefn,aliasScope);
@@ -2538,6 +2807,34 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 	{
 		CreateType(info, globalScope, list, systemObject, child);
 	}
+
+#if IL_VERSION_MAJOR > 1
+	/* Add the generic type parameters to each class */
+	ILNode_ListIter_Init(&iterator, list);
+	while((child = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		if(yykind(child) == yykindof(ILNode_ClassDefn))
+		{
+			AddGenericParametersToClass(info, child);
+
+			/* process the nested classes */
+			if(((ILNode_ClassDefn*)child)->nestedClasses)
+			{
+				ILNode_ListIter iterator2;
+
+				ILNode_ListIter_Init(&iterator2, 
+									 ((ILNode_ClassDefn*)child)->nestedClasses);
+				while((child = ILNode_ListIter_Next(&iterator2)) != 0)
+				{
+					if(yykind(child) == yykindof(ILNode_ClassDefn))
+					{
+						AddGenericParametersToClass(info, child);
+					}
+				}
+			}
+		}
+	}
+#endif	/* IL_VERSION_MAJOR > 1 */
 
 	/* Create the class members within each type */
 	ILNode_ListIter_Init(&iterator, list);

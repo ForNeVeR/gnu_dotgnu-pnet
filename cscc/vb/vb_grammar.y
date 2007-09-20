@@ -1351,7 +1351,7 @@ ClassDeclaration
 									(ILNode_BaseInit_create(), 0)));
 					ILNode *ctor = ILNode_MethodDeclaration_create
 						  (0, VBModifiersToConstructorAttrs(cname, ctorMods, 0),
-						   0 /* "void" */, cname,
+						   0 /* "void" */, cname, 0,
 						   ILNode_Empty_create(), body);
 					if(!classBody)
 					{
@@ -1425,7 +1425,7 @@ ModuleDeclaration
 									(ILNode_BaseInit_create(), 0)));
 					ILNode *ctor = ILNode_MethodDeclaration_create
 						  (0, VBModifiersToConstructorAttrs(cname, ctorMods, 0),
-						   0 /* "void" */, cname,
+						   0 /* "void" */, cname, 0,
 						   ILNode_Empty_create(), body);
 					if(!classBody)
 					{
@@ -1577,7 +1577,7 @@ SubDeclaration
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, ILNode_PrimitiveType_create
 										(IL_META_ELEMTYPE_VOID),
-						 $4, $5, $8);
+						 $4, 0, $5, $8);
 				CloneLine($$, $4);
 				/* TODO: HandlesOrImplements clause */
 			}
@@ -1599,7 +1599,7 @@ FunctionDeclaration
 				funcattrs = CombineAttributes
 					($1, ILAttrTargetType_Return, $6.attrs);
 				$$ = ILNode_MethodDeclaration_create
-						(funcattrs, attrs, $6.type, $4, $5, $9);
+						(funcattrs, attrs, $6.type, $4, 0, $5, $9);
 				CloneLine($$, $4);
 				/* TODO: HandlesOrImplements clause */
 			}
@@ -1621,7 +1621,7 @@ ExternalSubDeclaration
 				$$ = ILNode_MethodDeclaration_create
 						($1, attrs, ILNode_PrimitiveType_create
 										(IL_META_ELEMTYPE_VOID),
-						 $6, $9, 0);
+						 $6, 0, $9, 0);
 				CloneLine($$, $6);
 				/* TODO: PInvoke information */
 			}
@@ -1639,7 +1639,7 @@ ExternalFunctionDeclaration
 				funcattrs = CombineAttributes
 					($1, ILAttrTargetType_Return, $10.attrs);
 				$$ = ILNode_MethodDeclaration_create
-						(funcattrs, attrs, $10.type, $6, $9, 0);
+						(funcattrs, attrs, $10.type, $6, 0, $9, 0);
 				CloneLine($$, $6);
 				/* TODO: PInvoke information */
 			}
@@ -1802,7 +1802,7 @@ ConstructorMemberDeclaration
 				else
 				{
 					$$.body = ILNode_MethodDeclaration_create
-						  ($1, attrs, 0 /* "void" */, cname, $5, body);
+						  ($1, attrs, 0 /* "void" */, cname, 0, $5, body);
 					CloneLine($$.body, $5);
 					$$.staticCtors = 0;
 				}

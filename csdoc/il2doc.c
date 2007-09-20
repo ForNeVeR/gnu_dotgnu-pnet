@@ -743,8 +743,8 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 	/* Dump the generic method parameters if necessary */
 	if(dumpGenerics && methodInfo)
 	{
-		ILAsmDumpGenericParams(image, stream,
-							   ILToProgramItem(methodInfo), flags);
+		ILDAsmDumpGenericParams(image, stream,
+								ILToProgramItem(methodInfo), flags);
 	}
 	else if(withTypes)
 	{

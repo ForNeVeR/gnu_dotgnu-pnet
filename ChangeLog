@@ -1,57 +1,166 @@
-2007-09-14  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
-* engine/jitc.c: enabling jit optimizing locals by default.
+2007-09-20  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_decls.c: Use ILDasmDumpGenericParams to dump the generic
+	parameters instead of implementing it here too. Compile it conditional
+	if IL_VERSION_MAJOR > 1.
+
+	* codegen/cg_gen.h: Include the currentTypeFormals and currentMethodFormals
+	only if IL_VERSION_MAJOR > 1.
+
+	* codegen/cg_nodemap.c: Access the typeFormals in the genInfo only if
+	IL_VERSION_MAJOR > 1.
+
+	* codegen/cg_nodemap.h: Include the currentTypeFormals and
+	currentMethodFormals in the ILGenItemContext only if IL_VERSION_MAJOR > 1.
+
+	* codegen/cg_nodes.tc: Add the ILNode_GenericTypeParameter and
+	ILNode_GenericTypeParameters node types. Add the typeFormals to the
+	ILNode_MethodDeclaration.
+
+	* cscc/cs_main.c: Initialize the memory pool for the member resolution
+	on start and destroy it on exit.
+
+	* cscc/c/c_lvalue.tc: Add dummy SemAnalysis for the new
+	ILNode_GenericTypeParameter and ILNode_GenericTypeParameters node types.
+
+	* cscc/csharp/cs_decls.tc: Save and restore the current formals only if
+	IL_VERSION_MAJOR > 1. Pass the new argument typeFormals as 0 to
+	ILNode_MethodDeclaration_create.
+
+	* cscc/csharp/cs_defs.tc: Add numArgs and rename actuals to typeArguments
+ 	in the definition of ILNode_GenericReference. Add the new node type
+	ILNode_GenericConstraint.
+
+	* cscc/csharp/cs_gather.c: Add support for creating generic type parameters
+	for classes and methods. Add the arity suffix for clscompliant generic
+	classes. Pass the methodTypeFormals if needed to
+	ILNode_MethodDeclaration_create. Handle renaming of overridden generic type
+	parameters in nested parent classes.
+
+	* cscc/csharp/cs_grammar.y: Pass the new typeFormals argument to
+	ILMethodDeclaration_create. Redo the whole part of generic type
+	declaration to be ECMA 334 version 4 compliant.
+
+	* cscc/csharp/cs_internal.h: Include <il_profile.h> to check for
+	IL_VERSION_MAJOR. Include the new header file cs_lookup_member.h.
+	Add numActuals to the arguments of CSInsertGenericReference.
+
+	* cscc/csharp/cs_lookup.c: Move the member lookup to the new file
+	cs_lookop_member.c and include this file. Fix the resolution of generic
+	type parameters and generic method parameters.
+
+	* cscc/csharp/cs_lookup_member.c, cscc/csharp/cs_lookup_member.h: Add
+	those new files.
+
+	* cscc/csharp/cs_lvalue.tc: Add dummy SemAnalysis for the new node types
+	ILNode_GenericTypeParameter, ILNode_GenericTypeParameters and
+	ILNode_GenericConstraint.
+
+	* cscc/csharp/cs_types.c: Fix the handling of typeActuals so that they
+	compile now. A major change is needed here too.
+
+	cscc/csharp/Makefile.am: handle the new source files cs_lookup_member.c
+	and cs_lookup_member.h.
+
+	* cscc/java/java_decls.tc, cscc/java/java_gather.c,
+	cscc/java/java_grammar.y, cscc/vb/vb_grammar.y: Pass the new argument
+	typeFormals as 0 to ILNode_MethodDeclaration_create.
+
+	* csdoc/il2doc.c, dumpasm/dump_class.c, dumpasm/dump_type.c,
+	dumpasm/dump_utils.c, include/il_dumpasm.h: Rename ILAsmDumpGenericParams
+	to ILDasmDumpGenericParams.
+
+	* image/class.c: Fix returning of 0 in ILClassNextMember.
+
+2007-09-14  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* engine/jitc.c: enabling jit optimizing locals by default.
 
 2007-09-11  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+
 	* engine/cvm.h: Define the new cvm opcode COP_PREFIX_CALL_VIRTGEN to
 	call a instance of a virtual generic method.
+
 	* engine/cvm_call.c Implementing the new opcode COP_PREFIX_CALL_VIRTGEN.
+
 	* engine/cvmc.c Added a new include il_program.h
-	* engine/cvmc_call.c CVMCoder_CallVirtual now handle virtual generic method instances.
-	* engine/layout.c LayoutClass now handles classes that inherits or implements generic 
-	classes or interfaces.
-	* engine/lib_type.c NameOutputClassName now handles generic instance classes.
+
+	* engine/cvmc_call.c CVMCoder_CallVirtual now handle virtual generic
+	method instances.
+
+	* engine/layout.c LayoutClass now handles classes that inherits or
+	implements generic classes or interfaces.
+
+	* engine/lib_type.c NameOutputClassName now handles generic instance
+	classes.
+
 	* engine/verify.c Handling of generic local variables in methods.
+
 	* engine/verify_call.c GetMethodToken handles generic method references.
+
 	* engine/verify_obj.c GetFieldToken now handles generic field references.
+
 	* engine/verify_ptr.c GetClassToken now handles generic class references.
+
 	* image/class.c Set the class name when creating a wrapper.
-	* image/generic.c Split of the code into two different files: generic_member.c for
-	functions related to generic class members and generic_class.c for functions related to 
-	generic classes.
-	* image/generic_member.c New file for functions related to generic member classes.
+
+	* image/generic.c Split of the code into two different files:
+	generic_member.c for functions related to generic class members and
+	generic_class.c for functions related to generic classes.
+
+	* image/generic_member.c New file for functions related to generic
+	member classes.
+
 	* image/generic_class.c New file for functions related to generic classes.
+
 	* image/member.c ILMemberAccessible now handles generic members.
+
 	* image/meta_types.c ILGetEnumType now handles generic enum types.
-	* image/program.h Added a new define for the initial size of the method vtable.
-	Added two new structures ILMethodVTableItem and ILMethodVTable to support dynamic
-	vtables for virtual generic methods.
+
+	* image/program.h Added a new define for the initial size of the method
+	vtable. Added two new structures ILMethodVTableItem and ILMethodVTable
+	to support dynamic vtables for virtual generic methods.
 	Added a new member to the ILMethod struct to support vtables in methods.
 	Added a new struct ILMethodInstance that represent a method instance.
+
 	* include/il_program.h Added a new typedef for ILMethodInstance.
 	ILClassInstantiate now receive the method type arguments as parameter.
-	Added function prototypes for the following functions: ILClassGetTypeArguments,
-	ILClassGetGenericDef, ILClassExpand, ILClassIsExpanded, ILClassResolveToInstance,
-	ILClassLookupMethodInstance, ILMemberResolveToInstance, ILMethodSpecToMethod,
+	Added function prototypes for the following functions:
+	ILClassGetTypeArguments, ILClassGetGenericDef, ILClassExpand,
+	ILClassIsExpanded, ILClassResolveToInstance, ILClassLookupMethodInstance,
+	ILMemberResolveToInstance, ILMethodSpecToMethod,
 	ILMethodSetVirtualAncestor, ILMethodGetInstance, ILMethodAddInstance,
 	ILMethodGetClassTypeArguments, ILMethodGetMethodTypeArguments.
-	Added the following macros ILMember_IsGenericInstance, ILMethod_IsVirtualGeneric,
-	ILClass_IsGenericInstance
-	* image/Makefile.am added new source files generic_member.c and generic_class.c
+	Added the following macros ILMember_IsGenericInstance,
+	ILMethod_IsVirtualGeneric, ILClass_IsGenericInstance
+
+	* image/Makefile.am added new source files generic_member.c and
+	generic_class.c
+
 2007-09-11  Ivan de Jesus Deras Tabora  <ideras@gmail.com>
+
 	* engine/cvm_stack.c Fixed CVM documentation for COP_PREFIX_REPL_WORD_N.
-	* engine/verify_call.c Constrained callvirt for value types should be handled as
-	a normal call (non virtual).
-	* engine/verify_obj.c Fixed INITOBJ CIL opcode to be ECMA compliant.  Now it can
-	be applied to ref types.
-	* engine/verify_ptr.c Fixed IL_OP_LDELEM for value types. Also added a missing break
-	when handling LDSFLDA.
-	* image/generic.c _ILTypeToSyntheticInstantiation now receive an extra parameters, the 
-	method type parameters.
-	* image/image.h _ILTypeToSyntheticInstantiation now receive an extra parameters, the 
-	method type parameters.
-	* image/meta_types.c ILTypeToName now handle BYREF types and Method Type Parameters.
-	* image/synthetic.c _ILTypeToSyntheticInstantiation now receive an extra parameters, the 
-	method type parameters.
+
+	* engine/verify_call.c Constrained callvirt for value types should be
+	handled as a normal call (non virtual).
+
+	* engine/verify_obj.c Fixed INITOBJ CIL opcode to be ECMA compliant.
+	Now it can be applied to ref types.
+
+	* engine/verify_ptr.c Fixed IL_OP_LDELEM for value types. Also added a
+	missing break when handling LDSFLDA.
+
+	* image/generic.c _ILTypeToSyntheticInstantiation now receive an extra
+	parameters, the method type parameters.
+
+	* image/image.h _ILTypeToSyntheticInstantiation now receive an extra
+	parameters, the method type parameters.
+
+	* image/meta_types.c ILTypeToName now handle BYREF types and Method Type
+	Parameters.
+
+	* image/synthetic.c _ILTypeToSyntheticInstantiation now receive an extra
+	parameters, the method type parameters.
 
 2007-09-10  Klaus Treichel  <ktreichel@web.de>
 
@@ -1986,7 +2095,7 @@
 	* engine/jitc.c, engine/jitc_call.c: Call internal fuctions now directly
 	for normal calls and ctors.
 	
-2006-03-19  Rainer Gr��linger  <rainer.groesslinger@gmx.net>
+2006-03-19  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* libgc/Makefile.am, libgc/Makefile.direct, libgc/Makefile.in,
 	libgc/allchblk.c, libgc/alloc.c, libgc/configure, libgc/configure.in,
@@ -2957,12 +3066,12 @@
 	* csant/csant_dir.c: Prevent prepending of pathname if filename starts with
 	a drive specification on windows in CSAntDirCombine.
 
-2005-08-03  Rainer Gr��linger  <rainer.groesslinger@gmx.net>
+2005-08-03  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* libffi/include/Makefile.am, libffi/include/Makefile.in: ffitarget.h is
 	installed in $(includedir)/pnet now. (applied by Klaus Treichel)
 
-2005-08-02  Rainer Gr��linger  <rainer.groesslinger@gmx.net>
+2005-08-02  Rainer Größlinger  <rainer.groesslinger@gmx.net>
 
 	* doc/cvmdoc.py: replace module regex by re. (applied by Klaus Treichel)
 
@@ -2970,7 +3079,7 @@
 
 	* ilalink/link_main.c: Add missing newline to error message.
 
-2005-08-01  Rainer Gr��linger <rainer.groesslinger@gmx.net>
+2005-08-01  Rainer Größlinger <rainer.groesslinger@gmx.net>
 
 	* doc/pnetasm.texi: remove incorrect @. (applied by Klaus Treichel)
 

@@ -56,6 +56,7 @@ csharp/parser/Makefile
 csharp/stmt/Makefile
 csharp/expr/Makefile
 csharp/class/Makefile
+csharp/class/generics/Makefile
 c/Makefile
 c/decl/Makefile
 c/expr/Makefile

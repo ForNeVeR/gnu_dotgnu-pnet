@@ -1,3 +1,4 @@
+SUBDIRS = generics
 
 TESTS = abstract1.cs \
 		ainit1.cs \

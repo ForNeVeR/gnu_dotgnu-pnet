@@ -1,3 +1,21 @@
+2007-09-22  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add csharp/class/generics/Makefile to the generated
+	Makefiles.
+
+	* csharp/class/Makefile.am: Add the generics subdir.
+
+	* csharp/class/generics/Makefile.am: Added for the generic type
+	declaration tests.
+
+	* csharp/class/generics/class1.cs, csharp/class/generics/class1.il,
+	csharp/class/generics/class1.jl, csharp/class/generics/class2.cs,
+	csharp/class/generics/class2.il, csharp/class/generics/class2.jl,
+	csharp/class/generics/delegate1.cs, csharp/class/generics/delegate1.il,
+	csharp/class/generics/delegate1.jerr, csharp/class/generics/interface1.cs,
+	csharp/class/generics/interface1.il, csharp/class/generics/interface1.jl:
+	Add first tests for declaration of generic types.
+
 2007-05-30  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/stmt/Makefile.am: Add the new tests for the using namespace

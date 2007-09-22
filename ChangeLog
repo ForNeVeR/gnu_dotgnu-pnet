@@ -16,6 +16,8 @@
 	csharp/class/generics/interface1.il, csharp/class/generics/interface1.jl:
 	Add first tests for declaration of generic types.
 
+	* csharp/class/generics/.cvsignore: Added.
+
 2007-05-30  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/stmt/Makefile.am: Add the new tests for the using namespace

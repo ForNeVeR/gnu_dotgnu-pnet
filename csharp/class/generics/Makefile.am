@@ -1,5 +1,6 @@
 TESTS = class1.cs \
 		class2.cs \
+		class3.cs \
 		delegate1.cs \
 		interface1.cs
 

@@ -1,3 +1,11 @@
+2007-09-23  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/class/generics/Makefile.am: Add class3.cs to the tests to be
+	executed.
+
+	* csharp/class/generics/class3.cs, csharp/class/generics/class3.err,
+	csharp/class/generics/class3.jerr: Add test for some error cases.
+
 2007-09-22  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add csharp/class/generics/Makefile to the generated

@@ -606,11 +606,13 @@ struct _tagILSwitchValue
 	const char *name;
 	ILUInt32	constraint;
 	ILNode_List *typeConstraints;
+	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 }
 %node ILNode_GenericTypeParameters ILNode_Dummy =
 {
 	ILUInt32	numTypeParams;
 	ILNode_List *typeParams;
+	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 }
 
 %output "cg_ainit.c"

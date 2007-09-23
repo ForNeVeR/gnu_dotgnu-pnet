@@ -1,7 +1,20 @@
 2007-09-23  Klaus Treichel  <ktreichel@web.de>
 
+	* codegen/cg_nodes.tc: Add the member visited to the definitions of
+	ILNode_GenericTypeParameter and ILNode_GenericTypeParameters.
+
+	* cscc/csharp/cs_defs.tc: Add the node type ILNode_GenericTypeConstraint.
+
 	* cscc/csharp/cs_gather.c: Fix resolving the class of generic type
 	constraints so that primitive types are handled too.
+	Move the semantic check of generic type parameters to the
+	ILNode_Semanalysis operation of the nodes.
+
+	* cscc/csharp/cs_grammar.y: Wrap the types for the type constraints in
+	ILNode_GenericTypeConstraint nodes.
+
+	* cscc/csharp/cs_lvalue.tc: Perform the semanalysis for generics in the
+	correponding ILNode_Semanalysis operations.
 
 2007-09-20  Klaus Treichel  <ktreichel@web.de>
 

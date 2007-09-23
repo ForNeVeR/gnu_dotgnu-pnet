@@ -3050,8 +3050,14 @@ TypeParameterConstraints
 	;
 
 SecondaryConstraints
-	: Type							{ $$ = (ILNode_List *)MakeList(0, $1); }
-	| SecondaryConstraints ',' Type { $$ = (ILNode_List *)MakeList((ILNode *)$1, $3); } 
+	: Type							{
+						$$ = (ILNode_List *)MakeList(0,
+								 	ILNode_GenericTypeConstraint_create($1));
+					}
+	| SecondaryConstraints ',' Type {
+						$$ = (ILNode_List *)MakeList((ILNode *)$1,
+									ILNode_GenericTypeConstraint_create($3));
+					}
 	;
 
 PrimaryConstraint

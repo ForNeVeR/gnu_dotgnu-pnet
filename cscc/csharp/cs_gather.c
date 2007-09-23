@@ -128,7 +128,6 @@ static void AddGenericConstraints(ILGenInfo *info,
 {
 	if(constraints)
 	{
-		ILUInt32 first = 1;
 		ILNode_ListIter iter;
 		ILNode *constraint;
 
@@ -142,34 +141,13 @@ static void AddGenericConstraints(ILGenInfo *info,
 			{
 				ILClass *constraintClass = ILClassFromType(info->image, 0, constraintType, 0);
 
-				if(first)
+				if(constraintClass)
 				{
-					if(!ILClass_IsInterface(constraintClass))
+					if(!ILGenericParAddConstraint(genPar, 0, 
+										ILToProgramItem(constraintClass)))
 					{
-						if(ILGenericParGetFlags(genPar) & (IL_META_GENPARAM_CLASS_CONST |
-														   IL_META_GENPARAM_VALUETYPE_CONST))
-						{
-							CCErrorOnLine(yygetfilename(constraint), yygetlinenum(constraint),
-										  "either class or valuetype or a non interface class can be supplied");
-						}
+						CCOutOfMemory();
 					}
-					first = 0;
-				}
-				else
-				{
-					if(!ILClass_IsInterface(constraintClass))
-					{
-						CCErrorOnLine(yygetfilename(constraint), yygetlinenum(constraint),
-									  "only one non interface class can be supplied");
-					}
-				}
-
-				constraintClass = ILClassImport(info->image, constraintClass);
-
-				if(!ILGenericParAddConstraint(genPar, 0, 
-											  ILToProgramItem(constraintClass)))
-				{
-					CCOutOfMemory();
 				}
 			}
 		}
@@ -188,6 +166,9 @@ static void AddTypeFormals(ILGenInfo *info,
 		ILNode_ListIter iter;
 		ILNode_GenericTypeParameter *genParam;
 		ILNode_GenericTypeParameters *genParams;
+
+		/* Perform the semantic analysis on the typeFormals */
+		ILNode_SemAnalysis(typeFormals, info, &typeFormals);
 
 		genParams = (ILNode_GenericTypeParameters *)typeFormals;
 		ILNode_ListIter_Init(&iter, genParams->typeParams);
@@ -270,6 +251,9 @@ static void _AddTypeFormalsToClassInner(ILGenInfo *info,
 		ILNode_ListIter iter;
 		ILNode_GenericTypeParameter *genParam;
 		ILNode_GenericTypeParameters *genParams;
+
+		/* Perform the semantic analysis on the typeFormals */
+		ILNode_SemAnalysis(defn->typeFormals, info, &(defn->typeFormals));
 
 		genParams = (ILNode_GenericTypeParameters *)(defn->typeFormals);
 		ILNode_ListIter_Init(&iter, genParams->typeParams);

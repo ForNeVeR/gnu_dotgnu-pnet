@@ -104,6 +104,12 @@
 	ILUInt32	constraint;
 	ILNode_List *typeConstraints;
 }
+%node ILNode_GenericTypeConstraint ILNode_Dummy =
+{
+	ILNode	   *identifier;
+	%nocreate ILType *type = {0};
+	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
+}
 
 /*
  * Misc nodes.

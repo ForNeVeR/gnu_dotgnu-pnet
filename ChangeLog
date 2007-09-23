@@ -1,3 +1,8 @@
+2007-09-23  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_gather.c: Fix resolving the class of generic type
+	constraints so that primitive types are handled too.
+
 2007-09-20  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_decls.c: Use ILDasmDumpGenericParams to dump the generic

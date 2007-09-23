@@ -140,7 +140,7 @@ static void AddGenericConstraints(ILGenInfo *info,
 			constraintType = CSSemType(constraint, info, &constraint);
 			if(constraintType)
 			{
-				ILClass *constraintClass = ILType_ToClass(constraintType);
+				ILClass *constraintClass = ILClassFromType(info->image, 0, constraintType, 0);
 
 				if(first)
 				{

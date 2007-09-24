@@ -1,3 +1,6 @@
+2007-07-04  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* Xsharp/Application.cs: using  default display 0, if not given.
+
 2007-08-03  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/Private/NumberParser.cs: Fix index out of range while doing

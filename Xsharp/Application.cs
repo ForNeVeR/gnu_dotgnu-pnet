@@ -253,6 +253,9 @@ public sealed class Application : IDisposable
 					// Xlib will figure it by itself, but classes using displayName can get broken is it's null
 					displayName = Environment.GetEnvironmentVariable("DISPLAY");
 				}
+				if( null == displayName || displayName == string.Empty ) {
+					displayName = ":0";
+				}
 
 				display = Xsharp.Display.Open(displayName, this, synchronous);
 

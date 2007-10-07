@@ -4642,6 +4642,7 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_Branch,
 	JITCoder_SwitchStart,
 	JITCoder_SwitchEntry,
+	JITCoder_SwitchEnd,
 	JITCoder_Compare,
 	JITCoder_Conv,
 	JITCoder_ToPointer,

@@ -1,3 +1,12 @@
+2007-10-08  Aleksey Demakov  <ademakov@gmail.com>
+
+	* include/il_coder.h, engine/verify_branch.c, engine/null_coder.c,
+	* engine/cvmc.c, engine/cvmc_branch.c, engine/jitc.c,
+	* engine/jitc_branch.c, engine/jitc_labels.c: add SwitchEnd coder
+	method, call it at the end of switch instruction handling. Make
+	use of libjit jump tables to generate switch instruction in jit
+	coder.
+
 2007-09-23  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_nodes.tc: Add the member visited to the definitions of

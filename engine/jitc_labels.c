@@ -55,6 +55,7 @@ struct _tagILJITLabel
 	ILJitValue		switchValue;
 	int				numSwitch;
 	int				maxSwitch;
+	jit_label_t		*switchLabels;
 
 #endif	/* IL_JITC_CODER_INSTANCE */
 
@@ -69,11 +70,16 @@ struct _tagILJITLabel
 	coder->switchValue = 0;
 	coder->numSwitch = 0;
 	coder->maxSwitch = 0;
+	coder->switchLabels = NULL;
 
 #endif	/* IL_JITC_CODER_INIT */
 
 #ifdef	IL_JITC_CODER_DESTROY
 
+	if(coder->switchLabels)
+	{
+		ILFree(coder->switchLabels);
+	}
 	ILMemPoolDestroy(&(coder->labelPool));
 
 #endif	/* IL_JITC_CODER_DESTROY */

@@ -500,6 +500,13 @@ static void CVMCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 }
 
 /*
+ * Output the end of a table-based switch statement.
+ */
+static void CVMCoder_SwitchEnd(ILCoder *coder)
+{
+}
+
+/*
  * Output a conditional compare opcode.
  */
 static void OutputCondCompare(ILCoder *coder, int iopcode, int lopcode,

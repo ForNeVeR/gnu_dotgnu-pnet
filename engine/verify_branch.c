@@ -639,6 +639,7 @@ case IL_OP_SWITCH:
 			ILCoderSwitchEntry(coder, dest);
 			VALIDATE_BRANCH_STACK(dest);
 		}
+		ILCoderSwitchEnd(coder);
 	}
 	else
 	{

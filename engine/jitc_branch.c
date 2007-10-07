@@ -369,6 +369,12 @@ static void JITCoder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 	jitCoder->numSwitch = 0;
 	jitCoder->maxSwitch = numEntries;
 	jitCoder->switchValue = _ILJitStackItemValue(value);
+
+	jitCoder->switchLabels = ILMalloc(numEntries * sizeof(jit_label_t));
+	if(!jitCoder->switchLabels)
+	{
+		jitCoder->labelOutOfMemory = 1;
+	}
 }
 
 /*
@@ -378,18 +384,43 @@ static void JITCoder_SwitchEntry(ILCoder *_coder, ILUInt32 dest)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
 	ILJITLabel *label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
-	
-	ILJitValue constant = jit_value_create_nint_constant(jitCoder->jitFunction,
-														 jit_type_nint,
-														 jitCoder->numSwitch);
 
-	ILJitValue temp = jit_insn_eq(jitCoder->jitFunction, 
-								  jitCoder->switchValue,
-								  constant);
+	if (!label)
+	{
+		return;
+	}
 
-	jit_insn_branch_if(jitCoder->jitFunction, temp, &(label->label));
+	if (label->label == jit_label_undefined)
+	{
+		label->label = jit_function_reserve_label(jitCoder->jitFunction);
+	}
 
+	jitCoder->switchLabels[jitCoder->numSwitch] = label->label;
 	++jitCoder->numSwitch;
+}
+
+/*
+ * Output the end of a table-based switch statement.
+ */
+static void JITCoder_SwitchEnd(ILCoder *coder)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	if(!jitCoder->switchLabels)
+	{
+		return;
+	}
+
+	if(!jit_insn_jump_table(jitCoder->jitFunction,
+				jitCoder->switchValue,
+				jitCoder->switchLabels,
+				jitCoder->numSwitch))
+	{
+		jitCoder->labelOutOfMemory = 1;
+	}
+
+	ILFree(jitCoder->switchLabels);
+	jitCoder->switchLabels = NULL;
 }
 
 /*

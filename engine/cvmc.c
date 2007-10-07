@@ -538,6 +538,7 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_Branch,
 	CVMCoder_SwitchStart,
 	CVMCoder_SwitchEntry,
+	CVMCoder_SwitchEnd,
 	CVMCoder_Compare,
 	CVMCoder_Conv,
 	CVMCoder_ToPointer,

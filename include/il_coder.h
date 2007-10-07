@@ -362,6 +362,11 @@ struct _tagILCoderClass
 	void (*switchEntry)(ILCoder *coder, ILUInt32 dest);
 
 	/*
+	 * Output the end of a switch statement.
+	 */
+	void (*switchEnd)(ILCoder *coder);
+
+	/*
 	 * Output a comparison instruction.  If "invertTest" is
 	 * non-zero, then the result of the test should be inverted.
 	 */
@@ -936,6 +941,9 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->switchStart))((coder), (numEntries)))
 #define	ILCoderSwitchEntry(coder,dest) \
 			((*((coder)->classInfo->switchEntry))((coder), (dest)))
+#define	ILCoderSwitchEnd(coder) \
+			((*((coder)->classInfo->switchEnd))((coder)))
+
 #define	ILCoderCompare(coder,opcode,type1,type2,invertTest)	\
 			((*((coder)->classInfo->compare))((coder), (opcode), \
 											  (type1), (type2), (invertTest)))

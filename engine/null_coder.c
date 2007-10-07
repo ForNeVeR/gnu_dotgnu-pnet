@@ -150,6 +150,9 @@ static void Coder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
 static void Coder_SwitchEntry(ILCoder *coder, ILUInt32 dest)
 {
 }
+static void Coder_SwitchEnd(ILCoder *coder)
+{
+}
 static void Coder_Compare(ILCoder *coder, int opcode,
 				   		  ILEngineType type1, ILEngineType type2,
 						  int invertTest)
@@ -475,6 +478,7 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_Branch,
 	Coder_SwitchStart,
 	Coder_SwitchEntry,
+	Coder_SwitchEnd,
 	Coder_Compare,
 	Coder_Conv,
 	Coder_ToPointer,

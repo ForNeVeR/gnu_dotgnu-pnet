@@ -638,10 +638,50 @@ ILInt32 ILSerialRead(ILSerial *handle, void *buffer, ILInt32 count)
 	return retval;
 }
 
-void ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
+int ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
 {
-	/* TODO: timeout support */
-	write(handle->fd, buffer, (int)count);
+	struct timeval tv;
+	struct timeval *seltv = 0;
+	fd_set writeSet;
+	int retval;
+
+	while(count > 0)
+	{
+		/* Set timeout */
+		if(handle->writeTimeout > 0)
+		{
+			tv.tv_sec = handle->writeTimeout / 1000;
+			tv.tv_usec = (handle->writeTimeout % 1000) * 1000;
+			seltv = &tv;
+		}
+
+		/* Wait until output is ready */
+		FD_ZERO(&writeSet);
+		FD_SET(handle->fd, &writeSet);
+		retval = select(handle->fd + 1, (fd_set *)0, &writeSet, (fd_set *)0,
+						seltv);
+
+		/* Check error or timeout */
+		if(retval <= 0)
+		{
+			return retval;
+		}
+
+		/* Write to port */
+		retval = write(handle->fd, buffer, (int)(count));
+
+		if(retval >= 0)
+		{
+			count -= retval;
+			buffer += retval;
+		}
+		else if(errno != EAGAIN)
+		{
+			return -1;
+		}
+	}
+
+	return 1;
 }
 
 int ILSerialWaitForPinChange(ILSerial *handle)

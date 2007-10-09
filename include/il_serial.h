@@ -163,9 +163,10 @@ void ILSerialDrainOutBuffer(ILSerial *handle);
 ILInt32 ILSerialRead(ILSerial *handle, void *buffer, ILInt32 count);
 
 /*
- * Write data to a serial port.
+ * Write data to a serial port. Returns positive if success, negative if error,
+ * 0 if timeout.
  */
-void ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count);
+int ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count);
 
 /*
  * Wait for a change in state on the incoming pins.  Returns non-zero

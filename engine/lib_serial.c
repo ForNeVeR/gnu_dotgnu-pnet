@@ -197,11 +197,11 @@ ILInt32 _IL_PortMethods_Read(ILExecThread *_thread, ILNativeInt handle,
  * public static void Write
  *			(IntPtr handle, byte[] buffer, int offset, int count);
  */
-void _IL_PortMethods_Write(ILExecThread *_thread, ILNativeInt handle,
+ILInt32 _IL_PortMethods_Write(ILExecThread *_thread, ILNativeInt handle,
 						   System_Array *buffer, ILInt32 offset,
 						   ILInt32 count)
 {
-	ILSerialWrite
+	return ILSerialWrite
 		((ILSerial *)handle,
 		 ((const unsigned char *)(ArrayToBuffer(buffer))) + offset, count);
 }

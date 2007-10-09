@@ -21,3 +21,4 @@ IO_Socket=Waehrend dem Zugriff auf den socket trat ein Fehler auf
 IO_SocketNotBlocking=Der angegebene socket blockiert nicht
 IO_SocketNotConnected=Der angegebene socket ist nicht verbunden
 IO_SocketIncorrectType=Der angegebene socket ist nicht vom korrekten Typ
+IO_Timeout=Das zeitlimit fur die operation ablauft

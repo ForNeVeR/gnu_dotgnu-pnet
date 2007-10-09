@@ -32,3 +32,4 @@ IO_Decompress_GzipFooter=The gzip footer on the stream is invalid
 IO_Decompress_Checksum=The gzip checksum did not match
 IO_Decompress_Total=The gzip total byte counter did not match
 IO_Compress_Input=Could not deflate all input for some reason
+IO_Timeout=The operation has timed out

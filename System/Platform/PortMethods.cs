@@ -122,7 +122,7 @@ internal class PortMethods
 
 	// Write data to a serial port.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void Write
+	extern public static int Write
 			(IntPtr handle, byte[] buffer, int offset, int count);
 
 	// Wait for a change in pin status.  Returns non-zero when a pin

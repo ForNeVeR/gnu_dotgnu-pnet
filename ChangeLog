@@ -1,3 +1,14 @@
+2007-10-09  Radek Polak  <psonek2@seznam.cz>
+
+	* System/IO/Ports/SerialPort.cs: Check return value from write to port
+	and throw exception on error.
+
+	* System/Platform/PortMethods.cs: Change prototype for write function
+	to return int.
+
+	* resources/en_US/System/IO.txt, resources/de_De/System/IO.txt: Added
+	strings for timeout exception message.
+
 2007-07-04  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 	* Xsharp/Application.cs: using  default display 0, if not given.
 

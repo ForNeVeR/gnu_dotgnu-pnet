@@ -1174,6 +1174,24 @@ public class SerialPort
 						(S._("IO_NotSupp_SetLength"));
 				}
 
+		// Throw exception according to retval.
+		// Timeout has value 0, otherwise it's generic IO exception.
+		private void ThrowPortException(int retval)
+				{
+					if(retval == 0)
+					{
+						// TODO: throw System.ServiceProcess.TimeoutException
+						throw new SystemException(S._("IO_Timeout"));
+					}
+					else
+					{
+						// This exception is not in docs but is useful
+						Errno errno = SocketMethods.GetErrno();
+						String message = SocketMethods.GetErrnoMessage(errno);
+						throw new IOException(message);
+					}
+				}
+
 		// Write a buffer of bytes to this stream.
 		public override void Write(byte[] buffer, int offset, int count)
 				{
@@ -1182,8 +1200,12 @@ public class SerialPort
 					{
 						if(port.handle != IntPtr.Zero)
 						{
-							PortMethods.Write
+							int retval = PortMethods.Write
 								(port.handle, buffer, offset, count);
+							if(retval <= 0)
+							{
+								ThrowPortException(retval);
+							}
 						}
 						else
 						{
@@ -1201,8 +1223,12 @@ public class SerialPort
 						if(port.handle != IntPtr.Zero)
 						{
 							byteBuffer[0] = value;
-							PortMethods.Write
+							int retval = PortMethods.Write
 								(port.handle, byteBuffer, 0, 1);
+							if(retval <= 0)
+							{
+								ThrowPortException(retval);
+							}
 						}
 						else
 						{

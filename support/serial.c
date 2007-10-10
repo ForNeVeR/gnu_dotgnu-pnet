@@ -1003,7 +1003,7 @@ ILInt32 ILSerialRead(ILSerial *handle, void *buffer, ILInt32 count)
 	return readCount;
 }
 
-void ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
+int ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
 {
 	DWORD writeCount = 0;
 	if(!WriteFile(handle->fd, buffer, count, &writeCount, NULL))
@@ -1101,7 +1101,7 @@ ILInt32 ILSerialRead(ILSerial *handle, void *buffer, ILInt32 count)
 	return 0;
 }
 
-void ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
+int ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
 {
 }
 

@@ -1,5 +1,9 @@
 2007-10-10  Radek Polak  <psonek2@seznam.cz>
 
+	* support/serial.c: Fix warnings on cygwin.
+
+2007-10-10  Radek Polak  <psonek2@seznam.cz>
+
 	* support/serial.c: Fix build on cygwin.
 
 2007-10-09  Radek Polak  <psonek2@seznam.cz>

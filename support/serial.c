@@ -1009,8 +1009,9 @@ int ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
 	if(!WriteFile(handle->fd, buffer, count, &writeCount, NULL))
 	{
 		/* error */
+		return -1;
 	}
-	return ;
+	return 1;
 }
 
 /* TODO */
@@ -1103,6 +1104,7 @@ ILInt32 ILSerialRead(ILSerial *handle, void *buffer, ILInt32 count)
 
 int ILSerialWrite(ILSerial *handle, const void *buffer, ILInt32 count)
 {
+	return 1;
 }
 
 int ILSerialWaitForPinChange(ILSerial *handle)

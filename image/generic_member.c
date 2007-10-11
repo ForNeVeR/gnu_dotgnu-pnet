@@ -406,7 +406,6 @@ ILMethod *ILMethodSpecToMethod(ILMethodSpec *mspec, ILMethod *methodCaller)
 	ILMethod *genMethod;
 	ILMethod *virtAncestor;
 	ILType *mspecTypeArgs;
-	ILClass *owner;
 	ILImage *image;
 
 	if(ILMember_IsGenericInstance((ILMember *)methodCaller))

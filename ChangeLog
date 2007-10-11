@@ -1,3 +1,13 @@
+2007-10-11  Klaus Treichel  <ktreichel@web.de>
+
+	* image/generic_class.c: Fix a warning by casting the event to an
+	ILEvent instead of an ILField in ExpandInstantiations.
+	Return the member instaed of 0 if the owner is no generic instance in
+	ILClassGetMemberInstance.
+
+	* image/generic_member.c: Remove the unused local variable owner to fix
+	a compiler warning.
+	
 2007-10-10  Radek Polak  <psonek2@seznam.cz>
 
 	* support/serial.c: Fix warnings on cygwin.

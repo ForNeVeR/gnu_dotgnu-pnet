@@ -178,7 +178,7 @@ static int ExpandInstantiations(ILImage *image, ILClass *classInfo,
 			case IL_META_MEMBERKIND_EVENT:
 			{
 				/* Create a new event */
-				newEvent = (ILField *)ILMemberCreateInstance(member, classInfo);
+				newEvent = (ILEvent *)ILMemberCreateInstance(member, classInfo);
 
 				if(!newEvent)
 				{
@@ -312,7 +312,9 @@ ILMember *ILClassGetMemberInstance(ILClass *owner, ILMember *member)
 
 	if(!ILClass_IsGenericInstance(owner))
 	{
-		return 0;
+		/* simply return the member if the owner is no generic
+		   instantiation */
+		return member;
 	}
 
 	while(memberInst != 0)

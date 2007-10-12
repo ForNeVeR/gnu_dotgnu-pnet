@@ -3064,6 +3064,14 @@ IL_METHOD_END
 
 #endif
 
+#ifndef _IL_BlockingOperation_suppressed
+
+IL_METHOD_BEGIN(BlockingOperation_Methods)
+	IL_METHOD("ThreadSigAbort", "(oSystem.Threading.Thread;)V", _IL_BlockingOperation_ThreadSigAbort, marshal_vpp)
+IL_METHOD_END
+
+#endif
+
 #if !defined(HAVE_LIBFFI)
 
 static void marshal_lpl(void (*fn)(), void *rvalue, void **avalue)
@@ -3148,6 +3156,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_BitConverter_suppressed
 	{"BitConverter", "System", BitConverter_Methods},
+#endif
+#ifndef _IL_BlockingOperation_suppressed
+	{"BlockingOperation", "System.Private", BlockingOperation_Methods},
 #endif
 #ifndef _IL_Buffer_suppressed
 	{"Buffer", "System", Buffer_Methods},

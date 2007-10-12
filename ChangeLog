@@ -1,3 +1,15 @@
+2007-10-12  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/int_proto.h, engine/int_table.c, engine/lib_thread.c,
+	include/il_thread.h, support/pt_defs.c, support/thread.c: Implement
+	functions that allow sending IL_SIG_ABORT signal. This is used to
+	cancel blocking operations (bug #20885).
+
+	* engine/process.c: Send abort signal on background threads, when
+	process is ending so that background threads do not prevent program to
+	exit.
+	
+
 2007-10-11  Klaus Treichel  <ktreichel@web.de>
 
 	* image/generic_class.c: Fix a warning by casting the event to an

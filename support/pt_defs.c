@@ -147,18 +147,22 @@ void _ILThreadInitSystem(ILThread *mainThread)
 
 	/* Set up the signal handlers that we require */
 	ILMemZero(&action, sizeof(action));
-	action.sa_flags = SA_RESTART;
 	sigfillset(&(action.sa_mask));
 	sigdelset(&(action.sa_mask), SIGINT);
 	sigdelset(&(action.sa_mask), SIGQUIT);
 	sigdelset(&(action.sa_mask), SIGTERM);
 	sigdelset(&(action.sa_mask), SIGABRT);
+
+	/* Abort signal - used to stop blocking IO,
+	   SA_RESTART must not be set */
+	action.sa_handler = AbortSignal;
+	sigaction(IL_SIG_ABORT, &action, (struct sigaction *)0);
+
+	action.sa_flags = SA_RESTART;
 	action.sa_handler = SuspendSignal;
 	sigaction(IL_SIG_SUSPEND, &action, (struct sigaction *)0);
 	action.sa_handler = ResumeSignal;
 	sigaction(IL_SIG_RESUME, &action, (struct sigaction *)0);
-	action.sa_handler = AbortSignal;
-	sigaction(IL_SIG_ABORT, &action, (struct sigaction *)0);
 
 	/* We need a thread-specific key for storing thread objects */
 	pthread_key_create(&_ILThreadObjectKey, (void (*)(void *))0);

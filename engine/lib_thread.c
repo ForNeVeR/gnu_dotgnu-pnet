@@ -1123,6 +1123,14 @@ ILBool _IL_WaitEvent_InternalSetEvent(ILExecThread *_thread, ILNativeInt event)
 	return (ILBool)ILWaitEventSet((ILWaitHandle *)event);
 }
 
+/*
+ * static void BlockingOperation.ThreadSigAbort(Thread thread);
+ */
+void _IL_BlockingOperation_ThreadSigAbort(ILExecThread * _thread, ILObject * thread)
+{
+	ILThreadSigAbort(((System_Thread *)thread)->privateData);
+}
+
 #ifdef	__cplusplus
 };
 #endif

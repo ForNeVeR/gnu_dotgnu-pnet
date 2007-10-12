@@ -381,6 +381,12 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	{
 		target = (ILThread *)ILQueueRemove(&abortQueue1);
 
+		/* Cancel possible blocking in kernel call on background threads */
+		if(ILThreadGetBackground(target))
+		{
+			ILThreadSigAbort(target);
+		}
+
 		_ILExecThreadAbortThread(ILExecThreadCurrent(), target);
 	}
 

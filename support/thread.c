@@ -639,6 +639,13 @@ int ILThreadSelfAborting()
 	return result;
 }
 
+void ILThreadSigAbort(ILThread *thread)
+{
+#ifdef IL_USE_PTHREADS
+	pthread_kill(thread->handle, IL_SIG_ABORT);
+#endif
+}
+
 int ILThreadAbort(ILThread *thread)
 {
 	int result;
@@ -662,7 +669,7 @@ int ILThreadAbort(ILThread *thread)
 			_ILWakeupInterrupt(&(thread->wakeup));
 
 			_ILMutexUnlock(&(thread->lock));
-						
+
 			return 0;
 		}
 		else if (((thread->state & (IL_TS_SUSPENDED_SELF | IL_TS_SUSPENDED))) != 0)

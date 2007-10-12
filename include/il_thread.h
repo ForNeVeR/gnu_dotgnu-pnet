@@ -191,6 +191,12 @@ void ILThreadResume(ILThread *thread);
 void ILThreadInterrupt(ILThread *thread);
 
 /*
+ * Send IL_SIG_ABORT to given thread. This will abort thread that
+ * is blocking in system call.
+ */
+void ILThreadSigAbort(ILThread *thread);
+
+/*
  * Request that a thread be aborted.  Returns zero if the thread
  * is already aborting or already has an abort request queued.
  */

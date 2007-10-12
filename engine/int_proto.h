@@ -706,6 +706,8 @@ extern ILBool _IL_SocketMethods_QueueCompletionItem(ILExecThread * _thread, ILOb
 extern ILObject * _IL_SocketMethods_CreateManualResetEvent(ILExecThread * _thread);
 extern void _IL_SocketMethods_WaitHandleSet(ILExecThread * _thread, ILObject * waitHandle);
 
+extern void _IL_BlockingOperation_ThreadSigAbort(ILExecThread * _thread, ILObject * thread);
+
 extern ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread * _thread, ILInt32 host);
 extern ILInt32 _IL_IPAddress_NetworkToHostOrder_i(ILExecThread * _thread, ILInt32 network);
 extern ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread * _thread, ILInt64 host);

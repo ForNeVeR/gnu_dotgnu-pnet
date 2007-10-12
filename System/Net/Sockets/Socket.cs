@@ -23,6 +23,7 @@ namespace System.Net.Sockets
 
 using Platform;
 using System;
+using System.Private;
 using System.Collections;
 using System.Security;
 using System.Threading;
@@ -39,6 +40,7 @@ public class Socket : IDisposable
 	private EndPoint localEP;
 	private EndPoint remoteEP;
 	private Object readLock;
+	private BlockingOperations blockingOps;
 
 	// Invalid socket handle.
 	private static readonly IntPtr InvalidHandle =
@@ -120,6 +122,7 @@ public class Socket : IDisposable
 				this.localEP = null;
 				this.remoteEP = null;
 				this.readLock = new Object();
+				this.blockingOps = new BlockingOperations();
 
 				// Attempt to create the socket.  This may bail out for
 				// some address families, even if "AddressFamilySupported"
@@ -147,6 +150,7 @@ public class Socket : IDisposable
 				this.localEP = null;
 				this.remoteEP = remoteEP;
 				this.readLock = new Object();
+				this.blockingOps = new BlockingOperations();
 			}
 
 	// Destructor.
@@ -213,10 +217,13 @@ public class Socket : IDisposable
 				// Accept a new connection on the socket.  We do this outside
 				// of the lock's protection so that multiple threads can
 				// wait for incoming connections on the same socket.
-				if(!SocketMethods.Accept
-					  (currentHandle, addrReturn, out newHandle))
+				using(BlockingOperation op = blockingOps.NewOp())
 				{
-					throw new SocketException(this.GetErrno());
+					if(!SocketMethods.Accept
+						(currentHandle, addrReturn, out newHandle))
+					{
+						throw new SocketException(this.GetErrno());
+					}
 				}
 
 				// Create the end-point object for the remote side.
@@ -743,9 +750,12 @@ public class Socket : IDisposable
 					}
 
 					// Connect to the foreign location.
-					if(!SocketMethods.Connect(handle, addr))
+					using(BlockingOperation op = blockingOps.NewOp())
 					{
-						throw new SocketException(this.GetErrno());
+						if(!SocketMethods.Connect(handle, addr))
+						{
+							throw new SocketException(this.GetErrno());
+						}
 					}
 					connected = true;
 					this.remoteEP = remoteEP;
@@ -761,6 +771,7 @@ public class Socket : IDisposable
 					{
 						SocketMethods.Close(handle);
 						handle = InvalidHandle;
+						blockingOps.Abort();
 					}
 				}
 			}
@@ -939,10 +950,14 @@ public class Socket : IDisposable
 							throw new SocketException(Errno.EINVAL);
 						}
 						byte[] data = new byte [optionLength];
-						if(!SocketMethods.DiscoverIrDADevices(handle, data))
+						using(BlockingOperation op = blockingOps.NewOp())
 						{
-							throw new SocketException
-								(this.GetErrno());
+							if(!SocketMethods.DiscoverIrDADevices
+									(handle, data))
+							{
+								throw new SocketException
+									(this.GetErrno());
+							}
 						}
 						return data;
 					}
@@ -995,35 +1010,38 @@ public class Socket : IDisposable
 				array[0] = GetHandle(this);
 
 				// Perform the select.
-				switch(mode)
+				using(BlockingOperation op = blockingOps.NewOp())
 				{
-					case SelectMode.SelectRead:
-					{ 
-						result = SocketMethods.Select
-							(array, null, null, (long)microSeconds);
-					}
-					break;
-
-					case SelectMode.SelectWrite:
+					switch(mode)
 					{
-						result = SocketMethods.Select
-							(null, array, null, (long)microSeconds);
+						case SelectMode.SelectRead:
+						{ 
+							result = SocketMethods.Select
+								(array, null, null, (long)microSeconds);
+						}
+						break;
+	
+						case SelectMode.SelectWrite:
+						{
+							result = SocketMethods.Select
+								(null, array, null, (long)microSeconds);
+						}
+						break;
+	
+						case SelectMode.SelectError:
+						{
+							result = SocketMethods.Select
+								(null, null, array, (long)microSeconds);
+						}
+						break;
+	
+						default:
+						{
+							throw new NotSupportedException
+								(S._("NotSupp_SelectMode"));
+						}
+						// Not reached.
 					}
-					break;
-
-					case SelectMode.SelectError:
-					{
-						result = SocketMethods.Select
-							(null, null, array, (long)microSeconds);
-					}
-					break;
-
-					default:
-					{
-						throw new NotSupportedException
-							(S._("NotSupp_SelectMode"));
-					}
-					// Not reached.
 				}
 
 				// Decode the result and return.
@@ -1058,8 +1076,11 @@ public class Socket : IDisposable
 						throw new ObjectDisposedException
 							(S._("Exception_Disposed"));
 					}
-					result = SocketMethods.Receive
-						(handle, buffer, offset, size, (int)socketFlags);
+					using(BlockingOperation op = blockingOps.NewOp())
+					{
+						result = SocketMethods.Receive
+							(handle, buffer, offset, size, (int)socketFlags);
+					}
 					if(result < 0)
 					{
 						throw new SocketException(this.GetErrno());
@@ -1121,9 +1142,12 @@ public class Socket : IDisposable
 						throw new ObjectDisposedException
 							(S._("Exception_Disposed"));
 					}
-					result = SocketMethods.ReceiveFrom
-						(handle, buffer, offset, size,
-						 (int)socketFlags, addrReturn);
+					using(BlockingOperation op = blockingOps.NewOp())
+					{
+						result = SocketMethods.ReceiveFrom
+							(handle, buffer, offset, size,
+							(int)socketFlags, addrReturn);
+					}
 					if(result < 0)
 					{
 						throw new SocketException(this.GetErrno());
@@ -1380,8 +1404,11 @@ public class Socket : IDisposable
 						throw new ObjectDisposedException
 							(S._("Exception_Disposed"));
 					}
-					result = SocketMethods.Send
-						(handle, buffer, offset, size, (int)socketFlags);
+					using(BlockingOperation op = blockingOps.NewOp())
+					{
+						result = SocketMethods.Send
+							(handle, buffer, offset, size, (int)socketFlags);
+					}
 					if(result < 0)
 					{
 						throw new SocketException(this.GetErrno());
@@ -1442,8 +1469,12 @@ public class Socket : IDisposable
 						throw new ObjectDisposedException
 							(S._("Exception_Disposed"));
 					}
-					result = SocketMethods.SendTo
-						(handle, buffer, offset, size, (int)socketFlags, addr);
+					using(BlockingOperation op = blockingOps.NewOp())
+					{
+						result = SocketMethods.SendTo
+							(handle, buffer, offset, size,
+							 (int)socketFlags, addr);
+					}
 					if(result < 0)
 					{
 						throw new SocketException(this.GetErrno());

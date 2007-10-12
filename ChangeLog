@@ -1,3 +1,17 @@
+2007-10-12  Radek Polak  <psonek2@seznam.cz>
+
+	* DotGNU.Misc/BlockingOperation.cs: Class for aborting operations
+	blocked in kernel calls. This can be useful when user is pinvoking
+	kernel calls.
+
+	* System/Private/BlockingOperation.cs,
+	System/Private/BlockingOperations.cs: Helper classes. They are used to
+	abort operations that are blocking in kernel when socket is closed.
+
+	* System/Net/Sockets/Socket.cs: Handle closing correctly by aborting
+	all blocked operations on this socket. This fixes bug #20885. 
+
+
 2007-10-09  Radek Polak  <psonek2@seznam.cz>
 
 	* System/IO/Ports/SerialPort.cs: Check return value from write to port

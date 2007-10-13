@@ -57,7 +57,7 @@ ILNativeFloat _ILReadDouble(const unsigned char *buf)
 {
 	union
 	{
-		unsigned char bytes[4];
+		unsigned char bytes[8];
 		ILDouble      value;
 		struct {
 			ILUInt32  first;

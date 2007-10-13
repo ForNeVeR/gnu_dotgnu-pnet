@@ -1483,7 +1483,15 @@ ILNode_SemAnalysis(ILNode_Using)
 	ILType *type;
 	ILType *disposable;
 	
-	if(yyisa(node->resource,ILNode_Expression))
+	if(yyisa(node->resource,ILNode_ResourceDeclaration))
+	{
+		/* TODO: Handle the declaration of multiple resources in the
+		   using statement like using(type a, b, c) { ... }.
+		   They should be converted to distinct nested using statements
+		   like using(type a) { using(type b) { using(type c) { ... }}}. */
+		ILNode_SemAnalysis(node->resource,info,&(node->resource));
+	}
+	else 
 	{
 		value=ILNode_SemAnalysis(node->resource,info,&(node->resource));		
 		if(!CSSemGetType(value))
@@ -1502,10 +1510,6 @@ ILNode_SemAnalysis(ILNode_Using)
 				"'%s' does not implement 'IDisposable'",
 					CSTypeToName(type));
 		}
-	}
-	else if(yyisa(node->resource,ILNode_ResourceDeclaration))
-	{
-		ILNode_SemAnalysis(node->resource,info,&(node->resource));
 	}
 	ILNode_SemAnalysis(node->stmt,info,&(node->stmt));
 	return CSSemValueDefault;
@@ -1527,7 +1531,7 @@ ILNode_GenDiscard(ILNode_Using)
 	{
 		ILNode_GenDiscard(node->resource,info);
 	}
-	else if(yyisa(node->resource,ILNode_Expression))
+	else
 	{
 		tempVar=ILGenTempTypedVar(info,ILFindSystemType(info,"IDisposable"));
 		ILNode_GenValue(node->resource,info);
@@ -1566,7 +1570,7 @@ ILNode_GenDiscard(ILNode_Using)
 			ILGenAdjust(info, -1);
 		}
 	}
-	else if(yyisa(node->resource,ILNode_Expression))
+	else
 	{
 		ILGenLoadLocal(info, tempVar);
 		ILGenAdjust(info, 1);

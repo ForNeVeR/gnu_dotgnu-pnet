@@ -1,3 +1,12 @@
+2007-10-13  Klaus Treichel  <ktreichel@web.de>
+
+	* support/read_float.c, support/write_float.c: Extend the number of bytes
+	in the convert union to 8 in _ILReadDouble and _ILWriteDouble to match
+	the correct length and fix compiler warnings with gcc 4.2.1.
+
+	* cscc/csharp/cs_stmt.tc: Fix the using statement for expressions.
+	(bug #20790)
+
 2007-10-12  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/int_proto.h, engine/int_table.c, engine/lib_thread.c,

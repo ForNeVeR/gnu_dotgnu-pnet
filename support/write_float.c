@@ -58,7 +58,7 @@ void _ILWriteDouble(unsigned char *buf, ILDouble value)
 {
 	union
 	{
-		unsigned char bytes[4];
+		unsigned char bytes[8];
 		ILDouble      value;
 		struct {
 			ILUInt32  first;

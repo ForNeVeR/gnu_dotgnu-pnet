@@ -312,6 +312,142 @@ static int ClassNameSame(ILNode *name)
 }
 
 /*
+ * Setup a fresh array rank.
+ */
+static void ArrayRanksInit(struct ArrayRanks *ranks,
+						   ILUInt32 rank)
+{
+	ranks->numRanks =1;
+	ranks->rankList = 0;
+	ranks->ranks[0] = rank;
+	ranks->ranks[1] = 0;
+	ranks->ranks[2] = 0;
+	ranks->ranks[3] = 0;
+}
+
+/*
+ * Add a new rank to the array ranks.
+ */
+static void ArrayRanksAddRank(struct ArrayRanks *destRanks,
+							  struct ArrayRanks *srcRanks,
+							  ILUInt32 rank)
+{
+	if(srcRanks->numRanks > 4)
+	{
+		destRanks->numRanks = srcRanks->numRanks + 1;
+		ILNode_List_Add(srcRanks->rankList,
+						(ILNode *)(ILNativeUInt)rank);
+		destRanks->rankList = srcRanks->rankList;
+		destRanks->ranks[0] = 0;
+		destRanks->ranks[1] = 0;
+		destRanks->ranks[2] = 0;
+		destRanks->ranks[3] = 0;
+	}
+	else if(srcRanks->numRanks == 4)
+	{
+		destRanks->numRanks = srcRanks->numRanks + 1;
+		destRanks->rankList = MakeList(0, (ILNode *)(ILNativeUInt)(srcRanks->ranks[0]));
+		ILNode_List_Add(destRanks->rankList,
+						(ILNode *)(ILNativeUInt)(srcRanks->ranks[1]));
+		ILNode_List_Add(destRanks->rankList,
+						(ILNode *)(ILNativeUInt)(srcRanks->ranks[2]));
+		ILNode_List_Add(destRanks->rankList,
+						(ILNode *)(ILNativeUInt)(srcRanks->ranks[3]));
+		ILNode_List_Add(destRanks->rankList,
+						(ILNode *)(ILNativeUInt)rank);
+		destRanks->ranks[0] = 0;
+		destRanks->ranks[1] = 0;
+		destRanks->ranks[2] = 0;
+		destRanks->ranks[3] = 0;
+	}
+	else
+	{
+		destRanks->numRanks = srcRanks->numRanks + 1;
+		destRanks->rankList = 0;
+		destRanks->ranks[0] = srcRanks->ranks[0];
+		destRanks->ranks[1] = srcRanks->ranks[1];
+		destRanks->ranks[2] = srcRanks->ranks[2];
+		destRanks->ranks[3] = srcRanks->ranks[3];
+		destRanks->ranks[srcRanks->numRanks] = rank;
+	}
+}
+
+/*
+ * Setup a fresh array type.
+ */
+static void ArrayTypeInit(struct ArrayType *arrayType,
+						  ILNode *type,
+						  ILUInt32 rank)
+{
+	arrayType->type = type;
+	ArrayRanksInit(&(arrayType->ranks), rank);
+}
+
+/*
+ * Inner worker function for creating the array types if the ranks are
+ * stored in the list.
+ */
+static ILNode *ArrayTypeCreateInner(ILNode *type, ILNode_ListIter *iter)
+{
+	ILNode *node;
+
+	if((node = ILNode_ListIter_Next(iter)) != 0)
+	{
+		ILNode *arrayType = ArrayTypeCreateInner(type, iter);
+		ILNode *currentArrayType;
+
+		currentArrayType = ILNode_ArrayType_create(arrayType,
+												   (ILUInt32)(ILNativeUInt)node);
+		CloneLine(currentArrayType, type);
+		return currentArrayType;
+	}
+	else
+	{
+		return type;
+	}
+}
+
+/*
+ * Create the array types needed for the type specified ranks.
+ */
+static ILNode *ArrayTypeCreate(ILNode *type,
+							   struct ArrayRanks *ranks)
+{
+	if(ranks->numRanks < 5)
+	{
+		/* The ranks are stored inside the structure */
+		ILUInt32 currentLevel = ranks->numRanks;
+		ILNode *currentArrayType = type;
+
+		while(currentLevel > 0)
+		{
+			--currentLevel;
+
+			currentArrayType = ILNode_ArrayType_create(currentArrayType,
+													   ranks->ranks[currentLevel]);
+			CloneLine(currentArrayType, type);
+		}
+		return currentArrayType;
+	}
+	else
+	{
+		/* The ranks are stored inside the rankList */
+		ILNode_ListIter iter;
+
+		ILNode_ListIter_Init(&iter, ranks->rankList);
+		return ArrayTypeCreateInner(type, &iter);
+	}
+}
+
+static void ArrayTypeAddRank(struct ArrayType *destType,
+							 struct ArrayType *srcType,
+							 ILUInt32 rank)
+{
+	destType->type = srcType->type;
+	ArrayRanksAddRank(&(destType->ranks), &(srcType->ranks), rank);
+}
+
+/*
  * Modify an attribute name so that it ends in "Attribute".
  */
 static void ModifyAttrName(ILNode *node,int force)
@@ -814,6 +950,12 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 		ILUInt32		count;
 		ILNode_List	   *list;
 	}					countList;
+	struct
+	{
+		ILNode		   *identifier;
+		ILUInt32		numTypeArgs;
+		ILNode_List	   *typeArgs;
+	}					memberName;
 	ILNode_GenericTypeParameters *genericTypeParameters;
 	struct
 	{
@@ -838,6 +980,8 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 		ILNode_List	   *args;
 		ILNode_GenericTypeParameters *typeFormals;
 	}					memberHeader;
+	struct ArrayRanks	arrayRanks;
+	struct ArrayType	arrayType;
 }
 
 /*
@@ -1001,13 +1145,30 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <decimal>		DECIMAL_CONSTANT
 %type <string>		STRING_LITERAL DOC_COMMENT NamespaceIdentifier
 %type <count>		DimensionSeparators DimensionSeparatorList
+%type <count>		RankSpecifier
+%type <arrayRanks>	RankSpecifiers 
 %type <mask>		OptModifiers Modifiers Modifier
 %type <partial>		OptPartial
 
-%type <node>		Identifier QualifiedIdentifier BuiltinType
-%type <node>		QualifiedIdentifierPart
+%type <node>		Identifier QualifiedIdentifier
+%type <memberName>	QualifiedIdentifierPart
 
-%type <node>		Type NonExpressionType LocalVariableType
+%type <node>		BuiltinType
+%type <node>		NonArrayType ArrayType
+%type <node>		PointerType
+%type <node>		ArrayTypeStart
+%type <arrayType>	ArrayTypeContinue
+%type <node>		Type
+%type <node>		PrimaryTypeExpression
+%type <node>		PrimaryMemberAccessExpression
+%type <node>		PrimaryMemberAccessStart
+%type <node>		PrimaryTypeExpressionPart
+%type <node>		LocalVariableType
+%type <node>		LocalVariableSimplePointerType LocalVariablePointerType
+%type <node>		LocalVariableNonArrayType
+%type <node>		LocalVariableArrayTypeStart
+%type <arrayType>	LocalVariableArrayTypeContinue
+%type <node>		LocalVariableArrayType
 
 %type <node>		TypeDeclaration ClassDeclaration ClassBase TypeList
 %type <member>		ClassBody OptClassMemberDeclarations
@@ -1015,17 +1176,30 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <member>		StructBody
 %type <node> 		StructDeclaration StructInterfaces ModuleDeclaration
 
-%type <node>		PrimaryExpression UnaryExpression Expression
-%type <node>		MultiplicativeExpression AdditiveExpression
-%type <node>		ShiftExpression RelationalExpression EqualityExpression
+%type <node>		ElementAccess
+%type <node>		PrimaryArrayCreationExpression
+%type <node>		PrimaryNonTypeExpression
+%type <node>		PrimarySimpleExpression
+%type <node>		PrimaryExpression
+%type <node>		SimpleCastExpression CastExpression
+%type <node>		Expression
+%type <node>		UnaryExpression UnaryNonTypeExpression
+%type <node>		MultiplicativeExpression MultiplicativeNonTypeExpression
+%type <node>		AdditiveExpression AdditiveNonTypeExpression
+%type <node>		ShiftExpression ShiftNonTypeExpression
+%type <node>		RelationalExpression RelationalNonTypeExpression
+%type <node>		EqualityExpression EqualityNonTypeExpression
 %type <node>		AndExpression XorExpression OrExpression
 %type <node>		LogicalAndExpression LogicalOrExpression
 %type <node>		ConditionalExpression AssignmentExpression
 %type <node>		ParenExpression ConstantExpression BooleanExpression
 %type <node>		ParenBooleanExpression LiteralExpression
 %type <node>		InvocationExpression ExpressionList
-%type <node>		ObjectCreationExpression OptArgumentList ArgumentList
-%type <node>		Argument PrefixedUnaryExpression GenericReference
+%type <node>		ObjectCreationExpression
+%type <node>		PreIncrementExpression PreDecrementExpression
+%type <node>		PostIncrementExpression PostDecrementExpression
+%type <node>		OptArgumentList ArgumentList
+%type <node>		Argument PrefixedUnaryExpression PrefixedUnaryNonTypeExpression
 %type <node>		AnonymousMethod
 
 %type <node>		Statement EmbeddedStatement Block OptStatementList
@@ -1080,13 +1254,11 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		OperatorDeclaration NormalOperatorDeclaration
 %type <node>		ConversionOperatorDeclaration
 %type <opName>		OverloadableOperator
-%type <node>		TypeSuffix TypeSuffixList TypeSuffixes
 %type <node>		OptAttributes AttributeSections AttributeSection
 %type <node>		AttributeList Attribute AttributeArguments
 %type <node>		NonOptAttributes
 %type <node>		PositionalArgumentList PositionalArgument NamedArgumentList
 %type <node>		NamedArgument AttributeArgumentExpression
-%type <node>		RankSpecifiers RankSpecifierList 
 %type <node>		OptArrayInitializer ArrayInitializer
 %type <node>		OptVariableInitializerList VariableInitializerList
 %type <countList>	TypeActuals
@@ -1103,7 +1275,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 34
+%expect 27
 
 %start CompilationUnit
 %%
@@ -1252,7 +1424,7 @@ Identifier
 	;
 
 IDENTIFIER
-	: IDENTIFIER_LEXICAL	{ $$ = $1; }
+	: IDENTIFIER_LEXICAL	{ $$ = ILInternString($1, strlen($1)).string; }
 	| GET					{ $$ = ILInternString("get", 3).string; }
 	| SET					{ $$ = ILInternString("set", 3).string; }
 	| ADD					{ $$ = ILInternString("add", 3).string; }
@@ -1263,19 +1435,52 @@ IDENTIFIER
 	;
 
 QualifiedIdentifier
-	: QualifiedIdentifierPart							{ $$ = $1; }
+	: QualifiedIdentifierPart							{ 
+				if($1.numTypeArgs > 0)
+				{
+					MakeTernary(GenericReference,
+								$1.identifier,
+								$1.numTypeArgs,
+								(ILNode *)$1.typeArgs);
+				}
+				else
+				{
+					$$ = $1.identifier;
+				}
+			 }
 	| QualifiedIdentifier '.' QualifiedIdentifierPart	{
-				MakeBinary(QualIdent, $1, $3);
+				if($3.numTypeArgs > 0)
+				{
+					ILNode *node;
+
+					node = ILNode_QualIdent_create($1, $3.identifier);
+					MakeTernary(GenericReference,
+								node,
+								$3.numTypeArgs,
+								(ILNode *)$3.typeArgs);
+				}
+				else
+				{
+					MakeBinary(QualIdent, $1, $3.identifier);
+				}
 			}
 	;
 
 QualifiedIdentifierPart
-	: Identifier							{ $$ = $1; }
-	| Identifier '<' TypeActuals '>'		{
-				MakeTernary(GenericReference, $1, $3.count, (ILNode *)$3.list);
+	: Identifier							{ 
+				$$.identifier = $1;
+				$$.numTypeArgs = 0;
+				$$.typeArgs = 0;
+			 }
+	| IDENTIFIER '<' TypeActuals '>'		{
+				$$.identifier = ILQualIdentSimple($1);;
+				$$.numTypeArgs = $3.count;
+				$$.typeArgs = $3.list;
 			}
-	| Identifier GENERIC_LT TypeActuals '>'		{
-				MakeTernary(GenericReference, $1, $3.count, (ILNode *)$3.list);
+	| IDENTIFIER GENERIC_LT TypeActuals '>'	{
+				$$.identifier = ILQualIdentSimple($1);;
+				$$.numTypeArgs = $3.count;
+				$$.typeArgs = $3.list;
 			}
 	;
 
@@ -1439,45 +1644,56 @@ TypeDeclaration
  * Types.
  */
 
-Type
-	: QualifiedIdentifier	{ $$ = $1; }
-	| BuiltinType			{ $$ = $1; }
-	| Type '[' DimensionSeparators ']'	{
-				MakeBinary(ArrayType, $1, $3);
+NonArrayType
+	: BuiltinType				{ $$ = $1; }
+	| QualifiedIdentifier		{ $$ = $1; }
+	| PointerType				{ $$ = $1; }
+	;
+
+ArrayTypeStart
+	: NonArrayType '['			{ $$ = $1; }
+	;
+
+ArrayTypeContinue
+	: ArrayTypeStart ']'		{
+				ArrayTypeInit(&($$), $1, 1);
 			}
-	| Type '*'			{
-				MakeUnary(PtrType, $1);
+	|  ArrayTypeStart DimensionSeparatorList ']' {
+				ArrayTypeInit(&($$), $1, $2);
 			}
-	| Type '<' TypeActuals '>'	{
-				MakeTernary(GenericReference, $1, $3.count, (ILNode *)$3.list);
-			}
-	| Type GENERIC_LT TypeActuals '>'	{
-				MakeTernary(GenericReference, $1, $3.count, (ILNode *)$3.list);
+	| ArrayTypeContinue RankSpecifier	{
+				ArrayTypeAddRank(&($$), &($1), $2);
 			}
 	;
 
-NonExpressionType
-	: BuiltinType			{ $$ = $1; }
-	| NonExpressionType '[' DimensionSeparators ']'	{
-				MakeBinary(ArrayType, $1, $3);
+ArrayType
+	: ArrayTypeContinue	{
+				$$ = ArrayTypeCreate($1.type, &($1.ranks));
 			}
-	| NonExpressionType '*'	{
+	;
+
+PointerType
+	: Type '*'					{
 				MakeUnary(PtrType, $1);
 			}
-	| Expression '*'		{ 
-				MakeUnary(PtrType, $1);
+	;
+
+Type
+	: NonArrayType				{ $$ = $1; }
+	| ArrayType					{ $$ = $1; }
+	;
+
+RankSpecifiers
+	: RankSpecifier				{
+				ArrayRanksInit(&($$), $1);
 			}
-	| MultiplicativeExpression '*'		{ 
-				/* Needed becuase of shift issues that won't be picked
-				   up by the "Expression *" case above */
-				MakeUnary(PtrType, $1);
+	| RankSpecifiers RankSpecifier {
+				ArrayRanksAddRank(&($$), &($1), $2);
 			}
-	| NonExpressionType '<' TypeActuals '>'	{
-				MakeTernary(GenericReference, $1, $3.count, (ILNode *)$3.list);
-			}
-	| NonExpressionType GENERIC_LT TypeActuals '>'	{
-				MakeTernary(GenericReference, $1, $3.count, (ILNode *)$3.list);
-			}
+	;
+
+RankSpecifier
+	: '[' DimensionSeparators ']'	{ $$ = $2; }
 	;
 
 TypeActuals
@@ -1496,43 +1712,93 @@ TypeActuals
  * expressions to prevent reduce/reduce errors in the grammar.
  * The expressions are converted into types during semantic analysis.
  */
+
+PrimaryTypeExpression
+	: PrimaryTypeExpressionPart		{ $$ = $1; }
+	| PrimaryMemberAccessExpression	{ $$ = $1; }
+	;
+
+PrimaryMemberAccessStart
+	: BuiltinType '.'				{ $$ = $1; }
+	| PrimaryTypeExpressionPart '.'	{ $$ = $1; }
+	| PrimaryMemberAccessExpression '.'	{ $$ = $1; }
+	;
+
+PrimaryTypeExpressionPart
+	: Identifier					{ $$ = $1; }
+	;
+
+PrimaryMemberAccessExpression
+	: PrimaryMemberAccessStart PrimaryTypeExpressionPart {
+				MakeBinary(MemberAccess, $1, $2);
+			}
+	;
+
 LocalVariableType
-	: PrimaryExpression TypeSuffixes	{
-				MakeBinary(LocalVariableType, $1, $2);
+	: LocalVariableNonArrayType		{ $$ = $1; }
+	| LocalVariableArrayType		{ $$ = $1; }
+	;
+
+LocalVariableNonArrayType
+	: BuiltinType					{ $$ = $1; }
+	| PrimaryTypeExpression			{ $$ = $1; }
+	| LocalVariablePointerType		{ $$ = $1; }
+	;
+
+/*
+ * This is needed to fix reduce/reduce errors between the array type 
+ * declaration and the element access expression.
+ */
+LocalVariableArrayTypeStart
+	: PrimaryTypeExpression '['		{ $$ = $1; }
+	;
+
+LocalVariableArrayTypeContinue
+	: BuiltinType RankSpecifier				{
+				ArrayTypeInit(&($$), $1, $2);
+			 }
+	| LocalVariablePointerType RankSpecifier {
+				ArrayTypeInit(&($$), $1, $2);
+			 }
+	| LocalVariableArrayTypeStart ']'		{
+				ArrayTypeInit(&($$), $1, 1);
 			}
-	| PrimaryExpression '<' TypeActuals '>' TypeSuffixes	{
-				ILNode *type = ILNode_GenericReference_create($1, $3.count, (ILNode *)$3.list);
-				MakeBinary(LocalVariableType, type, $5);
+	| LocalVariableArrayTypeStart DimensionSeparatorList ']' {
+				ArrayTypeInit(&($$), $1, $2);
 			}
-	| PrimaryExpression GENERIC_LT TypeActuals '>' TypeSuffixes	{
-				ILNode *type = ILNode_GenericReference_create($1, $3.count, (ILNode *)$3.list);
-				MakeBinary(LocalVariableType, type, $5);
-			}
-	| BuiltinType TypeSuffixes			{
-				MakeBinary(LocalVariableType, $1, $2);
+	| LocalVariableArrayTypeContinue RankSpecifier	{
+				ArrayTypeAddRank(&($$), &($1), $2);
 			}
 	;
 
-TypeSuffixes
-	: /* empty */		{ $$ = 0; }
-	| TypeSuffixList	{ $$ = $1; }
-	;
-
-TypeSuffixList
-	: TypeSuffix						{
-				$$ = ILNode_List_create();
-				ILNode_List_Add($$, $1);
-			}
-	| TypeSuffixList TypeSuffix			{
-				ILNode_List_Add($1, $2);
-				$$ = $1;
+LocalVariableArrayType
+	: LocalVariableArrayTypeContinue	{
+				$$ = ArrayTypeCreate($1.type, &($1.ranks));
 			}
 	;
 
-TypeSuffix
-	: '[' DimensionSeparators ']'	{ MakeUnary(TypeSuffix, $2); }
-	| '*'							{ MakeUnary(TypeSuffix, 0); }
+/*
+ * This one is needed to fix a shift/reduce conflict with the
+ * multiplication expression.
+ */
+LocalVariableSimplePointerType
+	: PrimaryTypeExpression '*'			{ $$ = $1; }
 	;
+
+LocalVariablePointerType
+	: BuiltinType '*'					{
+ 				MakeUnary(PtrType, $1);
+			}
+	| LocalVariableSimplePointerType	{
+				MakeUnary(PtrType, $1);
+			} 
+	| LocalVariableArrayType '*'		{
+				MakeUnary(PtrType, $1);
+			}
+	| LocalVariablePointerType '*'		{
+				MakeUnary(PtrType, $1);
+			} 
+			;
 
 DimensionSeparators
 	: /* empty */					{ $$ = 1; }
@@ -1574,43 +1840,51 @@ BuiltinType
  * Expressions.
  */
 
-PrimaryExpression
-	: LiteralExpression				{ $$ = $1; }
-	| Identifier					{ $$ = $1; }
-	| '(' Expression ')'			{ $$ = $2; }
-	| PrimaryExpression '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
-	| BuiltinType '.' Identifier	{ MakeBinary(MemberAccess, $1, $3); }
-	| InvocationExpression			{ $$ = $1; }
-	| PrimaryExpression '[' ExpressionList ']'	{
+PrimaryArrayCreationExpression
+	: NEW ArrayTypeStart ExpressionList ']' OptArrayInitializer	{
+				$$ = ILNode_NewExpression_create($2, $3, 0, $5);
+			}
+	| NEW ArrayTypeStart ExpressionList ']' RankSpecifiers OptArrayInitializer	{
+				ILNode *arrayType;
+
+				arrayType = ArrayTypeCreate($2, &($5));
+				$$ = ILNode_NewExpression_create(arrayType, $3, 0, $6);
+			}
+	| NEW ArrayType ArrayInitializer		{
+				$$ = ILNode_NewExpression_create($2, 0, 0, $3);
+			}
+	;
+
+ElementAccess
+	: BASE '[' ExpressionList ']'	{ MakeUnary(BaseElement, $3); }
+	| LocalVariableArrayTypeStart ExpressionList ']' {
+				MakeBinary(ArrayAccess, $1, $2);
+			}
+	| PrimaryNonTypeExpression '[' ExpressionList ']' {
 				MakeBinary(ArrayAccess, $1, $3);
 			}
-	| PrimaryExpression '[' ']'		{
-				/*
-				 * This is actually a type, but we have to recognise
-				 * it here to avoid shift/reduce conflicts in the
-				 * definition of casts in UnaryExpression.  We would
-				 * like to handle this in NonExpressionType, but then it
-				 * creates problems for casts to array types like "A[]".
-				 */
-				MakeBinary(ArrayType, $1, 1);
+	;
+
+PrimaryNonTypeExpression
+	: PrimarySimpleExpression			{ $$ = $1; }
+	| PrimaryArrayCreationExpression	{ $$ = $1; }
+	;
+
+PrimarySimpleExpression
+	: LiteralExpression				{ $$ = $1; }
+	| PrimaryNonTypeExpression '.' PrimaryTypeExpressionPart {
+				MakeBinary(MemberAccess, $1, $3);
 			}
-	| PrimaryExpression '[' DimensionSeparatorList ']'		{
-				/* This is also a type */
-				MakeBinary(ArrayType, $1, $3);
-			}
+	| '(' Expression ')'			{ $$ = $2; }
+	| SimpleCastExpression			{ $$ = $1; }
+	| InvocationExpression			{ $$ = $1; }
+	| ElementAccess					{ $$ = $1; }
 	| ARGLIST						{ MakeSimple(VarArgList); }
 	| THIS							{ MakeSimple(This); }
 	| BASE '.' Identifier			{ MakeUnary(BaseAccess, $3); }
-	| BASE '[' ExpressionList ']'	{ MakeUnary(BaseElement, $3); }
-	| PrimaryExpression INC_OP		{ MakeUnary(PostInc, $1); }
-	| PrimaryExpression DEC_OP		{ MakeUnary(PostDec, $1); }
+	| PostIncrementExpression		{ $$ = $1; }
+	| PostDecrementExpression		{ $$ = $1; }
 	| ObjectCreationExpression		{ $$ = $1; }
-	| NEW Type '[' ExpressionList ']' RankSpecifiers OptArrayInitializer	{
-				$$ = ILNode_NewExpression_create($2, $4, $6, $7);
-			}
-	| NEW Type ArrayInitializer		{
-				$$ = ILNode_NewExpression_create($2, 0, 0, $3);
-			}
 	| TYPEOF '(' Type ')'			{ MakeUnary(TypeOf, $3); }
 	| SIZEOF '(' Type ')'			{
 				/*
@@ -1640,13 +1914,15 @@ PrimaryExpression
 	| REFVALUE '(' Expression ',' Type ')'	{ MakeBinary(RefValue, $3, $5); }
 	| MODULE			{ $$ = ILQualIdentSimple("<Module>"); }
 	| DELEGATE AnonymousMethod				{ $$ = $2; }
-	| PrimaryExpression '.' DEFAULT			{
-				$$ = ILNode_DefaultConstructor_create($1, 0, 0);
-			}
-	| BuiltinType '.' DEFAULT			{
+	| PrimaryMemberAccessStart  DEFAULT			{
 				$$ = ILNode_DefaultConstructor_create($1, 0, 0);
 			}
 	| DefaultValueExpression			{ $$ = $1; }
+	;
+
+PrimaryExpression
+	: PrimaryNonTypeExpression			{ $$ = $1; }
+	| PrimaryTypeExpression				{ $$ = $1; }
 	;
 
 LiteralExpression
@@ -1728,6 +2004,23 @@ ObjectCreationExpression
 			}
 	;
 
+PreIncrementExpression
+	: INC_OP PrefixedUnaryExpression	{ MakeUnary(PreInc, $2); }
+	;
+
+PreDecrementExpression
+	: DEC_OP PrefixedUnaryExpression	{ MakeUnary(PreDec, $2); }
+	;
+
+PostIncrementExpression
+	: PrimaryExpression INC_OP		{ MakeUnary(PostInc, $1); }
+	;
+
+PostDecrementExpression
+	: PrimaryExpression DEC_OP		{ MakeUnary(PostDec, $1); }
+	;
+
+
 OptArgumentList
 	: /* empty */						{ $$ = 0; }
 	| ArgumentList						{ $$ = $1; }
@@ -1747,22 +2040,6 @@ Argument
 ExpressionList
 	: Expression						{ $$ = $1; }
 	| ExpressionList ',' Expression		{ MakeBinary(ArgList, $1, $3); }
-	;
-
-RankSpecifiers
-	: /* empty */			{ $$ = 0;}
-	| RankSpecifierList		{ $$ = $1;}
-	;
-
-RankSpecifierList
-	: '[' DimensionSeparators ']'			{
-					$$ = ILNode_List_create();
-					ILNode_List_Add($$, ILNode_TypeSuffix_create($2));
-				}
-	| RankSpecifierList '[' DimensionSeparators ']'	{
-					ILNode_List_Add($1, ILNode_TypeSuffix_create($3));
-					$$ = $1;
-				}
 	;
 
 /*
@@ -1797,32 +2074,47 @@ RankSpecifierList
  * the compiler does not know if an identifier is a type or not
  * until later.
  */
+
+SimpleCastExpression
+	: '(' PrimaryTypeExpression ')'		 { $$ = $2; }
+	;
+
+CastExpression
+	: '(' BuiltinType ')' PrefixedUnaryExpression	{
+				MakeBinary(UserCast, $2, $4);
+			}
+	| '(' LocalVariablePointerType ')' PrefixedUnaryExpression	{
+				MakeBinary(UserCast, $2, $4);
+			}
+	| '(' LocalVariableArrayType ')' PrefixedUnaryExpression	{
+				MakeBinary(UserCast, $2, $4);
+			}
+	| SimpleCastExpression UnaryExpression	{
+				MakeBinary(UserCast, $1, $2);
+			}
+	;
+
 UnaryExpression
-	: PrimaryExpression					{ $$ = $1; }
+	: UnaryNonTypeExpression			{ $$ = $1; }
+	| PrimaryTypeExpression				{ $$ = $1; }
+	;
+
+UnaryNonTypeExpression
+	: PrimaryNonTypeExpression			{ $$ = $1; }
 	| '!' PrefixedUnaryExpression		{ 
 				MakeUnary(LogicalNot,ILNode_ToBool_create($2)); 
 	}
 	| '~' PrefixedUnaryExpression		{ MakeUnary(Not, $2); }
-	| '(' Expression ')' UnaryExpression	{
-				/*
-				 * Note: we need to use a full "Expression" for the type,
-				 * so that we don't get a reduce/reduce conflict with the
-				 * rule "PrimaryExpression: '(' Expression ')'".  We later
-				 * filter out expressions that aren't really types.
-				 */
-				MakeBinary(UserCast, $2, $4);
-			}
-	| '(' NonExpressionType ')' PrefixedUnaryExpression	{
-				/*
-				 * This rule recognizes types that involve non-expression
-				 * identifiers such as "int", "bool", "string", etc.
-				 */
-				MakeBinary(UserCast, $2, $4);
-			}
+	| CastExpression					{ $$ = $1; }
 	;
 
 PrefixedUnaryExpression
-	: UnaryExpression				{ $$ = $1; }
+	: PrefixedUnaryNonTypeExpression	{ $$ = $1; }
+	| PrimaryTypeExpression				{ $$ = $1; }
+	;
+
+PrefixedUnaryNonTypeExpression
+	: UnaryNonTypeExpression			{ $$ = $1; }
 	| '+' PrefixedUnaryExpression	{ MakeUnary(UnaryPlus, $2); } %prec UN_PLUS
 	| '-' PrefixedUnaryExpression			{
 				/* We create negate nodes carefully so that integer
@@ -1848,16 +2140,26 @@ PrefixedUnaryExpression
 					MakeUnary(Neg, $2);
 				}
 			}  %prec UN_MINUS
-	| INC_OP PrefixedUnaryExpression	{ MakeUnary(PreInc, $2); }
-	| DEC_OP PrefixedUnaryExpression	{ MakeUnary(PreDec, $2); }
+	| PreIncrementExpression			{ $$ = $1; }
+	| PreDecrementExpression			{ $$ = $1; }
 	| '*' PrefixedUnaryExpression		{ MakeBinary(Deref, $2, 0); }
 	| '&' PrefixedUnaryExpression		{ MakeUnary(AddressOf, $2); } %prec ADDRESS_OF
 	;
 
 MultiplicativeExpression
-	: PrefixedUnaryExpression				{ $$ = $1; }
-	| MultiplicativeExpression '*' PrefixedUnaryExpression	{
+	: MultiplicativeNonTypeExpression	{ $$ = $1; }
+	| PrimaryTypeExpression				{ $$ = $1; }
+	;
+
+MultiplicativeNonTypeExpression
+	: PrefixedUnaryNonTypeExpression	{ $$ = $1; }
+	| MultiplicativeNonTypeExpression '*' PrefixedUnaryExpression	{
 				MakeBinary(Mul, $1, $3);
+			}
+	| LocalVariableSimplePointerType PrefixedUnaryExpression	{
+				/* This one is to pick up the cases where the first part is
+				   a PrimaryTypeExpression. */
+				MakeBinary(Mul, $1, $2);
 			}
 	| MultiplicativeExpression '/' PrefixedUnaryExpression	{
 				MakeBinary(Div, $1, $3);
@@ -1868,7 +2170,12 @@ MultiplicativeExpression
 	;
 
 AdditiveExpression
-	: MultiplicativeExpression		{ $$ = $1; }
+	: AdditiveNonTypeExpression		{ $$ = $1; }
+	| PrimaryTypeExpression			{ $$ = $1; }
+	;
+
+AdditiveNonTypeExpression
+	: MultiplicativeNonTypeExpression	{ $$ = $1; }
 	| AdditiveExpression '+' MultiplicativeExpression	{
 				MakeBinary(Add, $1, $3);
 			}
@@ -1878,7 +2185,12 @@ AdditiveExpression
 	;
 
 ShiftExpression
-	: AdditiveExpression			{ $$ = $1; }
+	: ShiftNonTypeExpression		{ $$ = $1; }
+	| PrimaryTypeExpression			{ $$ = $1; }
+	;
+
+ShiftNonTypeExpression
+	: AdditiveNonTypeExpression		{ $$ = $1; }
 	| ShiftExpression LEFT_OP AdditiveExpression	{
 				MakeBinary(Shl, $1, $3);
 			}
@@ -1888,6 +2200,10 @@ ShiftExpression
 	;
 
 /*
+ * Removed the part with the generic references for now.
+ * TODO: Readd the generic reference detection in relational
+ * expressions. (Klaus)
+ *
  * Relational expressions also recognise generic type references.
  * We have to put them here instead of in the more logical place
  * of "PrimaryExpression" to prevent reduce/reduce conflicts.
@@ -1900,7 +2216,12 @@ ShiftExpression
  * with method invocations that involve generic method parameters.
  */
 RelationalExpression
-	: ShiftExpression				{ $$ = $1; }
+	: RelationalNonTypeExpression	{ $$ = $1; }
+	| PrimaryTypeExpression			{ $$ = $1; }
+	;
+
+RelationalNonTypeExpression
+	: ShiftNonTypeExpression		{ $$ = $1; }
 	| RelationalExpression '<' ShiftExpression		{
 				MakeBinary(Lt, $1, $3);
 			}
@@ -1919,49 +2240,15 @@ RelationalExpression
 	| RelationalExpression AS Type					{
 				MakeBinary(AsUntyped, $1, $3);
 			}
-	| GenericReference								{
-				$$ = $1;
-			}
-	| GenericReference '(' OptArgumentList ')'		{
-				$$ = CSInsertMethodInvocation($1, $3);
-			}
-	;
-
-/*
- * TODO: This needs a rework after the type stuff is done.
- */
-GenericReference
-	: RelationalExpression GENERIC_LT ShiftExpression '>'		{
-				$$ = CSInsertGenericReference($1, 1, MakeList(0, $3));
-			}
-	| RelationalExpression GENERIC_LT ShiftExpression TypeSuffixList '>'	{
-				$$ = CSInsertGenericReference
-					($1, 1, MakeList(0, ILNode_LocalVariableType_create($3, $4)));
-			}
-	| RelationalExpression GENERIC_LT ShiftExpression ',' TypeActuals '>'	{
-				$$ = CSInsertGenericReference
-					($1, $5.count + 1, MakeList(MakeList(0, $3), (ILNode *)($5.list)));
-			}
-	| RelationalExpression GENERIC_LT ShiftExpression TypeSuffixList ',' 
-			TypeActuals '>'		{
-				$$ = CSInsertGenericReference
-					($1, $6.count + 1, CSInsertTypeActuals
-						(ILNode_LocalVariableType_create($3, $4), (ILNode *)($6.list)));
-			}
-	| RelationalExpression GENERIC_LT BuiltinType TypeSuffixes '>'	{
-				$$ = CSInsertGenericReference
-					($1, 1, MakeList(0, ILNode_LocalVariableType_create($3, $4)));
-			}
-	| RelationalExpression GENERIC_LT BuiltinType TypeSuffixes ','
-			TypeActuals '>'	{
-				$$ = CSInsertGenericReference
-					($1, $6.count + 1, CSInsertTypeActuals
-						(ILNode_LocalVariableType_create($3, $4), (ILNode *)($6.list)));
-			}
 	;
 
 EqualityExpression
-	: RelationalExpression			{ $$ = $1; }
+	: EqualityNonTypeExpression		{ $$ = $1; }
+	| PrimaryTypeExpression			{ $$ = $1; }
+	;
+
+EqualityNonTypeExpression
+	: RelationalNonTypeExpression	{ $$ = $1; }
 	| EqualityExpression EQ_OP RelationalExpression	{
 				MakeBinary(Eq, $1, $3);
 			}
@@ -2325,10 +2612,10 @@ InnerExpressionStatement
 	: InvocationExpression				{ $$ = $1; }
 	| ObjectCreationExpression			{ $$ = $1; }
 	| AssignmentExpression				{ $$ = $1; }
-	| PrimaryExpression INC_OP			{ MakeUnary(PostInc, $1); }
-	| PrimaryExpression DEC_OP			{ MakeUnary(PostDec, $1); }
-	| INC_OP PrefixedUnaryExpression	{ MakeUnary(PreInc, $2); }
-	| DEC_OP PrefixedUnaryExpression	{ MakeUnary(PreDec, $2); }
+	| PostIncrementExpression			{ $$ = $1; }
+	| PostDecrementExpression			{ $$ = $1; }
+	| PreIncrementExpression			{ $$ = $1; }
+	| PreDecrementExpression			{ $$ = $1; }
 	;
 
 SelectionStatement
@@ -3811,7 +4098,7 @@ ConversionOperatorDeclaration
  */
 
 ConstructorDeclaration
-	: OptAttributes OptModifiers QualifiedIdentifierPart
+	: OptAttributes OptModifiers Identifier
 			'(' OptFormalParameterList ')' ConstructorInitializer MethodBody {
 				ILUInt32 attrs = CSModifiersToConstructorAttrs($3, $2);
 				ILNode *ctorName;
@@ -3913,7 +4200,7 @@ ConstructorInitializer
 	;
 
 DestructorDeclaration
-	: OptAttributes OptModifiers '~' QualifiedIdentifierPart '(' ')' Block		{
+	: OptAttributes OptModifiers '~' Identifier '(' ')' Block		{
 				ILUInt32 attrs;
 				ILNode *dtorName;
 				ILNode *name;

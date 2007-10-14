@@ -1,3 +1,17 @@
+2007-10-14  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_grammar.y: Redo the creation of extended types like
+	pointer- and array types. Layout array types in the reverse order as
+	specified in the ECMA specs.  Remove the GenericReference because that
+	has to be done differently. Prepare some Expressions to be able to handle
+	the generic references.
+
+	* cscc/csharp/cs_internal.h: Add the structures to collect array ranks
+	and the array type.
+
+	* cscc/csharp/cs_misc.c: Change the semantic analysis for the new
+	expression to handle arrays of arrays correctly.
+
 2007-10-13  Klaus Treichel  <ktreichel@web.de>
 
 	* support/read_float.c, support/write_float.c: Extend the number of bytes

@@ -31,6 +31,24 @@ extern	"C" {
 #endif
 
 /*
+ * Structure to hold up to 4 following array ranks.
+ * If the number of ranks exceeds 4 an ILNode_List that holds all ranks
+ * for the arrays is created.
+ */
+struct ArrayRanks
+{
+	ILUInt32	numRanks;
+	ILNode	   *rankList;
+	ILUInt32	ranks[4];
+};
+
+struct ArrayType
+{
+	ILNode			   *type;
+	struct ArrayRanks	ranks;
+};
+
+/*
  * Modifier mask bits.
  */
 #define	CS_MODIFIER_PUBLIC			(1<<0)

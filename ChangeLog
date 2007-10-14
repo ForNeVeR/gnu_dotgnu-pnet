@@ -1,3 +1,14 @@
+2007-10-14  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/expr/newarray1.il, csharp/expr/newarray1.jl: Update files
+	to match the recent compiler change.
+
+	* csharp/stmt/Makefile.am: Add the testcase using_statement1.cs
+
+	* csharp/stmt/using_statement1.cs, csharp/stmt/using_statement1.il,
+	csharp/stmt/using_statement1.jl: Add first simple testcase for the
+	using statement.
+
 2007-09-23  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/class/generics/Makefile.am: Add class3.cs to the tests to be

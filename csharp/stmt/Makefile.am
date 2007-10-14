@@ -30,6 +30,7 @@ TESTS = block1.cs \
 		using_namespace4.cs \
 		using_namespace5.cs \
 		using_namespace6.cs \
+		using_statement1.cs \
 		using1.cs \
 		using2.cs \
 		using3.cs \

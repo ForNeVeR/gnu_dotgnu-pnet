@@ -30,7 +30,7 @@
 {
 .method private hidebysig instance void 'm1'(int32 'dim', unsigned int32 'dim2', int64 'dim3', unsigned int64 'dim4') cil managed 
 {
-	.locals init	(int32[], valuetype 'X'[], valuetype 'Color'[,], class 'Test'[], class 'Test'[][], class ['.library']'System'.'Object'[,,], class ['.library']'System'.'Object'[,,][][,,,], class ['.library']'System'.'Object'[,])
+	.locals init	(int32[], valuetype 'X'[], valuetype 'Color'[,], class 'Test'[], class 'Test'[][], class ['.library']'System'.'Object'[,,], class ['.library']'System'.'Object'[,,,][][,,], class ['.library']'System'.'Object'[,])
 	ldc.i4.3
 	newarr	['.library']'System'.'Int32'
 	stloc.0
@@ -55,7 +55,7 @@
 	ldarg.1
 	ldarg.1
 	ldarg.1
-	newobj	instance void class ['.library']'System'.'Object'[,,][][,,,]::.ctor(int32, int32, int32)
+	newobj	instance void class ['.library']'System'.'Object'[,,,][][,,]::.ctor(int32, int32, int32, int32)
 	stloc.s	6
 	ldarg.2
 	newarr	['.library']'System'.'Int32'

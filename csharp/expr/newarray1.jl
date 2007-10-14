@@ -55,7 +55,7 @@
 	iload_1
 	iload_1
 	iload_1
-	multianewarray	class ['.library']'System'.'Object'[,,][][,,,] 3
+	multianewarray	class ['.library']'System'.'Object'[,,,][][,,] 3
 	astore	13
 	iload_2
 	newarray int32

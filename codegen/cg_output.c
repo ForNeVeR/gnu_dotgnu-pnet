@@ -25,6 +25,21 @@
 extern	"C" {
 #endif
 
+static ILType *GetLastNestedArray(ILType *arrayType)
+{
+	while(arrayType)
+	{
+		ILType *elementType = ILTypeGetElemType(arrayType);
+
+		if(!ILType_IsArray(elementType))
+		{
+			break;
+		}
+		arrayType = elementType;
+	}
+	return arrayType;
+}
+
 void ILGenSimple(ILGenInfo *info, int opcode)
 {
 	if(info->asmOutput)
@@ -495,6 +510,7 @@ void ILGenArrayCtor(ILGenInfo *info, ILType *type)
 		fputs("\tnewobj\tinstance void ", info->asmOutput);
 		ILDumpType(info->asmOutput, info->image, type, IL_DUMP_QUOTE_NAMES);
 		fputs("::.ctor(", info->asmOutput);
+		type = GetLastNestedArray(type);
 		dim = ILTypeGetRank(type);
 		while(dim > 0)
 		{

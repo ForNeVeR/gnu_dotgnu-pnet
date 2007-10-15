@@ -1,3 +1,9 @@
+2007-10-15  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_output.c: Use the number of dimensions of the last nested
+	array to specify the number of args for the ctor in ILGenArrayCtor instead
+	of the first one.
+
 2007-10-14  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_grammar.y: Redo the creation of extended types like

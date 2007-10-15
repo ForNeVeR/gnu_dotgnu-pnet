@@ -55,7 +55,7 @@
 	ldarg.1
 	ldarg.1
 	ldarg.1
-	newobj	instance void class ['.library']'System'.'Object'[,,,][][,,]::.ctor(int32, int32, int32, int32)
+	newobj	instance void class ['.library']'System'.'Object'[,,,][][,,]::.ctor(int32, int32, int32)
 	stloc.s	6
 	ldarg.2
 	newarr	['.library']'System'.'Int32'

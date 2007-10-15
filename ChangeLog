@@ -1,3 +1,9 @@
+2007-10-15  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/expr/newarray.il: Update the file to reflect the fixed bug
+	with using the wrong array for determining the number of dimensions
+	for the ctor call.
+
 2007-10-14  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/expr/newarray1.il, csharp/expr/newarray1.jl: Update files

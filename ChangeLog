@@ -1,5 +1,10 @@
 2007-10-22  Radek Polak  <psonek2@seznam.cz>
 
+	* System/Net/Sockets/Socket.cs: Allow recieve and send timeout socket
+	options.
+
+2007-10-22  Radek Polak  <psonek2@seznam.cz>
+
 	* System.Windows.Forms/TabControl.cs: Fix index out of range and null
 	reference exceptions. Handle correctly case, when we set tabpage at
 	selected index - the tab content didnt appear.

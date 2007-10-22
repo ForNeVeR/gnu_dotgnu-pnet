@@ -1544,7 +1544,9 @@ public class Socket : IDisposable
 					   optionName == SocketOptionName.ReceiveBuffer ||
 					   optionName == SocketOptionName.SendBuffer ||
 					   optionName == SocketOptionName.ReuseAddress ||
-					   optionName == SocketOptionName.Broadcast)
+					   optionName == SocketOptionName.Broadcast ||
+					   optionName == SocketOptionName.ReceiveTimeout ||
+					   optionName == SocketOptionName.SendTimeout)
 					{
 						SetSocketOptionRaw(optionLevel, optionName,
 										   optionValue);
@@ -1566,15 +1568,6 @@ public class Socket : IDisposable
 						SetSocketOptionRaw(optionLevel,
 										   SocketOptionName.ReuseAddress,
 										   (optionValue == 0) ? 1 : 0);
-						return;
-					}
-					if(optionName == SocketOptionName.ReceiveTimeout ||
-					   optionName == SocketOptionName.SendTimeout)
-					{
-						// These options are fixed by the Internet RFC's,
-						// are should never be changed by applications.
-						// But there is existing C# code that thinks they
-						// can be set to different values.  Quietly ignore.
 						return;
 					}
 				}

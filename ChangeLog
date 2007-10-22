@@ -1,3 +1,8 @@
+2007-10-22  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Dump information whether image contains entry
+	point.
+
 2007-10-15  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_output.c: Use the number of dimensions of the last nested

@@ -2090,12 +2090,15 @@ void ShowProjects(ILDebugger *debugger, FILE *stream)
 	ILImage *image;
 	int imageId;
 	const char *linkDir;
+	ILImage *entryImage;
 
 	/* Dump xml header */
 	fputs("  <Projects>\n", stream);
 
 	/* Iterate all images */
 	context = ILExecProcessGetContext(debugger->process);
+	entryImage = ILClassToImage(ILMethod_Owner(ILExecProcessGetEntry
+														(debugger->process)));
 	image = 0;
 	while((image = ILContextNextImage(context, image)) != 0)
 	{
@@ -2112,6 +2115,12 @@ void ShowProjects(ILDebugger *debugger, FILE *stream)
 			fputs("\" ProjectDir=\"", stream);
 			DumpString(linkDir, stream);
 		}
+
+		if(image == entryImage)
+		{
+			fputs("\" IsEntry=\"1", stream);
+		}
+
 		fputs("\" />\n", stream);
 	}
 	/* Output the library footer information */

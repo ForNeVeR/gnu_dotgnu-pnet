@@ -1,5 +1,10 @@
 2007-10-22  Radek Polak  <psonek2@seznam.cz>
 
+	* support/socket.c: Implement recieve and send timeouts socket
+	options. This fixes bug #18785.
+
+2007-10-22  Radek Polak  <psonek2@seznam.cz>
+
 	* engine/debugger.c: Dump information whether image contains entry
 	point.
 

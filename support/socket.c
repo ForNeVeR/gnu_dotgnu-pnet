@@ -1017,13 +1017,40 @@ int ILSysIOSocketSetOption(ILSysIOHandle sockfd, ILInt32 level,
 {
 #ifdef HAVE_SETSOCKOPT
 	ILInt32 nativeLevel, nativeName;
+	int optlen;
+#ifdef IL_WIN32_NATIVE
+	ILInt32 optval;
+#else
+	union
+	{
+		ILInt32 value;
+		struct timeval timeout;
+	} optval;
+#endif
+
 	if(SocketOptionsToNative(level, name, &nativeLevel,&nativeName)==0)
 	{
 		ILSysIOSetErrno(IL_ERRNO_EINVAL);
 		return 0;
 	}
+#ifdef IL_WIN32_NATIVE
+	optlen = sizeof(optval);
+	optval = value;
+#else
+	if(name == IL_SO_SEND_TIMEOUT || name == IL_SO_RECV_TIMEOUT)
+	{
+		optlen = sizeof(optval.timeout);
+		optval.timeout.tv_sec = value / 1000;
+		optval.timeout.tv_usec = (value % 1000) * 1000;
+	}
+	else
+	{
+		optlen = sizeof(optval.value);
+		optval.value = value;
+	}
+#endif	
 	return (setsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
-			(void *)&value,	sizeof(value))== 0);
+			(void *)&optval, optlen)== 0);
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
@@ -1034,24 +1061,58 @@ int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 						   ILInt32 name, ILInt32 *value)
 {
 #ifdef HAVE_GETSOCKOPT
-	int option = 0;
-	int len=sizeof(ILInt32);
 	ILInt32 nativeLevel, nativeName;
+	int optlen;
+#ifdef IL_WIN32_NATIVE
+	ILInt32 optval;
+#else
+	union
+	{
+		ILInt32 value;
+		struct timeval timeout;
+	} optval;
+#endif
+
 	if(SocketOptionsToNative(level, name, &nativeLevel,&nativeName)==0)
 	{
 		ILSysIOSetErrno(IL_ERRNO_EINVAL);
 		return 0;
 	}
-	if(getsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
-								(void *)&option,&len) == 0)
+
+#ifdef IL_WIN32_NATIVE
+	optlen = sizeof(optval);
+#else
+	if(name == IL_SO_SEND_TIMEOUT || name == IL_SO_RECV_TIMEOUT)
 	{
-		*value = (ILInt32)option;
-		return 1;
+		optlen = sizeof(optval.timeout);
 	}
 	else
 	{
+		optlen = sizeof(optval.value);
+	}
+#endif	
+
+	if(getsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
+								(void *)&optval,&optlen) != 0)
+	{
 		return 0;
 	}
+
+#ifdef IL_WIN32_NATIVE
+	*value = optval;
+#else
+	if(name == IL_SO_SEND_TIMEOUT || name == IL_SO_RECV_TIMEOUT)
+	{
+		*value = (ILInt32)(optval.timeout.tv_sec * 1000 +
+						   optval.timeout.tv_usec / 1000);
+	}
+	else
+	{
+		*value = optval.value;
+	}
+#endif
+
+	return 1;
 #else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;

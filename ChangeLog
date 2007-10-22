@@ -1,3 +1,9 @@
+2007-10-22  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Windows.Forms/TabControl.cs: Fix index out of range and null
+	reference exceptions. Handle correctly case, when we set tabpage at
+	selected index - the tab content didnt appear.
+
 2007-10-12  Radek Polak  <psonek2@seznam.cz>
 
 	* DotGNU.Misc/BlockingOperation.cs: Class for aborting operations

@@ -130,9 +130,10 @@ namespace System.Windows.Forms
 			//	return;
 			//}
 			SuspendLayout();
-			if (prevSelectedIndex > -1)
+			Control prevPage = GetChildByIndex( prevSelectedIndex );
+			if(prevPage != null)
 			{
-				GetChildByIndex( prevSelectedIndex ).Visible = false;
+				prevPage.Visible = false;
 			}
 
 			Control selectedPage = GetChildByIndex( selectedIndex );
@@ -405,6 +406,10 @@ namespace System.Windows.Forms
 					tabpages.Insert(idx, value);
 					tabOwner.Controls.Clear();
 					tabOwner.Controls.AddRange((TabPage[])tabpages.ToArray(typeof(TabPage)));
+					if(tabOwner.selectedIndex == idx)
+					{
+						((Control)(value)).Visible = true;
+					}
 				}
 			}
 
@@ -688,9 +693,9 @@ namespace System.Windows.Forms
 						//if (SelectedIndex < TabCount)
 						//{
 							// Check to see if we have selected a tab that isnt on the last row and move the tab row down
-						if( selectedIndex >= 0 ) {
-							if (tabs[SelectedIndex].row != maxRow)
-								RowToBottom(ref tabs, tabs[SelectedIndex].row, maxRow);
+						if( selectedIndex >= 0 && selectedIndex < tabs.Length) {
+							if (tabs[selectedIndex].row != maxRow)
+								RowToBottom(ref tabs, tabs[selectedIndex].row, maxRow);
 						}
 						//}
 

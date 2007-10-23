@@ -1,3 +1,38 @@
+2007-10-23  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_defs.c: Replace the type node with a left and an
+	identifier node to be able to handle generic methods too.
+
+	* cscc/csharp/cs_gather.c: Handle the GenericReference node in
+	GetFullAndBasicNames so that type names are built correctly.
+	Set the currentClass in the genInfo block to the current class instead
+	of the nested parent in CreateType to be able to resolve generic type
+	parameters correctly.
+
+	* cscc/csharp/cs_grammar.y: replace the right shift token ">>" with two
+	greater than tokens '>' '>' to be able to handle nested generic types
+	(ECMA 334 version 4 9.4.5).
+	Remove the GENERIC_LT token because the ECMA specs say that the
+	distinction between '<', '>' and expresssions has to be handled different.
+	Redo the grammar for qualified identifiers to be able to handle the changed
+	generic	references.
+	Replace the identifier in generic methods, classes, ... with
+	GenericIdentifierStart which includes the '<' token.
+
+	* cscc/csharp/cs_internal.h: Add structures to handle member accesses
+	in the grammar.
+
+	* cscc/csharp/cs_lookup.c: Change CSGetAccessScope so that the nested
+	parent is used for the access scope if the current class is not yet
+	created.
+
+	* cscc/csharp/cs_scanner.l: Remove the right shift and the GENERIRIC_LT
+	tokens.
+
+	* cscc/csharp/cs_types.c: Add the ILNode_SemAnalysisType operation for
+	generic references for sesolving generic types. Remove the functions for
+	inserting expressions in TypeFormals and TypeActuals.
+
 2007-10-22  Radek Polak  <psonek2@seznam.cz>
 
 	* support/socket.c: Implement recieve and send timeouts socket

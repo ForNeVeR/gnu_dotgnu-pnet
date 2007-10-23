@@ -950,12 +950,8 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 		ILUInt32		count;
 		ILNode_List	   *list;
 	}					countList;
-	struct
-	{
-		ILNode		   *identifier;
-		ILUInt32		numTypeArgs;
-		ILNode_List	   *typeArgs;
-	}					memberName;
+	struct MemberName	memberName;
+	struct MemberAccess	memberAccess;
 	ILNode_GenericTypeParameters *genericTypeParameters;
 	struct
 	{
@@ -987,13 +983,14 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 /*
  * simple operator precedence.
  */
+%nonassoc IDENTIFIER_OP
 %right '=' MUL_ASSIGN_OP DIV_ASSIGN_OP MOD_ASSIGN_OP ADD_ASSIGN_OP SUB_ASSIGN_OP LEFT_ASSIGN_OP RIGHT_ASSIGN_OP AND_ASSIGN_OP XOR_ASSIGN_OP OR_ASSIGN_OP
 %left OR_OP
 %left AND_OP
 %left '|'
 %left '&'
 %left EQ_OP NE_OP
-%left '<' '>' LE_OP GE_OP AS IS
+%left '<' '>' LE_OP GE_OP AS IS GT_OP
 %left LEFT_OP RIGHT_OP
 %left '+' '-'
 %left '*' '/' '%'
@@ -1113,7 +1110,6 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %token INC_OP				"`++'"
 %token DEC_OP				"`--'"
 %token LEFT_OP				"`<<'"
-%token RIGHT_OP				"`>>'"
 %token LE_OP				"`<='"
 %token GE_OP				"`>='"
 %token EQ_OP				"`=='"
@@ -1131,7 +1127,6 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %token XOR_ASSIGN_OP		"`^='"
 %token OR_ASSIGN_OP			"`|='"
 %token PTR_OP				"`->'"
-%token GENERIC_LT			"`<'"
 %token NULL_COALESCING_OP	"`??'"
 %token QUALIFIED_ALIAS_OP	"`::'"
 
@@ -1150,8 +1145,12 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <mask>		OptModifiers Modifiers Modifier
 %type <partial>		OptPartial
 
-%type <node>		Identifier QualifiedIdentifier
-%type <memberName>	QualifiedIdentifierPart
+%type <node>		Identifier GenericIdentifierStart
+%type <node>		QualifiedIdentifier NonGenericQualifiedIdentifier
+%type <memberAccess> SimpleQualifiedIdentifier
+%type <memberAccess> GenericQualifiedIdentifierStart
+%type <memberAccess> GenericQualifiedIdentifier
+%type <node>		QualifiedIdentifierMemberAccessStart
 
 %type <node>		BuiltinType
 %type <node>		NonArrayType ArrayType
@@ -1187,7 +1186,10 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		MultiplicativeExpression MultiplicativeNonTypeExpression
 %type <node>		AdditiveExpression AdditiveNonTypeExpression
 %type <node>		ShiftExpression ShiftNonTypeExpression
+%type <node>		RightShiftExpressionStart RightShiftExpression
+%type <node>		LeftShiftExpression
 %type <node>		RelationalExpression RelationalNonTypeExpression
+%type <node>		RelationalGTExpression RelationalNonGTExpression
 %type <node>		EqualityExpression EqualityNonTypeExpression
 %type <node>		AndExpression XorExpression OrExpression
 %type <node>		LogicalAndExpression LogicalOrExpression
@@ -1275,7 +1277,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 27
+%expect 30
 
 %start CompilationUnit
 %%
@@ -1423,6 +1425,10 @@ Identifier
 			}
 	;
 
+GenericIdentifierStart
+	: Identifier '<'		{ $$ = $1; }
+	;
+
 IDENTIFIER
 	: IDENTIFIER_LEXICAL	{ $$ = ILInternString($1, strlen($1)).string; }
 	| GET					{ $$ = ILInternString("get", 3).string; }
@@ -1435,52 +1441,71 @@ IDENTIFIER
 	;
 
 QualifiedIdentifier
-	: QualifiedIdentifierPart							{ 
-				if($1.numTypeArgs > 0)
-				{
-					MakeTernary(GenericReference,
-								$1.identifier,
-								$1.numTypeArgs,
-								(ILNode *)$1.typeArgs);
-				}
-				else
-				{
-					$$ = $1.identifier;
-				}
-			 }
-	| QualifiedIdentifier '.' QualifiedIdentifierPart	{
-				if($3.numTypeArgs > 0)
-				{
-					ILNode *node;
-
-					node = ILNode_QualIdent_create($1, $3.identifier);
-					MakeTernary(GenericReference,
-								node,
-								$3.numTypeArgs,
-								(ILNode *)$3.typeArgs);
-				}
-				else
-				{
-					MakeBinary(QualIdent, $1, $3.identifier);
-				}
+	: NonGenericQualifiedIdentifier		{ $$ = $1; }
+	| GenericQualifiedIdentifier			{
+				MakeQuaternary(GenericReference,
+							   $1.parent,
+							   $1.memberName.identifier,
+							   $1.memberName.numTypeArgs,
+							   (ILNode *)($1.memberName.typeArgs));
 			}
 	;
 
-QualifiedIdentifierPart
-	: Identifier							{ 
-				$$.identifier = $1;
-				$$.numTypeArgs = 0;
-				$$.typeArgs = 0;
-			 }
-	| IDENTIFIER '<' TypeActuals '>'		{
-				$$.identifier = ILQualIdentSimple($1);;
-				$$.numTypeArgs = $3.count;
-				$$.typeArgs = $3.list;
+/*
+ * A qualified identifier without a generic reference at the last part
+ */
+SimpleQualifiedIdentifier
+	: QualifiedIdentifierMemberAccessStart Identifier	{
+				$$.parent = $1;
+				$$.memberName.identifier = $2;
+				$$.memberName.numTypeArgs = 0;
+				$$.memberName.typeArgs = 0;
 			}
-	| IDENTIFIER GENERIC_LT TypeActuals '>'	{
-				$$.identifier = ILQualIdentSimple($1);;
-				$$.numTypeArgs = $3.count;
-				$$.typeArgs = $3.list;
+	;
+
+GenericQualifiedIdentifier
+	: GenericQualifiedIdentifierStart TypeActuals '>'	{
+				$$.parent = $1.parent;
+				$$.memberName.identifier = $1.memberName.identifier;
+				$$.memberName.numTypeArgs = $2.count;
+				$$.memberName.typeArgs = $2.list;
+			}
+	;
+
+GenericQualifiedIdentifierStart
+	: GenericIdentifierStart			{
+				$$.parent = 0;
+				$$.memberName.identifier = $1;
+				$$.memberName.numTypeArgs = 0;
+				$$.memberName.typeArgs = 0;
+			}
+	| SimpleQualifiedIdentifier '<'		{
+				$$.parent = $1.parent;
+				$$.memberName.identifier = $1.memberName.identifier;
+				$$.memberName.numTypeArgs = $1.memberName.numTypeArgs;
+				$$.memberName.typeArgs = $1.memberName.typeArgs;
+			}
+	;
+
+NonGenericQualifiedIdentifier
+	: Identifier						{ $$ = $1; } %prec IDENTIFIER_OP
+	| SimpleQualifiedIdentifier			{
+				MakeBinary(QualIdent,
+						   $1.parent,
+						   $1.memberName.identifier);
+			} %prec IDENTIFIER_OP
+	;
+
+QualifiedIdentifierMemberAccessStart
+	: NonGenericQualifiedIdentifier '.'	{
+				 $$ = $1;
+			}
+	| GenericQualifiedIdentifier '.'	{
+				MakeQuaternary(GenericReference,
+							   $1.parent,
+							   $1.memberName.identifier,
+							   $1.memberName.numTypeArgs,
+							   (ILNode *)($1.memberName.typeArgs));
 			}
 	;
 
@@ -1679,8 +1704,8 @@ PointerType
 	;
 
 Type
-	: NonArrayType				{ $$ = $1; }
-	| ArrayType					{ $$ = $1; }
+	: NonArrayType				{ $$ = $1; } %prec IDENTIFIER_OP 
+	| ArrayType					{ $$ = $1; } %prec IDENTIFIER_OP
 	;
 
 RankSpecifiers
@@ -2191,12 +2216,31 @@ ShiftExpression
 
 ShiftNonTypeExpression
 	: AdditiveNonTypeExpression		{ $$ = $1; }
-	| ShiftExpression LEFT_OP AdditiveExpression	{
+	| LeftShiftExpression			{ $$ = $1; }
+	| RightShiftExpression			{ $$ = $1; }
+	;
+
+LeftShiftExpression
+	: ShiftExpression LEFT_OP AdditiveExpression	{
 				MakeBinary(Shl, $1, $3);
 			}
-	| ShiftExpression RIGHT_OP AdditiveExpression	{
+	;
+
+RightShiftExpression
+	: RightShiftExpressionStart '>' AdditiveExpression	{
 				MakeBinary(Shr, $1, $3);
-			}
+			} %prec RIGHT_OP
+	;
+
+RightShiftExpressionStart
+	: PrimaryTypeExpression '>'		{ $$ = $1; }
+	| AdditiveNonTypeExpression '>'	{ $$ = $1; }
+	| LeftShiftExpression '>'		{ $$ = $1; }
+	| RightShiftExpression '>'		{ $$ = $1; }
+	;
+
+RightShift
+	: '>' '>'
 	;
 
 /*
@@ -2222,11 +2266,13 @@ RelationalExpression
 
 RelationalNonTypeExpression
 	: ShiftNonTypeExpression		{ $$ = $1; }
-	| RelationalExpression '<' ShiftExpression		{
+	| RelationalNonGTExpression		{ $$ = $1; }
+	| RelationalGTExpression		{ $$ = $1; }
+	;
+
+RelationalNonGTExpression
+	: RelationalExpression '<' ShiftExpression		{
 				MakeBinary(Lt, $1, $3);
-			}
-	| RelationalExpression '>' ShiftExpression		{
-				MakeBinary(Gt, $1, $3);
 			}
 	| RelationalExpression LE_OP ShiftExpression	{
 				MakeBinary(Le, $1, $3);
@@ -2241,6 +2287,18 @@ RelationalNonTypeExpression
 				MakeBinary(AsUntyped, $1, $3);
 			}
 	;
+
+RelationalGTExpression
+	: RightShiftExpressionStart ShiftExpression	{
+				MakeBinary(Gt, $1, $2);
+			} %prec GT_OP
+	| RelationalGTExpression '>' ShiftExpression	{
+				MakeBinary(Gt, $1, $3);
+			} %prec GT_OP
+	| RelationalNonGTExpression '>' ShiftExpression	{
+				MakeBinary(Gt, $1, $3);
+			} %prec GT_OP
+	; 
 
 EqualityExpression
 	: EqualityNonTypeExpression		{ $$ = $1; }
@@ -3132,8 +3190,8 @@ ClassHeader
 				$$.classBase = $6;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers OptPartial CLASS Identifier TypeFormals
-			ClassBase TypeParameterConstraintsClauses {
+	| OptAttributes OptModifiers OptPartial CLASS GenericIdentifierStart
+			TypeFormals ClassBase TypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;
@@ -3252,13 +3310,9 @@ ClassDeclaration
 	;
 
 TypeFormals
-	: '<' TypeFormalList '>'			{ 
+	: TypeFormalList '>'			{ 
 				$$ = (ILNode_GenericTypeParameters *)
-						ILNode_GenericTypeParameters_create($2.count, $2.list);
-			}
-	| GENERIC_LT TypeFormalList '>'		{
-				$$ = (ILNode_GenericTypeParameters *)
-						ILNode_GenericTypeParameters_create($2.count, $2.list);
+						ILNode_GenericTypeParameters_create($1.count, $1.list);
 			}
 	;
 
@@ -3532,47 +3586,29 @@ FieldDeclarator
  * Methods.
  */
 MethodHeader
-	: OptAttributes OptModifiers Type QualifiedIdentifier
-			'(' OptFormalParameterList ')' TypeParameterConstraintsClauses {
+	: OptAttributes OptModifiers Type NonGenericQualifiedIdentifier
+			'(' OptFormalParameterList ')'	{
 				$$.attributes = $1;
 				$$.modifiers = $2;
 				$$.type = $3;
 				$$.args = (ILNode_List *)$6;
-#if IL_VERSION_MAJOR > 1
-				if(yyisa($4, ILNode_Identifier))
-				{
-					$$.identifier = $4;
-					$$.typeFormals = 0;
-					if($8 != 0)
-					{
-						CCErrorOnLine(yygetfilename($8), yygetlinenum($8),
-								  "constraints are not allowed without generic parameters");
-					}
-				}
-				else if(yyisa($4, ILNode_GenericReference))
-				{
-					$$.identifier = ((ILNode_GenericReference *)$4)->type;
-
-					$$.typeFormals = TypeActualsToTypeFormals(((ILNode_GenericReference *)$4)->typeArguments);
-
-					if($$.typeFormals != 0)
-					{
-						MergeGenericConstraints($$.typeFormals, $8);
-					}
-				}
-				else
-				{
-					$$.identifier = $4;
-					$$.typeFormals = 0;
-				}
-#else	/* IL_VERSION_MAJOR == 1 */
 				$$.identifier = $4;
 				$$.typeFormals = 0;
-				if($8 != 0)
-				{
-					CCErrorOnLine(yygetfilename($8), yygetlinenum($8),
-								  "generics are not supported in this version");
-				}
+			}
+	| OptAttributes OptModifiers Type NonGenericQualifiedIdentifier '<' TypeFormals
+			'(' OptFormalParameterList ')' TypeParameterConstraintsClauses {
+				$$.attributes = $1;
+				$$.modifiers = $2;
+				$$.type = $3;
+				$$.args = (ILNode_List *)$8;
+				$$.identifier = $4;
+#if IL_VERSION_MAJOR > 1
+				$$.typeFormals = $6;
+				MergeGenericConstraints($6, $10);
+#else	/* IL_VERSION_MAJOR == 1 */
+				$$.typeFormals = 0;
+				CCErrorOnLine(yygetfilename($4), yygetlinenum($4),
+							  "generics are not supported in this version");
 #endif	/* IL_VERSION_MAJOR == 1 */
 			}
 
@@ -3901,10 +3937,10 @@ IndexerDeclarator
 				$$.ident = ILQualIdentSimple(NULL);
 				$$.params = $3;
 			}
-	| Type QualifiedIdentifier '.' THIS FormalIndexParameters	{
+	| Type QualifiedIdentifierMemberAccessStart THIS FormalIndexParameters	{
 				$$.type = $1;
 				$$.ident = $2;
-				$$.params = $5;
+				$$.params = $4;
 			}
 	;
 
@@ -4039,7 +4075,7 @@ OverloadableOperator
 	| '|'		{ $$.binary = "op_BitwiseOr"; $$.unary = 0; }
 	| '^'		{ $$.binary = "op_ExclusiveOr"; $$.unary = 0; }
 	| LEFT_OP	{ $$.binary = "op_LeftShift"; $$.unary = 0; }
-	| RIGHT_OP	{ $$.binary = "op_RightShift"; $$.unary = 0; }
+	| RightShift{ $$.binary = "op_RightShift"; $$.unary = 0; }
 	| EQ_OP		{ $$.binary = "op_Equality"; $$.unary = 0; }
 	| NE_OP		{ $$.binary = "op_Inequality"; $$.unary = 0; }
 	| '>'		{ $$.binary = "op_GreaterThan"; $$.unary = 0; }
@@ -4129,12 +4165,6 @@ ConstructorDeclaration
 					ClassNameCtorDefined();
 				}
 				ctorName = $3;
-				if(yyisa(ctorName, ILNode_GenericReference))
-				{
-					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
-						"constructors cannot have type parameters");
-					ctorName = ((ILNode_GenericReference *)ctorName)->type;
-				}
 				if(!ClassNameSame(ctorName))
 				{
 					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
@@ -4216,14 +4246,7 @@ DestructorDeclaration
 				}
 			#endif	/* IL_VERSION_MAJOR > 1 */
 
-				/* Destructors cannot have type parameters */
 				dtorName = $4;
-				if(yyisa(dtorName, ILNode_GenericReference))
-				{
-					CCErrorOnLine(yygetfilename($4), yygetlinenum($4),
-						"destructors cannot have type parameters");
-					dtorName = ((ILNode_GenericReference *)dtorName)->type;
-				}
 
 				/* Validate the destructor name */
 				if(!ClassNameSame(dtorName))
@@ -4272,8 +4295,8 @@ StructHeader
 				$$.classBase = $6;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers OptPartial STRUCT Identifier TypeFormals
-			StructInterfaces TypeParameterConstraintsClauses {
+	| OptAttributes OptModifiers OptPartial STRUCT GenericIdentifierStart
+			TypeFormals StructInterfaces TypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;
@@ -4376,8 +4399,8 @@ InterfaceHeader
 				$$.classBase = $6;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers OptPartial INTERFACE Identifier TypeFormals
-			InterfaceBase TypeParameterConstraintsClauses {
+	| OptAttributes OptModifiers OptPartial INTERFACE GenericIdentifierStart
+			TypeFormals InterfaceBase TypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;
@@ -4490,7 +4513,7 @@ InterfaceMethodHeader
 				$$.args = (ILNode_List *)$6;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptNew Type Identifier  TypeFormals 
+	| OptAttributes OptNew Type GenericIdentifierStart TypeFormals
 			'(' OptFormalParameterList ')' TypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
@@ -4759,7 +4782,7 @@ DelegateHeader
 				$$.args = (ILNode_List *)$7;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers DELEGATE Type Identifier TypeFormals
+	| OptAttributes OptModifiers DELEGATE Type GenericIdentifierStart TypeFormals
 				'(' OptFormalParameterList ')' TypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;

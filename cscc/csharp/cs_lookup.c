@@ -897,9 +897,20 @@ ILClass *CSGetAccessScope(ILGenInfo *genInfo, int defIsModule)
 	if(genInfo->currentClass &&
 	        ((ILNode_ClassDefn *)(genInfo->currentClass))->classInfo)
 	{
-		return ((ILNode_ClassDefn *)(genInfo->currentClass))->classInfo;
+		ILNode_ClassDefn *currentClass;
+
+		currentClass = (ILNode_ClassDefn *)(genInfo->currentClass);
+		while(currentClass)
+		{
+			if((currentClass->classInfo != (ILClass *)1) &&
+			   (currentClass->classInfo != (ILClass *)2))
+			{
+				return currentClass->classInfo;
+			}
+			currentClass = currentClass->nestedParent;
+		}
 	}
-	else if(defIsModule)
+	if(defIsModule)
 	{
 		return ILClassLookup(ILClassGlobalScope(genInfo->image),
 							 "<Module>", (const char *)0);

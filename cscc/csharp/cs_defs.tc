@@ -94,7 +94,8 @@
 }
 %node ILNode_GenericReference ILNode_Dummy =
 {
-	ILNode	   *type;
+	ILNode	   *left;
+	ILNode	   *identifier;
 	ILUInt32	numArgs;
 	ILNode	   *typeArguments;
 }

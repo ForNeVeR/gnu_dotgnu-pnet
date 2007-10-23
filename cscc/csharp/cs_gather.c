@@ -94,7 +94,12 @@ static const char *GetFullAndBasicNames(ILNode *name, const char **basicName)
 	}
 	else if(yyisa(name, ILNode_GenericReference))
 	{
-		result = ILQualIdentName(((ILNode_GenericReference *)name)->type, 0);
+		char buffer[261];
+
+		left = GetFullAndBasicNames(((ILNode_GenericReference *)name)->left, 0);
+		result = ILQualIdentName(((ILNode_GenericReference *)name)->identifier, 0);
+		sprintf(buffer, "%s`%i", result, ((ILNode_GenericReference *)name)->numArgs);
+		result = ILQualIdentAppend(left, buffer);
 		basic = result;
 	}
 	else if(yyisa(name, ILNode_QualIdent))
@@ -419,7 +424,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	savedNamespace = info->currentNamespace;
 	info->currentNamespace = defn->namespaceNode;
 	savedClass = info->currentClass;
-	info->currentClass = (ILNode *)(defn->nestedParent);
+	info->currentClass = (ILNode *)defn;
 #if IL_VERSION_MAJOR > 1
 	savedTypeFormals = info->currentTypeFormals;
 	info->currentTypeFormals = defn->typeFormals;

@@ -976,7 +976,6 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 "++"					{ RETURNTOK(INC_OP); }
 "--"					{ RETURNTOK(DEC_OP); }
 "<<"					{ RETURNTOK(LEFT_OP); }
-">>"					{ RETURNTOK(RIGHT_OP); }
 "<="					{ RETURNTOK(LE_OP); }
 ">="					{ RETURNTOK(GE_OP); }
 "=="					{ RETURNTOK(EQ_OP); }
@@ -1123,21 +1122,6 @@ GENERICPREFIX	{WHITE}*{GTYPELIST}{WHITE}*("<"|">")
 
 "///"[^\n]*\n		{ yylval.string = ILInternString(yytext + 3, -1);
 					  RETURNTOK(DOC_COMMENT); }
-
-"<"/{GENERICPREFIX}	{
-			/* This looks like it may be a generic type reference
-			   rather than a less than sign within an expression.
-			   We return a different token code so that the parser
-			   can properly distinguish generic types in expressions */
-			if(CSNoGenerics)
-			{
-				return '<';
-			}
-			else
-			{
-				return GENERIC_LT;
-			}
-		}
 
 .					{ RETURNTOK(((int)(yytext[0])) & 0xFF); }
 

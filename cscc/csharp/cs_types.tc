@@ -319,17 +319,16 @@ ILNode_SemAnalysis(ILNode_TypeActuals)
 static void SemWithType(ILGenInfo *info, ILType *withType,
 					    ILNode *actuals, ILNode **parent)
 {
-	CSSemValue value;
-	if(yyisa(actuals, ILNode_TypeActuals))
+	ILNode_ListIter iter;
+	ILNode *child;
+
+	ILNode_ListIter_Init(&iter, actuals);
+	while((child = ILNode_ListIter_Next(&iter)) != 0)
 	{
-		SemWithType(info, withType, ((ILNode_TypeActuals *)actuals)->left,
-					&(((ILNode_TypeActuals *)actuals)->left));
-		SemWithType(info, withType, ((ILNode_TypeActuals *)actuals)->right,
-					&(((ILNode_TypeActuals *)actuals)->right));
-	}
-	else
-	{
-		value = ILNode_SemAnalysisType(actuals, info, parent);
+		CSSemValue value;
+
+		value = ILNode_SemAnalysisType(child, info, &child);
+
 		if(!CSSemIsType(value))
 		{
 			CCErrorOnLine(yygetfilename(actuals), yygetlinenum(actuals),
@@ -346,6 +345,72 @@ static void SemWithType(ILGenInfo *info, ILType *withType,
 %}
 
 /*
+ *  Perform semantic analysis  for a generic type or method reference
+ *  with a bias to returning Type objects.
+ */
+ILNode_SemAnalysisType(ILNode_GenericReference)
+{
+	CSSemValue value;
+	const char *name;
+	int savedState=info->inSemType;
+	char buffer[261];
+
+	/* Get the type name with the generic arity appended */
+	sprintf(buffer, "%s`%i",
+			ILQualIdentName(node->identifier, 0),
+			node->numArgs);
+	name = buffer;
+
+	info->inSemType = -1;
+
+	/* Perform semantic analysis on the main part of the type */
+	if(node->left)
+	{
+		CSSemValue value2;
+
+		/* Get the semantic value for the left part of the identifier */
+		value2 = ILNode_SemAnalysisType(node->left, info, &(node->left));
+
+		/* Resolve the member */
+		value = CSResolveMemberName(info, (ILNode *)node, value2, name, 1);
+	}
+	else
+	{
+		value = CSResolveSimpleNameQuiet(info, (ILNode *)node, name, 1);
+	}
+	info->inSemType = savedState;
+	
+	if(CSSemGetKind(value) == CS_SEMKIND_TYPE)
+	{
+		ILType *withType;
+		/* TODO: perform the analysis for the TypeActuals. */
+
+		/* Build the "with" type and return it */
+		withType = ILTypeCreateWith(info->context, CSSemGetType(value));
+		if(!withType)
+		{
+			CCOutOfMemory();
+		}
+		SemWithType(info, withType, node->typeArguments, &(node->typeArguments));
+		CSSemSetType(value, withType);
+
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, value,
+							name, node->left, &value);
+	}
+	else if(CSSemGetKind(value) == CS_SEMKIND_TYPE_NODE)
+	{
+		/* TODO: perform the analysis for the TypeActuals. */
+
+		/* Convert the result into an l-value or r-value and return it */
+		return SemToLRValue((ILNode *)node, info, parent, value,
+							name, node->left, &value);
+
+	}
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for a generic type or method reference.
  */
 ILNode_SemAnalysis(ILNode_GenericReference)
@@ -354,12 +419,32 @@ ILNode_SemAnalysis(ILNode_GenericReference)
 	ILClass *classInfo;
 	ILUInt32 numFormals;
 	ILType *withType;
+	const char *name;
+	char buffer[261];
 
-	/* Perform semantic analysis on the main part of the type */
-	value = ILNode_SemAnalysisType(node->type, info, &(node->type));
+	/* Get the type name with the generic arity appended */
+	sprintf(buffer, "%s`%i",
+			ILQualIdentName(node->identifier, 0),
+			node->numArgs);
+	name = buffer;
+
+	if(node->left)
+	{
+		CSSemValue value2;
+
+		/* Get the semantic value for the left part of the identifier */
+		value2 = ILNode_SemAnalysisType(node->left, info, &(node->left));
+
+		/* Resolve the member */
+		value = CSResolveMemberName(info, (ILNode *)node, value2, name, 1);
+	}
+	else
+	{
+		value = CSResolveSimpleNameQuiet(info, (ILNode *)node, name, 1);
+	}
 	if(!CSSemIsType(value))
 	{
-		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
+		CCErrorOnLine(yygetfilename(node->identifier), yygetlinenum(node->identifier),
 					  "type name expected in generic type reference");
 		return value;
 	}
@@ -392,55 +477,5 @@ ILNode_SemAnalysis(ILNode_GenericReference)
 
 %end %{
 
-/*
- * Find the position to insert a generic type reference,
- * to re-arrange an expression that was parsed by the
- * "GenericReference" production in the grammar.
- */
-static ILNode **FindGenericInsertPosition(ILNode *node, ILNode **parent)
-{
-	if(yyisa(node, ILNode_BinaryExpression))
-	{
-		ILNode_BinaryExpression *binary = (ILNode_BinaryExpression *)node;
-		return FindGenericInsertPosition(binary->expr2, &(binary->expr2));
-	}
-	else if(yyisa(node, ILNode_UnaryExpression))
-	{
-		ILNode_UnaryExpression *unary = (ILNode_UnaryExpression *)node;
-		return FindGenericInsertPosition(unary->expr, &(unary->expr));
-	}
-	else
-	{
-		return parent;
-	}
-}
-
-ILNode *CSInsertGenericReference(ILNode *mainNode, ILUInt32 numActuals, ILNode *actuals)
-{
-	ILNode **parent = FindGenericInsertPosition(mainNode, &mainNode);
-	*parent = ILNode_GenericReference_create(*parent, numActuals, actuals);
-	return mainNode;
-}
-
-ILNode *CSInsertTypeActuals(ILNode *type, ILNode *actuals)
-{
-	if(yyisa(actuals, ILNode_TypeActuals))
-	{
-		((ILNode_TypeActuals *)actuals)->left =
-			CSInsertTypeActuals(type, ((ILNode_TypeActuals *)actuals)->left);
-		return actuals;
-	}
-	else
-	{
-		return ILNode_TypeActuals_create(type, actuals);
-	}
-}
-
-ILNode *CSInsertMethodInvocation(ILNode *mainNode, ILNode *parameters)
-{
-	ILNode **parent = FindGenericInsertPosition(mainNode, &mainNode);
-	*parent = ILNode_InvocationExpression_create(*parent, parameters);
-	return mainNode;
-}
 
 %}

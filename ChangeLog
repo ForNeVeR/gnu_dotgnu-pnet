@@ -1,3 +1,7 @@
+2007-10-29  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/class/interface3.cs: Fix test by adding an using System;
+
 2007-10-15  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/expr/newarray.il: Update the file to reflect the fixed bug

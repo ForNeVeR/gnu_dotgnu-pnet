@@ -310,40 +310,6 @@ ILNode_SemAnalysis(ILNode_TypeActuals)
 	return CSSemValueDefault;
 }
 
-%{
-
-/*
- * Perform semantic analysis on a set of type actuals
- * and add them to a "with" type.
- */
-static void SemWithType(ILGenInfo *info, ILType *withType,
-					    ILNode *actuals, ILNode **parent)
-{
-	ILNode_ListIter iter;
-	ILNode *child;
-
-	ILNode_ListIter_Init(&iter, actuals);
-	while((child = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		CSSemValue value;
-
-		value = ILNode_SemAnalysisType(child, info, &child);
-
-		if(!CSSemIsType(value))
-		{
-			CCErrorOnLine(yygetfilename(actuals), yygetlinenum(actuals),
-					      "type name expected in generic type argument");
-			CSSemSetType(value, ILType_Int32);
-		}
-		if(!ILTypeAddWithParam(info->context, withType, CSSemGetType(value)))
-		{
-			CCOutOfMemory();
-		}
-	}
-}
-
-%}
-
 /*
  *  Perform semantic analysis  for a generic type or method reference
  *  with a bias to returning Type objects.
@@ -391,7 +357,8 @@ ILNode_SemAnalysisType(ILNode_GenericReference)
 		{
 			CCOutOfMemory();
 		}
-		SemWithType(info, withType, node->typeArguments, &(node->typeArguments));
+		CSSemWithType(node->typeArguments, info, &(node->typeArguments),
+					  withType);
 		CSSemSetType(value, withType);
 
 		/* Convert the result into an l-value or r-value and return it */
@@ -470,7 +437,7 @@ ILNode_SemAnalysis(ILNode_GenericReference)
 	{
 		CCOutOfMemory();
 	}
-	SemWithType(info, withType, node->typeArguments, &(node->typeArguments));
+	CSSemWithType(node->typeArguments, info, &(node->typeArguments), withType);
 	CSSemSetType(value, withType);
 	return value;
 }

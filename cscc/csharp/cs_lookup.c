@@ -229,7 +229,7 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 			{
 				nestedChild = ILNestedInfoGetChild(nested);
 				if(!strcmp(ILClass_Name(nestedChild), name) &&
-				   ILClassAccessible(nestedChild, accessedFrom))
+				   ((genInfo->accessCheck)(nestedChild, accessedFrom)))
 				{
 					AddMember(results, (ILProgramItem *)nestedChild,
 							  info, CS_MEMBERKIND_TYPE);
@@ -750,7 +750,7 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	{
 		type = ILClassResolve(type);
 	}
-	if(type && ILClassAccessible(type, accessedFrom))
+	if(type && (genInfo->accessCheck)(type, accessedFrom))
 	{
 		AddMember(results, (ILProgramItem *)type, 0, CS_MEMBERKIND_TYPE);
 		return CS_SEMKIND_TYPE;
@@ -801,7 +801,7 @@ static int FindTypeInNamespace(ILGenInfo *genInfo, const char *name,
 	{
 		type = ILClassResolve(type);
 	}
-	if(type && ILClassAccessible(type, accessedFrom))
+	if(type && (genInfo->accessCheck)(type, accessedFrom))
 	{
 		AddMember(results, (ILProgramItem *)type, 0, CS_MEMBERKIND_TYPE);
 		return CS_SEMKIND_TYPE;
@@ -1099,8 +1099,10 @@ static CSSemValue ResolveSimpleName(ILGenInfo *genInfo, ILNode *node,
 	int result;
 	ILNode_ClassDefn *nestedParent;
 	ILNode *child;
+#if IL_VERSION_MAJOR > 1
 	ILNode_ListIter iter;
 	ILType *formalType;
+#endif /* IL_VERSION_MAJOR > 1 */
 	CSSemValue value;
 	ILMethod *caller;
 	int switchToStatics;

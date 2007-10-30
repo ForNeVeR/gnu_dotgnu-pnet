@@ -280,6 +280,9 @@ struct _tagILClass
 	ILType         *synthetic;			/* Synthetic type for this class */
 	ILClassExt     *ext;				/* Extension information */
 	void           *userData;			/* Data added by the runtime engine */
+#if IL_VERSION_MAJOR > 1
+	ILInt32			numGenericPars;		/* Number of generic parameters */
+#endif
 
 };
 

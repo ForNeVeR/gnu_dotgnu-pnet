@@ -335,9 +335,246 @@ static void AddGenericParametersToClass(ILGenInfo *info, ILNode *classDefn)
 		/* Restore the previous values. */
 		info->currentClass = savedClass;
 		info->currentNamespace = savedNamespace;
+
+		/* process the nested classes */
+		if(defn->nestedClasses)
+		{
+			ILNode *child;
+			ILNode_ListIter iter;
+
+			ILNode_ListIter_Init(&iter, defn->nestedClasses);
+			while((child = ILNode_ListIter_Next(&iter)) != 0)
+			{
+				AddGenericParametersToClass(info, child);
+			}
+		}
 	}
 }
 #endif	/* IL_VERSION_MAJOR > 1 */
+
+static void AddBaseClasses(ILGenInfo *info,
+						   ILNode_ClassDefn *classNode,
+						   ILNode *systemObjectName)
+{
+	ILNode *savedNamespace;
+	ILNode *savedClass;
+	ILClass *classInfo = classNode->classInfo;
+
+	/* Set the namespace and class to use for resolving type names */
+	savedNamespace = info->currentNamespace;
+	info->currentNamespace = classNode->namespaceNode;
+	savedClass = info->currentClass;
+	info->currentClass = (ILNode *)classNode;
+
+	if(classInfo && (classInfo != (ILClass *)1) &&
+					(classInfo != (ILClass *)2))
+	{
+		ILClass *parent = 0;
+		int numBases = CountBaseClasses(classNode->baseClass);
+
+		if(numBases > 0)
+		{
+			int base;
+			ILNode *baseNode;
+			ILNode *baseNodeList;
+			int errorReported = 0;
+			ILClass *baseList[numBases];
+
+			ILMemZero(baseList, numBases * sizeof(ILClass *));
+
+			baseNodeList = classNode->baseClass;
+			for(base = 0; base < numBases; ++base)
+			{
+				ILNode *baseTypeNode;
+
+				/* Get the name of the class to be inherited or implemented */
+				if(yykind(baseNodeList) == yykindof(ILNode_ArgList))
+				{
+					baseNode = ((ILNode_ArgList *)baseNodeList)->expr2;
+					baseNodeList = ((ILNode_ArgList *)baseNodeList)->expr1;
+				}
+				else
+				{
+					baseNode = baseNodeList;
+				}
+
+				/* Look in the scope for the base class */
+				if(CSSemBaseType(baseNode, info, &baseNode,
+								 &baseTypeNode, &(baseList[base])))
+				{
+					/* All class nodes should have a valid classinfo at
+					   this point. */
+					if(baseList[base] == 0)
+					{
+						baseList[base] = NodeToClass(baseTypeNode);
+
+						if(baseList[base] == 0)
+						{
+							/* This is not a valid base class specification */
+							CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
+										  "invalid base type");
+						}
+					}
+
+					if(baseList[base])
+					{
+					#if IL_VERSION_MAJOR > 1
+						ILClass *underlying = ILClassGetUnderlying(baseList[base]);
+
+						if(!underlying)
+						{
+							CCOutOfMemory();
+						}
+						if(!ILClass_IsInterface(underlying))
+					#else /* IL_VERSION_MAJOR == 1 */
+						if(!ILClass_IsInterface(baseList[base]))
+					#endif /* IL_VERSION_MAJOR == 1 */
+						{
+							if(parent)
+							{
+								if(!errorReported)
+								{
+									CCErrorOnLine(yygetfilename(classNode),
+												  yygetlinenum(classNode),
+									  "class inherits from two or more non-interface classes");
+									errorReported = 1;
+								}
+							}
+							else
+							{
+								parent = baseList[base];
+							}
+							baseList[base] = 0;
+						}
+					}
+				}
+				else
+				{
+					/* This is not a valid base class specification */
+					CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
+								  "invalid base type");
+				}
+			}
+
+			/* Test for interfaces, or find "System.Object" if no parent yet */
+			if(ILClass_IsInterface(classInfo))
+			{
+				if(parent)
+				{
+					CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
+								  "interface inherits from non-interface class");
+					parent = 0;
+				}
+			}
+			else if(!parent)
+			{
+				/* Use the builtin library's "System.Object" */
+				parent = ILType_ToClass(ILFindSystemType(info, "Object"));
+				if(!parent)
+				{
+					ILNode *baseTypeNode;
+
+					/* Compiling something else that inherits "System.Object" */
+					if(CSSemBaseType(systemObjectName, info, &systemObjectName,
+									 &baseTypeNode, &parent))
+					{
+						if(!parent)
+						{
+							parent = NodeToClass(baseTypeNode);
+						}
+					}
+				}
+				if(!parent)
+				{
+					CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
+								  "could not resolve System.Object");
+				}
+				else
+				{
+					if(ILClassResolve(parent) == ILClassResolve(classInfo))
+					{
+						/* Compiling System.Object so don't set the parent. */
+						parent = 0;
+					}
+				}
+			}
+			else
+			{
+				/* Output an error if attempting to inherit from a sealed class */
+				ILClass *underlying = ILClassGetUnderlying(parent);
+				if(!underlying)
+				{
+					CCOutOfMemory();
+				}
+				if(underlying && ILClass_IsSealed(underlying))
+				{
+					CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
+								  "inheriting from a sealed parent class");
+				}
+			}
+
+			/* Set the calass parent */
+			if(strcmp(ILClass_Name(classInfo), "<Module>") != 0)
+			{
+				if(parent && !ILClass_IsInterface(classInfo))
+				{
+					ILClassSetParent(classInfo, parent);
+				}
+			}
+
+			/* Add the interfaces to the class */
+			for(base = 0; base < numBases; ++base)
+			{
+				if(baseList[base])
+				{
+					if(!ILClassAddImplements(classInfo, baseList[base], 0))
+					{
+						CCOutOfMemory();
+					}
+				}
+			}
+		}
+		else if(!ILClass_IsInterface(classInfo))
+		{
+			ILClass *parent;
+
+			/* Use the builtin library's "System.Object" as parent class */
+			parent = ILType_ToClass(ILFindSystemType(info, "Object"));
+
+			if(ILClassResolve(classInfo) != ILClassResolve(parent))
+			{
+				ILClassSetParent(classInfo, parent);
+			}
+		}
+	}
+	else
+	{
+		CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
+					  "class not completely layed out");
+	}
+
+	/* Restore the namespace, class, and type formals */
+	info->currentNamespace = savedNamespace;
+	info->currentClass = savedClass;
+
+	/* Now process the nested classes */
+	if(classNode->nestedClasses)
+	{
+		ILNode *child;
+		ILNode_ListIter iter;
+
+		ILNode_ListIter_Init(&iter, classNode->nestedClasses);
+		while((child = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			if(yykind(child) == yykindof(ILNode_ClassDefn))
+			{
+				AddBaseClasses(info,
+							   (ILNode_ClassDefn*)child,
+							   systemObjectName);
+			}
+		}
+	}
+}
 
 /*
  * Create the program structure for a type and all of its base types.
@@ -349,25 +586,17 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 {
 	const char *name;
 	const char *namespace;
-	int numBases;
-	ILClass **baseList;
-	int base;
 	ILNode *baseNodeList;
 	ILNode *baseNode;
 	ILNode *baseTypeNode;
 	ILClass *parent;
 	ILClass *classInfo;
-	int errorReported;
 	ILNode_ClassDefn *defn;
 	ILNode *savedNamespace;
 	ILNode *savedClass;
-#if IL_VERSION_MAJOR > 1
-	ILNode *savedTypeFormals;
-#endif	/* IL_VERSION_MAJOR > 1 */
 	ILProgramItem *nestedScope;
 	ILNode *node;
 	ILNode_ListIter iter;
-	ILClass *underlying;
 
 	/* Get the name and namespace for the type, for error reporting */
 	defn = (ILNode_ClassDefn *)type;
@@ -425,28 +654,13 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	info->currentNamespace = defn->namespaceNode;
 	savedClass = info->currentClass;
 	info->currentClass = (ILNode *)defn;
-#if IL_VERSION_MAJOR > 1
-	savedTypeFormals = info->currentTypeFormals;
-	info->currentTypeFormals = defn->typeFormals;
-#endif	/* IL_VERSION_MAJOR > 1 */
 
-	/* Create all of the base classes */
-	numBases = CountBaseClasses(defn->baseClass);
-	if(numBases > 0)
-	{
-		baseList = (ILClass **)ILCalloc(numBases, sizeof(ILClass *));
-		if(!baseList)
-		{
-			CCOutOfMemory();
-		}
-	}
-	else
-	{
-		baseList = 0;
-	}
+	parent = 0;
 	baseNodeList = defn->baseClass;
-	for(base = 0; base < numBases; ++base)
+	while(baseNodeList)
 	{
+		ILClass *baseClass = 0;
+
 		/* Get the name of the class to be inherited or implemented */
 		if(yykind(baseNodeList) == yykindof(ILNode_ArgList))
 		{
@@ -456,87 +670,77 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		else
 		{
 			baseNode = baseNodeList;
+			baseNodeList = 0;
 		}
 
 		/* Look in the scope for the base class */
 		if(CSSemBaseType(baseNode, info, &baseNode,
-						 &baseTypeNode, &(baseList[base])))
+						 &baseTypeNode, &baseClass))
 		{
-			if(baseList[base] == 0)
+			if(baseClass == 0)
 			{
-				baseList[base] = NodeToClass(baseTypeNode);
-				if(baseList[base] == 0)
+				baseClass = NodeToClass(baseTypeNode);
+				if(baseClass == 0)
 				{
 					CreateType(info, globalScope, list,
 							   systemObjectName, baseTypeNode);
-					baseList[base] = NodeToClass(baseTypeNode);
+					baseClass = NodeToClass(baseTypeNode);
+				}
+			}
+			if(baseClass)
+			{
+			#if IL_VERSION_MAJOR > 1
+				ILClass *underlying = ILClassGetUnderlying(baseClass);
+
+				if(!underlying)
+				{
+					CCOutOfMemory();
+				}
+				if(!ILClass_IsInterface(underlying))
+			#else /* IL_VERSION_MAJOR == 1 */
+				if(!ILClass_IsInterface(baseClass))
+			#endif /* IL_VERSION_MAJOR == 1 */
+				{
+					parent = baseClass;
 				}
 			}
 		}
 		else
 		{
-			/* This is not a valid base class specification */
-			CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
-						  "invalid base type");
+			/* If we get here the base type might be a member of a
+			   nested parent that is not fully qualified (including
+			   all nested parents).
+			   The right gathering order is preserved because the
+			   nested parent creates it's base types first including their
+			   nested children.
+			   The case that the base class does not exist is handled in
+			   AddBaseClasses then. */
 		}
-	}
-
-	/* Find the parent class within the base list */
-	parent = 0;
-	errorReported = 0;
-	for(base = 0; base < numBases; ++base)
-	{
-		if(baseList[base] && !ILClass_IsInterface(baseList[base]))
-		{
-			if(parent)
-			{
-				if(!errorReported)
-				{
-					CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
-					  "class inherits from two or more non-interface classes");
-					errorReported = 1;
-				}
-			}
-			else
-			{
-				parent = baseList[base];
-			}
-		}
-	}
-
-	/* Change to the global namespace to resolve "System.Object" */
-	while(((ILNode_Namespace *)(info->currentNamespace))->enclosing != 0)
-	{
-		info->currentNamespace = (ILNode *)
-			((ILNode_Namespace *)(info->currentNamespace))->enclosing;
 	}
 
 	/* Test for interfaces, or find "System.Object" if no parent yet */
-   	if((defn->modifiers & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK)
-	   		== IL_META_TYPEDEF_INTERFACE)
+	if(!parent && (defn->modifiers & IL_META_TYPEDEF_INTERFACE) == 0)
 	{
-		if(parent)
+		/* Compiling something else that inherits "System.Object" */
+		/* Use the builtin library's "System.Object" as parent class */
+		parent = ILType_ToClass(ILFindSystemType(info, "Object"));
+
+		if(!parent)
 		{
-			CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
-						  "interface inherits from non-interface class");
-			parent = 0;
-		}
-	}
-	else if(!parent)
-	{
-		if(!strcmp(name, "Object") && namespace != 0 &&
-		   !strcmp(namespace, "System"))
-		{
-			/* Special case: we are compiling "System.Object" itself */
-			parent = 0;
-		}
-		else
-		{
-			/* Compiling something else that inherits "System.Object" */
+			/* Change to the global namespace to resolve "System.Object" */
+			while(((ILNode_Namespace *)(info->currentNamespace))->enclosing != 0)
+			{
+				info->currentNamespace = (ILNode *)
+					((ILNode_Namespace *)(info->currentNamespace))->enclosing;
+			}
+
 			if(CSSemBaseType(systemObjectName, info, &systemObjectName,
 							 &baseTypeNode, &parent))
 			{
-				if(!parent)
+				/* check if the parent is not yet created and if the resolved
+				   baseTypeNode is not equal to the just processed classNode
+				   what means we are currently processing System.Object itself. */
+				if(!parent && (baseTypeNode != type))
 				{
 					parent = NodeToClass(baseTypeNode);
 					if(!parent)
@@ -547,44 +751,13 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 					}
 				}
 			}
-			else
-			{
-				/* Use the builtin library's "System.Object" */
-				parent = ILType_ToClass(ILFindSystemType(info, "Object"));
-			}
 		}
-	}
-
-	/* Restore the namespace, class, and type formals */
-	info->currentNamespace = savedNamespace;
-	info->currentClass = savedClass;
-#if IL_VERSION_MAJOR > 1
-	info->currentTypeFormals = savedTypeFormals;
-#endif	/* IL_VERSION_MAJOR > 1 */
-
-	/* Output an error if attempting to inherit from a sealed class */
-	if(parent)
-	{
-		underlying = ILClassGetUnderlying(parent);
-		if(!underlying)
-		{
-			CCOutOfMemory();
-		}
-	}
-	else
-	{
-		underlying = 0;
-	}
-	if(underlying && ILClass_IsSealed(underlying))
-	{
-		CCErrorOnLine(yygetfilename(type), yygetlinenum(type),
-					  "inheriting from a sealed parent class");
 	}
 
 	/* Create the class information block */
 	if(strcmp(name, "<Module>") != 0)
 	{
-		classInfo = ILClassCreate(nestedScope, 0, name, namespace, parent);
+		classInfo = ILClassCreate(nestedScope, 0, name, namespace, 0);
 		if(!classInfo)
 		{
 			CCOutOfMemory();
@@ -598,23 +771,9 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	}
 	defn->classInfo = classInfo;
 
-	/* Add the interfaces to the class */
-	for(base = 0; base < numBases; ++base)
-	{
-		if(baseList[base] && ILClass_IsInterface(baseList[base]))
-		{
-			if(!ILClassAddImplements(classInfo, baseList[base], 0))
-			{
-				CCOutOfMemory();
-			}
-		}
-	}
-
-	/* Clean up */
-	if(baseList)
-	{
-		ILFree(baseList);
-	}
+	/* Restore the namespace, class, and type formals */
+	info->currentNamespace = savedNamespace;
+	info->currentClass = savedClass;
 
 	/* Record the node on the class as user data */
 	ILSetProgramItemMapping(info, (ILNode *)defn);
@@ -2797,33 +2956,24 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 		CreateType(info, globalScope, list, systemObject, child);
 	}
 
+	info->typeGather = 0;
+
 #if IL_VERSION_MAJOR > 1
 	/* Add the generic type parameters to each class */
 	ILNode_ListIter_Init(&iterator, list);
 	while((child = ILNode_ListIter_Next(&iterator)) != 0)
 	{
-		if(yykind(child) == yykindof(ILNode_ClassDefn))
-		{
-			AddGenericParametersToClass(info, child);
-
-			/* process the nested classes */
-			if(((ILNode_ClassDefn*)child)->nestedClasses)
-			{
-				ILNode_ListIter iterator2;
-
-				ILNode_ListIter_Init(&iterator2, 
-									 ((ILNode_ClassDefn*)child)->nestedClasses);
-				while((child = ILNode_ListIter_Next(&iterator2)) != 0)
-				{
-					if(yykind(child) == yykindof(ILNode_ClassDefn))
-					{
-						AddGenericParametersToClass(info, child);
-					}
-				}
-			}
-		}
+		AddGenericParametersToClass(info, child);
 	}
 #endif	/* IL_VERSION_MAJOR > 1 */
+
+	ILNode_ListIter_Init(&iterator, list);
+	while((child = ILNode_ListIter_Next(&iterator)) != 0)
+	{
+		AddBaseClasses(info,
+					   (ILNode_ClassDefn*)child,
+					   systemObject);
+	}
 
 	/* Create the class members within each type */
 	ILNode_ListIter_Init(&iterator, list);

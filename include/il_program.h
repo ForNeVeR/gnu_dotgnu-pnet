@@ -709,6 +709,12 @@ ILClass *ILNestedInfoGetChild(ILNestedInfo *nested);
 int ILClassAccessible(ILClass *info, ILClass *scope);
 
 /*
+ * Determine if a class might be extended or an interface might
+ * be implemented in a specific scope.
+ */
+int ILClassInheritable(ILClass *info, ILClass *scope);
+
+/*
  * Iterate over the members that are associated with a class.
  */
 ILMember *ILClassNextMember(ILClass *info, ILMember *last);
@@ -834,6 +840,16 @@ int ILClassNamespaceIsValid(ILContext *context, const char *nspace);
  * Get the underlying class from a generic class reference.
  */
 ILClass *ILClassGetUnderlying(ILClass *info);
+
+/*
+ * Get the number of generic parameters for the class.
+ */
+ILUInt32 ILClassGetNumGenericPars(ILClass *info);
+
+/*
+ * Set the number of generic parameters for the class.
+ */
+void ILClassSetNumGenericPars(ILClass *info, ILUInt32 numGenericPars);
 
 /*
  * Get the generic type parameters used to instantiate the class.

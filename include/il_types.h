@@ -88,6 +88,7 @@ typedef struct _tagILClass     ILClass;
 #define	ILType_UInt64		ILType_FromElement(IL_META_ELEMTYPE_U8)
 #define	ILType_Float32		ILType_FromElement(IL_META_ELEMTYPE_R4)
 #define	ILType_Float64		ILType_FromElement(IL_META_ELEMTYPE_R8)
+#define	ILType_String		ILType_FromElement(IL_META_ELEMTYPE_STRING)
 #define	ILType_Int			ILType_FromElement(IL_META_ELEMTYPE_I)
 #define	ILType_UInt			ILType_FromElement(IL_META_ELEMTYPE_U)
 #define	ILType_Float		ILType_FromElement(IL_META_ELEMTYPE_R)
@@ -650,6 +651,11 @@ ILType *ILTypeGetWithMain(ILType *type);
  * Get the main "with" type with prefixes.
  */
 ILType *ILTypeGetWithMainWithPrefixes(ILType *type);
+
+/*
+ * Set the main "with" type for a generic reference 
+ */
+void ILTypeSetWithMain(ILType *type, ILType *mainType);
 
 /*
  * Determine if a type needs to be instantiated because it involves

@@ -114,9 +114,6 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	ILNode *savedNamespace;
 	ILNode *savedMethod;
 	ILNode *staticCtorList=NULL;
-#if IL_VERSION_MAJOR > 1
-	ILNode *savedTypeFormals;
-#endif	/* IL_VERSION_MAJOR > 1 */
 	ILNode_ListIter iter;
 	ILNode *staticCtor;
 	int hadStaticCtorsBefore;
@@ -186,15 +183,9 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		savedClass = info->currentClass;
 		savedNamespace = info->currentNamespace;
 		savedMethod = info->currentMethod;
-	#if IL_VERSION_MAJOR > 1
-		savedTypeFormals = info->currentTypeFormals;
-	#endif	/* IL_VERSION_MAJOR > 1 */
 		info->currentClass = (ILNode *)node;
 		info->currentNamespace = node->namespaceNode;
 		info->currentMethod = NULL;
-	#if IL_VERSION_MAJOR > 1
-		info->currentTypeFormals = node->typeFormals;
-	#endif	/* IL_VERSION_MAJOR > 1 */
 		value = ILNode_SemAnalysis(node->body, info, &(node->body));
 		if(node->initCtorsMethod)
 		{
@@ -281,9 +272,6 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentClass = savedClass;
 		info->currentNamespace = savedNamespace;
 		info->currentMethod = savedMethod;
-	#if IL_VERSION_MAJOR > 1
-		info->currentTypeFormals = savedTypeFormals;
-	#endif	/* IL_VERSION_MAJOR > 1 */
 	}
 	else
 	{

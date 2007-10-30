@@ -242,6 +242,9 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 	info->programItem.image = image;
 	info->parent = parent;
 	info->ext = 0;
+#if IL_VERSION_MAJOR > 1
+	info->numGenericPars = -1;
+#endif
 
 	/* Get the name of the scope if it is a nesting parent */
 	scopeClass = ILProgramItemToClass(scope);
@@ -331,8 +334,8 @@ ILClass *ILClassCreateWrapper(ILProgramItem *scope, ILToken token,
 	/* Set the class name */
     if(ILType_IsWith(type))
     {
-			ILClass *classInfo = ILType_ToClass(ILTypeGetWithMainWithPrefixes(type));
-            info->className = classInfo->className;
+		ILClass *classInfo = ILType_ToClass(ILTypeGetWithMainWithPrefixes(type));
+		info->className = classInfo->className;
     }
 	else
 	{
@@ -341,6 +344,10 @@ ILClass *ILClassCreateWrapper(ILProgramItem *scope, ILToken token,
 
 	info->parent = 0;
 	info->ext = 0;
+#if IL_VERSION_MAJOR > 1
+	/* Wrapper classes never have generic parameters */
+	info->numGenericPars = 0;
+#endif
 
 	return info;
 }
@@ -1364,6 +1371,82 @@ int ILClassAccessible(ILClass *info, ILClass *scope)
 	return 0;
 }
 
+int ILClassInheritable(ILClass *info, ILClass *scope)
+{
+	if(!info)
+	{
+		return 0;
+	}
+	info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
+	if(scope)
+	{
+		scope = (ILClass *)(_ILProgramItemResolve(&(scope->programItem)));
+	}
+	if(info == scope)
+	{
+		/* A class is always accessible to itself */
+		return 1;
+	}
+	switch(info->attributes & IL_META_TYPEDEF_VISIBILITY_MASK)
+	{
+		case IL_META_TYPEDEF_NOT_PUBLIC:
+		case IL_META_TYPEDEF_NESTED_ASSEMBLY:
+		{
+			/* The class must be in the same assembly as the scope */
+			if(scope && ILClassToImage(info) == ILClassToImage(scope))
+			{
+				return 1;
+			}
+		}
+		break;
+
+		case IL_META_TYPEDEF_PUBLIC:
+		{
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_META_TYPEDEF_NESTED_PUBLIC:
+		{
+			/* The parent must be inheritable */
+			return ILClassInheritable(ILClassGetNestedParent(info), scope);
+		}
+		/* Not reached */
+
+		case IL_META_TYPEDEF_NESTED_PRIVATE:
+		{
+			/* Nested class accessible from parent, siblings, or children */
+			return AccessibleNestedPrivate(info, scope);
+		}
+		/* Not reached */
+
+		case IL_META_TYPEDEF_NESTED_FAMILY:
+		{
+			/* Accessible to private or inherited scopes */
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_META_TYPEDEF_NESTED_FAM_AND_ASSEM:
+		{
+			/* Must have both family access and be in the same assembly */
+			if(scope && ILClassToImage(info) == ILClassToImage(scope))
+			{
+				return 1;
+			}
+		}
+		break;
+
+		case IL_META_TYPEDEF_NESTED_FAM_OR_ASSEM:
+		{
+			/* Must have family access or be in the same assembly */
+			return 1;
+		}
+		break;
+	}
+	return 0;
+}
+
 ILMember *ILClassNextMember(ILClass *info, ILMember *last)
 {
 	if(last)
@@ -1992,6 +2075,26 @@ int ILClassNamespaceIsValid(ILContext *context, const char *nspace)
 		/* The empty namespace name is always valid */
 		return 1;
 	}
+}
+
+ILUInt32 ILClassGetNumGenericPars(ILClass *info)
+{
+#if IL_VERSION_MAJOR > 1
+	if(info->numGenericPars < 0)
+	{
+		info->numGenericPars = ILGenericParGetNumParams(ILToProgramItem(info));
+	}
+	return info->numGenericPars;
+#else /* IL_VERSION_MAJOR == 1 */
+	return 0;
+#endif
+}
+
+void ILClassSetNumGenericPars(ILClass *info, ILUInt32 numGenericPars)
+{
+#if IL_VERSION_MAJOR > 1
+	info->numGenericPars = numGenericPars;
+#endif
 }
 
 #ifdef	__cplusplus

@@ -1,3 +1,62 @@
+2007-10-30  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_gen.c: Add handling of with types in ILTypeToClass.
+	Initialize the new member accessCheck with ILClassAccessible.
+
+	* codegen/cg_gen.h: Add the member accessCheck to the geninfo struct
+	to hold the function to use for checking if a class is accessible /
+	can be inherited by an other class.
+
+	* cscc/csharp/cs_decls.tc: Remove the accesses to the currentTypeFormals
+	because they are not needed anymore.
+
+	* cscc/csharp/cs_gather.c: Split the type creation into two parts
+	(Step 1: creation of the ILClass records and Step 2: setting the parent
+	class and adding the implemented interfaces) to allow nested types to be
+	used in generic types.
+	Check the if the underlying base class is an interface instead of the
+	base class which might be a TypeSpec.
+	Remove the accesses to the currentTypeFormals member of the geninfo
+	structure.
+
+	* cscc/csharp/cs_lookup.c: Use the new geninfo member accessCheck to check
+	if a class is accessible in the current scope.
+
+	* cscc/csharp/cs_lvalue.tc: Remove the scortcut with resolving the member
+	with namespace and name directly in
+	ILNode_SemanalysisType(ILNode_MemberAccess) because that leads to wrong
+	resolved classes if the an other class could be resolved by the normal
+	member access processing.
+
+	* cscc/csharp/cs_semantics.tc, cscc/csharp/cs_types.tc: Move the function
+	SemWithType from cs_types.tc to CSSemWithType in cs_semanalysis.tc and
+	change the existing calls to that function accordingly.
+	
+	* cscc/csharp/cs_semantics.tc: Change the accessCheck to
+	ILClassInheritable in CSSemBaseType before semanalyzing the type and
+	restore the value afterwards.
+
+	* image/class.c: Initialize the new ILClass member numGenericPars to -1
+	in ILClassCreate and 0 in ILClassCreateWrapper.
+	Add the function ILClassInheritable to check if a class might be used as
+	parent or an implemented interface. This is different from
+	ILClassAccessible because the family (protected) case can not be checked
+	in this case and should be handled like the public case.
+	Add the function ILClassGetNumGerericPars and ILClassSetNumGenericPars
+	to cache a previous value in the ILClass struct.
+
+	* image/meta_types.c: Add the function ILTypeSetWithMain.
+
+	* image/program.h: Add the member numGenericPars to the ILClass struct
+	for caching metadata lookups because the value will be used very often
+	with generics.
+
+	* include/il_program.h: Add the declarations for the new functions
+	ILClassInheritable, ILClassGetNumGenericPars and ILClassSetNumGenericPars.
+
+	* include/il_types.h: Add the element type ILType_String.
+	Add the declaration of the new function ILTypeSetWithMain.
+
 2007-10-23  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_defs.c: Replace the type node with a left and an

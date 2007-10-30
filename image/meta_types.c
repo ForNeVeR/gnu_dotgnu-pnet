@@ -1676,6 +1676,14 @@ ILType *ILTypeGetWithMainWithPrefixes(ILType *type)
 	return ILTypeGetReturnWithPrefixes(type);
 }
 
+void ILTypeSetWithMain(ILType *type, ILType *mainType)
+{
+	if(ILType_IsWith(type))
+	{
+		type->un.method__.retType__ = mainType;
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

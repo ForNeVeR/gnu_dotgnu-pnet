@@ -86,6 +86,11 @@ typedef struct _tagILArrayInit
 typedef struct _tagILJavaGenInfo ILJavaGenInfo;
 
 /*
+ * Access/Inheritance check function.
+ */
+typedef int (*ILClassAccessCheck)(ILClass *info, ILClass *scope);
+
+/*
  * Structure of the code generation context.
  */
 struct _tagILGenInfo
@@ -153,7 +158,7 @@ struct _tagILGenInfo
 	ILNode		   *currentMethodFormals; /* Current generic method formals */
 #endif	/* IL_VERSION_MAJOR > 1 */
 	ILLabel			gotoPtrLabel;		/* Label for "goto *" operations */
-
+	ILClassAccessCheck accessCheck;		/* Function for checking access permissions. */
 };
 
 /*

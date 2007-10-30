@@ -116,6 +116,13 @@ int CSSemExpectType (ILNode *type, ILGenInfo *info, ILNode **parent);
  */
 void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item);
 
+/*
+ * Perform semantic analysis on a set of type actuals
+ * and add them to a "with" type.
+ */
+void CSSemWithType(ILNode *actuals, ILGenInfo *info,
+				   ILNode **parent, ILType *withType);
+
 %}
 
 %{
@@ -218,9 +225,12 @@ int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
 {
 	CSSemValue value;
 	int save = info->inSemType;
-	info->inSemType = info->typeGather;
+	ILClassAccessCheck saveAccessCheck = info->accessCheck;
+	info->inSemType = -1;
+	info->accessCheck = ILClassInheritable;
 	value = ILNode_SemAnalysisType(type, info, parent);
 	info->inSemType = save;
+	info->accessCheck = saveAccessCheck;
 	if(CSSemIsType(value))
 	{
 		*baseNode = 0;
@@ -255,6 +265,36 @@ void CSSemProgramItem(ILGenInfo *info, ILProgramItem *item)
 	{
 		ILNode_SemAnalysis(node, info, &node);
 		ILLeaveProgramItemContext(info, &context);
+	}
+}
+
+/*
+ * Perform semantic analysis on a set of type actuals
+ * and add them to a "with" type.
+ */
+void CSSemWithType(ILNode *actuals, ILGenInfo *info, ILNode **parent,
+				   ILType *withType)
+{
+	ILNode_ListIter iter;
+	ILNode *child;
+
+	ILNode_ListIter_Init(&iter, actuals);
+	while((child = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		CSSemValue value;
+
+		value = ILNode_SemAnalysisType(child, info, &child);
+
+		if(!CSSemIsType(value))
+		{
+			CCErrorOnLine(yygetfilename(actuals), yygetlinenum(actuals),
+					      "type name expected in generic type argument");
+			CSSemSetType(value, ILType_Int32);
+		}
+		if(!ILTypeAddWithParam(info->context, withType, CSSemGetType(value)))
+		{
+			CCOutOfMemory();
+		}
 	}
 }
 

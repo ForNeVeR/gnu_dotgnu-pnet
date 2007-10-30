@@ -1419,21 +1419,10 @@ ILNode_SemAnalysisType(ILNode_MemberAccess)
 	CSSemValue value;
 	int savedState = info->inSemType;
 	const char *name;
-	const char *ns;
-	
-	/* convert the first subexpression into a namespace */
-	ns = ILMemberAccessName(node->expr1);
 	
 	/* Convert the second subexpression into a name */
 	name = ILQualIdentName(node->expr2, 0);
 
-	value = GetFullyQualifiedType(info, ns, name);
-
-	if(CSSemGetKind(value) == CS_SEMKIND_TYPE)
-	{
-		return value;
-	}
-	
 	info->inSemType = -1;
 	/* Get the semantic value for the left part of the identifier */
 	value = ILNode_SemAnalysisType(node->expr1, info, &(node->expr1));

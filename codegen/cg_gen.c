@@ -140,9 +140,12 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->currentNamespace = 0;
 	info->arrayInit = 0;
 	info->itemHash = 0;
+#if IL_VERSION_MAJOR > 1
 	info->currentTypeFormals = 0;
 	info->currentMethodFormals = 0;
+#endif	/* IL_VERSION_MAJOR > 1 */
 	info->gotoPtrLabel = ILLabel_Undefined;
+	info->accessCheck = ILClassAccessible;
 	if(useBuiltinLibrary)
 	{
 		ILGenMakeLibrary(info);
@@ -293,7 +296,29 @@ static ILClass *TypeResolver(ILImage *image, void *data,
 
 ILClass *ILTypeToClass(ILGenInfo *info, ILType *type)
 {
-	return ILClassFromType(info->image, info, type, TypeResolver);
+#if IL_VERSION_MAJOR > 1
+	if(ILType_IsWith(type))
+	{
+		ILClass *classInfo;
+		ILTypeSpec *typeSpec;
+
+		typeSpec = ILTypeSpecCreate(info->image, 0, type);
+		if(!typeSpec)
+		{
+			ILGenOutOfMemory(info);
+		}
+		classInfo = ILTypeSpecGetClassWrapper(typeSpec);
+		if(!classInfo)
+		{
+			ILGenOutOfMemory(info);
+		}
+		return classInfo;
+	}
+	else
+#endif /* IL_VERSION_MAJOR > 1 */
+	{
+		return ILClassFromType(info->image, info, type, TypeResolver);
+	}
 }
 
 ILMachineType ILTypeToMachineType(ILType *type)

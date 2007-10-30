@@ -1,3 +1,20 @@
+2007-10-30  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/class/access1.cs, csharp/class/access1.il,
+	csharp/class/access1.jl, csharp/class/access2.cs, csharp/class/access2.err,
+	csharp/class/access2.jerr: Add some tests for class inheritance.
+
+	* csharp/class/Makefile.am: Add the new tests above to be executed.
+
+	* csharp/class/member_access1.il, csharp/class/member_access1.jl:
+	update files to reflect the latest compiler changes.
+
+	* csharp/class/property5.il, csharp/class/property5.jl: Add the new
+	test results.
+
+	* csharp/class/property5.err, csharp/class/property5.jerr: Update files
+	to reflect the compiler changes.
+
 2007-10-29  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/class/interface3.cs: Fix test by adding an using System;

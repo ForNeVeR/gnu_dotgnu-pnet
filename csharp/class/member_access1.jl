@@ -1,3 +1,7 @@
+.assembly extern '.library'
+{
+	.ver 0:0:0:0
+}
 .assembly '<Assembly>'
 {
 	.ver 0:0:0:0

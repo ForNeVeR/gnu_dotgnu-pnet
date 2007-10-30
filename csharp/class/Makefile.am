@@ -1,6 +1,8 @@
 SUBDIRS = generics
 
 TESTS = abstract1.cs \
+		access1.cs \
+		access2.cs \
 		ainit1.cs \
 		const1.cs \
 		const2.cs \

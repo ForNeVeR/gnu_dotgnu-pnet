@@ -1,3 +1,43 @@
+2007-11-07  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_decls.tc: Add the GenDiscard operations for
+	ILNode_GenericTypeParameter and ILNode_GenericTypeParameters.
+
+	* codegen/cg_nodes.tc: Change the node types of ILNode_GenericTypeParameter
+	and ILNode_GenericTypeParameters from ILNode_Dummy to ILNode_Declaration.
+	Add the enum ILGenParamTarget to handle method- and cass generic type
+	parameters in the GenDiscard operation.
+
+	* codegen/jv_decls.tc: Add stubs of the JavaGenDiscard operations for
+	ILNode_GenericTypeParameter and ILNode_GenericTypeParameters.
+
+	* cscc/csharp/cs_decls.tc: Add semantic analysis of the generic parameters
+	during semantic analysis of the class and methods. Move the semantic
+	analysis of ILNode_GenericTypeParameter and ILNode_GenericTypeParameters
+	to this file.
+	Add the stubs of the GatherStaticCtor operations for declarations for
+	ILNode_GenericTypeParameter and ILNode_GenericTypeParameters.
+
+	* cscc/csharp/cs_gather.c: Set the genParamTarget in the generic parameter
+	during type gathering.
+
+	* cscc/csharp/cs_lvalue.tc: Remove the samantic analysis operations that
+	were moved to cs_decls.c.
+
+	* cscc/java/java_decls.tc: Add stubs of the GatherStaticCtor operations
+	for ILNode_GenericTypeParameter and ILNode_GenericTypeParameters.
+
+	* csdoc/doc_sort.c: Add support for nested types by using the part in
+	fullName before the name only part as namespace.
+
+	* csdoc/il2doc.c: Add support for generics.
+
+	* image/class.c: Return 0 instead of 1 in ILClassInheritable if a class
+	might inherit itself.
+
+	* image/meta_build.c: Fix a problem in Load_MemberRef with IL_DEBUG_META
+	set if the member owner has no className.
+
 2007-10-30  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_gen.c: Add handling of with types in ILTypeToClass.

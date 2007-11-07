@@ -2685,7 +2685,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 	if(!member)
 	{
 	#if IL_DEBUG_META
-		if(classInfo)
+		if(classInfo && classInfo->className)
 		{
 			if(classInfo->className->namespace &&
 			   !strcmp(classInfo->className->namespace, "$Synthetic"))

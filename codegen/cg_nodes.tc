@@ -600,20 +600,6 @@ struct _tagILSwitchValue
 	int baseAccess;
 	%nocreate long saveStack = {0};
 }
-%node ILNode_GenericTypeParameter ILNode_Dummy =
-{
-	ILUInt32	num;
-	const char *name;
-	ILUInt32	constraint;
-	ILNode_List *typeConstraints;
-	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
-}
-%node ILNode_GenericTypeParameters ILNode_Dummy =
-{
-	ILUInt32	numTypeParams;
-	ILNode_List *typeParams;
-	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
-}
 
 %output "cg_ainit.c"
 
@@ -815,6 +801,16 @@ struct _tagILSwitchValue
 /*
  * Declarations.
  */
+
+/*
+ * Gereric parameter targets.
+ */
+%enum ILGenParamTarget =
+{
+	ILGenParamTarget_Class,				/* generic class parameter */
+	ILGenParamTarget_Method				/* generic method parameter */
+}
+
 %node ILNode_Declaration ILNode_Statement %abstract
 %node ILNode_ClassDefn ILNode_Declaration =
 {
@@ -942,6 +938,29 @@ struct _tagILSwitchValue
 	ILParameterModifier	pmod;
 	ILNode	   *type;
 	ILNode	   *name;
+}
+
+/*
+ * Generic type parameter nodes
+ */
+%node ILNode_GenericTypeParameter ILNode_Declaration =
+{
+	ILUInt32	num;
+	const char *name;
+	ILUInt32	constraint;
+	ILNode_List *typeConstraints;
+	%nocreate ILNode *attrs = {0};
+	%nocreate ILType *mainType = {0};
+	%nocreate ILGenericPar *genPar = {0};
+	%nocreate ILGenParamTarget target = {ILGenParamTarget_Class};
+	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
+}
+
+%node ILNode_GenericTypeParameters ILNode_Declaration =
+{
+	ILUInt32	numTypeParams;
+	ILNode_List *typeParams;
+	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 }
 
 %output "cg_attrs.c"

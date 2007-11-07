@@ -1103,3 +1103,45 @@ ILNode_GenDiscard(ILNode_FormalParameter)
 	}
 #endif
 }
+
+ILNode_GenDiscard(ILNode_GenericTypeParameter)
+{
+#if IL_VERSION_MAJOR > 1
+	if (info->asmOutput)
+	{
+		if(node->attrs)
+		{
+			if(node->target == ILGenParamTarget_Class)
+			{
+				fprintf(info->asmOutput, ".param [!%i]\n",
+						node->num + 1);
+			}
+			else
+			{
+				fprintf(info->asmOutput, ".param [!!%i]\n",
+						node->num + 1);
+			}
+			/* Output the attributes that are attached to the type parameter */
+			ILGenOutputAttributes(info, info->asmOutput,
+								  (ILProgramItem *)node->genPar);
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+}
+
+ILNode_GenDiscard(ILNode_GenericTypeParameters)
+{
+#if IL_VERSION_MAJOR > 1
+	if (info->asmOutput)
+	{
+		ILNode_ListIter iter;
+		ILNode *genPar;
+
+		ILNode_ListIter_Init(&iter, node->typeParams);
+		while((genPar = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_GenDiscard(genPar, info);
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+}

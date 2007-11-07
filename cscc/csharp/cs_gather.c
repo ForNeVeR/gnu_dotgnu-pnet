@@ -171,9 +171,7 @@ static void AddTypeFormals(ILGenInfo *info,
 		ILNode_ListIter iter;
 		ILNode_GenericTypeParameter *genParam;
 		ILNode_GenericTypeParameters *genParams;
-
-		/* Perform the semantic analysis on the typeFormals */
-		ILNode_SemAnalysis(typeFormals, info, &typeFormals);
+		ILMethod *method = ILProgramItemToMethod(owner);
 
 		genParams = (ILNode_GenericTypeParameters *)typeFormals;
 		ILNode_ListIter_Init(&iter, genParams->typeParams);
@@ -192,6 +190,11 @@ static void AddTypeFormals(ILGenInfo *info,
 			}
 			ILGenericParSetFlags(genPar, IL_MAX_UINT32, genParam->constraint);
 			AddGenericConstraints(info, genPar, genParam->typeConstraints);
+			genParam->genPar = genPar;
+			if(method)
+			{
+				genParam->target = ILGenParamTarget_Method;
+			}
 		}
 	}
 }

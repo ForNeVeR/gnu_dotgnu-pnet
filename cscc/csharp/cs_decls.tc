@@ -132,6 +132,14 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	}
 	node->visited = ILVisitMode_Processing;
 
+#if IL_VERSION_MAJOR > 1
+	/* perform the semantic analysis for the generic type parameters */
+	if(node->typeFormals)
+	{
+		ILNode_SemAnalysis(node->typeFormals, info, &(node->typeFormals));
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
 	/* Process the attributes for the class */
 	if(node->defaultMemberName)
 	{
@@ -947,6 +955,14 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	}
 	node->visited = ILVisitMode_Processing;
 
+#if IL_VERSION_MAJOR > 1
+	/* perform the semantic analysis for the generic type parameters */
+	if(node->typeFormals)
+	{
+		ILNode_SemAnalysis(node->typeFormals, info, &(node->typeFormals));
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
 	/* Process the attributes on the method */
 	if(ILMethod_IsConstructor(node->methodInfo) ||
 	   ILMethod_IsStaticConstructor(node->methodInfo))
@@ -1430,6 +1446,81 @@ ILNode_SemAnalysis(ILNode_StandaloneAttr)
 	return CSSemValueDefault;
 }
 
+/*
+ * Perform semantic analysis for generic parameters.
+ */
+ILNode_SemAnalysis(ILNode_GenericTypeParameter)
+{
+#if IL_VERSION_MAJOR > 1
+	if(node->visited == ILVisitMode_NotVisited)
+	{
+		ILUInt32 first = 1;
+		ILNode_ListIter iter;
+		ILNode *constraint;
+
+		node->visited = ILVisitMode_Processing;
+		ILNode_ListIter_Init(&iter, (ILNode *)node->typeConstraints);
+		while((constraint = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILType *constraintType;
+
+			constraintType = CSSemType(constraint, info, &constraint);
+			if(constraintType)
+			{
+				ILClass *constraintClass = ILClassFromType(info->image, 0, constraintType, 0);
+
+				if(first)
+				{
+					if(!ILClass_IsInterface(constraintClass))
+					{
+						if(node->constraint & (IL_META_GENPARAM_CLASS_CONST |
+											   IL_META_GENPARAM_VALUETYPE_CONST))
+						{
+							CCErrorOnLine(yygetfilename(constraint), yygetlinenum(constraint),
+										  "either class or valuetype or a non interface class can be supplied");
+						}
+					}
+					first = 0;
+				}
+				else
+				{
+					if(!ILClass_IsInterface(constraintClass))
+					{
+						CCErrorOnLine(yygetfilename(constraint), yygetlinenum(constraint),
+									  "only one non interface class can be supplied");
+					}
+				}
+
+				/* Import the constraint class into the build image. */
+				constraintClass = ILClassImport(info->image, constraintClass);
+			}
+		}
+		node->visited = ILVisitMode_Done;
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+	return CSSemValueDefault;
+}
+
+ILNode_SemAnalysis(ILNode_GenericTypeParameters)
+{
+#if IL_VERSION_MAJOR > 1
+	if(node->visited == ILVisitMode_NotVisited)
+	{
+		ILNode_ListIter iter;
+		ILNode *genPar;
+
+		node->visited = ILVisitMode_Processing;
+		ILNode_ListIter_Init(&iter, (ILNode *)node->typeParams);
+		while((genPar = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_SemAnalysis(genPar, info, &(genPar));
+		}
+		node->visited = ILVisitMode_Done;
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+	return CSSemValueDefault;
+}
+
 ILNode_Declaration_GatherStaticCtor(ILNode_EventDeclaration),
 ILNode_Declaration_GatherStaticCtor(ILNode_EventDeclarator),
 ILNode_Declaration_GatherStaticCtor(ILNode_MethodDeclaration),
@@ -1441,7 +1532,9 @@ ILNode_Declaration_GatherStaticCtor(ILNode_AttributeTree),
 ILNode_Declaration_GatherStaticCtor(ILNode_AttributeSection),
 ILNode_Declaration_GatherStaticCtor(ILNode_Attribute),
 ILNode_Declaration_GatherStaticCtor(ILNode_AttrArgs),
-ILNode_Declaration_GatherStaticCtor(ILNode_NamedArg)
+ILNode_Declaration_GatherStaticCtor(ILNode_NamedArg),
+ILNode_Declaration_GatherStaticCtor(ILNode_GenericTypeParameter),
+ILNode_Declaration_GatherStaticCtor(ILNode_GenericTypeParameters)
 {
 	return;
 }

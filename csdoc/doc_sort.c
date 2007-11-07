@@ -63,6 +63,18 @@ static void ExtractNamespace(ILDocType *type,
 	if(type->fullName)
 	{
 		int len = strlen(type->fullName);
+
+		if(type->name && (*(type->name) != '\0'))
+		{
+			int nameLen = strlen(type->name);
+
+			if((len > nameLen) && (type->fullName[len - nameLen - 1] == '.'))
+			{
+				*namespace = type->fullName;
+				*namespaceLen = len - nameLen - 1;
+				return;
+			}
+		}
 		while(len > 0 && type->fullName[len - 1] != '.')
 		{
 			--len;

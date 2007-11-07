@@ -1384,8 +1384,8 @@ int ILClassInheritable(ILClass *info, ILClass *scope)
 	}
 	if(info == scope)
 	{
-		/* A class is always accessible to itself */
-		return 1;
+		/* A class can never inherit itself */
+		return 0;
 	}
 	switch(info->attributes & IL_META_TYPEDEF_VISIBILITY_MASK)
 	{

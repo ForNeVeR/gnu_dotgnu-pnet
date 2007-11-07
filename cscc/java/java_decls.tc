@@ -803,7 +803,9 @@ ILNode_Declaration_GatherStaticCtor(ILNode_AttributeSection),
 ILNode_Declaration_GatherStaticCtor(ILNode_Attribute),
 ILNode_Declaration_GatherStaticCtor(ILNode_AttrArgs),
 ILNode_Declaration_GatherStaticCtor(ILNode_NamedArg),
-ILNode_Declaration_GatherStaticCtor(ILNode_ProxyDeclaration)
+ILNode_Declaration_GatherStaticCtor(ILNode_ProxyDeclaration),
+ILNode_Declaration_GatherStaticCtor(ILNode_GenericTypeParameter),
+ILNode_Declaration_GatherStaticCtor(ILNode_GenericTypeParameters)
 {
 	return;
 }

@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 static void usage(const char *progname)
 {
 	fprintf(stdout, "IL2DOC " VERSION " - IL Image To Doc Conversion\n");
-	fprintf(stdout, "Copyright (c) 2003 Southern Storm Software, Pty Ltd.\n");
+	fprintf(stdout, "Copyright (c) 2003 2007 Southern Storm Software, Pty Ltd.\n");
 	fprintf(stdout, "\n");
 	fprintf(stdout, "Usage: %s [options] input ...\n", progname);
 	fprintf(stdout, "\n");
@@ -222,9 +222,281 @@ static ILFlagInfo const CSharpMethodFlags[] = {
 	{0, 0, 0},
 };
 
+/*
+ * Flags for PrintStringWithFlags and PrintClassName
+ */
+#define DUMP_GENERIC_PARAMS			IL_DUMP_GENERIC_PARAMS
+#define DUMP_OMIT_CONSTRAINTS		64
+#define DUMP_OMIT_ARITY				128
+#define DUMP_SP						256
+#define DUMP_NAME_ONLY				512
+#define DUMP_CS_STYLE				1024
+
+#define DUMP_STYLE_ILASM			(0)
+#define DUMP_STYLE_ILASM_CLASS		(IL_DUMP_GENERIC_PARAMS | DUMP_NAME_ONLY)
+#define DUMP_STYLE_CSHARP			(DUMP_OMIT_ARITY | DUMP_CS_STYLE)
+#define DUMP_STYLE_CSHARP_CLASS		(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
+									| DUMP_CS_STYLE | DUMP_NAME_ONLY)
+#define DUMP_STYLE_CSHARP_METHOD	(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
+									| DUMP_CS_STYLE)
+#define DUMP_STYLE_NAME				(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
+									| DUMP_OMIT_CONSTRAINTS | DUMP_NAME_ONLY)
+#define DUMP_STYLE_FULLNAME			(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
+									| DUMP_OMIT_CONSTRAINTS)
+#define DUMP_STYLE_FULLNAMESP		(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
+									| DUMP_OMIT_CONSTRAINTS | DUMP_SP)
+
 static void _ILDumpMethodType(FILE *stream, ILImage *image, ILType *type,
 						 	  int flags, ILClass *info, const char *methodName,
 					  		  ILMethod *methodInfo);
+
+static void PrintType(ILType *type, int csForm, ILParameter *parameter,
+					  ILProgramItem *scope);
+
+#if IL_VERSION_MAJOR > 1
+static void _DumpGenericConstraintHeader(FILE *stream, ILGenericPar *genPar,
+										 int flags)
+{
+	if((flags & DUMP_CS_STYLE) != 0)
+	{
+		fputs(" where ", stream);
+		fputs(ILGenericParGetName(genPar), stream);
+		fputs(": ", stream);
+	}
+}
+
+static void _DumpGenericConstraint(FILE *stream, ILGenericPar *genPar,
+								   ILProgramItem *scope, int flags)
+{
+	ILUInt32 constraintFlags = ILGenericParGetFlags(genPar);
+	ILGenericConstraint *constraint = 0;
+
+	if((flags & DUMP_CS_STYLE) != 0)
+	{
+		ILUInt32 hasHeader = 0;
+
+		if((constraintFlags & IL_META_GENPARAM_CLASS_CONST) != 0)
+		{
+			if(!hasHeader)
+			{
+				_DumpGenericConstraintHeader(stream, genPar, flags);
+				hasHeader = 1;
+			}
+			else
+			{
+				fputs(", ", stream);
+			}
+			fputs("class", stream);
+		}
+		else if((constraintFlags & IL_META_GENPARAM_VALUETYPE_CONST) != 0)
+		{
+			if(!hasHeader)
+			{
+				_DumpGenericConstraintHeader(stream, genPar, flags);
+				hasHeader = 1;
+			}
+			else
+			{
+				fputs(", ", stream);
+			}
+			fputs("struct", stream);
+		}
+
+		flags &= ~IL_DUMP_GENERIC_PARAMS;
+		while((constraint = ILGenericParNextConstraint(genPar, constraint)) != 0)
+		{
+			ILClass *classInfo;
+			ILTypeSpec *typeSpec;
+			ILProgramItem *item = ILConstraintGetType(constraint);
+
+			if(!hasHeader)
+			{
+				_DumpGenericConstraintHeader(stream, genPar, flags);
+				hasHeader = 1;
+			}
+			else
+			{
+				fputs(", ", stream);
+			}
+
+			if((classInfo = ILProgramItemToClass(item)) != 0)
+			{
+				PrintType(ILClassToType(classInfo), 0, 0, scope);
+			}
+			else if((typeSpec = ILProgramItemToTypeSpec(item)) != 0)
+			{
+				PrintType(ILTypeSpecGetType(typeSpec), 0, 0, scope);
+			}
+		}
+
+		if((constraintFlags & IL_META_GENPARAM_CTOR_CONST) != 0)
+		{
+			if(!hasHeader)
+			{
+				_DumpGenericConstraintHeader(stream, genPar, flags);
+				hasHeader = 1;
+			}
+			else
+			{
+				fputs(", ", stream);
+			}
+			fputs("new()", stream);
+		}
+	}
+	else
+	{
+		ILUInt32 needSP = 0;
+		ILUInt32 numConstraints = 0;
+
+		if((constraintFlags & IL_META_GENPARAM_COVARIANT) != 0)
+		{
+			putc('+', stream);
+			needSP = 1;
+		}
+		if((constraintFlags & IL_META_GENPARAM_CONTRAVARIANT) != 0)
+		{
+			putc('-', stream);
+			needSP = 1;
+		}
+		if((constraintFlags & IL_META_GENPARAM_CLASS_CONST) != 0)
+		{
+			if(needSP)
+			{
+				putc(' ', stream);
+			}
+			fputs("class", stream);
+			needSP = 1;
+		}
+		if((constraintFlags & IL_META_GENPARAM_VALUETYPE_CONST) != 0)
+		{
+			if(needSP)
+			{
+				putc(' ', stream);
+			}
+			fputs("valuetype", stream);
+			needSP = 1;
+		}
+		if((constraintFlags & IL_META_GENPARAM_CTOR_CONST) != 0)
+		{
+			if(needSP)
+			{
+				putc(' ', stream);
+			}
+			fputs(".ctor", stream);
+			needSP = 1;
+		}
+		if(needSP)
+		{
+			putc(' ', stream);
+		}
+
+		flags &= ~IL_DUMP_GENERIC_PARAMS;
+		while((constraint = ILGenericParNextConstraint(genPar, constraint)) != 0)
+		{
+			ILClass *classInfo;
+			ILTypeSpec *typeSpec;
+			ILProgramItem *item = ILConstraintGetType(constraint);
+
+			if(numConstraints == 0)
+			{
+				putc('(', stream);
+			}
+			else
+			{
+				fputs(", ", stream);
+			}
+
+			if((classInfo = ILProgramItemToClass(item)) != 0)
+			{
+				PrintType(ILClassToType(classInfo), 0, 0, scope);
+			}
+			else if((typeSpec = ILProgramItemToTypeSpec(item)) != 0)
+			{
+				PrintType(ILTypeSpecGetType(typeSpec), 0, 0, scope);
+			}
+			++numConstraints;
+		}
+		if(numConstraints > 0)
+		{
+			fputs(") ", stream);
+		}
+	}
+}
+
+static void _ILDumpGenericConstraints(FILE *stream, ILProgramItem *scope,
+									  ILUInt32 from, ILUInt32 to, int flags)
+{
+	ILUInt32 current = from;
+	ILGenericPar *genPar;
+
+	while((current < to) &&
+		  (genPar = ILGenericParGetFromOwner(scope, current)) != 0)
+	{
+		_DumpGenericConstraint(stream, genPar, scope, flags);
+		++current;
+	}
+}
+
+static void _ILDumpGenericClassConstraints(FILE *stream, ILClass *classInfo,
+										   int flags)
+{
+	ILUInt32 numGenericPars = ILClassGetNumGenericPars(classInfo);
+
+	flags &= ~DUMP_GENERIC_PARAMS;
+	if(numGenericPars > 0)
+	{
+		if((flags & DUMP_CS_STYLE) != 0)
+		{
+			ILClass *nestedParent;
+			ILUInt32 numParentGenericPars = 0;
+
+			nestedParent = ILClass_NestedParent(classInfo);
+			if(nestedParent)
+			{
+				numParentGenericPars = ILClassGetNumGenericPars(nestedParent);
+			}
+			_ILDumpGenericConstraints(stdout, ILToProgramItem(classInfo),
+									  numParentGenericPars, numGenericPars,
+									  flags);
+		}
+		else
+		{
+			_ILDumpGenericConstraints(stdout, ILToProgramItem(classInfo),
+									  0, numGenericPars, flags);
+		}
+	}
+}
+
+static void _ILDumpGenericParms(FILE *stream, ILProgramItem *scope,
+								ILUInt32 from, ILUInt32 to, int flags)
+{
+	ILUInt32 current = from;
+	ILGenericPar *genPar;
+
+	while((current < to) &&
+		  (genPar = ILGenericParGetFromOwner(scope, current)) != 0)
+	{
+		if(current == from)
+		{
+			fputs("&lt;", stream);
+		}
+		else
+		{
+			fputs(", ", stream);
+		}
+		if((flags & (DUMP_OMIT_CONSTRAINTS | DUMP_CS_STYLE)) == 0)
+		{
+			_DumpGenericConstraint(stream, genPar, scope, flags);
+		}
+		fputs(ILGenericParGetName(genPar), stream);
+		current++;
+	}
+	if(current > from)
+	{
+		fputs("&gt;", stream);
+	}
+}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 static void _ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 {
@@ -478,13 +750,14 @@ static void _ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 			}
 			break;
 
+		#if IL_VERSION_MAJOR > 1
 			case IL_TYPE_COMPLEX_WITH:
 			{
 				unsigned long numParams;
 				unsigned long param;
 				_ILDumpType(stream, image,
 						   ILTypeGetWithMainWithPrefixes(type), flags);
-				putc('<', stream);
+				fputs("&lt;", stream);
 				numParams = ILTypeNumWithParams(type);
 				for(param = 1; param <= numParams; ++param)
 				{
@@ -496,7 +769,7 @@ static void _ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 							   ILTypeGetWithParamWithPrefixes(type, param),
 							   flags);
 				}
-				putc('>', stream);
+				fputs("&gt;", stream);
 			}
 			break;
 
@@ -511,6 +784,7 @@ static void _ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 				fprintf(stream, "!%d", ILType_VarNum(type));
 			}
 			break;
+		#endif /* IL_VERSION_MAJOR > 1 */
 
 			default:
 			{
@@ -695,6 +969,7 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 {
 	ILUInt32 callingConventions;
 	ILType *synType;
+#if IL_VERSION_MAJOR > 1
 	int dumpGenerics;
 	unsigned long numWithParams;
 	unsigned long withParam;
@@ -705,6 +980,7 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 	/* Strip off the "generic parameters" flag so that we don't
 	   end up passing it down to the parameter types */
 	flags &= ~IL_DUMP_GENERIC_PARAMS;
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* Dump the calling conventions for the method */
 	callingConventions = ILType_CallConv(type);
@@ -740,16 +1016,18 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 		putc('*', stream);
 	}
 
+#if IL_VERSION_MAJOR > 1
 	/* Dump the generic method parameters if necessary */
 	if(dumpGenerics && methodInfo)
 	{
-		ILDAsmDumpGenericParams(image, stream,
-								ILToProgramItem(methodInfo), flags);
+		_ILDumpGenericParms(stream, ILToProgramItem(methodInfo),
+							0, ILType_NumGen(ILMethod_Signature(methodInfo)),
+							flags);
 	}
 	else if(withTypes)
 	{
 		/* Dump the instantiation types from a method specification */
-		putc('<', stream);
+		fputs("&lt;", stream);
 		numWithParams = ILTypeNumParams(withTypes);
 		for(withParam = 1; withParam <= numWithParams; ++withParam)
 		{
@@ -760,8 +1038,9 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 			_ILDumpType(stream, image,
 					   ILTypeGetParam(withTypes, withParam), flags);
 		}
-		putc('>', stream);
+		fputs("&gt;", stream);
 	}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* Dump the parameters */
 	putc('(', stream);
@@ -1198,9 +1477,9 @@ static char *AttributeToName(ILAttribute *attr)
 }
 
 /*
- * Print a string with XML quoting and an optional SP flag.
+ * Print a string with XML quoting and an optional SP / omit arity flag.
  */
-static void PrintStringWithSP(const char *str, int sp)
+static void PrintStringWithFlags(const char *str, int flags)
 {
 	int ch;
 	if(!str)
@@ -1209,7 +1488,7 @@ static void PrintStringWithSP(const char *str, int sp)
 	}
 	while((ch = *str) != '\0')
 	{
-		if(ch == '.' && sp)
+		if(ch == '.' && ((flags & DUMP_SP) != 0))
 		{
 			putc('_', stdout);
 		}
@@ -1233,6 +1512,25 @@ static void PrintStringWithSP(const char *str, int sp)
 		{
 			fputs("&apos;", stdout);
 		}
+		else if(ch == '`' && ((flags & DUMP_OMIT_ARITY) != 0))
+		{
+			/* Skip until the end of the string or a period is encountered. */
+			++str;
+			while((ch = *str) != '\0')
+			{
+				if(ch == '.')
+				{
+					--str;
+					break;
+				}
+				++str;
+			}
+			if(ch == '\0')
+			{
+				/* We reached the end of the string */
+				break;
+			}
+		}
 		else
 		{
 			putc(ch, stdout);
@@ -1240,34 +1538,154 @@ static void PrintStringWithSP(const char *str, int sp)
 		++str;
 	}
 }
-#define	PrintString(str)	PrintStringWithSP((str), 0)
+#define	PrintString(str)	PrintStringWithFlags((str), 0)
+
+#if IL_VERSION_MAJOR > 1
+static void PrintWithParams(ILType *withType, ILUInt32 from, ILUInt32 to,
+							ILProgramItem *scope, int flags)
+{
+	ILUInt32 current = from;
+
+	while(current < to)
+	{
+		if(current == from)
+		{
+			fputs("&lt;", stdout);
+		}
+		else
+		{
+			fputs(", ", stdout);
+		}
+		PrintType(ILTypeGetWithParamWithPrefixes(withType, current + 1),
+				  (flags & DUMP_CS_STYLE), 0, scope);
+		current++;
+	}
+	if(current > from)
+	{
+		fputs("&gt;", stdout);
+	}
+}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+/*
+ * Inner function for printing a class name
+ */
+static void PrintClassNameInner(ILClass *classInfo, ILProgramItem *scope,
+								int flags, ILType *withType)
+{
+	if((flags & DUMP_NAME_ONLY) != 0)
+	{
+		PrintStringWithFlags(ILClass_Name(classInfo), flags);
+	}
+	else
+	{
+		ILClass *nestedParent;
+
+		nestedParent = ILClass_NestedParent(classInfo);
+		if(nestedParent)
+		{
+			if((flags & DUMP_CS_STYLE) != 0)
+			{
+				PrintClassNameInner(nestedParent, scope, flags, withType);
+			}
+			else
+			{
+				PrintClassNameInner(nestedParent, scope,
+									(flags & ~DUMP_GENERIC_PARAMS), 0);
+			}
+			putc((((flags & DUMP_SP) != 0) ? '_' : '.'), stdout);
+			PrintStringWithFlags(ILClass_Name(classInfo), flags);
+		}
+		else
+		{
+			const char *nspace;
+
+			nspace = ILClass_Namespace(classInfo);
+			if(nspace)
+			{
+				PrintStringWithFlags(nspace, flags);
+				putc((((flags & DUMP_SP) != 0) ? '_' : '.'), stdout);
+			}
+			PrintStringWithFlags(ILClass_Name(classInfo), flags);
+		}
+	}
+#if IL_VERSION_MAJOR > 1
+	if(withType)
+	{
+		ILUInt32 numGenericPars = ILClassGetNumGenericPars(classInfo);
+
+		flags &= ~DUMP_GENERIC_PARAMS;
+		if((flags & DUMP_CS_STYLE) != 0)
+		{
+			ILClass *nestedParent;
+			ILUInt32 numParentGenericPars = 0;
+
+			nestedParent = ILClass_NestedParent(classInfo);
+			if(nestedParent)
+			{
+				numParentGenericPars = ILClassGetNumGenericPars(nestedParent);
+			}
+			PrintWithParams(withType, numParentGenericPars, numGenericPars, scope, flags);
+		}
+		else
+		{
+			PrintWithParams(withType, 0, numGenericPars, scope, flags);
+		}
+	}
+	else if((flags & DUMP_GENERIC_PARAMS) != 0)
+	{
+		ILUInt32 numGenericPars = ILClassGetNumGenericPars(classInfo);
+
+		flags &= ~DUMP_GENERIC_PARAMS;
+		if(numGenericPars > 0)
+		{
+			if((flags & DUMP_CS_STYLE) != 0)
+			{
+				ILClass *nestedParent;
+				ILUInt32 numParentGenericPars = 0;
+
+				nestedParent = ILClass_NestedParent(classInfo);
+				if(nestedParent)
+				{
+					numParentGenericPars = ILClassGetNumGenericPars(nestedParent);
+				}
+				_ILDumpGenericParms(stdout, scope, numParentGenericPars, numGenericPars, flags);
+			}
+			else
+			{
+				_ILDumpGenericParms(stdout, scope, 0, numGenericPars, flags);
+			}
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+}
+
+#if IL_VERSION_MAJOR > 1
+static void PrintWithType(ILType *withType, ILProgramItem *scope, int flags)
+{
+	ILType *mainType = ILTypeGetWithMain(withType);
+
+	PrintClassNameInner(ILType_ToClass(mainType), scope, flags, withType);
+}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 /*
  * Print a full class name with an optional SP flag.
  */
-static void PrintClassNameWithSP(ILClass *classInfo, int sp)
+static void PrintClassNameWithFlags(ILClass *classInfo, ILProgramItem *scope, int flags)
 {
-	ILClass *nestedParent;
-	const char *nspace;
-	nestedParent = ILClass_NestedParent(classInfo);
-	if(nestedParent)
+	ILType *synType = ILClass_SynType(classInfo);
+
+	if(synType && ILType_IsWith(synType))
 	{
-		PrintClassNameWithSP(nestedParent, sp);
-		putc((sp ? '_' : '.'), stdout);
-		PrintStringWithSP(ILClass_Name(classInfo), sp);
+		PrintClassNameInner(ILType_ToClass(ILTypeGetWithMain(synType)), scope, flags, synType);
 	}
 	else
 	{
-		nspace = ILClass_Namespace(classInfo);
-		if(nspace)
-		{
-			PrintStringWithSP(nspace, sp);
-			putc((sp ? '_' : '.'), stdout);
-		}
-		PrintStringWithSP(ILClass_Name(classInfo), sp);
+		PrintClassNameInner(classInfo, scope, flags, 0);
 	}
 }
-#define	PrintClassName(classInfo)	PrintClassNameWithSP((classInfo), 0)
+#define	PrintClassName(classInfo, scope)	PrintClassNameWithFlags((classInfo), (scope), 0)
 
 /*
  * Dump attribute information for a program item.
@@ -1288,7 +1706,8 @@ static void DumpAttributes(ILProgramItem *item)
 		if(!name)
 			continue;
 		fputs("<Attribute><AttributeName>", stdout);
-		fputs(name, stdout);
+		/* fputs(name, stdout); */
+		PrintString(name);
 		fputs("</AttributeName></Attribute>", stdout);
 		ILFree(name);
 	}
@@ -1304,19 +1723,12 @@ static void DumpBases(ILClass *classInfo, ILClass *baseClass,
 					  const char *extendsNoBase,
 					  const char *implements,
 					  const char *implementsSeparator,
-					  int nameOnly)
+					  int flags)
 {
 	if(baseClass)
 	{
 		fputs(extends, stdout);
-		if(nameOnly)
-		{
-			PrintString(ILClass_Name(baseClass));
-		}
-		else
-		{
-			PrintClassName(baseClass);
-		}
+		PrintClassNameWithFlags(baseClass, ILToProgramItem(classInfo), flags);
 		if(!impl)
 		{
 			return;
@@ -1335,14 +1747,8 @@ static void DumpBases(ILClass *classInfo, ILClass *baseClass,
 	{
 		return;
 	}
-	if(nameOnly)
-	{
-		PrintString(ILClass_Name(ILImplementsGetInterface(impl)));
-	}
-	else
-	{
-		PrintClassName(ILImplementsGetInterface(impl));
-	}
+	PrintClassNameWithFlags(ILImplementsGetInterface(impl),
+							ILToProgramItem(classInfo), flags);
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
 		if(!ILClass_IsPublic(ILImplementsGetInterface(impl)))
@@ -1350,14 +1756,8 @@ static void DumpBases(ILClass *classInfo, ILClass *baseClass,
 			continue;
 		}
 		fputs(implementsSeparator, stdout);
-		if(nameOnly)
-		{
-			PrintString(ILClass_Name(ILImplementsGetInterface(impl)));
-		}
-		else
-		{
-			PrintClassName(ILImplementsGetInterface(impl));
-		}
+		PrintClassNameWithFlags(ILImplementsGetInterface(impl),
+								ILToProgramItem(classInfo), flags);
 	}
 }
 
@@ -1415,7 +1815,8 @@ static int MemberVisible(ILMember *member)
 /*
  * Print a type.
  */
-static void PrintType(ILType *type, int csForm, ILParameter *parameter)
+static void PrintType(ILType *type, int csForm, ILParameter *parameter,
+					  ILProgramItem *scope)
 {
 	type = ILTypeStripPrefixes(type);
 	if(ILType_IsPrimitive(type))
@@ -1570,7 +1971,8 @@ static void PrintType(ILType *type, int csForm, ILParameter *parameter)
 	}
 	else if(ILType_IsClass(type) || ILType_IsValueType(type))
 	{
-		PrintClassName(ILType_ToClass(type));
+		PrintClassNameWithFlags(ILType_ToClass(type), scope,
+								csForm ? DUMP_STYLE_CSHARP : 0);
 	}
 	else if(type != 0 && ILType_IsComplex(type))
 	{
@@ -1588,11 +1990,11 @@ static void PrintType(ILType *type, int csForm, ILParameter *parameter)
 					{
 						fputs("ref ", stdout);
 					}
-					PrintType(ILType_Ref(type), csForm, 0);
+					PrintType(ILType_Ref(type), csForm, 0, scope);
 				}
 				else
 				{
-					PrintType(ILType_Ref(type), csForm, 0);
+					PrintType(ILType_Ref(type), csForm, 0, scope);
 					fputs("&amp;", stdout);
 				}
 			}
@@ -1600,7 +2002,7 @@ static void PrintType(ILType *type, int csForm, ILParameter *parameter)
 
 			case IL_TYPE_COMPLEX_PTR:
 			{
-				PrintType(ILType_Ref(type), csForm, 0);
+				PrintType(ILType_Ref(type), csForm, 0, scope);
 				if(csForm)
 				{
 					putc(' ', stdout);
@@ -1630,7 +2032,7 @@ static void PrintType(ILType *type, int csForm, ILParameter *parameter)
 						}
 					}
 				}
-				PrintType(ILTypeGetElemType(type), csForm, 0);
+				PrintType(ILTypeGetElemType(type), csForm, 0, scope);
 				putc('[', stdout);
 				while(rank > 1)
 				{
@@ -1640,6 +2042,86 @@ static void PrintType(ILType *type, int csForm, ILParameter *parameter)
 				putc(']', stdout);
 			}
 			break;
+
+		#if IL_VERSION_MAJOR > 1
+			case IL_TYPE_COMPLEX_WITH:
+			{
+				PrintWithType(type, scope, csForm ? DUMP_STYLE_CSHARP : DUMP_STYLE_ILASM);
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_MVAR:
+			{
+				if(!csForm)
+				{
+					ILUInt32 paramNum = ILType_VarNum(type);
+
+					fprintf(stdout, "!!%i", paramNum);
+				}
+				else
+				{
+					ILMethod *method = ILProgramItemToMethod(scope);
+
+					if(method)
+					{
+						ILUInt32 paramNum = ILType_VarNum(type);
+						ILGenericPar *genPar;
+
+						genPar = ILGenericParGetFromOwner(scope, paramNum);
+						if(genPar)
+						{
+							fputs(ILGenericParGetName(genPar), stdout);
+						}
+					}
+				}
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_VAR:
+			{
+				if(!csForm)
+				{
+					ILUInt32 paramNum = ILType_VarNum(type);
+
+					fprintf(stdout, "!%i", paramNum);
+				}
+				else
+				{
+					ILMethod *method = ILProgramItemToMethod(scope);
+
+					if(method)
+					{
+						ILUInt32 paramNum = ILType_VarNum(type);
+						ILGenericPar *genPar;
+
+						genPar = ILGenericParGetFromOwner
+									(ILToProgramItem(ILMethod_Owner(method)),
+									 paramNum);
+						if(genPar)
+						{
+							fputs(ILGenericParGetName(genPar), stdout);
+						}
+					}
+					else
+					{
+						ILClass *classInfo = ILProgramItemToClass(scope);
+
+						if(classInfo)
+						{
+							ILUInt32 paramNum = ILType_VarNum(type);
+							ILGenericPar *genPar;
+
+							genPar = ILGenericParGetFromOwner(scope, paramNum);
+							if(genPar)
+							{
+								fputs(ILGenericParGetName(genPar), stdout);
+							}
+						}
+					}
+				}
+			}
+			break;
+		#endif /* IL_VERSION_MAJOR > 1 */
 		}
 	}
 }
@@ -1674,7 +2156,8 @@ static void PrintParams(ILMethod *method, ILType *signature, int csForm)
 		}
 		if(csForm)
 		{
-			PrintType(ILTypeGetParam(signature, param), csForm, parameter);
+			PrintType(ILTypeGetParam(signature, param), 1, parameter,
+					  ILToProgramItem(method));
 			putc(' ', stdout);
 			if(parameter && ILParameter_Name(parameter))
 			{
@@ -1697,7 +2180,8 @@ static void PrintParams(ILMethod *method, ILType *signature, int csForm)
 				printf("_p%ld", param);
 			}
 			fputs("\" Type=\"", stdout);
-			PrintType(ILTypeGetParam(signature, param), csForm, parameter);
+			PrintType(ILTypeGetParam(signature, param), 1, parameter,
+					  ILToProgramItem(method));
 			fputs("\"/>\n", stdout);
 		}
 	}
@@ -1746,7 +2230,8 @@ static void PrintIndexerParams(ILMethod *method, ILType *signature,
 		}
 		if(csForm)
 		{
-			PrintType(ILTypeGetParam(signature, param), csForm, parameter);
+			PrintType(ILTypeGetParam(signature, param), csForm, parameter,
+					  ILToProgramItem(method));
 			putc(' ', stdout);
 			if(parameter && ILParameter_Name(parameter))
 			{
@@ -1769,7 +2254,8 @@ static void PrintIndexerParams(ILMethod *method, ILType *signature,
 				printf("_p%ld", param);
 			}
 			fputs("\" Type=\"", stdout);
-			PrintType(ILTypeGetParam(signature, param), csForm, parameter);
+			PrintType(ILTypeGetParam(signature, param), csForm, parameter,
+					  ILToProgramItem(method));
 			fputs("\"/>\n", stdout);
 		}
 	}
@@ -1796,13 +2282,19 @@ static void DumpConstructor(ILClass *classInfo, ILMethod *method)
 	/* Dump the signature information */
 	fputs("<MemberSignature Language=\"ILASM\" Value=\"", stdout);
 	ILDumpFlags(stdout, ILMethod_Attrs(method), ILMethodDefinitionFlags, 0);
+#if IL_VERSION_MAJOR > 1
+	_ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), IL_DUMP_GENERIC_PARAMS, 0,
+					 ILMethod_Name(method), method);
+#else /* IL_VERSION_MAJOR == 1 */
 	_ILDumpMethodType(stdout, ILProgramItem_Image(method),
 					 ILMethod_Signature(method), 0, 0,
 					 ILMethod_Name(method), method);
+#endif /* IL_VERSION_MAJOR == 1 */
 	fputs("\"/>\n", stdout);
 	fputs("<MemberSignature Language=\"C#\" Value=\"", stdout);
 	ILDumpFlags(stdout, ILMethod_Attrs(method), CSharpMethodFlags, 0);
-	PrintString(ILClass_Name(classInfo));
+	PrintStringWithFlags(ILClass_Name(classInfo), DUMP_OMIT_ARITY);
 	PrintParams(method, ILMethod_Signature(method), 1);
 	fputs(";\"/>\n", stdout);
 
@@ -1859,14 +2351,20 @@ static void DumpMethod(ILMethod *method)
 	/* Dump the signature information */
 	fputs("<MemberSignature Language=\"ILASM\" Value=\".method ", stdout);
 	ILDumpFlags(stdout, ILMethod_Attrs(method), ILMethodDefinitionFlags, 0);
+#if IL_VERSION_MAJOR > 1
+	_ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), IL_DUMP_GENERIC_PARAMS, 0,
+					 ILMethod_Name(method), method);
+#else /* IL_VERSION_MAJOR == 1 */
 	_ILDumpMethodType(stdout, ILProgramItem_Image(method),
 					 ILMethod_Signature(method), 0, 0,
 					 ILMethod_Name(method), method);
+#endif /* IL_VERSION_MAJOR == 1 */
 	fputs("\"/>\n", stdout);
 	if(IsFinalizer(method))
 	{
 		fputs("<MemberSignature Language=\"C#\" Value=\"~", stdout);
-		PrintString(ILClass_Name(ILMethod_Owner(method)));
+		PrintStringWithFlags(ILClass_Name(ILMethod_Owner(method)), DUMP_OMIT_ARITY);
 		fputs("()", stdout);
 	}
 	else
@@ -1876,10 +2374,21 @@ static void DumpMethod(ILMethod *method)
 		{
 			ILDumpFlags(stdout, ILMethod_Attrs(method), CSharpMethodFlags, 0);
 		}
-		PrintType(ILTypeGetReturn(ILMethod_Signature(method)), 1, 0);
+		PrintType(ILTypeGetReturn(ILMethod_Signature(method)), 1, 0,
+				  ILToProgramItem(method));
 		putc(' ', stdout);
 		PrintString(ILMethod_Name(method));
+	#if IL_VERSION_MAJOR > 1
+		_ILDumpGenericParms(stdout, ILToProgramItem(method),
+							0, ILType_NumGen(ILMethod_Signature(method)),
+							DUMP_STYLE_CSHARP_METHOD);
+	#endif /* IL_VERSION_MAJOR > 1 */
 		PrintParams(method, ILMethod_Signature(method), 1);
+	#if IL_VERSION_MAJOR > 1
+		_ILDumpGenericConstraints(stdout, ILToProgramItem(method),
+								  0, ILType_NumGen(ILMethod_Signature(method)),
+								  DUMP_STYLE_CSHARP);
+	#endif /* IL_VERSION_MAJOR > 1 */
 	}
 	fputs(";\"/>\n", stdout);
 
@@ -1888,7 +2397,8 @@ static void DumpMethod(ILMethod *method)
 
 	/* Dump the return type and parameters in XML */
 	fputs("<ReturnValue><ReturnType>", stdout);
-	PrintType(ILTypeGetReturn(ILMethod_Signature(method)), 0, 0);
+	PrintType(ILTypeGetReturn(ILMethod_Signature(method)), 1, 0,
+			  ILToProgramItem(method));
 	fputs("</ReturnType></ReturnValue>\n", stdout);
 	PrintParams(method, ILMethod_Signature(method), 0);
 
@@ -1929,7 +2439,8 @@ static void DumpField(ILField *field)
 	{
 		ILDumpFlags(stdout, ILField_Attrs(field), CSharpFieldFlags, 0);
 	}
-	PrintType(ILField_Type(field), 1, 0);
+	PrintType(ILField_Type(field), 1, 0,
+			  ILToProgramItem(ILField_Owner(field)));
 	putc(' ', stdout);
 	PrintString(ILField_Name(field));
 	/* TODO: constant value */
@@ -1937,7 +2448,8 @@ static void DumpField(ILField *field)
 
 	/* Dump the field type */
 	fputs("<ReturnValue><ReturnType>", stdout);
-	PrintType(ILField_Type(field), 0, 0);
+	PrintType(ILField_Type(field), 1, 0,
+			  ILToProgramItem(ILField_Owner(field)));
 	fputs("</ReturnType></ReturnValue>\n", stdout);
 
 	/* Dump the member type */
@@ -1998,18 +2510,30 @@ static void DumpProperty(ILProperty *property)
 		putc(' ', stdout);
 		ILDumpFlags(stdout, ILMethod_Attrs(getter),
 					ILMethodDefinitionFlags, 0);
+	#if IL_VERSION_MAJOR > 1
+		_ILDumpMethodType(stdout, ILProgramItem_Image(getter),
+					     ILMethod_Signature(getter), IL_DUMP_GENERIC_PARAMS, 0,
+					     ILMethod_Name(getter), getter);
+	#else /* IL_VERSION_MAJOR == 1 */
 		_ILDumpMethodType(stdout, ILProgramItem_Image(getter),
 					     ILMethod_Signature(getter), 0, 0,
 					     ILMethod_Name(getter), getter);
+	#endif /* IL_VERSION_MAJOR == 1 */
 	}
 	if(setter)
 	{
 		putc(' ', stdout);
 		ILDumpFlags(stdout, ILMethod_Attrs(setter),
 					ILMethodDefinitionFlags, 0);
+	#if IL_VERSION_MAJOR > 1
+		_ILDumpMethodType(stdout, ILProgramItem_Image(setter),
+					     ILMethod_Signature(setter), IL_DUMP_GENERIC_PARAMS, 0,
+					     ILMethod_Name(setter), setter);
+	#else /* IL_VERSION_MAJOR == 1 */
 		_ILDumpMethodType(stdout, ILProgramItem_Image(setter),
 					     ILMethod_Signature(setter), 0, 0,
 					     ILMethod_Name(setter), setter);
+	#endif /* IL_VERSION_MAJOR == 1 */
 	}
 	fputs(" }\"/>\n", stdout);
 	fputs("<MemberSignature Language=\"C#\" Value=\"", stdout);
@@ -2017,7 +2541,7 @@ static void DumpProperty(ILProperty *property)
 	{
 		ILDumpFlags(stdout, ILMethod_Attrs(either), CSharpMethodFlags, 0);
 	}
-	PrintType(type, 1, 0);
+	PrintType(type, 1, 0, ILToProgramItem(ILProperty_Owner(property)));
 	putc(' ', stdout);
 	if(isIndexer)
 	{
@@ -2045,7 +2569,7 @@ static void DumpProperty(ILProperty *property)
 
 	/* Dump the property type and indexer parameters */
 	fputs("<ReturnValue><ReturnType>", stdout);
-	PrintType(type, 0, 0);
+	PrintType(type, 1, 0, ILToProgramItem(ILProperty_Owner(property)));
 	fputs("</ReturnType></ReturnValue>\n", stdout);
 	if(isIndexer)
 	{
@@ -2094,7 +2618,7 @@ static void DumpEvent(ILEvent *event)
 	{
 		ILDumpFlags(stdout, ILMethod_Attrs(method), CSharpMethodFlags, 0);
 	}
-	PrintType(ILEvent_Type(event), 1, 0);
+	PrintType(ILEvent_Type(event), 1, 0, ILToProgramItem(ILEvent_Owner(event)));
 	putc(' ', stdout);
 	PrintString(ILEvent_Name(event));
 	fputs("\"/>\n", stdout);
@@ -2154,11 +2678,11 @@ static void DumpClass(ILClass *classInfo)
 
 	/* Print the header information */
 	fputs("<Type Name=\"", stdout);
-	PrintString(ILClass_Name(classInfo));
+	PrintClassNameWithFlags(classInfo, ILToProgramItem(classInfo), DUMP_STYLE_NAME);
 	fputs("\" FullName=\"", stdout);
-	PrintClassName(classInfo);
+	PrintClassNameWithFlags(classInfo, ILToProgramItem(classInfo), DUMP_STYLE_FULLNAME);
 	fputs("\" FullNameSP=\"", stdout);
-	PrintClassNameWithSP(classInfo, 1);
+	PrintClassNameWithFlags(classInfo, ILToProgramItem(classInfo), DUMP_STYLE_FULLNAMESP);
 	fputs("\">\n", stdout);
 
 	/* Need to do something different if this is a delegate */
@@ -2169,11 +2693,11 @@ static void DumpClass(ILClass *classInfo)
 	ILDumpFlags(stdout, ILClass_Attrs(classInfo), ILTypeDefinitionFlags, 0);
 	baseClass = ILClass_Parent(classInfo);
 	impl = ILClassNextImplements(classInfo, 0);
-	PrintString(ILClass_Name(classInfo));
+	PrintClassNameWithFlags(classInfo, ILToProgramItem(classInfo), DUMP_STYLE_ILASM_CLASS);
 	if(baseClass || impl)
 	{
 		DumpBases(classInfo, baseClass, impl, " extends ", " implements ",
-				  " implements ", ", ", 0);
+				  " implements ", ", ", DUMP_STYLE_ILASM);
 	}
 	fputs("\"/>\n", stdout);
 	fputs("<TypeSignature Language=\"C#\" Value=\"", stdout);
@@ -2184,10 +2708,13 @@ static void DumpClass(ILClass *classInfo)
 		fputs("delegate ", stdout);
 		delegateMethod = ILTypeGetDelegateMethod(ILClassToType(classInfo));
 		delegateSignature = ILMethod_Signature(delegateMethod);
-		PrintType(ILTypeGetReturn(delegateSignature), 1, 0);
+		PrintType(ILTypeGetReturn(delegateSignature), 1, 0, ILToProgramItem(classInfo));
 		putc(' ', stdout);
-		PrintString(ILClass_Name(classInfo));
+		PrintClassNameWithFlags(classInfo, ILToProgramItem(classInfo), DUMP_STYLE_CSHARP_CLASS);
 		PrintParams(delegateMethod, delegateSignature, 1);
+	#if IL_VERSION_MAJOR > 1
+		_ILDumpGenericClassConstraints(stdout, classInfo, DUMP_STYLE_CSHARP);
+	#endif /* IL_VERSION_MAJOR > 1 */
 		putc(';', stdout);
 	}
 	else
@@ -2218,11 +2745,14 @@ static void DumpClass(ILClass *classInfo)
 			ILDumpFlags(stdout, ILClass_Attrs(classInfo), CSharpTypeFlags, 0);
 			fputs("class ", stdout);
 		}
-		PrintString(ILClass_Name(classInfo));
+		PrintClassNameWithFlags(classInfo, ILToProgramItem(classInfo), DUMP_STYLE_CSHARP_CLASS);
 		if(baseClass || impl)
 		{
-			DumpBases(classInfo, baseClass, impl, " : ", " : ", ", ", ", ", 1);
+			DumpBases(classInfo, baseClass, impl, " : ", " : ", ", ", ", ", DUMP_STYLE_CSHARP);
 		}
+	#if IL_VERSION_MAJOR > 1
+		_ILDumpGenericClassConstraints(stdout, classInfo, DUMP_STYLE_CSHARP);
+	#endif /* IL_VERSION_MAJOR > 1 */
 	}
 	fputs("\"/>\n", stdout);
 
@@ -2241,7 +2771,7 @@ static void DumpClass(ILClass *classInfo)
 	if(baseClass)
 	{
 		fputs("<Base><BaseTypeName>", stdout);
-		PrintClassName(baseClass);
+		PrintClassNameWithFlags(baseClass, ILToProgramItem(classInfo), DUMP_STYLE_CSHARP);
 		fputs("</BaseTypeName></Base>\n", stdout);
 	}
 	else
@@ -2259,7 +2789,9 @@ static void DumpClass(ILClass *classInfo)
 				continue;
 			}
 			fputs("<Interface><InterfaceName>", stdout);
-			PrintClassName(ILImplementsGetInterface(impl));
+			PrintClassNameWithFlags(ILImplementsGetInterface(impl),
+									ILToProgramItem(classInfo),
+									DUMP_STYLE_CSHARP);
 			fputs("</InterfaceName></Interface>\n", stdout);
 		}
 		while((impl = ILClassNextImplements(classInfo, impl)) != 0);

@@ -246,10 +246,31 @@ static unsigned long ParseMetadataFlags(const char *value,
 		temp = flags;
 		while(temp->name != 0)
 		{
-			if(!strncmp(temp->name, value, len) && temp->name[len] == '\0')
+			if(!strncmp(temp->name, value, len))
 			{
-				attrs |= temp->flag;
-				break;
+				if(temp->name[len] == '\0')
+				{
+					attrs |= temp->flag;
+					break;
+				}
+				else if((temp->name[len] == ' ') &&
+						(value[len] == ' ') && 
+						(strlen(temp->name) > len))
+				{
+					int tempLen = len + 1; /* skip the space */
+
+					while(value[tempLen] != '\0' && value[tempLen] != ' ')
+					{
+						++tempLen;
+					}
+					if(!strncmp(temp->name, value, tempLen) &&
+					   (temp->name[tempLen] == '\0'))
+					{
+						attrs |= temp->flag;
+						len = tempLen;
+						break;
+					}
+				}
 			}
 			++temp;
 		}

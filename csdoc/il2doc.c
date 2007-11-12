@@ -231,6 +231,7 @@ static ILFlagInfo const CSharpMethodFlags[] = {
 #define DUMP_SP						256
 #define DUMP_NAME_ONLY				512
 #define DUMP_CS_STYLE				1024
+#define DUMP_OMIT_NAMESPACE			2048
 
 #define DUMP_STYLE_ILASM			(0)
 #define DUMP_STYLE_ILASM_CLASS		(IL_DUMP_GENERIC_PARAMS | DUMP_NAME_ONLY)
@@ -239,12 +240,10 @@ static ILFlagInfo const CSharpMethodFlags[] = {
 									| DUMP_CS_STYLE | DUMP_NAME_ONLY)
 #define DUMP_STYLE_CSHARP_METHOD	(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
 									| DUMP_CS_STYLE)
-#define DUMP_STYLE_NAME				(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
-									| DUMP_OMIT_CONSTRAINTS | DUMP_NAME_ONLY)
 #define DUMP_STYLE_FULLNAME			(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
-									| DUMP_OMIT_CONSTRAINTS)
-#define DUMP_STYLE_FULLNAMESP		(IL_DUMP_GENERIC_PARAMS | DUMP_OMIT_ARITY \
-									| DUMP_OMIT_CONSTRAINTS | DUMP_SP)
+									| DUMP_OMIT_CONSTRAINTS | DUMP_CS_STYLE)
+#define DUMP_STYLE_NAME				(DUMP_STYLE_FULLNAME | DUMP_OMIT_NAMESPACE)
+#define DUMP_STYLE_FULLNAMESP		(DUMP_STYLE_FULLNAME | DUMP_SP)
 
 static void _ILDumpMethodType(FILE *stream, ILImage *image, ILType *type,
 						 	  int flags, ILClass *info, const char *methodName,
@@ -482,7 +481,7 @@ static void _ILDumpGenericParms(FILE *stream, ILProgramItem *scope,
 		}
 		else
 		{
-			fputs(", ", stream);
+			putc(',', stream);
 		}
 		if((flags & (DUMP_OMIT_CONSTRAINTS | DUMP_CS_STYLE)) == 0)
 		{
@@ -497,6 +496,67 @@ static void _ILDumpGenericParms(FILE *stream, ILProgramItem *scope,
 	}
 }
 #endif /* IL_VERSION_MAJOR > 1 */
+
+static int NestedClassIsAccessible(ILClass *classInfo)
+{
+	if(classInfo)
+	{
+		ILUInt32 attrs = ILClassGetAttrs(classInfo);
+
+		switch(attrs & IL_META_TYPEDEF_VISIBILITY_MASK)
+		{
+			case IL_META_TYPEDEF_NOT_PUBLIC:
+			case IL_META_TYPEDEF_NESTED_ASSEMBLY:
+			{
+				/* The class is only accessible in the same image */
+				return 0;
+			}
+			break;
+
+			case IL_META_TYPEDEF_PUBLIC:
+			{
+				return 1;
+			}
+			/* Not reached */
+
+			case IL_META_TYPEDEF_NESTED_PUBLIC:
+			{
+				/* The parent is accessible so the child is accessible too */
+				return 1;
+			}
+			/* Not reached */
+
+			case IL_META_TYPEDEF_NESTED_PRIVATE:
+			{
+				/* Nested class accessible from parent, siblings, or children */
+				return 0;
+			}
+			/* Not reached */
+
+			case IL_META_TYPEDEF_NESTED_FAMILY:
+			{
+				/* Accessible to private or inherited scopes */
+				return 1;
+			}
+			/* Not reached */
+
+			case IL_META_TYPEDEF_NESTED_FAM_AND_ASSEM:
+			{
+				/* Is not accessible from an other image */
+				return 0;
+			}
+			break;
+
+			case IL_META_TYPEDEF_NESTED_FAM_OR_ASSEM:
+			{
+				/* Can be inherited from a class in an other image */
+				return 1;
+			}
+			break;
+		}
+	}
+	return 0;
+}
 
 static void _ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 {
@@ -763,7 +823,7 @@ static void _ILDumpType(FILE *stream, ILImage *image, ILType *type, int flags)
 				{
 					if(param != 1)
 					{
-						fputs(", ", stream);
+						putc(',', stream);
 					}
 					_ILDumpType(stream, image,
 							   ILTypeGetWithParamWithPrefixes(type, param),
@@ -869,7 +929,8 @@ static void DumpParamType(FILE *stream, ILImage *image,
 			if(type)
 			{
 				fputs(" marshal(", stream);
-				ILDumpNativeType(stream, type, typeLen, flags);
+				ILDumpNativeType(stream, type, typeLen,
+								 flags | IL_DUMP_XML_QUOTING);
 				putc(')', stream);
 			}
 		}
@@ -1033,7 +1094,7 @@ static void DumpMethodType(FILE *stream, ILImage *image, ILType *type,
 		{
 			if(withParam != 1)
 			{
-				fputs(", ", stream);
+				putc(',', stream);
 			}
 			_ILDumpType(stream, image,
 					   ILTypeGetParam(withTypes, withParam), flags);
@@ -1095,7 +1156,12 @@ static char *AppendString(char *str1, const char *str2)
 #define	AttrUsage_Parameter		0x0800
 #define	AttrUsage_Delegate		0x1000
 #define	AttrUsage_ReturnValue	0x2000
+#if IL_VERSION_MAJOR > 1
+#define	AttrUsage_GenericParameter	0x4000
+#define	AttrUsage_All			0x7FFF
+#else /* IL_VERSION_MAJOR == 1 */
 #define	AttrUsage_All			0x3FFF
+#endif /* IL_VERSION_MAJOR == 1 */
 #define	AttrUsage_ClassMembers	0x17FC
 
 /*
@@ -1479,15 +1545,15 @@ static char *AttributeToName(ILAttribute *attr)
 /*
  * Print a string with XML quoting and an optional SP / omit arity flag.
  */
-static void PrintStringWithFlags(const char *str, int flags)
+static void PrintStringLenWithFlags(const char *str, int len, int flags)
 {
 	int ch;
-	if(!str)
+	int current = 0;
+
+	while(current < len)
 	{
-		return;
-	}
-	while((ch = *str) != '\0')
-	{
+		ch = *str;
+
 		if(ch == '.' && ((flags & DUMP_SP) != 0))
 		{
 			putc('_', stdout);
@@ -1514,11 +1580,12 @@ static void PrintStringWithFlags(const char *str, int flags)
 		}
 		else if(ch == '`' && ((flags & DUMP_OMIT_ARITY) != 0))
 		{
-			/* Skip until the end of the string or a period is encountered. */
+			/* Skip until the end of the string or a period or space is
+			   encountered. */
 			++str;
 			while((ch = *str) != '\0')
 			{
-				if(ch == '.')
+				if((ch == '.') || (ch == ' '))
 				{
 					--str;
 					break;
@@ -1536,7 +1603,20 @@ static void PrintStringWithFlags(const char *str, int flags)
 			putc(ch, stdout);
 		}
 		++str;
+		++current;
 	}
+}
+
+static void PrintStringWithFlags(const char *str, int flags)
+{
+	int len;
+
+	if(!str)
+	{
+		return;
+	}
+	len = strlen(str);
+	PrintStringLenWithFlags(str, len, flags);
 }
 #define	PrintString(str)	PrintStringWithFlags((str), 0)
 
@@ -1554,7 +1634,7 @@ static void PrintWithParams(ILType *withType, ILUInt32 from, ILUInt32 to,
 		}
 		else
 		{
-			fputs(", ", stdout);
+			putc(',', stdout);
 		}
 		PrintType(ILTypeGetWithParamWithPrefixes(withType, current + 1),
 				  (flags & DUMP_CS_STYLE), 0, scope);
@@ -1598,13 +1678,16 @@ static void PrintClassNameInner(ILClass *classInfo, ILProgramItem *scope,
 		}
 		else
 		{
-			const char *nspace;
-
-			nspace = ILClass_Namespace(classInfo);
-			if(nspace)
+			if((flags & DUMP_OMIT_NAMESPACE) == 0)
 			{
-				PrintStringWithFlags(nspace, flags);
-				putc((((flags & DUMP_SP) != 0) ? '_' : '.'), stdout);
+				const char *nspace;
+
+				nspace = ILClass_Namespace(classInfo);
+				if(nspace)
+				{
+					PrintStringWithFlags(nspace, flags);
+					putc((((flags & DUMP_SP) != 0) ? '_' : '.'), stdout);
+				}
 			}
 			PrintStringWithFlags(ILClass_Name(classInfo), flags);
 		}
@@ -2277,6 +2360,11 @@ static void DumpConstructor(ILClass *classInfo, ILMethod *method)
 	/* Dump the name */
 	fputs("<Member MemberName=\"", stdout);
 	PrintString(ILMethod_Name(method));
+#if IL_VERSION_MAJOR > 1
+	_ILDumpGenericParms(stdout, ILToProgramItem(method),
+						0, ILType_NumGen(ILMethod_Signature(method)),
+						DUMP_STYLE_CSHARP_METHOD);
+#endif /* IL_VERSION_MAJOR > 1 */
 	fputs("\">\n", stdout);
 
 	/* Dump the signature information */
@@ -2346,6 +2434,11 @@ static void DumpMethod(ILMethod *method)
 	/* Dump the name */
 	fputs("<Member MemberName=\"", stdout);
 	PrintString(ILMethod_Name(method));
+#if IL_VERSION_MAJOR > 1
+	_ILDumpGenericParms(stdout, ILToProgramItem(method),
+						0, ILType_NumGen(ILMethod_Signature(method)),
+						DUMP_STYLE_CSHARP_METHOD);
+#endif /* IL_VERSION_MAJOR > 1 */
 	fputs("\">\n", stdout);
 
 	/* Dump the signature information */
@@ -2675,6 +2768,7 @@ static void DumpClass(ILClass *classInfo)
 	int isDelegate;
 	ILMethod *delegateMethod;
 	ILType *delegateSignature;
+	ILNestedInfo *nestedInfo;
 
 	/* Print the header information */
 	fputs("<Type Name=\"", stdout);
@@ -2842,11 +2936,20 @@ static void DumpClass(ILClass *classInfo)
 	}
 	fputs("</Members>\n", stdout);
 
-	/* Output the public nested classes, if any */
-	/* TODO */
-
 	/* Print the footer information */
 	fputs("</Type>\n", stdout);
+
+	/* Output the public nested classes, if any */
+	nestedInfo = 0;
+	while((nestedInfo = ILClassNextNested(classInfo, nestedInfo)) != 0)
+	{
+		ILClass *nestedClass = ILNestedInfoGetChild(nestedInfo);
+
+		if(nestedClass && NestedClassIsAccessible(nestedClass))
+		{
+			DumpClass(nestedClass);
+		}
+	}
 }
 
 /*
@@ -2877,7 +2980,11 @@ static int dump(const char *filename, ILContext *context)
 	}
 
 	/* Clean up and exit */
+	/* We can't destroy only the image if we want to dump more than one
+	   assembly. We'd have to destroy the whole context and recreate it. */
+	/*
 	ILImageDestroy(image);
+	*/
 	return 0;
 }
 

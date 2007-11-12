@@ -1,3 +1,31 @@
+2007-11-12  Klaus Treichel  <ktreichel@web.de>
+
+	* csdoc/doc_load.c: Add support for parsing matadata attributes consisting
+	of two parts like 'nested public'.
+ 
+	* csdoc/doc_valil.c: Add support for generics. Add support for nested
+	classes. Don't check the 'has secutity' flag in the attributes when
+	comparing them. Add the GenericParameter attribute target. Handle 'out'
+	and 'param' parameters in the signature. 
+
+	* csdoc/il2doc.c: Add support for nested classes. Add the GenericParameter
+	attribute target. Don't destroy only the image. This causes invalid
+	values in the context's hash tables if more than one assembly is processed.
+
+	* dumpasm/dump_string.c, include/il_dumpasm.h: Add the functions
+	ILDumpXmlStringLen and ILDumpXmlString for dumping strings with
+	xml quoting.
+
+	* dumpasm/dump_type.c: Use the new functions for dumping type names if
+	IL_DUMP_XML_QUOTING is set in the flags when dumping type names.
+
+	* image/class.c, include/il_program.h: Add the function
+	ILClassToPrimitiveType for trying to convert a class to a primitive type.
+
+	* image/meta_types.c: Try to convert a class to a primitive type first
+	before setting an array element or the return/parameter type in a
+	signature or with type.
+
 2007-11-07  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_decls.tc: Add the GenDiscard operations for

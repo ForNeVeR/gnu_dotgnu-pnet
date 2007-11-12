@@ -126,6 +126,16 @@ void ILDumpUnicodeString(FILE *stream, const char *str,
 						 unsigned long numChars);
 
 /*
+ * Dump a length-specified string to the output stream using xml quoting.
+ */
+void ILDumpXmlStringLen(FILE *stream, const char *str, int len);
+
+/*
+ * Dump a simple NUL-terminated string to the output stream using xml quoting.
+ */
+void ILDumpXmlString(FILE *stream, const char *str);
+
+/*
  * Dump a GUID to an output stream.
  */
 void ILDumpGUID(FILE *stream, const unsigned char *guid);

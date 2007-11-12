@@ -1392,8 +1392,16 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			value = ILMetaUncompressData(reader);
 			if(!(reader->error) && value <= reader->len)
 			{
-				ILDumpStringLen(stream, (const char *)(reader->data),
-								(int)value);
+				if((flags & IL_DUMP_XML_QUOTING) != 0)
+				{
+					ILDumpXmlStringLen(stream, (const char *)(reader->data),
+									   (int)value);
+				}
+				else
+				{
+					ILDumpStringLen(stream, (const char *)(reader->data),
+									(int)value);
+				}
 				reader->data += value;
 				reader->len -= value;
 			}
@@ -1406,8 +1414,16 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			value = ILMetaUncompressData(reader);
 			if(!(reader->error) && value <= reader->len)
 			{
-				ILDumpStringLen(stream, (const char *)(reader->data),
-								(int)value);
+				if((flags & IL_DUMP_XML_QUOTING) != 0)
+				{
+					ILDumpXmlStringLen(stream, (const char *)(reader->data),
+									   (int)value);
+				}
+				else
+				{
+					ILDumpStringLen(stream, (const char *)(reader->data),
+									(int)value);
+				}
 				reader->data += value;
 				reader->len -= value;
 			}
@@ -1420,8 +1436,16 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			value = ILMetaUncompressData(reader);
 			if(!(reader->error) && value <= reader->len)
 			{
-				ILDumpStringLen(stream, (const char *)(reader->data),
-								(int)value);
+				if((flags & IL_DUMP_XML_QUOTING) != 0)
+				{
+					ILDumpXmlStringLen(stream, (const char *)(reader->data),
+									   (int)value);
+				}
+				else
+				{
+					ILDumpStringLen(stream, (const char *)(reader->data),
+									(int)value);
+				}
 				reader->data += value;
 				reader->len -= value;
 			}
@@ -1434,8 +1458,16 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			value = ILMetaUncompressData(reader);
 			if(!(reader->error) && value <= reader->len)
 			{
-				ILDumpStringLen(stream, (const char *)(reader->data),
-								(int)value);
+				if((flags & IL_DUMP_XML_QUOTING) != 0)
+				{
+					ILDumpXmlStringLen(stream, (const char *)(reader->data),
+									   (int)value);
+				}
+				else
+				{
+					ILDumpStringLen(stream, (const char *)(reader->data),
+									(int)value);
+				}
 				reader->data += value;
 				reader->len -= value;
 			}

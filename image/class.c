@@ -1580,12 +1580,14 @@ int ILClassIsValueType(ILClass *info)
 	}
 }
 
-ILType *ILClassToType(ILClass *info)
+ILType *ILClassToPrimitiveType(ILClass *info)
 {
-	/* If the class has a synthetic type, then return that */
 	if(info->synthetic)
 	{
-		return info->synthetic;
+		if(ILType_IsPrimitive(info->synthetic))
+		{
+			return info->synthetic;
+		}
 	}
 
 	/* Check for system classes with primitive equivalents */
@@ -1659,8 +1661,7 @@ ILType *ILClassToType(ILClass *info)
 		}
 	}
 
-	/* Convert into either a value type or a class type */
-	return ILClassToTypeDirect(info);
+	return 0;
 }
 
 ILType *ILClassToTypeDirect(ILClass *info)
@@ -1673,6 +1674,29 @@ ILType *ILClassToTypeDirect(ILClass *info)
 	{
 		return ILType_FromClass(info);
 	}
+}
+
+ILType *ILClassToType(ILClass *info)
+{
+	/* If the class has a synthetic type, then return that */
+	if(info->synthetic)
+	{
+		return info->synthetic;
+	}
+	else
+	{
+		/* Check if the class corresponds to a primitive type */
+		ILType *type = ILClassToPrimitiveType(info);
+
+		if(type)
+		{
+			/* Return the primitive type */
+			return type;
+		}
+	}
+
+	/* Convert into either a value type or a class type */
+	return ILClassToTypeDirect(info);
 }
 
 ILClass *ILClassFromType(ILImage *image, void *data, ILType *type,

@@ -107,6 +107,47 @@ void ILDumpUnicodeString(FILE *stream, const char *str,
 	putc('"', stream);
 }
 
+void ILDumpXmlString(FILE *stream, const char *str)
+{
+	ILDumpXmlStringLen(stream, str, strlen(str));
+}
+
+void ILDumpXmlStringLen(FILE *stream, const char *str, int len)
+{
+	int ch;
+	fputs("&quot;", stream);
+	while(len > 0)
+	{
+		ch = (*str++ & 0xFF);
+		if(ch == '<')
+		{
+			fputs("&lt;", stdout);
+		}
+		else if(ch == '>')
+		{
+			fputs("&gt;", stdout);
+		}
+		else if(ch == '&')
+		{
+			fputs("&amp;", stdout);
+		}
+		else if(ch == '"')
+		{
+			fputs("&quot;", stdout);
+		}
+		else if(ch == '\'')
+		{
+			fputs("&apos;", stdout);
+		}
+		else
+		{
+			putc(ch, stream);
+		}
+		--len;
+	}
+	fputs("&quot;", stream);
+}
+
 #ifdef	__cplusplus
 };
 #endif

@@ -81,17 +81,226 @@ int ILDocValidateOutput(char *outputPath, const char *progname)
 }
 
 /*
+ * Append two strings.
+ */
+static char *AppendString(char *str1, const char *str2)
+{
+	str1 = (char *)ILRealloc(str1, strlen(str1) + strlen(str2) + 1);
+	if(!str1)
+	{
+		ILDocOutOfMemory(0);
+	}
+	strcat(str1, str2);
+	return str1;
+}
+
+/*
+ * Concatenate two strings omittint the generic arity of the source string.
+ */
+static char *StrCatOmitArity(char *dest, const char *src,
+							ILUInt32 *numGenParams)
+{
+	if(src && (*src != '\0'))
+	{
+		char *destPtr = dest + strlen(dest);
+		char ch;
+
+		while((ch = *src) != '\0')
+		{
+ 			if(ch != '`')
+			{
+				*destPtr = *src;
+				++destPtr;
+				++src;
+			}
+			else
+			{
+				if(numGenParams != 0)
+				{
+					ILUInt32 arity = 0;
+
+					src++;
+					while((ch = *src) != '\0')
+					{
+						/* We can do it this way because classnames are UTF8 */
+						if(ch >= '0' && ch <= '9')
+						{
+							arity = arity * 10 + (ch - '0');
+						}
+						else
+						{
+							/* invalid gereric arity */
+							arity = 0;
+							break;
+						}
+						++src;
+					}
+					*numGenParams = arity;
+				}
+				break;
+			}
+		}
+		*destPtr = '\0';
+	}
+	return dest;
+}
+
+#if IL_VERSION_MAJOR > 1
+/*
+ * Append the generic parameters to the name.
+ */
+static char *AppendGenericParams(char *name, ILProgramItem *item,
+								 ILUInt32 *firstGenParam)
+{
+	ILUInt32 current = *firstGenParam;
+	ILGenericPar *genPar;
+
+	while((genPar = ILGenericParGetFromOwner(item, current)) != 0)
+	{
+		const char *genParName = ILGenericParGetName(genPar);
+
+		if(current == *firstGenParam)
+		{			
+			char *tempName;
+
+			tempName = (char *)ILMalloc(strlen(genParName) +
+										strlen(name) + 2);
+			if(!tempName)
+			{
+				ILDocOutOfMemory(0);
+			}
+			strcpy(tempName, name);
+			strcat(tempName, "<");
+			strcat(tempName, genParName);
+			ILFree(name);
+			name = tempName;
+		}
+		else
+		{
+			const char *genParName = ILGenericParGetName(genPar);
+			char *tempName;
+
+			tempName = (char *)ILMalloc(strlen(genParName) +
+										strlen(name) + 2);
+			if(!tempName)
+			{
+				ILDocOutOfMemory(0);
+			}
+			strcpy(tempName, name);
+			strcat(tempName, ",");
+			strcat(tempName, genParName);
+			ILFree(name);
+			name = tempName;
+		}
+		current++;
+	}
+	if(current > *firstGenParam)
+	{
+		char *tempName;
+
+		tempName = (char *)ILMalloc(strlen(name) + 2);
+		if(!tempName)
+		{
+			ILDocOutOfMemory(0);
+		}
+		strcpy(tempName, name);
+		strcat(tempName, ">");
+		ILFree(name);
+		name = tempName;
+		*firstGenParam = current;
+	}
+	return name;
+}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+/*
+ * Inner function for retrieving the class name including generic parameters.
+ */
+static char *GetClassNameInner(ILClass *classInfo, ILUInt32 *firstGenParam)
+{
+	ILClass *nestedParent = ILClassGetNestedParent(classInfo);
+	char *name;
+
+	if(nestedParent)
+	{
+		name = GetClassNameInner(nestedParent, firstGenParam);
+		char *tempName;
+
+		tempName = (char *)ILMalloc(strlen(name) +
+									strlen(ILClass_Name(classInfo)) + 2);
+		if(!tempName)
+		{
+			ILDocOutOfMemory(0);
+		}
+		strcpy(tempName, name);
+		strcat(tempName, ".");
+		StrCatOmitArity(tempName, ILClass_Name(classInfo), 0);
+		ILFree(name);
+		name = tempName;
+	}
+	else
+	{
+		char *tempName;
+
+		tempName = (char *)ILMalloc(strlen(ILClass_Name(classInfo)) + 1);
+		if(!tempName)
+		{
+			ILDocOutOfMemory(0);
+		}
+		*tempName = '\0';
+		StrCatOmitArity(tempName, ILClass_Name(classInfo), 0);
+		name = tempName;
+	}
+#if IL_VERSION_MAJOR > 1
+	if(firstGenParam)
+	{
+		name = AppendGenericParams(name, ILToProgramItem(classInfo),
+								   firstGenParam);
+	}
+#endif
+	return name;
+}
+
+/*
+ * Get the class name including generic parameters.
+ */
+static char *GetClassName(ILClass *classInfo, int inclGenParams)
+{
+	if(inclGenParams)
+	{
+		ILUInt32 nextGenPar = 0;
+
+		return GetClassNameInner(classInfo, &nextGenPar);
+	}
+	else
+	{
+		return GetClassNameInner(classInfo, 0);
+	}
+}
+
+static const char *GetClassNamespace(ILClass *classInfo)
+{
+	ILClass *nestedParent;
+
+	while((nestedParent = ILClass_NestedParent(classInfo)) != 0)
+	{
+		classInfo = nestedParent;
+	}
+	return ILClass_Namespace(classInfo);
+}
+
+/*
  * Get the full name of an image class.
  */
 static char *GetFullClassName(ILClass *classInfo)
 {
-	const char *name = ILClass_Name(classInfo);
-	const char *namespace = ILClass_Namespace(classInfo);
-	char *parentName;
-	char *fullName;
-	ILClass *parent;
+	char *name = GetClassName(classInfo, 1);
+	const char *namespace = GetClassNamespace(classInfo);
+
 	if(namespace)
 	{
+		char *fullName;
+
 		fullName = (char *)ILMalloc(strlen(namespace) +
 									strlen(name) + 2);
 		if(!fullName)
@@ -101,30 +310,136 @@ static char *GetFullClassName(ILClass *classInfo)
 		strcpy(fullName, namespace);
 		strcat(fullName, ".");
 		strcat(fullName, name);
-	}
-	else if((parent = ILClass_NestedParent(classInfo)) != 0)
-	{
-		parentName = GetFullClassName(parent);
-		fullName = (char *)ILMalloc(strlen(parentName) + strlen(name) + 2);
-		if(!fullName)
-		{
-			ILDocOutOfMemory(0);
-		}
-		strcpy(fullName, parentName);
-		strcat(fullName, ".");
-		strcat(fullName, name);
-		ILFree(parentName);
+		return fullName;
 	}
 	else
 	{
-		fullName = (char *)ILMalloc(strlen(name) + 1);
-		if(!fullName)
-		{
-			ILDocOutOfMemory(0);
-		}
-		strcpy(fullName, name);
+		return name;
 	}
-	return fullName;
+}
+
+/*
+ * Resolve a class from a classname.
+ */
+static ILClass *ResolveClass(ILContext *context, const char *name, const char *namespace)
+{
+	if(name)
+	{
+		ILClass *classInfo = 0;
+		const char *ptr = name;
+		const char *nameEnd = 0;
+		ILUInt32 numGen = 0;
+		char ch;
+
+		while((ch = *ptr) != '\0')
+		{
+			if(ch == '<')
+			{
+				/* Start of generic parameters */
+				numGen = 1;
+				nameEnd = ptr;
+
+				while((ch = *ptr) != '\0')
+				{
+					if(ch == ',')
+					{
+						++numGen;
+					}
+					else if(ch == '>')
+					{
+						break;
+					}
+					++ptr;
+				}
+			}
+			else if(ch == '.')
+			{
+				/* Looks like a nested class */
+				if(numGen == 0)
+				{
+					char *tempName = ILDupNString(name, ptr - name);
+
+					if(classInfo)
+					{
+						classInfo = ILClassLookup(ILToProgramItem(classInfo),
+												  tempName, 0);
+					}
+					else
+					{
+						classInfo = ILClassLookupGlobal(context, tempName, namespace);
+					}
+					ILFree(tempName);
+				}
+				else
+				{
+					char *tempName = ILDupNString(name, nameEnd - name);
+					char buffer[261];
+
+					sprintf(buffer, "%s`%i", tempName, numGen);
+					if(classInfo)
+					{
+						classInfo = ILClassLookup(ILToProgramItem(classInfo),
+												  buffer, 0);
+					}
+					else
+					{
+						classInfo = ILClassLookupGlobal(context, buffer, namespace);
+					}
+					ILFree(tempName);
+					numGen = 0;
+				}
+				if(classInfo)
+				{
+					/* Set the start of the mext name to the character
+					   following the period. */
+					name = ptr + 1;
+				}
+				else
+				{
+					/* Failed to resolve the class */
+					return 0;
+				}
+			}		
+			++ptr;
+		}
+		if(ptr > name)
+		{
+			if(numGen == 0)
+			{
+				char *tempName = ILDupNString(name, ptr - name);
+
+				if(classInfo)
+				{
+					classInfo = ILClassLookup(ILToProgramItem(classInfo),
+											  tempName, 0);
+				}
+				else
+				{
+					classInfo = ILClassLookupGlobal(context, tempName, namespace);
+				}
+				ILFree(tempName);
+			}
+			else
+			{
+				char *tempName = ILDupNString(name, nameEnd - name);
+				char buffer[261];
+
+				sprintf(buffer, "%s`%i", tempName, numGen);
+				if(classInfo)
+				{
+					classInfo = ILClassLookup(ILToProgramItem(classInfo),
+											  buffer, 0);
+				}
+				else
+				{
+					classInfo = ILClassLookupGlobal(context, buffer, namespace);
+				}
+				ILFree(tempName);
+			}
+			return classInfo;		
+		}
+	}
+	return 0;
 }
 
 /*
@@ -154,6 +469,7 @@ static int IsDelegateType(ILClass *classInfo)
  * Type attribute flags that are relevant during comparisons.
  */
 #define	VALID_TYPE_FLAGS	(IL_META_TYPEDEF_VALID_BITS & \
+							 ~IL_META_TYPEDEF_HAS_SECURITY & \
 						     ~IL_META_TYPEDEF_BEFORE_FIELD_INIT & \
 							 ~IL_META_TYPEDEF_SERIALIZABLE)
 
@@ -161,18 +477,23 @@ static int IsDelegateType(ILClass *classInfo)
  * Field attribute flags that are relevant during comparisons.
  */
 #define	VALID_FIELD_FLAGS	(0x7FFF & \
+							 ~IL_META_FIELDDEF_HAS_SECURITY & \
 							 ~IL_META_FIELDDEF_INIT_ONLY)
 
 /*
  * Method attribute flags that are relevant during comparisons.
  */
 #define	VALID_METHOD_FLAGS	(0x7FFF & \
+							 ~IL_META_METHODDEF_PINVOKE_IMPL & \
+							 ~IL_META_METHODDEF_HAS_SECURITY & \
 							 ~IL_META_METHODDEF_NEW_SLOT)
 
 /*
  * Constructor attribute flags that are relevant during comparisons.
  */
 #define	VALID_CTOR_FLAGS	(0x7FFF & \
+							 ~IL_META_METHODDEF_PINVOKE_IMPL & \
+							 ~IL_META_METHODDEF_HAS_SECURITY & \
 							 ~IL_META_METHODDEF_HIDE_BY_SIG & \
 							 ~IL_META_METHODDEF_RT_SPECIAL_NAME)
 
@@ -180,46 +501,87 @@ static int IsDelegateType(ILClass *classInfo)
  * Event attribute flags that are relevant during comparisons.
  */
 #define	VALID_EVENT_FLAGS	(0x7FFF & \
+							 ~IL_META_METHODDEF_HAS_SECURITY & \
 							 ~IL_META_METHODDEF_HIDE_BY_SIG & \
 							 ~IL_META_METHODDEF_SPECIAL_NAME)
+
+#if IL_VERSION_MAJOR > 1
+/*
+ * Inner function for retrieving the class name including generic parameters.
+ */
+static char *WithTypeToName(ILType *withType, int shortForm,
+							ILProgramItem *scope);
+#endif /* IL_VERSION_MAJOR > 1 */
 
 /*
  * Convert an image type into a type name.
  */
-static char *TypeToName(ILType *type, int shortForm)
+static char *TypeToName(ILType *type, int shortForm, ILParameter *parameter,
+						ILProgramItem *scope)
 {
 	char *name;
 	ILClass *classInfo;
-	const char *suffix;
-	char buffer[128];
 	int posn, kind;
 
+	/* Try to convert class or value types to their primitive form first. */
+	if(ILType_IsClass(type) || ILType_IsValueType(type))
+	{
+		ILType *tempType = ILClassToPrimitiveType(ILType_ToClass(type));
+
+		if(tempType)
+		{
+			type = tempType;
+		}
+	}
 	if(ILType_IsPrimitive(type))
 	{
-		switch(ILType_ToElement(type))
+		if(shortForm)
 		{
-			case IL_META_ELEMTYPE_VOID:		name = "System.Void"; break;
-			case IL_META_ELEMTYPE_BOOLEAN:	name = "System.Boolean"; break;
-			case IL_META_ELEMTYPE_I1:		name = "System.SByte"; break;
-			case IL_META_ELEMTYPE_U1:		name = "System.Byte"; break;
-			case IL_META_ELEMTYPE_I2:		name = "System.Int16"; break;
-			case IL_META_ELEMTYPE_U2:		name = "System.UInt16"; break;
-			case IL_META_ELEMTYPE_CHAR:		name = "System.Char"; break;
-			case IL_META_ELEMTYPE_I4:		name = "System.Int32"; break;
-			case IL_META_ELEMTYPE_U4:		name = "System.UInt32"; break;
-			case IL_META_ELEMTYPE_I8:		name = "System.Int64"; break;
-			case IL_META_ELEMTYPE_U8:		name = "System.UInt64"; break;
-			case IL_META_ELEMTYPE_I:		name = "System.IntPtr"; break;
-			case IL_META_ELEMTYPE_U:		name = "System.UIntPtr"; break;
-			case IL_META_ELEMTYPE_R4:		name = "System.Single"; break;
-			case IL_META_ELEMTYPE_R8:		name = "System.Double"; break;
-			case IL_META_ELEMTYPE_TYPEDBYREF:
-							name = "System.TypedReference"; break;
-			default:						name = "*Unknown*"; break;
+			switch(ILType_ToElement(type))
+			{
+				case IL_META_ELEMTYPE_VOID:		name = "void"; break;
+				case IL_META_ELEMTYPE_BOOLEAN:	name = "bool"; break;
+				case IL_META_ELEMTYPE_I1:		name = "sbyte"; break;
+				case IL_META_ELEMTYPE_U1:		name = "byte"; break;
+				case IL_META_ELEMTYPE_I2:		name = "short"; break;
+				case IL_META_ELEMTYPE_U2:		name = "ushort"; break;
+				case IL_META_ELEMTYPE_CHAR:		name = "char"; break;
+				case IL_META_ELEMTYPE_I4:		name = "int"; break;
+				case IL_META_ELEMTYPE_U4:		name = "uint"; break;
+				case IL_META_ELEMTYPE_I8:		name = "long"; break;
+				case IL_META_ELEMTYPE_U8:		name = "ulong"; break;
+				case IL_META_ELEMTYPE_I:		name = "IntPtr"; break;
+				case IL_META_ELEMTYPE_U:		name = "UIntPtr"; break;
+				case IL_META_ELEMTYPE_R4:		name = "float"; break;
+				case IL_META_ELEMTYPE_R8:		name = "double"; break;
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+								name = "TypedReference"; break;
+				default:						name = "*Unknown*"; break;
+			}
 		}
-		if(shortForm && name[0] == 'S')
+		else
 		{
-			name += 7;
+			switch(ILType_ToElement(type))
+			{
+				case IL_META_ELEMTYPE_VOID:		name = "System.Void"; break;
+				case IL_META_ELEMTYPE_BOOLEAN:	name = "System.Boolean"; break;
+				case IL_META_ELEMTYPE_I1:		name = "System.SByte"; break;
+				case IL_META_ELEMTYPE_U1:		name = "System.Byte"; break;
+				case IL_META_ELEMTYPE_I2:		name = "System.Int16"; break;
+				case IL_META_ELEMTYPE_U2:		name = "System.UInt16"; break;
+				case IL_META_ELEMTYPE_CHAR:		name = "System.Char"; break;
+				case IL_META_ELEMTYPE_I4:		name = "System.Int32"; break;
+				case IL_META_ELEMTYPE_U4:		name = "System.UInt32"; break;
+				case IL_META_ELEMTYPE_I8:		name = "System.Int64"; break;
+				case IL_META_ELEMTYPE_U8:		name = "System.UInt64"; break;
+				case IL_META_ELEMTYPE_I:		name = "System.IntPtr"; break;
+				case IL_META_ELEMTYPE_U:		name = "System.UIntPtr"; break;
+				case IL_META_ELEMTYPE_R4:		name = "System.Single"; break;
+				case IL_META_ELEMTYPE_R8:		name = "System.Double"; break;
+				case IL_META_ELEMTYPE_TYPEDBYREF:
+								name = "System.TypedReference"; break;
+				default:						name = "*Unknown*"; break;
+			}
 		}
 		name = ILDupString(name);
 	}
@@ -228,7 +590,7 @@ static char *TypeToName(ILType *type, int shortForm)
 		classInfo = ILType_ToClass(type);
 		if(shortForm)
 		{
-			name = ILDupString(ILClass_Name(classInfo));
+			name = GetClassName(classInfo, 0);
 		}
 		else
 		{
@@ -237,24 +599,71 @@ static char *TypeToName(ILType *type, int shortForm)
 	}
 	else if(type != 0 && ILType_IsComplex(type))
 	{
+		const char *prefix = 0;
+		const char *suffix = 0;
+		char buffer[128];
+
 		kind = ILType_Kind(type);
 		if(kind == IL_TYPE_COMPLEX_BYREF)
 		{
-			name = TypeToName(ILType_Ref(type), shortForm);
-			suffix = "&";
+			name = TypeToName(ILType_Ref(type), shortForm, parameter, scope);
+			if(parameter && ILParameter_IsOut(parameter))
+			{
+				prefix = "out ";
+			}
+			else
+			{
+				prefix = "ref ";
+			}
 		}
 		else if(kind == IL_TYPE_COMPLEX_PTR)
 		{
-			name = TypeToName(ILType_Ref(type), shortForm);
+			name = TypeToName(ILType_Ref(type), shortForm, parameter, scope);
 			suffix = "*";
 		}
 		else if(kind == IL_TYPE_COMPLEX_ARRAY)
 		{
-			name = TypeToName(ILType_Ref(type), shortForm);
+			if(parameter)
+			{
+				/* Look for the "ParamArrayAttribute" marker */
+				ILAttribute *attr = 0;
+				ILMethod *ctor;
+				while((attr = ILProgramItemNextAttribute
+							(ILToProgramItem(parameter), attr)) != 0)
+				{
+					ctor = ILProgramItemToMethod
+						(ILAttribute_TypeAsItem(attr));
+					if(ctor && !strcmp(ILClass_Name(ILMethod_Owner(ctor)),
+									   "ParamArrayAttribute"))
+					{
+						prefix = "params ";
+					}
+				}
+				parameter = 0;
+			}
+			name = TypeToName(ILType_Ref(type), shortForm, parameter, scope);
 			suffix = "[]";
 		}
 		else if(kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
 		{
+			if(parameter)
+			{
+				/* Look for the "ParamArrayAttribute" marker */
+				ILAttribute *attr = 0;
+				ILMethod *ctor;
+				while((attr = ILProgramItemNextAttribute
+							(ILToProgramItem(parameter), attr)) != 0)
+				{
+					ctor = ILProgramItemToMethod
+						(ILAttribute_TypeAsItem(attr));
+					if(ctor && !strcmp(ILClass_Name(ILMethod_Owner(ctor)),
+									   "ParamArrayAttribute"))
+					{
+						prefix = "params ";
+					}
+				}
+				parameter = 0;
+			}
 			buffer[0] = '[';
 			posn = 1;
 			while(type != 0 && ILType_IsComplex(type) &&
@@ -270,19 +679,118 @@ static char *TypeToName(ILType *type, int shortForm)
 			if(type != 0 && ILType_IsComplex(type) &&
 			   ILType_Kind(type) == IL_TYPE_COMPLEX_ARRAY)
 			{
-				name = TypeToName(ILType_ElemType(type), shortForm);
+				name = TypeToName(ILType_ElemType(type), shortForm, parameter, scope);
 			}
 			else
 			{
 				name = ILDupString("*Unknown*");
 			}
 		}
+	#if IL_VERSION_MAJOR > 1
+		else if(kind == IL_TYPE_COMPLEX_MVAR)
+		{
+			ILMethod *method = ILProgramItemToMethod(scope);
+
+			if(method)
+			{
+				ILUInt32 paramNum = ILType_VarNum(type);
+				ILGenericPar *genPar;
+
+				genPar = ILGenericParGetFromOwner(scope, paramNum);
+				if(genPar)
+				{
+					name = ILDupString(ILGenericParGetName(genPar));
+				}
+				else
+				{
+					name = ILDupString("*Unknown*");
+				}
+			}
+			else
+			{
+				name = ILDupString("*Unknown*");
+			}
+		}
+		else if(kind == IL_TYPE_COMPLEX_VAR)
+		{
+			ILMethod *method = ILProgramItemToMethod(scope);
+
+			if(method)
+			{
+				ILUInt32 paramNum = ILType_VarNum(type);
+				ILGenericPar *genPar;
+
+				genPar = ILGenericParGetFromOwner
+							(ILToProgramItem(ILMethod_Owner(method)),
+							 paramNum);
+				if(genPar)
+				{
+					name = ILDupString(ILGenericParGetName(genPar));
+				}
+				else
+				{
+					name = ILDupString("*Unknown*");
+				}
+			}
+			else
+			{
+				ILClass *classInfo = ILProgramItemToClass(scope);
+
+				if(classInfo)
+				{
+					ILUInt32 paramNum = ILType_VarNum(type);
+					ILGenericPar *genPar;
+
+					genPar = ILGenericParGetFromOwner(scope, paramNum);
+					if(genPar)
+					{
+						name = ILDupString(ILGenericParGetName(genPar));
+					}
+					else
+					{
+						name = ILDupString("*Unknown*");
+					}
+				}
+				else
+				{
+					name = ILDupString("*Unknown*");
+				}
+			}
+		}
+		else if(kind == IL_TYPE_COMPLEX_WITH)
+		{
+			name = WithTypeToName(type, shortForm, scope);
+		}
+	#endif /* IL_VERSION_MAJOR > 1 */
 		else
 		{
 			name = ILDupString("*Unknown*");
 			suffix = "";
 		}
-		if(*suffix != '\0')
+		if(prefix)
+		{
+			int len = strlen(prefix) + strlen(name) + 1;
+			char *tempName;
+
+			if(suffix)
+			{
+				len += strlen(suffix);
+			}
+			tempName = (char *)ILMalloc(len);
+			if(!tempName)
+			{
+				ILDocOutOfMemory(0);
+			}
+			strcpy(tempName, prefix);
+			strcat(tempName, name);
+			if(suffix)
+			{
+				strcat(tempName, suffix);
+			}
+			ILFree(name);
+			name = tempName;
+		}
+		else if(suffix)
 		{
 			name = (char *)ILRealloc(name, strlen(name) + strlen(suffix) + 1);
 			if(!name)
@@ -303,13 +811,121 @@ static char *TypeToName(ILType *type, int shortForm)
 	return name;
 }
 
+#if IL_VERSION_MAJOR > 1
+/*
+ * Inner function for retrieving the class name including generic parameters.
+ */
+static char *WithTypeToNameInner(ILClass *classInfo, int shortForm,
+								 ILProgramItem *scope,
+								 ILUInt32 *first,
+								 ILType *withType)
+{
+	ILClass *nestedParent = ILClassGetNestedParent(classInfo);
+	ILUInt32 arity = 0;
+	char *name;
+
+	if(nestedParent)
+	{
+		name = WithTypeToNameInner(nestedParent, shortForm, scope, first,
+								   withType);
+		char *tempName;
+
+		tempName = (char *)ILMalloc(strlen(name) +
+									strlen(ILClass_Name(classInfo)) + 2);
+		if(!tempName)
+		{
+			ILDocOutOfMemory(0);
+		}
+		strcpy(tempName, name);
+		strcat(tempName, ".");
+		StrCatOmitArity(tempName, ILClass_Name(classInfo), &arity);
+		ILFree(name);
+		name = tempName;
+	}
+	else
+	{
+		char *tempName;
+
+		tempName = (char *)ILMalloc(strlen(ILClass_Name(classInfo)) + 1);
+		if(!tempName)
+		{
+			ILDocOutOfMemory(0);
+		}
+		*tempName = '\0';
+		StrCatOmitArity(tempName, ILClass_Name(classInfo), &arity);
+		name = tempName;
+	}
+	if(arity > 0)
+	{
+		ILUInt32 current = *first;
+		ILUInt32 firstGeneric = current;
+		ILType *type;
+
+		*first += arity;
+		while(arity > 0 &&
+			  (type = ILTypeGetWithParamWithPrefixes(withType, current + 1)) != 0)
+		{
+			char *tempName;
+
+			if(current == firstGeneric)
+			{
+				name = AppendString(name, "<");
+			}
+			else
+			{
+				name = AppendString(name, ",");
+			}
+			tempName = TypeToName(type, shortForm, 0, scope);
+			name = AppendString(name, tempName);
+			ILFree(tempName);
+			++current;
+			--arity;
+		}
+		if(current > firstGeneric)
+		{
+			name = AppendString(name, ">");
+		}
+	}
+	return name;
+}
+
+static char *WithTypeToName(ILType *withType, int shortForm,
+							ILProgramItem *scope)
+{
+	ILType *mainType = ILTypeGetWithMain(withType);
+
+	if(ILType_IsClass(mainType) || ILType_IsValueType(mainType))
+	{
+		ILClass *classInfo = ILType_ToClass(mainType);
+		ILUInt32 first = 0;
+		char *typeName;
+
+		typeName = WithTypeToNameInner(classInfo, shortForm, scope, &first,
+									   withType);
+
+		if(!shortForm)
+		{
+			char *name = ILDupString(GetClassNamespace(classInfo));
+
+			name = AppendString(name, ".");
+			name = AppendString(name, typeName);
+			ILFree(typeName);
+			typeName = name;
+		}
+		return typeName;
+	}
+	return 0;
+}
+#endif /* IL_VERSION_MAJOR > 1 */
+
 /*
  * Match an image type against a name from an XML file.
  * Returns zero if the types do not match.
  */
-static int MatchType(ILType *type, const char *typeName)
+static int MatchType(ILType *type, const char *typeName,
+					 ILParameter *parameter, ILProgramItem *scope)
 {
-	char *name = TypeToName(type, 1);
+	char *name = TypeToName(type, 1, parameter, scope);
 	if(!strcmp(name, typeName))
 	{
 		ILFree(name);
@@ -319,7 +935,7 @@ static int MatchType(ILType *type, const char *typeName)
 	{
 		/* Try again with the long form of the name */
 		ILFree(name);
-		name = TypeToName(type, 0);
+		name = TypeToName(type, 0, parameter, scope);
 		if(!strcmp(name, typeName))
 		{
 			ILFree(name);
@@ -333,14 +949,26 @@ static int MatchType(ILType *type, const char *typeName)
 /*
  * Match a method parameter signature.
  */
-static int MatchSignature(ILType *signature, ILDocMember *member)
+static int MatchSignature(ILMethod *method, ILDocMember *member)
 {
 	ILDocParameter *param = member->parameters;
+	ILType *signature = ILMethod_Signature(method);
 	unsigned numParams = ILTypeNumParams(signature);
 	unsigned paramNum = 1;
 	while(param != 0 && paramNum <= numParams)
 	{
-		if(!MatchType(ILTypeGetParam(signature, paramNum), param->type))
+		ILParameter *parameter = 0;
+
+		while((parameter = ILMethodNextParam(method, parameter)) != 0)
+		{
+			if(ILParameterGetNum(parameter) == paramNum)
+			{
+				break;
+			}
+		}
+
+		if(!MatchType(ILTypeGetParam(signature, paramNum), param->type,
+					  parameter, ILToProgramItem(method)))
 		{
 			return 0;
 		}
@@ -355,7 +983,8 @@ static int MatchSignature(ILType *signature, ILDocMember *member)
 	   !strcmp(member->name, "op_Implicit"))
 	{
 		/* The return type is part of the signature of a conversion */
-		if(!MatchType(ILTypeGetReturn(signature), member->returnType))
+		if(!MatchType(ILTypeGetReturn(signature), member->returnType, 0,
+					  ILToProgramItem(method)))
 		{
 			return 0;
 		}
@@ -366,15 +995,27 @@ static int MatchSignature(ILType *signature, ILDocMember *member)
 /*
  * Match a property parameter signature.
  */
-static int MatchPropertySignature(ILType *signature,
+static int MatchPropertySignature(ILMethod *method,
 								  ILDocMember *member, int isSet)
 {
 	ILDocParameter *param = member->parameters;
+	ILType *signature = ILMethod_Signature(method);
 	unsigned numParams = ILTypeNumParams(signature);
 	unsigned paramNum = 1;
 	while(param != 0 && paramNum <= numParams)
 	{
-		if(!MatchType(ILTypeGetParam(signature, paramNum), param->type))
+		ILParameter *parameter = 0;
+
+		while((parameter = ILMethodNextParam(method, parameter)) != 0)
+		{
+			if(ILParameterGetNum(parameter) == paramNum)
+			{
+				break;
+			}
+		}
+
+		if(!MatchType(ILTypeGetParam(signature, paramNum), param->type,
+					  parameter, ILToProgramItem(method)))
 		{
 			return 0;
 		}
@@ -445,9 +1086,10 @@ static void PrintString(const char *str, FILE *stream)
 /*
  * Print the name of an image type.
  */
-static void PrintType(FILE *stream, ILType *type)
+static void PrintType(FILE *stream, ILType *type, ILParameter *parameter,
+					  ILProgramItem *scope)
 {
-	char *name = TypeToName(type, 0);
+	char *name = TypeToName(type, 0, parameter, scope);
 	PrintString(name, stream);
 	ILFree(name);
 }
@@ -526,11 +1168,16 @@ static void PrintName(FILE *stream, ILDocType *type, ILDocMember *member)
 		if(xmlOutput && !typeNameWritten)
 		{
 			fputs("\t<class name=\"", stream);
-			PrintString(type->fullName, stream);
+			PrintString(type->name, stream);
 			if(type->assembly)
 			{
 				fputs("\" assembly=\"", stream);
 				PrintString(type->assembly, stream);
+			}
+			fputs("\" namespace=\"", stream);
+			if(type->namespace)
+			{
+				PrintString(type->namespace->name, stream);
 			}
 			fputs("\">\n", stream);
 			typeNameWritten = 1;
@@ -679,11 +1326,16 @@ static void PrintName(FILE *stream, ILDocType *type, ILDocMember *member)
 			if(!typeNameWritten)
 			{
 				fputs("\t<class name=\"", stream);
-				PrintString(type->fullName, stream);
+				PrintString(type->name, stream);
 				if(type->assembly)
 				{
 					fputs("\" assembly=\"", stream);
 					PrintString(type->assembly, stream);
+				}
+				fputs("\" namespace=\"", stream);
+				if(type->namespace)
+				{
+					PrintString(type->namespace->name, stream);
 				}
 				fputs("\">\n", stream);
 				typeNameWritten = 1;
@@ -762,17 +1414,32 @@ static void PrintEndMember(FILE *stream, ILDocType *type, ILDocMember *member)
 /*
  * Print the parameter signature for a method from an IL image.
  */
-static void PrintILSignature(FILE *stream, ILType *signature,
-							 const char *memberName)
+static void PrintILSignature(FILE *stream, ILMember *member)
 {
+	ILType *signature = ILMember_Signature(member);
+	const char *memberName = ILMember_Name(member);
 	unsigned numParams = ILTypeNumParams(signature);
 	unsigned paramNum;
 	ILType *paramType;
 	putc('(', stream);
 	for(paramNum = 1; paramNum <= numParams; ++paramNum)
 	{
+		ILParameter *parameter = 0;
+		ILMethod *method = ILProgramItemToMethod(ILToProgramItem(member));
+
+		if(method)
+		{
+			while((parameter = ILMethodNextParam(method, parameter)) != 0)
+			{
+				if(ILParameterGetNum(parameter) == paramNum)
+				{
+					break;
+				}
+			}
+		}
+
 		paramType = ILTypeGetParam(signature, paramNum);
-		PrintType(stream, paramType);
+		PrintType(stream, paramType, parameter, ILToProgramItem(member));
 		if(paramNum != numParams)
 		{
 			fputs(", ", stream);
@@ -784,7 +1451,8 @@ static void PrintILSignature(FILE *stream, ILType *signature,
 	{
 		/* Report the return type too for conversion operators */
 		fputs(" : ", stream);
-		PrintType(stream, ILTypeGetReturn(signature));
+		PrintType(stream, ILTypeGetReturn(signature), 0,
+				  ILToProgramItem(member));
 	}
 }
 
@@ -809,8 +1477,7 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 						{
 							fputs("\t\t<ctor signature=\"", stream);
 							PrintString(type->fullName, stream);
-							PrintILSignature(stream, ILMember_Signature(member),
-											 ILMember_Name(member));
+							PrintILSignature(stream, member);
 							fputs("\">\n", stream);
 							memberNameWritten = 1;
 						}
@@ -818,8 +1485,7 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 					else
 					{
 						fputs(type->fullName, stream);
-						PrintILSignature(stream, ILMember_Signature(member),
-										 ILMember_Name(member));
+						PrintILSignature(stream, member);
 						fputs(" constructor ", stream);
 					}
 				}
@@ -837,12 +1503,12 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 							{
 								fputs("static ", stream);
 							}
-							PrintType(stream, ILTypeGetReturn
-								(ILMember_Signature(member)));
+							PrintType(stream,
+								ILTypeGetReturn(ILMember_Signature(member)),
+								0, ILToProgramItem(member));
 							putc(' ', stream);
 							PrintString(ILMember_Name(member), stream);
-							PrintILSignature(stream, ILMember_Signature(member),
-											 ILMember_Name(member));
+							PrintILSignature(stream, member);
 							fputs("\">\n", stream);
 							memberNameWritten = 1;
 						}
@@ -856,8 +1522,7 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 						fputs(type->fullName, stream);
 						fputs("::", stream);
 						fputs(ILMember_Name(member), stream);
-						PrintILSignature(stream, ILMember_Signature(member),
-										 ILMember_Name(member));
+						PrintILSignature(stream, member);
 						fputs(" method ", stream);
 					}
 				}
@@ -874,7 +1539,8 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 						fputs("\t\t<field name=\"", stream);
 						PrintString(ILMember_Name(member), stream);
 						fputs("\" type=\"", stream);
-						PrintType(stream, ILField_Type((ILField *)member));
+						PrintType(stream, ILField_Type((ILField *)member), 0,
+								  ILToProgramItem(ILMember_Owner(member)));
 						fputs("\">\n", stream);
 						memberNameWritten = 1;
 					}
@@ -899,8 +1565,9 @@ static int PrintILName(FILE *stream, ILDocType *type, ILMember *member)
 						fputs("\t\t<property name=\"", stream);
 						PrintString(ILMember_Name(member), stream);
 						fputs("\" type=\"", stream);
-						PrintType(stream, ILTypeGetReturn
-							(ILMember_Signature(member)));
+						PrintType(stream, 
+							ILTypeGetReturn(ILMember_Signature(member)),
+							0, ILToProgramItem(ILMember_Owner(member)));
 						fputs("\">\n", stream);
 						memberNameWritten = 1;
 					}
@@ -1014,20 +1681,6 @@ static void PrintILEndMember(FILE *stream, ILDocType *type, ILMember *member)
 }
 
 /*
- * Append two strings.
- */
-static char *AppendString(char *str1, const char *str2)
-{
-	str1 = (char *)ILRealloc(str1, strlen(str1) + strlen(str2) + 1);
-	if(!str1)
-	{
-		ILDocOutOfMemory(0);
-	}
-	strcat(str1, str2);
-	return str1;
-}
-
-/*
  * Attribute usage flags.
  */
 #define	AttrUsage_Assembly		0x0001
@@ -1044,7 +1697,12 @@ static char *AppendString(char *str1, const char *str2)
 #define	AttrUsage_Parameter		0x0800
 #define	AttrUsage_Delegate		0x1000
 #define	AttrUsage_ReturnValue	0x2000
+#if IL_VERSION_MAJOR > 1
+#define	AttrUsage_GenericParameter	0x4000
+#define	AttrUsage_All			0x7FFF
+#else /* IL_VERSION_MAJOR == 1 */
 #define	AttrUsage_All			0x3FFF
+#endif /* IL_VERSION_MAJOR == 1 */
 #define	AttrUsage_ClassMembers	0x17FC
 
 /*
@@ -1090,6 +1748,9 @@ static char *AppendAttrUsage(char *name, ILInt32 targets)
 	AttrUsage(AttrUsage_Parameter, "Parameter");
 	AttrUsage(AttrUsage_Delegate, "Delegate");
 	AttrUsage(AttrUsage_ReturnValue, "ReturnValue");
+#if IL_VERSION_MAJOR > 1
+	AttrUsage(AttrUsage_GenericParameter, "GenericParameter");
+#endif /* IL_VERSION_MAJOR > 1 */
 	return name;
 }
 
@@ -1543,7 +2204,7 @@ static int ValidateConstructor(FILE *stream, ILImage *image,
 				 IL_META_MEMBERKIND_METHOD)) != 0)
 	{
 		if(ILMethod_IsConstructor(method) &&
-		   MatchSignature(ILMethod_Signature(method), member))
+		   MatchSignature(method, member))
 		{
 			break;
 		}
@@ -1618,14 +2279,27 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 				(classInfo, (ILMember *)method,
 				 IL_META_MEMBERKIND_METHOD)) != 0)
 	{
-		if(!strcmp(ILMethod_Name(method), member->name) &&
-		   MatchSignature(ILMethod_Signature(method), member))
+	#if IL_VERSION_MAJOR > 1
+		char *name = ILDupString(ILMethod_Name(method));
+		ILUInt32 firstGenParam = 0;
+
+		name = AppendGenericParams(name, ILToProgramItem(method),
+								   &firstGenParam);
+	#else /* IL_VERSION_MAJOR == 1 */
+		const char *name = ILMethod_Name(method);
+	#endif /* IL_VERSION_MAJOR == 1 */
+
+		if(!strcmp(name, member->name) &&
+		   MatchSignature(method, member))
 		{
 			/* Check the static vs instance state */
 			if(ILMethod_IsStatic(method))
 			{
 				if((member->memberAttrs & IL_META_METHODDEF_STATIC) != 0)
 				{
+				#if IL_VERSION_MAJOR > 1
+					ILFree(name);
+				#endif /* IL_VERSION_MAJOR > 1 */
 					break;
 				}
 			}
@@ -1633,10 +2307,16 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 			{
 				if((member->memberAttrs & IL_META_METHODDEF_STATIC) == 0)
 				{
+				#if IL_VERSION_MAJOR > 1
+					ILFree(name);
+				#endif /* IL_VERSION_MAJOR > 1 */
 					break;
 				}
 			}
 		}
+	#if IL_VERSION_MAJOR > 1
+		ILFree(name);
+	#endif /* IL_VERSION_MAJOR > 1 */
 	}
 	if(!method)
 	{
@@ -1682,7 +2362,7 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 
 	/* Match the return type */
 	if(!MatchType(ILTypeGetReturn(ILMethod_Signature(method)),
-				  member->returnType))
+				  member->returnType, 0, ILToProgramItem(method)))
 	{
 		PrintName(stream, type, member);
 		if(xmlOutput)
@@ -1692,7 +2372,8 @@ static int ValidateMethod(FILE *stream, ILImage *image,
 		PrintString("should have return type `", stream);
 		PrintString(member->returnType, stream);
 		PrintString("', but has `", stream);
-		PrintType(stream, ILTypeGetReturn(ILMethod_Signature(method)));
+		PrintType(stream, ILTypeGetReturn(ILMethod_Signature(method)),
+				  0, ILToProgramItem(method));
 		PrintString("' instead", stream);
 		if(xmlOutput)
 		{
@@ -1778,7 +2459,8 @@ static int ValidateField(FILE *stream, ILImage *image,
 	}
 
 	/* Match the field type */
-	if(!MatchType(ILField_Type(field), member->returnType))
+	if(!MatchType(ILField_Type(field), member->returnType, 0,
+				  ILToProgramItem(ILField_Owner(field))))
 	{
 		PrintName(stream, type, member);
 		if(xmlOutput)
@@ -1788,7 +2470,8 @@ static int ValidateField(FILE *stream, ILImage *image,
 		PrintString("should have type `", stream);
 		PrintString(member->returnType, stream);
 		PrintString("', but has `", stream);
-		PrintType(stream, ILField_Type(field));
+		PrintType(stream, ILField_Type(field), 0,
+				  ILToProgramItem(ILField_Owner(field)));
 		PrintString("' instead", stream);
 		if(xmlOutput)
 		{
@@ -1869,7 +2552,7 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 		}
 
 		/* Match the property signature */
-		if(MatchPropertySignature(ILMethod_Signature(accessor), member, isSet))
+		if(MatchPropertySignature(accessor, member, isSet))
 		{
 			break;
 		}
@@ -1917,7 +2600,8 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 	}
 
 	/* Match the property type */
-	if(!MatchType(propertyType, member->returnType))
+	if(!MatchType(propertyType, member->returnType, 0,
+				  ILToProgramItem(ILProperty_Owner(property))))
 	{
 		PrintName(stream, type, member);
 		if(xmlOutput)
@@ -1927,7 +2611,8 @@ static int ValidateProperty(FILE *stream, ILImage *image,
 		PrintString("should have type `", stream);
 		PrintString(member->returnType, stream);
 		PrintString("', but has `", stream);
-		PrintType(stream, propertyType);
+		PrintType(stream, propertyType, 0,
+				  ILToProgramItem(ILProperty_Owner(property)));
 		PrintString("' instead", stream);
 		if(xmlOutput)
 		{
@@ -2242,7 +2927,7 @@ static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 	ILDocMember *member;
 
 	/* Find the type and the image in which is resides */
-	classInfo = ILClassLookupGlobal(context, type->name, type->namespace->name);
+	classInfo = ResolveClass(context, type->name, type->namespace->name);
 	if(!classInfo)
 	{
 		/* Report that the class is missing */

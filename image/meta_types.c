@@ -198,6 +198,18 @@ int ILTypeAddLocal(ILContext *context, ILType *locals, ILType *type)
 		num -= 4;
 	}
 
+	/* Try to convert the type to a primitive type */
+	/* only value types are primitive types in dotGNU */
+	if(ILType_IsValueType(type))
+	{
+		ILType *tempType = ILClassToPrimitiveType(ILType_ToValueType(type));
+
+		if(tempType)
+		{
+			type = tempType;
+		}
+	}
+
 	/* Will it fit in the current block? */
 	if(locals)
 	{
@@ -258,6 +270,20 @@ ILType *ILTypeCreateMethod(ILContext *context, ILType *returnType)
 	{
 		type->kind__ = IL_TYPE_COMPLEX_METHOD;
 		type->num__ = 0;
+
+		/* Try to convert the return type to a primitive type */
+		/* only value types are primitive types in dotGNU */
+		if(ILType_IsValueType(returnType))
+		{
+			ILType *tempType;
+
+			tempType = ILClassToPrimitiveType(ILType_ToValueType(returnType));
+			if(tempType)
+			{
+				returnType = tempType;
+			}
+		}
+
 		type->un.method__.retType__ = returnType;
 	}
 	return type;
@@ -270,6 +296,20 @@ ILType *ILTypeCreateProperty(ILContext *context, ILType *propType)
 	{
 		type->kind__ = IL_TYPE_COMPLEX_PROPERTY;
 		type->num__ = 0;
+
+		/* Try to convert the property type to a primitive type */
+		/* only value types are primitive types in dotGNU */
+		if(ILType_IsValueType(propType))
+		{
+			ILType *tempType;
+
+			tempType = ILClassToPrimitiveType(ILType_ToValueType(propType));
+			if(tempType)
+			{
+				propType = tempType;
+			}
+		}
+
 		type->un.method__.retType__ = propType;
 	}
 	return type;
@@ -280,6 +320,19 @@ int ILTypeAddParam(ILContext *context, ILType *method, ILType *paramType)
 	unsigned short num;
 	ILType **end;
 	ILType *start;
+
+	/* Try to convert the parameter type to a primitive type */
+	/* only value types are primitive types in dotGNU */
+	if(ILType_IsValueType(paramType))
+	{
+		ILType *tempType;
+
+		tempType = ILClassToPrimitiveType(ILType_ToValueType(paramType));
+		if(tempType)
+		{
+			paramType = tempType;
+		}
+	}
 
 	/* Put the parameter in the method block if it will fit */
 	if(method->num__ < 3)
@@ -396,6 +449,19 @@ void ILTypeSetReturn(ILType *type, ILType *retType)
 {
 	if(ILType_IsMethod(type) || ILType_IsProperty(type))
 	{
+		/* Try to convert the return type to a primitive type */
+		/* only value types are primitive types in dotGNU */
+		if(ILType_IsValueType(retType))
+		{
+			ILType *tempType;
+
+			tempType = ILClassToPrimitiveType(ILType_ToValueType(retType));
+			if(tempType)
+			{
+				retType = tempType;
+			}
+		}
+
 		type->un.method__.retType__ = retType;
 	}
 }

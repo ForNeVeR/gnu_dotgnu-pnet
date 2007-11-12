@@ -751,6 +751,12 @@ int ILClassIsComplete(ILClass *info);
 int ILClassIsValueType(ILClass *info);
 
 /*
+ * Convert a class information block into a primitive type.
+ * If the class doesn't correspond to a primitive type 0 is returned.
+ */
+ILType *ILClassToPrimitiveType(ILClass *info);
+
+/*
  * Convert a class information block into a type, with
  * the correct class or value type qualifiers.  If the
  * class is one of the builtin value types, it will be

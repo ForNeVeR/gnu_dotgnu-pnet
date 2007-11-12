@@ -25,8 +25,15 @@ namespace System.Runtime.CompilerServices
 #if CONFIG_EXTENDED_NUMERICS
 
 [CLSCompliant(false)]
+#if CONFIG_FRAMEWORK_2_0
+[AttributeUsage(AttributeTargets.Field |
+				AttributeTargets.Parameter,
+				AllowMultiple=false,
+				Inherited=false)]
+#else
 [AttributeUsage(AttributeTargets.Field |
 				AttributeTargets.Parameter, Inherited=false)]
+#endif
 public sealed class DecimalConstantAttribute : Attribute
 {
 

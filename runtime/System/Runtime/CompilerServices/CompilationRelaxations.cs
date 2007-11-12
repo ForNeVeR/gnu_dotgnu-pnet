@@ -22,15 +22,24 @@
 namespace System.Runtime.CompilerServices
 {
 
-#if CONFIG_FRAMEWORK_1_2
+#if CONFIG_FRAMEWORK_2_0
 
 [Flags]
 public enum CompilationRelaxations
 {
-	NoStringInterning = 0x0008
+	StringInterning					= 0x0004,
+	NoStringInterning				= 0x0008,
+	StrictNullReferenceException	= 0x0010,
+	RelaxedNullReferenceException	= 0x0020,
+	StrictInvalidCastException		= 0x0040,
+	RelaxedInvalidCastException		= 0x0080,
+	StrictArrayExceptions			= 0x0100,
+	RelaxedArrayExceptions			= 0x0200,
+	StrictOverflowExceptions		= 0x0400,
+	RelaxedOverflowExceptions		= 0x0800
 
 }; // enum CompilationRelaxations
 
-#endif // CONFIG_FRAMEWORK_1_2
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Runtime.CompilerServices

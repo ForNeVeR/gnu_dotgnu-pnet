@@ -1,8 +1,8 @@
 /*
- * ThreadStaticAttribute.cs - Implementation of the
- *			"System.ThreadStaticAttribute" class.
+ * GenericParameterAttributes.cs - Implementation of the
+ *			"System.Reflection.GenericParameterAttributes" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,26 +19,25 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System
+namespace System.Reflection
 {
 
-// This class is not ECMA-compatible strictly speaking, but it is
-// needed to support thread-static variables in the ECMA engine.
-
-#if !ECMA_COMPAT
-[Serializable]
-#endif
 #if CONFIG_FRAMEWORK_2_0
-[AttributeUsage(AttributeTargets.Field, AllowMultiple=false, Inherited=false)]
-public sealed class ThreadStaticAttribute : Attribute
-#else
-[AttributeUsage(AttributeTargets.Field, Inherited=false)]
-public class ThreadStaticAttribute : Attribute
-#endif
+
+[Flags]
+public enum GenericParameterAttributes
 {
-	// Constructor.
-	public ThreadStaticAttribute() {}
+	None							= 0x0000,
+	Covariant						= 0x0001,
+	Contravariant					= 0x0002,
+	VarianceMask					= 0x0003,
+	ReferenceTypeConstraint			= 0x0004,
+	NotNullableValueTypeConstraint	= 0x0008,
+	DefaultConstructorConstraint	= 0x0010,
+	SpecialConstraintMask			= 0x001C
 
-}; // class ThreadStaticAttribute
+}; // class GenericParameterAttributes
 
-}; // namespace System
+#endif // CONFIG_FRAMEWORK_2_0
+
+}; // namespace System.Reflection

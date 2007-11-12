@@ -24,7 +24,13 @@ namespace System.Reflection
 
 [AttributeUsage(AttributeTargets.Class |
 				AttributeTargets.Struct |
+#if CONFIG_FRAMEWORK_2_0
+				AttributeTargets.Interface,
+				AllowMultiple=false,
+				Inherited=true)]
+#else
 				AttributeTargets.Interface)]
+#endif
 public sealed class DefaultMemberAttribute : Attribute
 {
 

@@ -22,7 +22,11 @@
 namespace System.Diagnostics
 {
 
+#if CONFIG_FRAMEWORK_2_0
+[AttributeUsage(AttributeTargets.Method, AllowMultiple=true, Inherited=true)]
+#else
 [AttributeUsage(AttributeTargets.Method, AllowMultiple=true)]
+#endif
 public sealed class ConditionalAttribute : Attribute
 {
 	// Internal state.

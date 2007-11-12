@@ -22,7 +22,11 @@
 namespace System
 {
 
+#if CONFIG_FRAMEWORK_2_0
+[AttributeUsage(AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
+#else
 [AttributeUsage(AttributeTargets.Class, Inherited=true)]
+#endif
 public sealed class AttributeUsageAttribute : Attribute
 {
 	// Internal state.

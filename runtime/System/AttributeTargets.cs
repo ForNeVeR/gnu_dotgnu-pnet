@@ -38,7 +38,7 @@ public enum AttributeTargets
 	Parameter		 = 0x0800,
 	Delegate		 = 0x1000,
 	ReturnValue		 = 0x2000,
-#if CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0
 	GenericParameter = 0x4000,
 	All				 = 0x7FFF
 #else

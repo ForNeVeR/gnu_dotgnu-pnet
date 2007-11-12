@@ -24,7 +24,12 @@ namespace System.Runtime.InteropServices
 
 #if CONFIG_RUNTIME_INFRA
 
+#if CONFIG_FRAMEWORK_2_0
+[AttributeUsage(AttributeTargets.Parameter, AllowMultiple=false,
+				Inherited=false)]
+#else
 [AttributeUsage(AttributeTargets.Parameter, Inherited=false)]
+#endif
 public sealed class OutAttribute : Attribute
 {
 

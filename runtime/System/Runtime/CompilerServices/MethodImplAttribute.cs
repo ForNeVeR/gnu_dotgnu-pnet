@@ -25,6 +25,9 @@ namespace System.Runtime.CompilerServices
 using System;
 
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor,
+#if CONFIG_FRAMEWORK_2_0
+				AllowMultiple=false,
+#endif
 				Inherited=false)]
 public sealed class MethodImplAttribute : Attribute
 {

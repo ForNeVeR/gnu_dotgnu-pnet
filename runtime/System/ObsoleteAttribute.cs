@@ -32,6 +32,9 @@ namespace System
 				AttributeTargets.Event |
 				AttributeTargets.Interface |
 				AttributeTargets.Delegate,
+#if CONFIG_FRAMEWORK_2_0
+				AllowMultiple=false,
+#endif
 				Inherited=false)]
 public sealed class ObsoleteAttribute : Attribute
 {

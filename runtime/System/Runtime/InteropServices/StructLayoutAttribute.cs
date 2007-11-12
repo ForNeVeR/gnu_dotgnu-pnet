@@ -25,6 +25,9 @@ namespace System.Runtime.InteropServices
 #if CONFIG_RUNTIME_INFRA
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct,
+#if CONFIG_FRAMEWORK_2_0
+				AllowMultiple=false,
+#endif
 				Inherited=false)]
 public sealed class StructLayoutAttribute : Attribute
 {

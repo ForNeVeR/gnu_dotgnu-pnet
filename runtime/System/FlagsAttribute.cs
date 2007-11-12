@@ -22,7 +22,11 @@
 namespace System
 {
 
+#if CONFIG_FRAMEWORK_2_0
+[AttributeUsage(AttributeTargets.Enum, AllowMultiple=false, Inherited=false)]
+#else
 [AttributeUsage(AttributeTargets.Enum, Inherited=false)]
+#endif
 public class FlagsAttribute : Attribute
 {
 }; // class FlagsAttribute

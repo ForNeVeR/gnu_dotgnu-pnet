@@ -1,3 +1,50 @@
+2007-11-12  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/AttributeTargets.cs: Replace the conditional
+	CONFIG_GENERICS which wraps the GenericParameter element by
+	CONFIG_FRAMEWORK_2_0.
+
+	* runtime/System/AttributeUsageAttribute.cs,
+	runtime/System/FlagsAttribute.cs, runtime/System/ObsoleteAttribute.cs,
+	runtime/System/Runtime/CompilerServices/DecimalConstantAttribute.cs,
+	runtime/System/Runtime/CompilerServices/IndexerName.cs,
+	runtime/System/Runtime/CompilerServices/MethodImplAttribute.cs,
+	runtime/System/Runtime/CompilerServices/FieldOffsetAttribute.cs,
+	runtime/System/Runtime/InteropServices/InAttribute.cs,
+	runtime/System/Runtime/InteropServices/MarshalAsAttribute.cs,
+	runtime/System/Runtime/InteropServices/OutAttribute.cs,
+	runtime/System/Runtime/InteropServices/StructLayoutAttribute.cs:
+	Add AllowMultiple=false to the AttributeUsage attribute for 2.0.
+
+	* runtime/System/ThreadStaticAttribute.cs: Add AllowMultiple=false to the
+	AttributeUsage attribute for 2.0. Make the class sealed for 2.0.
+
+	* runtime/System/Diagnostics/ConditionalAttribute.cs: Add Inherited=true
+	to the AttributeUsage attribute for 2.0.
+
+	* runtime/System/Reflection/DefaultMemberAttribute.cs: Add
+	AllowMultiple=false and Inherited=true to the AttributeUsage attribute
+	for 2.0.
+
+	* runtime/System/Runtime/CompilerServices/CompilationRelaxations.cs:
+	Replace the conditional CONFIG_FRAMEWORK_1_2 by CONFIG_FRAMEWORK_2_0 and
+	add the missing 2.0 members.
+
+	* runtime/System/Runtime/CompilerServices/CompilationRelaxationsAttribute.cs:
+	Change the conditional !ECMA_COMPAT to CONFIG_FRAMEWORK_2_0, fix the
+	attrubute usage attribute according to ECMA 4 specs and add the check for
+	invalid attribute flag combinations. Remove the CONFIG_FRAMEWORK_1_2
+
+	* runtime/System/Action_1.cs, runtime/System/Comparision_1.cs,
+	runtime/System/Converter_2.cs, runtime/System/IComparable.cs,
+	runtime/System/IEquatable_1.cs, runtime/System/Predicate_1.cs: Add generic
+	delegates and interfaces for 2.0.
+
+	* runtime/System/Reflection/GenericParameterAttributes.cs: Add the
+	reneric parameter attributes for 2.0. 
+
+	* HACKING: Add a note about file naming conventions of generic classes.
+
 2007-10-22  Radek Polak  <psonek2@seznam.cz>
 
 	* System/Net/Sockets/Socket.cs: Allow recieve and send timeout socket

@@ -334,6 +334,9 @@ F. Some classes need private helper methods and classes in their
 
 G. One file, one class.  C# doesn't strictly require this, but it makes
    it a lot easier to locate classes within the source tree.
+   For generic classes the filename has to be the classname followed by
+   an underscore and the generic arity of the class.
+   Example: System.IComparable<T> is in System/IComparable_1.cs
 
 H. Namespaces are mapped to directories as follows: "A.B.C" is mapped
    to the directory "A/B/C".

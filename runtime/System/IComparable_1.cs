@@ -1,8 +1,7 @@
 /*
- * ThreadStaticAttribute.cs - Implementation of the
- *			"System.ThreadStaticAttribute" class.
+ * IComparable_1.cs - Implementation of the "System.IComparable<T>" interface.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2007 Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,23 +21,16 @@
 namespace System
 {
 
-// This class is not ECMA-compatible strictly speaking, but it is
-// needed to support thread-static variables in the ECMA engine.
+#if CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
-#if !ECMA_COMPAT
-[Serializable]
-#endif
-#if CONFIG_FRAMEWORK_2_0
-[AttributeUsage(AttributeTargets.Field, AllowMultiple=false, Inherited=false)]
-public sealed class ThreadStaticAttribute : Attribute
-#else
-[AttributeUsage(AttributeTargets.Field, Inherited=false)]
-public class ThreadStaticAttribute : Attribute
-#endif
+[CLSCompliant(true)]
+public interface IComparable<T>
 {
-	// Constructor.
-	public ThreadStaticAttribute() {}
 
-}; // class ThreadStaticAttribute
+	int CompareTo(T obj);
+
+}; // generic version of the interface IComparable
+
+#endif // CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
 }; // namespace System

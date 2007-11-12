@@ -27,6 +27,9 @@ namespace System.Runtime.InteropServices
 [AttributeUsage(AttributeTargets.Field |
 				AttributeTargets.Parameter |
 				AttributeTargets.ReturnValue,
+#if CONFIG_FRAMEWORK_2_0
+				AllowMultiple=false,
+#endif
 				Inherited=false)]
 public sealed class MarshalAsAttribute : Attribute
 {

@@ -1,3 +1,6 @@
+2007-11-14  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* System.Drawing/Color.cs: fixed GetHashCode for known colors.
+
 2007-11-12  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/AttributeTargets.cs: Replace the conditional

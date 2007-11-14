@@ -277,6 +277,10 @@ public struct Color
 	// Get the hash code for this object.
 	public override int GetHashCode()
 			{
+				if(!resolved)
+				{
+					Resolve();
+				}
 				return (int)value;
 			}
 

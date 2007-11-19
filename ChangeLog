@@ -1,3 +1,8 @@
+2007-11-19  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/System/Private/DebuggerHelper.cs: Fix watching expressions
+	that contain '_' char.
+
 2007-11-14  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 	* System.Drawing/Color.cs: fixed GetHashCode for known colors.
 

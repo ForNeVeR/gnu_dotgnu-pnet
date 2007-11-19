@@ -465,7 +465,8 @@ internal sealed class DebuggerHelper
 					StringBuilder sb = new StringBuilder();
 					for(; index < expression.Length; index++)
 					{
-						if(Char.IsLetterOrDigit(expression, index))
+						if(Char.IsLetterOrDigit(expression, index) ||
+							expression[index] == '_')
 						{
 							sb.Append(expression[index]);
 						}

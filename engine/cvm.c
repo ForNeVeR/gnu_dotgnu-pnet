@@ -26,6 +26,9 @@
 #if defined(HAVE_LIBFFI)
 #include "ffi.h"
 #endif
+#ifdef IL_DEBUGGER
+#include "debugger.h"
+#endif
 
 #ifdef IL_USE_CVM
 
@@ -705,7 +708,10 @@ int _ILCVMInterpreter(ILExecThread *thread)
 			{
 			#ifdef IL_CONFIG_DEBUG_LINES
 				/* Check the breakpoint against the watch list */
-				if(_ILIsBreak(thread, method))
+				if(_ILIsBreak(thread, method)
+#ifdef IL_DEBUGGER
+				 && !ILDebuggerIsThreadUnbreakable(thread))
+#endif
 				{
 					COPY_STATE_TO_THREAD();
 					_ILBreak(thread, (int)CVM_ARG_BREAK_SUBCODE);

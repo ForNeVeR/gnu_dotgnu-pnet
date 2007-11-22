@@ -1,3 +1,8 @@
+2007-11-22  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/cvm.c: Break in debugger only if thread is breakable. This is needed
+	for displaying watches from DebuggerHelper class.
+
 2007-11-12  Klaus Treichel  <ktreichel@web.de>
 
 	* csdoc/doc_load.c: Add support for parsing matadata attributes consisting

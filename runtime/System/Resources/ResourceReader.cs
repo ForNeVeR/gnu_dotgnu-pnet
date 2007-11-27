@@ -125,31 +125,12 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 	// Read a integer value byte by byte.  Returns -1 if invalid.
 	private static int ReadInt(Stream stream)
 			{
-				int value, byteval;
-				byteval = stream.ReadByte();
-				if(byteval == -1)
+				byte [] data = new byte[4];
+				if(stream.Read(data, 0, 4) != 4)
 				{
 					return -1;
 				}
-				value = byteval;
-				byteval = stream.ReadByte();
-				if(byteval == -1)
-				{
-					return -1;
-				}
-				value |= (byteval << 8);
-				byteval = stream.ReadByte();
-				if(byteval == -1)
-				{
-					return -1;
-				}
-				value |= (byteval << 16);
-				byteval = stream.ReadByte();
-				if(byteval == -1)
-				{
-					return -1;
-				}
-				value |= (byteval << 24);
+				int value = data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24);
 				return value;
 			}
 
@@ -212,31 +193,12 @@ sealed class ResourceReader : IEnumerable, IDisposable, IResourceReader
 				{
 					return null;
 				}
-				length /= 2;
-				if(length == 0)
+				byte[] buf = new byte [length];
+				if(stream.Read(buf, 0, length) != length)
 				{
-					return String.Empty;
+					return null;
 				}
-				StringBuilder builder = new StringBuilder(length);
-				int ch, byteval;
-				while(length > 0)
-				{
-					byteval = stream.ReadByte();
-					if(byteval == -1)
-					{
-						return null;
-					}
-					ch = byteval;
-					byteval = stream.ReadByte();
-					if(byteval == -1)
-					{
-						return null;
-					}
-					ch |= (byteval << 8);
-					builder.Append((char)ch);
-					--length;
-				}
-				return builder.ToString();
+				return Encoding.Unicode.GetString(buf, 0, length);
 			}
 
 	// Convert a string name into a type.

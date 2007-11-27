@@ -1,3 +1,11 @@
+2007-11-27  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* runtime/System/Resources/ResourceManager.cs: avoid calling the same 
+	methods twice.
+	* runtime/System/Resources/ResourceReader.cs: do some speedups reading 
+	resources.
+	* runtime/System/Threading/Timer.cs: fixed Timer bug with arguments of 
+	TimeSpan (thanks to Weaselweb).
+
 2007-11-19  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/Private/DebuggerHelper.cs: Fix watching expressions

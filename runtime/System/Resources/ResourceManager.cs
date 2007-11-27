@@ -229,9 +229,10 @@ class ResourceManager
 											(culture, true, true);
 						if(set != null)
 						{
-							if(set.GetObject(name) != null)
+							Object ret = set.GetObject(name);
+							if(ret != null)
 							{
-								return set.GetObject(name);
+								return ret;
 							}
 						}
 						culture = culture.Parent;
@@ -283,9 +284,10 @@ class ResourceManager
 							(culture, true, true);
 						if(set != null)
 						{
-							if(set.GetString(name) != null)
+							String ret = set.GetString(name);
+							if(ret != null)
 							{
-								return set.GetString(name);
+								return ret;
 							}
 						}
 						if(culture.Equals(CultureInfo.InvariantCulture))

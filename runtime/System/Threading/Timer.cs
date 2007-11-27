@@ -172,7 +172,7 @@ namespace System.Threading
 
 		public bool Change(TimeSpan dueTime, TimeSpan period)
 		{
-			return Change(dueTime.Milliseconds, period.Milliseconds);
+			return Change((long)dueTime.TotalMilliseconds, (long)period.TotalMilliseconds);
 		}
 
 	#if !ECMA_COMPAT

@@ -454,7 +454,7 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 	haveCounts = 0;
 	temp = list;
 #ifdef ENHANCED_PROFILER
-	printf ("   Count    Total  Average\n             time     time\n");
+	printf ("Count\tTotal time\tAverage time\tMethod\n");
 #endif
 	while((method = *temp++) != 0)
 	{
@@ -463,10 +463,10 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 			continue;
 		}
 #ifdef ENHANCED_PROFILER
-		printf("%8lu %8lu %8lu   ", (unsigned long)(method->count),
+		printf("%lu\t%lu\t%lu\t", (unsigned long)(method->count),
 			(unsigned long)(method->time), (unsigned long)(method->time) / (unsigned long)(method->count));
 #else
- 		printf("%8lu    ", (unsigned long)(method->count));
+ 		printf("%lu\t", (unsigned long)(method->count));
 #endif
 		ILDumpMethodType(stdout, ILProgramItem_Image(method),
 						 ILMethod_Signature(method), 0,

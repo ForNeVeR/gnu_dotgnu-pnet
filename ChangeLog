@@ -1,3 +1,7 @@
+2007-11-27  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* engine/cvmc.c, engine/jitc.c: do some better formatting for profiling 
+	output.
+
 2007-11-22  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/cvm.c: Break in debugger only if thread is breakable. This is needed

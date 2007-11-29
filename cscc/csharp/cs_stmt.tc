@@ -1932,6 +1932,10 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 			continue;
 		}
 
+		/* Recreate the value with the real type instead of using the type
+		   of the expression */
+		CSSemSetValueKind(value, CSSemGetKind(value), type);
+
 		/* Guard the node from re-evaluation */
 		decl->initializer=ILNode_SemGuard_create(decl->initializer,value);
 		data = ILScopeLookup(info->currentScope, name, 0);

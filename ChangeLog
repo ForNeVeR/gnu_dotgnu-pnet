@@ -1,3 +1,9 @@
+2007-11-29  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_stmt.tc: Attach the type of the constant to the value
+	in the SemGuard node instead of the type of the constant's expression
+	during semantic analysis for ILNode_LocalConstDeclaration.
+
 2007-11-29  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/cvm.c: Fix building without debugger (thanks to Weaselweb).

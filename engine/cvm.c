@@ -710,8 +710,9 @@ int _ILCVMInterpreter(ILExecThread *thread)
 				/* Check the breakpoint against the watch list */
 				if(_ILIsBreak(thread, method)
 #ifdef IL_DEBUGGER
-				 && !ILDebuggerIsThreadUnbreakable(thread))
+				 && !ILDebuggerIsThreadUnbreakable(thread)
 #endif
+				)
 				{
 					COPY_STATE_TO_THREAD();
 					_ILBreak(thread, (int)CVM_ARG_BREAK_SUBCODE);

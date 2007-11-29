@@ -1,3 +1,7 @@
+2007-11-29  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/cvm.c: Fix building without debugger (thanks to Weaselweb).
+
 2007-11-27  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 	* engine/cvmc.c, engine/jitc.c: do some better formatting for profiling 
 	output.

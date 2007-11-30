@@ -1,3 +1,29 @@
+2007-11-30  Klaus Treichel  <ktreichel@web.de>
+
+	* libffi/ChangeLog, libffi/Makefile.am, libffi/README,
+	libffi/configure.ac, libffi/include/Makefile.am, libffi/include/ffi.h.in,
+	libffi/include/ffi_common.h, libffi/src/debug.c,
+	libffi/src/java_raw_api.c, libffi/src/prep_cif.c, libffi/src/raw_api.c,
+	libffi/src/types.c, libffi/src/alpha/ffi.c, libffi/src/alpha/ffitarget.h,
+	libffi/src/alpha/osf.S, libffi/src/arm/ffi.c, libffi/src/arm/ffitarget.h,
+	libffi/src/arm/sysv.S, libffi/src/cris/ffi.c, libffi/src/frv/eabi.S,
+	libffi/src/frv/ffi.c, libffi/src/ia64/ffi.c, libffi/src/m32r/ffi.c,
+	libffi/src/m68k/ffi.c, libffi/src/m68k/ffitarget.h, libffi/src/m68k/sysv.S,
+	libffi/src/mips/ffi.c, libffi/src/mips/ffitarget.h, libffi/src/mips/n32.S,
+	libffi/src/mips/o32.S, libffi/src/pa/ffi.c, libffi/src/pa/ffitarget.h,
+	libffi/src/pa/linux.S, libffi/src/powerpc/ffi.c,
+	libffi/src/powerpc/ffi_darwin.c, libffi/src/powerpc/ffitarget.h,
+	libffi/src/powerpc/linux64.S, libffi/src/powerpc/ppc_closure.S,
+	libffi/src/powerpc/sysv.S, libffi/src/s390/ffi.c, libffi/src/sh/ffi.c,
+	libffi/src/sh/sysv.S, libffi/src/sh64/ffi.c, libffi/src/sh64/sysv.S,
+	libffi/src/sparc/ffi.c, libffi/src/x86/ffi.c, libffi/src/x86/ffi64.c,
+	libffi/src/x86/ffitarget.h, libffi/src/x86/sysv.S: Update libffi
+
+	* libffi/src/closures.c, libffi/src/dlmalloc.c, libffi/src/pa/hpux32.S,
+	libffi/src/x86/darwin.S, libffi/src/x86/darwin64.S: Add new libffi files.
+
+	* libffi/src/ffitest.c: Delete obsolete libffi file.
+
 2007-11-29  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_stmt.tc: Attach the type of the constant to the value

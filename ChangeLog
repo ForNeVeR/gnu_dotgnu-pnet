@@ -1,3 +1,7 @@
+2007-11-30  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* System.Windows.Forms/ScrollableControl.cs: fixed autoscrolling, 
+	memory leaks, exception when updaing scrollbars if reordering handles.
+
 2007-11-27  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 	* runtime/System/Resources/ResourceManager.cs: avoid calling the same 
 	methods twice.

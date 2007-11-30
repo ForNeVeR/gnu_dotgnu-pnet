@@ -83,6 +83,8 @@ public class ScrollableControl : Control
 					}
 					else
 					{
+						// set position to initial state
+						autoScrollPosition=new Point(0,0);	
 						DestroyScrollBars();
 					}
 				}
@@ -268,12 +270,10 @@ public class ScrollableControl : Control
 					{
 						vScrollBar.LargeChange = DisplayRectangle.Height;
 						vScrollBar.SmallChange = (DisplayRectangle.Height + 9 )/ 10;
-						vScrollBar.Value = -(autoScrollPosition.Y);
-					/* note: I don't exactly remember how I got this , but
-					* it seemed to work sometime near 8 Pm ... so I left it
-					* in */
+						// set Maximum before setting the value, or we get an exception
 						vScrollBar.Maximum = ScrollArea.Height - 1;
-						vScrollBar.Visible = vscroll;					
+						vScrollBar.Value = -(autoScrollPosition.Y);
+						vScrollBar.Visible = vscroll;
 					}	
 				}
 
@@ -287,8 +287,9 @@ public class ScrollableControl : Control
 					{
 						hScrollBar.LargeChange = DisplayRectangle.Width;			
 						hScrollBar.SmallChange = (DisplayRectangle.Width + 9) / 10;
-						hScrollBar.Value = -(autoScrollPosition.X);
+						// set Maximum before setting the value, or we get an exception
 						hScrollBar.Maximum = ScrollArea.Width - 1;
+						hScrollBar.Value = -(autoScrollPosition.X);
 						hScrollBar.Visible = hscroll;
 					}
 				}
@@ -557,6 +558,8 @@ public class ScrollableControl : Control
 	// Create the scrollBars but dont add them to the control, just parent them using the toolkit.
 	private void CreateScrollBars()
 			{
+				DestroyScrollBars(); // delete the "old" if we had some.
+				
 				hScrollBar=new HScrollBar();	
 				hScrollBar.Scroll+=new ScrollEventHandler(HandleScroll);
 				hScrollBar.CreateControl();
@@ -568,6 +571,7 @@ public class ScrollableControl : Control
 				vScrollBar.CreateControl();
 				vScrollBar.toolkitWindow.Reparent(toolkitWindow, 0, 0);
 				vScrollBar.toolkitWindow.Raise();
+				
 				UpdateScrollBars();
 			}
 			

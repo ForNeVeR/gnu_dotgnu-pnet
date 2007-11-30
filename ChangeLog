@@ -19,8 +19,9 @@
 	libffi/src/sparc/ffi.c, libffi/src/x86/ffi.c, libffi/src/x86/ffi64.c,
 	libffi/src/x86/ffitarget.h, libffi/src/x86/sysv.S: Update libffi
 
-	* libffi/src/closures.c, libffi/src/dlmalloc.c, libffi/src/pa/hpux32.S,
-	libffi/src/x86/darwin.S, libffi/src/x86/darwin64.S: Add new libffi files.
+	* libffi/fficonfig.h.in, libffi/src/closures.c, libffi/src/dlmalloc.c,
+	libffi/src/pa/hpux32.S, libffi/src/x86/darwin.S,
+	libffi/src/x86/darwin64.S: Add new libffi files.
 
 	* libffi/src/ffitest.c: Delete obsolete libffi file.
 

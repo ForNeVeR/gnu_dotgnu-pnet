@@ -1,3 +1,6 @@
+2007-12-04  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* System.Windows.Forms/Control.cs: fixed docking.
+
 2007-11-30  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 	* System.Windows.Forms/ScrollableControl.cs: fixed autoscrolling, 
 	memory leaks, exception when updaing scrollbars if reordering handles.

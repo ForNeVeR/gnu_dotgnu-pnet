@@ -1113,6 +1113,10 @@ public class Control : IWin32Window, IDisposable
 						OnDockChanged(EventArgs.Empty);
 						// Rethink our layout
 						PerformLayout(this,"Dock");
+						if(parent != null) {
+							parent.PerformLayout(this, "Dock");
+							if( value != DockStyle.None ) parent.PerformActualLayout();
+						}
 					}
 				}
 			}

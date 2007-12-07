@@ -72,9 +72,16 @@ internal sealed class BuiltinResourceSet : ResourceSet
 				}
 				else if(!readResourcesCalled)
 				{
+					Object o = base.GetObject(name);
+					if( null != o ) 
+					{
+						return o;
+					}
 					// We can take a short-cut because we know that
 					// the underlying reader is "ResourceReader".
-					return ((ResourceReader)Reader).GetObject(name);
+					o = ((ResourceReader)Reader).GetObject(name);
+					Table[name] = o;
+					return o;
 				}
 				else
 				{
@@ -94,6 +101,12 @@ internal sealed class BuiltinResourceSet : ResourceSet
 						(_("Invalid_ResourceReaderClosed"));
 				}
 
+				Object o = base.GetObject(name,ignoreCase);
+				if( null != o ) 
+				{
+					return o;
+				}
+				
 				// If we haven't read the resources yet, then attempt
 				// to use a short-cut by way of "ResourceReader".
 				if(!readResourcesCalled)
@@ -101,6 +114,7 @@ internal sealed class BuiltinResourceSet : ResourceSet
 					Object value = ((ResourceReader)Reader).GetObject(name);
 					if(value != null || !ignoreCase)
 					{
+						Table[name] = value;
 						return value;
 					}
 				}
@@ -121,14 +135,22 @@ internal sealed class BuiltinResourceSet : ResourceSet
 					throw new InvalidOperationException
 						(_("Invalid_ResourceReaderClosed"));
 				}
+				
+				String o = base.GetString(name);
+				if( null != o ) 
+				{
+					return o;
+				}
+				
 				try
 				{
 					if(!readResourcesCalled)
 					{
 						// We can take a short-cut because we know that
 						// the underlying reader is "ResourceReader".
-						return (String)(((ResourceReader)Reader)
-											.GetObject(name));
+						o = (String)(((ResourceReader)Reader).GetObject(name));
+						Table[name] = o;
+						return o;
 					}
 					else
 					{
@@ -154,6 +176,12 @@ internal sealed class BuiltinResourceSet : ResourceSet
 						(_("Invalid_ResourceReaderClosed"));
 				}
 
+				String o = base.GetString(name,ignoreCase);
+				if( null != o ) 
+				{
+					return o;
+				}
+				
 				// If we haven't read the resources yet, then attempt
 				// to use a short-cut by way of "ResourceReader".
 				if(!readResourcesCalled)
@@ -163,6 +191,7 @@ internal sealed class BuiltinResourceSet : ResourceSet
 					{
 						try
 						{
+							Table[name] = value;
 							return (String)value;
 						}
 						catch(InvalidCastException)

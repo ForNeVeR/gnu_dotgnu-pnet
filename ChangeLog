@@ -1,3 +1,6 @@
+2007-12-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* runtime/System/Resources/BuiltinResourceSet.cs: fixed a memory leak.
+
 2007-12-07  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: Fix exception

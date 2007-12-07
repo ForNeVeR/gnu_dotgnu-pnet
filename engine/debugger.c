@@ -1427,13 +1427,21 @@ void DebuggerHelper_AddLocal(ILExecThread *thread, const char *name,
 
 	str = ILStringCreateUTF8(thread, name);
 
-	if(ILType_IsPrimitive(type) || ILType_IsValueType(type)) 
+	if(ILType_IsPrimitive(type) || ILType_IsValueType(type))
 	{
 		obj = ILExecThreadBox(thread, type, ptr);
 	}
 	else
 	{
 		obj = *(ILObject **)(ptr);
+
+		/* Box if class inherits from value type (e.g. struct) */
+		if(ILType_IsClass(type) && ILClassIsValueType(ILType_ToClass(type)))
+		{
+			obj = ILExecThreadBox(thread,
+									ILType_FromValueType(ILType_ToClass(type)),
+																(void *) obj);
+		}
 	}
 
 	clrType = _ILGetClrTypeForILType(thread, type);

@@ -1,3 +1,8 @@
+2007-12-07  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Drawing/Toolkit/ToolkitGraphicsImageBase.cs: Fix exception
+	when drawing line outside of the image bounds.
+
 2007-12-04  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 	* System.Windows.Forms/Control.cs: fixed docking.
 

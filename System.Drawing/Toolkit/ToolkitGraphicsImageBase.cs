@@ -132,9 +132,12 @@ namespace System.Drawing.Toolkit
 						case (PixelFormat.Format24bppRgb):
 						{
 							int ptr = yPtr + x * 3;
-							frame.Data[ptr++] = (byte)color;
-							frame.Data[ptr++] = (byte)(color>>8);
-							frame.Data[ptr++] = (byte)(color>>16);
+							if(ptr >= 0 && frame.Data.Length > ptr + 2)
+							{
+								frame.Data[ptr++] = (byte)color;
+								frame.Data[ptr++] = (byte)(color>>8);
+								frame.Data[ptr] = (byte)(color>>16);
+							}
 							break;
 						}
 						default:

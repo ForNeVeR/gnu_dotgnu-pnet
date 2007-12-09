@@ -37,7 +37,7 @@
 #if !defined(IL_NO_THREADS)
 #if defined(linux) || defined(__linux) || defined(__linux__) || \
     defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__sun) || \
-	defined(_NetBSD__) || defined(__APPLE__)
+	defined(__NetBSD__) || defined(__APPLE__)
 #if defined(GC_LINUX_THREADS) || defined(GC_FREEBSD_THREADS) || \
     defined(GC_OPENBSD_THREADS) || defined(GC_SOLARIS_THREADS) || \
 	defined(GC_NETBSD_THREADS) || defined(GC_DARWIN_THREADS)

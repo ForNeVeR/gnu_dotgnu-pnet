@@ -44,6 +44,10 @@ int ILExecInit(unsigned long maxSize)
 #ifdef IL_CONFIG_APPDOMAINS
 	globalEngine = 0;
 #endif
+
+	/* Initialize the thread routines */	
+	ILThreadInit();
+
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	/* Create the global trace mutex */
 	if ((globalTraceMutex = ILMutexCreate()) == 0)
@@ -57,9 +61,6 @@ int ILExecInit(unsigned long maxSize)
 		return IL_EXEC_INIT_OUTOFMEMORY;
 	}
 #endif
-
-	/* Initialize the thread routines */	
-	ILThreadInit();
 
 	/* Initialize the global garbage collector */	
 	ILGCInit(maxSize);

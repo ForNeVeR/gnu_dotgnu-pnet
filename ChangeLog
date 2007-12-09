@@ -1,3 +1,16 @@
+2007-12-09  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.c: Move thread initialization in front of the creation
+	of the global trace mutex because the thread library has to be initialized
+	before any thread features can be used.
+	This fixes a bug with pthreads where the global mutex attribute was not
+	initialized when the global trace mutex was created.
+
+	* configure.in, support/thr_choose.h: Add thread support for NetBSD.
+
+	* configure.in: Install the libraries in the correct directory on
+	multi os systems (like x86_64).
+
 2007-12-07  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: Fix debugger crash when watching "this" in struct

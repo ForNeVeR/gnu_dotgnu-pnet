@@ -256,6 +256,9 @@ if test "$THREADS" = "no"; then
 	*-freebsd*)
 			THREADS=posix
 			;;
+	*-*-netbsd*)
+			THREADS=posix
+			;;
 	*-*-darwin*)
 			THREADS=posix
 			;;
@@ -313,6 +316,13 @@ case "$THREADS" in
 	AC_DEFINE(GC_OPENBSD_THREADS, 1, [Define to use libgc openbsd thread support])
 	INCLUDES="$INCLUDES -pthread"
 	THREADLIBS=-pthread
+	;;
+	*-*-netbsd*)
+	AC_DEFINE(GC_NETBSD_THREADS, 1, [Define to use libgc netbsd thread support])
+	INCLUDES="$INCLUDES -pthread"
+	THREADLIBS="-lpthread -lrt"
+	AC_DEFINE(_REENTRANT, 1, [Define to use the reentrant versions of library functions])
+	AC_DEFINE(_PTHREADS, 1, [Define to enable pthread support])
 	;;
 	*-*-darwin*)
 	AC_DEFINE(GC_DARWIN_THREADS, 1, [Define to use libgc darwin thread support])
@@ -671,6 +681,16 @@ AC_ARG_ENABLE(tools,
   *) AC_MSG_ERROR(bad value ${enableval} for --enable-tools) ;;
 esac],[tools=true])
 AM_CONDITIONAL(PNET_TOOLS, test x$tools = xtrue)
+
+dnl Check for building on a multi os system
+if test x$GCC = xyes ; then
+	multi_os_directory=`$CC -print-multi-os-directory`
+	case $multi_os_directory in
+	  .) ;; # Avoid trailing /.
+	  *) libdir=$libdir/$multi_os_directory ;;
+	esac
+fi
+AC_SUBST(libdir)
 
 dnl Set up libffi-related variables.
 AC_SUBST(FFILIBS)

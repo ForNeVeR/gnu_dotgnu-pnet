@@ -492,7 +492,8 @@ static int ILUserDataSet(ILUserData *userData, const void *ptr, int type,
 /*
  * Set user with out of memory check.
  */
-static void SetUserData(ILDebugger *debugger, void *ptr, int type, void *data)
+static void SetUserData(ILDebugger *debugger, const void *ptr, int type,
+						void *data)
 {
 	if(!ILUserDataSet(debugger->userData, ptr, type, data))
 	{
@@ -503,7 +504,7 @@ static void SetUserData(ILDebugger *debugger, void *ptr, int type, void *data)
 /*
  * Return data of given type associated with given pointer.
  */
-static void *GetUserData(ILDebugger *debugger, void *ptr, int type)
+static void *GetUserData(ILDebugger *debugger, const void *ptr, int type)
 {
 	ILUserDataEntry *entry;
 
@@ -523,7 +524,7 @@ static void *GetUserData(ILDebugger *debugger, void *ptr, int type)
  * Return id assigned to given pointer.
  * If poineter has no id assigned then return and assign next free negative id.
  */
-static int GetId(ILDebugger *debugger, void *ptr, int type)
+static int GetId(ILDebugger *debugger, const void *ptr, int type)
 {
 	int id = (int) GetUserData(debugger, ptr, type);
 	if(id == 0)
@@ -1998,6 +1999,102 @@ void UnwatchAllAssemblies(ILDebugger *debugger, FILE *stream)
 }
 
 /*
+ * start_profiling command.
+ */
+void StartProfiling(ILDebugger *debugger, FILE *stream)
+{
+	debugger->profiling = 1;
+	DumpMessage("ok", stream);
+}
+
+/*
+ * stop_profiling command.
+ */
+void StopProfiling(ILDebugger *debugger, FILE *stream)
+{
+	debugger->profiling = 0;
+	DumpMessage("ok", stream);
+}
+
+/*
+ * clear_profiling command.
+ */
+void ClearProfiling(ILDebugger *debugger, FILE *stream)
+{
+	int size;
+	ILUserDataEntry *entry;
+	ILDebuggerThreadInfo *threadInfo;
+
+	/* Iterate userData table and clear profiling related info */
+	entry = debugger->userData->entries;
+	for(size = debugger->userData->size; size > 0; size--)
+	{
+		if(entry->type == IL_USER_DATA_METHOD_TIME ||
+			entry->type == IL_USER_DATA_METHOD_CALL_COUNT)
+		{
+			SetUserData(debugger, entry->ptr, entry->type, (void *) 0);
+		}
+		entry++;
+	}
+
+	/* Iterate all threads and clear profiling info */
+	threadInfo = debugger->dbthread;
+	while(threadInfo)
+	{
+		threadInfo->profilerLastMethod = 0;
+		threadInfo = threadInfo->next;
+	}
+
+	DumpMessage("ok", stream);
+}
+
+/*
+ * show_profiling command.
+ */
+void ShowProfiling(ILDebugger *debugger, FILE *stream)
+{
+	int size;
+	ILUserDataEntry *entry;
+	ILUInt32 time;
+	ILUInt32 count;
+	int memberId;
+
+	fputs("<Profiling>\n", stream);
+
+	/* Iterate userData table and dump profiling related info */
+	entry = debugger->userData->entries;
+	for(size = debugger->userData->size; size > 0; size--)
+	{
+		/* Case with entry->ptr==0 is valid and must be skipped */
+		if(entry->type == IL_USER_DATA_METHOD_TIME && entry->ptr != 0)
+		{
+			time = (ILUInt32) entry->data;
+			count = (ILUInt32) GetUserData(debugger, entry->ptr,
+											IL_USER_DATA_METHOD_CALL_COUNT);
+			memberId = GetId(debugger, entry->ptr, IL_USER_DATA_MEMBER_ID);
+			
+			fprintf(stream,
+						"  <ProfilingEntry MemberId=\"%d\" CallCount=\"%d\" "
+						"Time=\"%d\"", memberId, count, time);
+
+			if(memberId >= 0)
+			{
+				fputs(" />\n", stream);
+			}
+			else
+			{
+				fputs(" >\n", stream);
+				DumpMethod(debugger, stream, (ILMethod *) entry->ptr, 0, 4);
+				fputs("  </ProfilingEntry>\n", stream);
+			}
+		}
+		entry++;
+	}
+
+	fputs("</Profiling>", stream);
+}
+
+/*
  * show_threads command.
  */
 void ShowThreads(ILDebugger *debugger, FILE *stream)
@@ -2515,6 +2612,24 @@ static Cmd const commands[] = {
 		"Remove all assembly watches that were previously set with watch_assembly. This causes that debugger can break in any assembly again. Only functions, that were not compiled yet are affected."
 	},
 
+	{ "start_profiling",						StartProfiling,
+		"start_profiling",
+		"Start profiling.",
+		"Starts profiling execution speed and memory usage."
+	},
+
+	{ "stop_profiling",							StopProfiling,
+		"stop_profiling",
+		"Stops profiling.",
+		"Stops profiling."
+	},
+
+	{ "clear_profiling",						ClearProfiling,
+		"clear_profiling",
+		"Clear profiling results.",
+		"Clears all previous profiling results."
+	},
+
 	{ "insert_breakpoint",						InsertBreakpoint,
 		"insert_breakpoint [source_file] [line]",
 		"Break when given location is reached.",
@@ -2670,6 +2785,12 @@ static Cmd const commands[] = {
 		"show_ildasm",
 		"Dissassemble current function in IL.",
 		"Dissassemble current function in IL."
+	},
+
+	{ "show_profiling",							ShowProfiling,
+		"show_profiling",
+		"Show current profiling results.",
+		"Show current profiling results. Times are in microseconds."
 	},
 
 	{ "quit",									Quit,
@@ -2965,6 +3086,10 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	ILDebugger *debugger;
 	ILDebuggerThreadInfo *info;
 	ILBreakpoint *breakpoint;
+	ILCurrTime time;
+	ILInt64 delta;
+	ILInt64 total;
+	ILUInt32 count;
 
 	/* Get debugger attached to thread's process */
 	debugger = _ILExecThreadProcess(thread)->debugger;
@@ -2997,6 +3122,43 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	info = GetDbThreadInfo(debugger, thread);
 
 	/* fprintf(stderr, " runType=%d breakAll=%d\n", info->runType, debugger->breakAll); */
+
+	/* Update profiling info */
+	if(debugger->profiling)
+	{
+		ILGetSinceRebootTime(&time);
+
+		/* Time difference between last profiler hit and current time */
+		delta = time.nsecs;
+		delta -= info->profilerLastStopTime.nsecs;
+		delta /= 1000;
+		delta += 1000000 *
+					(time.secs - info->profilerLastStopTime.secs);
+
+		/* Add time delta to previous hit */
+		total = (ILUInt32) GetUserData(debugger,
+											(void *) info->profilerLastMethod,
+											IL_USER_DATA_METHOD_TIME);
+		total += delta;
+		SetUserData(debugger, (void *) info->profilerLastMethod,
+													IL_USER_DATA_METHOD_TIME,
+													(void *)(ILUInt32)total);
+
+		/* Increase method call count */
+		if(offset == 0)
+		{
+			count = (ILUInt32) GetUserData(debugger, (void *) method,
+											IL_USER_DATA_METHOD_CALL_COUNT);
+			count++;
+			SetUserData(debugger, (void *) method,
+											IL_USER_DATA_METHOD_CALL_COUNT,
+											(void *)count);
+		}
+
+		/* Record this profiler hit */
+		info->profilerLastMethod = method;
+		info->profilerLastStopTime = time;
+	}
 
 	if(debugger->breakAll)
 	{
@@ -3128,10 +3290,15 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	{
 		return IL_HOOK_ABORT;
 	}
-	else
+
+	if(debugger->profiling)
 	{
-		return IL_HOOK_CONTINUE;
+		/* Refresh time to not count hanging inside debugger loop */
+		ILGetSinceRebootTime(&time);
+		info->profilerLastStopTime = time;
 	}
+
+	return IL_HOOK_CONTINUE;
 }
 
 /*

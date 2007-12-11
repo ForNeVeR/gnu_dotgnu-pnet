@@ -51,9 +51,11 @@ extern	"C" {
  */
 #define IL_USER_DATA_IMAGE_ID					0
 #define IL_USER_DATA_CLASS_ID					1
-#define IL_USER_DATA_SOURCE_FILE_ID			2
+#define IL_USER_DATA_SOURCE_FILE_ID				2
 #define IL_USER_DATA_SOURCE_FILE_IMAGE_ID		3
 #define IL_USER_DATA_MEMBER_ID					4
+#define IL_USER_DATA_METHOD_CALL_COUNT			5
+#define IL_USER_DATA_METHOD_TIME				6
 
 #define IL_USER_DATA_TABLE_INIT_SIZE			509
 
@@ -126,6 +128,12 @@ struct _tagILDebuggerThreadInfo
 	/* JIT stack trace */
 	jit_stack_trace_t jitStackTrace;
 #endif
+
+	/* Method where profiler stopped last time */
+	ILMethod *profilerLastMethod;
+
+	/* Previous profiler stop time */
+	ILCurrTime profilerLastStopTime;
 
 	int volatile runType;
 	ILDebuggerThreadInfo *next;
@@ -218,6 +226,9 @@ struct _tagILDebugger
 
 	/* Flag used to stop all threads after break command */
 	int breakAll;
+
+	/* Nonzero to collect profiling information */
+	int profiling;
 
 	/* Return IL_HOOK_ABORT from hook function when this flag is set */ 
 	int volatile abort;

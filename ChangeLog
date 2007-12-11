@@ -1,3 +1,9 @@
+2007-12-11  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Implemented simple profiling support in debugger.
+
+	* engine/debugger.h: Definitions for profiler.
+
 2007-12-09  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.c: Move thread initialization in front of the creation

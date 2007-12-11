@@ -61,7 +61,6 @@ extern	"C" {
 /*
  * To enable parameter / locals optimizations uncomment the following define.
  */
-/* #define _IL_JIT_OPTIMIZE_LOCALS 1 */
 #define _IL_JIT_OPTIMIZE_LOCALS 1
 
 /*
@@ -2192,7 +2191,7 @@ static void *_ILJitOnDemandDriver(ILJitFunction func)
 int ILJitInit()
 {
 	ILJitType	returnType;
-	ILJitType	args[3];
+	ILJitType	args[4];
 
 	/* Initialize libjit */
 	jit_init();

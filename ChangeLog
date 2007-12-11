@@ -1,3 +1,9 @@
+2007-12-11  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c: Clean up a not needed commented _IL_JIT_OPTIMIZE_LOCALS.
+	Fix an argument array overflow when building signatures for internal
+	functions in ILJitInit.
+
 2007-12-11  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: Implemented simple profiling support in debugger.

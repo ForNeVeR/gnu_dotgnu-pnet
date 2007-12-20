@@ -1,5 +1,10 @@
 2007-12-20  Radek Polak  <psonek2@seznam.cz>
 
+	* engine/debugger.c: Fix connection shutdown. Now it terminates
+	debugged program instead of endless loop.
+
+2007-12-20  Radek Polak  <psonek2@seznam.cz>
+
 	* engine/debugger.c: Implemented debugger connecection to frontend. It
 	can be specified by IP address, it can work on stdio and it can be
 	tracing automat with output on stdout. Fixed unregistering debug hook

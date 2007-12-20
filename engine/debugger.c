@@ -214,6 +214,11 @@ static int SocketIO_Recieve(ILDebuggerIO *io)
 			perror("debugger recieve");
 			return 0;
 		}
+		if(len == 0)
+		{
+			fputs("debugger recieve: connection shutdown\n", stderr);
+			return 0;
+		}
 		fwrite(buffer, 1, len, io->input);
 	} while(len == 128 || len == 0 || buffer[len-1] != 0);
 

@@ -65,14 +65,14 @@ static void Help(ILDebugger *debugger, FILE *stream);
  */
 static void ILDbOutOfMemory()
 {
-	fputs("il_debugger: virtual memory exhausted\n", stderr);
+	fputs("debugger: virtual memory exhausted\n", stderr);
 	exit(1);
 }
 
 /*
  * Open stream for writing and reading text. Return 0 on failure.
  */
-static FILE *OpenStream()
+static FILE *OpenTmpStream()
 {
 	return tmpfile();
 }
@@ -104,12 +104,47 @@ static char *ReadStream(FILE *stream)
 
 /*
  * Open socket IO.
- * TODO: only supported connection string is tcp://localhost:4571
  */
 static int SocketIO_Open(ILDebuggerIO *io, const char *connectionString)
 {
 	ILSysIOHandle sockfd;
-	int port = 4571;
+	int index = 0;
+	const char *ch;
+	unsigned int conn[5];
+	unsigned char addr[16];
+
+	/* Parse connection string */
+	if(connectionString != 0)
+	{
+		ch = connectionString;
+		ILMemSet(conn, 0, sizeof(conn));
+		while(*ch != 0 && index <= 4)
+		{
+			if(*ch >= '0' && *ch <= '9')
+			{
+				conn[index] = (10 * conn[index]) + (*ch - '0');
+			}
+			else if(*ch == '.' || *ch == ':')
+			{
+				index++;
+			}
+			ch++;
+		}
+	}
+	else
+	{
+		/* Default host */
+		conn[0] = 127;
+		conn[1] = 0;
+		conn[2] = 0;
+		conn[3] = 1;
+	}
+
+	/* Default port if we havent parsed it */
+	if(index <= 3)
+	{
+		conn[4] = 4571;
+	}
 
 	/*
 	 * Create socket descriptor
@@ -120,47 +155,33 @@ static int SocketIO_Open(ILDebuggerIO *io, const char *connectionString)
 	sockfd = ILSysIOSocket(2, 1, 6);
 	if(sockfd == ILSysIOHandle_Invalid)
 	{
-		perror("il_debugger: socket creation failed");
+		perror("debugger create socket");
 		return 0;
 	}
 
 	/* Convert the end point into a sockaddr buffer like in
 	 * CombinedToSerialized() in socket.c */
-	unsigned char addr[16];
 	addr[0] = 2;								/* address family - AF_INET */
 	addr[1] = 0; 
-	addr[2] = (unsigned char)(port >> 8);		/* port */
-	addr[3] = (unsigned char)port;
-	addr[4] = 127;								/* end point 127.0.0.1 */
-	addr[5] = 0;
-	addr[6] = 0;
-	addr[7] = 1;
+	addr[2] = (unsigned char)(conn[4] >> 8);	/* port */
+	addr[3] = (unsigned char)(conn[4]);
+	addr[4] = (unsigned char)(conn[0]);			/* end point 127.0.0.1 */
+	addr[5] = (unsigned char)(conn[1]);
+	addr[6] = (unsigned char)(conn[2]);
+	addr[7] = (unsigned char)(conn[3]);
 	addr[8] = addr[9] = addr[10] = addr[11] =
 											 addr[12] = addr[13] =
 											 addr[14]= addr[15] = 0;
 
-	/* Connect, this connects socket for ipv4.
-	   TODO: we should do it more correctly (see Socket.cs Connect()) */
+	/* Connect, this connects socket for ipv4 */
 	if(!ILSysIOSocketConnect(sockfd, addr, 16))
 	{
-		perror("il_debugger: connect to socket failed");
-		return 0;	
+		perror("debugger connect");
+		return 0;
 	}
 
 	/* Setup io struct */
 	io->sockfd = sockfd;
-	io->input = OpenStream();
-	if(io->input == 0)
-	{
-		perror("il_debugger: failed to open input stream");
-		return 0;
-	}
-	io->output = OpenStream();
-	if(io->output == 0)
-	{
-		perror("il_debugger: failed to open output stream");
-		return 0;
-	}
 
 	return 1;
 }
@@ -190,7 +211,7 @@ static int SocketIO_Recieve(ILDebuggerIO *io)
 		len = ILSysIOSocketReceive(io->sockfd, (void *)buffer, 128, 0);
 		if(len < 0)
 		{
-			perror("il_debugger: recieve failed");
+			perror("debugger recieve");
 			return 0;
 		}
 		fwrite(buffer, 1, len, io->input);
@@ -230,12 +251,12 @@ static int SocketIO_Send(ILDebuggerIO *io)
 		}
 		if(fread((void *)buffer, 1, count, io->output) != count)
 		{
-			perror("il_debugger: send failed");
+			perror("debugger send");
 			return 0;
 		}
 		if(ILSysIOSocketSend(io->sockfd, buffer, count, 0) < 0)
 		{
-			perror("il_debugger: send failed");
+			perror("debugger send");
 			return 0;
 		}
 		len -= 1024;
@@ -244,6 +265,142 @@ static int SocketIO_Send(ILDebuggerIO *io)
 
 	/* Rewind output stream for next command */
 	fseek(io->output, 0, SEEK_SET);
+
+	return 1;
+}
+
+/*
+ * Common recieving function std and file IO.
+ */
+static int StreamRecieve(ILDebuggerIO *io, FILE *stream, int isStd)
+{
+	int ch;
+
+	/* Rewind input stream */
+	fseek(io->input, 0, SEEK_SET);
+
+	/* Display cursor */
+	if(isStd)
+	{
+		fputs("\n> ", stdout);
+	}
+
+	/* Read line */
+	for(;;)
+	{
+		ch = fgetc(stream);
+
+		if(ch == EOF && !isStd)
+		{
+			fseek(stream, 0, SEEK_SET);		// rewind input
+		}
+		else if(ch != '\n')
+		{
+			fputc(ch, io->input);
+			continue;
+		}
+		return 1;
+	}
+}
+
+/*
+ * Common sending function for std and file IO.
+ */
+static int StreamSend(ILDebuggerIO *io, FILE *stream, int isStd)
+{
+	int ch;
+
+	/* Terminate output with 0 */
+	putc(0, io->output);
+
+	/* Rewind output stream */
+	fseek(io->output, 0, SEEK_SET);
+
+	/* Read data from output stream and send it out */
+	while((ch = fgetc(io->output)) != 0)
+	{
+		fputc(ch, stream);
+	}
+
+	/* Rewind output stream for next command */
+	fseek(io->output, 0, SEEK_SET);
+
+	return 1;
+}
+
+/*
+ * Open stdio IO.
+ */
+static int StdIO_Open(ILDebuggerIO *io, const char *connectionString)
+{
+	return 1;
+}
+
+/*
+ * Close std IO.
+ */
+static void StdIO_Close(ILDebuggerIO *io)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Recieve input data from input file.
+ */
+static int StdIO_Recieve(ILDebuggerIO *io)
+{
+	return StreamRecieve(io, stdin, 1);
+}
+
+/*
+ * Send data in output stream out.
+ */
+static int StdIO_Send(ILDebuggerIO *io)
+{
+	return StreamSend(io, stdout, 1);
+}
+
+/*
+ * Return next trace command.
+ */
+static int TraceIO_Recieve(ILDebuggerIO *io)
+{
+	const char *ch;
+	static const char *commands = "show_position\nstep\nshow_locals";
+
+	/* Rewind input stream */
+	fseek(io->input, 0, SEEK_SET);
+
+	/* Make ch point to command to be executed */
+	if(io->data1 == 0)
+	{
+		ch = commands;
+	}
+	else
+	{
+		ch = (const char *) io->data1;
+	}
+
+	/* Output command to io->input */
+	for(;;)
+	{
+		if(*ch == 0)
+		{
+			ch = commands;
+			break;
+		}
+		if(*ch == '\n')
+		{
+			ch++;
+			break;
+		}
+		fputc(*ch, io->input);
+		fputc(*ch, stdout);
+		ch++;
+	}
+
+	io->data1 = (void *) ch;
+	fputc('\n', stdout);
 
 	return 1;
 }
@@ -3054,6 +3211,11 @@ int StartIOThread(ILDebugger *debugger)
 		return 0;
 	}
 
+	if(debugger->dontStartIoThread)
+	{
+		return 0;
+	}
+
 	/* Create command loop thread  */
 	debugger->ioThread = ILThreadCreate(IOThreadFn, (void *) debugger);
 
@@ -3328,36 +3490,58 @@ void ILDebuggerSetIO(ILDebugger *debugger, ILDebuggerIO *io)
 
 int ILDebuggerConnect(ILDebugger *debugger, char *connectionString)
 {
+	ILDebuggerIO *io = debugger->io;
+
 	/* Check if custom IO was previously set */
-	if(debugger->io == 0)
+	if(io == 0)
 	{
-		/* Only supported connection string is tcp://localhost:4571
-		 * return error for anything else for now */
-		if(strcmp(connectionString, "tcp://localhost:4571") != 0)
-		{
-			fprintf(stderr, "il_debugger: connection string not supported\n");
-			return 0;
-		}
-	
-		/* Create debugger IO from known connectionString scheme */
-		debugger->io = (ILDebuggerIO *) ILMalloc(sizeof(ILDebuggerIO));
-		if(debugger->io == 0)
+		/* Create debugger IO structure */
+		debugger->io = io = (ILDebuggerIO *) ILMalloc(sizeof(ILDebuggerIO));
+		if(io == 0)
 		{
 			return 0;
 		}
 
-		/*
-		 * Only supported connection string is tcp://localhost:4571
-		 * so setup members for socket based IO
-		 */
-		debugger->io->open = &SocketIO_Open;
-		debugger->io->close = &SocketIO_Close;
-		debugger->io->recieve = &SocketIO_Recieve;
-		debugger->io->send = &SocketIO_Send;
+		/* Setup default socket based IO */
+		io->open = &SocketIO_Open;
+		io->close = &SocketIO_Close;
+		io->recieve = &SocketIO_Recieve;
+		io->send = &SocketIO_Send;
+
+		if(connectionString != 0)
+		{
+			if(strcmp(connectionString, "stdio") == 0)
+			{
+				/* Reading and sending on stdio */
+				io->open = &StdIO_Open;
+				io->close = &StdIO_Close;
+				io->recieve = &StdIO_Recieve;
+				io->send = &StdIO_Send;
+			}
+			else if(strcmp(connectionString, "trace") == 0)
+			{
+				io->open = &StdIO_Open;
+				io->close = &StdIO_Close;
+				io->recieve = &TraceIO_Recieve;
+				io->send = &StdIO_Send;
+
+				/* When tracing we dont need command thread */
+				debugger->dontStartIoThread = 1;
+			}
+		}
+	}
+
+	/* Open temporary seekable streams */
+	io->input = OpenTmpStream();
+	io->output = OpenTmpStream();
+	if(io->input == 0 || io->output == 0)
+	{
+		perror("debugger open stream");
+		return 0;
 	}
 
 	/* Try to connect to debugger client */
-	return debugger->io->open(debugger->io, connectionString);
+	return io->open(io, connectionString);
 }
 
 int ILDebuggerIsAttached(ILExecProcess *process)
@@ -3409,8 +3593,9 @@ void ILDebuggerDestroy(ILDebugger *debugger)
 	{
 		ILDebuggerIODestroy(debugger->io);
 	}
-	/* Unregister hook function */
+	/* Unregister hook function and unwatch all */
 	ILExecProcessDebugHook(debugger->process, 0, 0);
+	ILExecProcessWatchAll(debugger->process, 0);
 
 	/* Detach debugger from process */
 	if(debugger->process)
@@ -3439,7 +3624,7 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	debugger->lock = ILMutexCreate();
 	if(!(debugger->lock))
 	{
-		fprintf(stderr, "il_debugger: failed to create mutex\n");
+		fputs("debugger: failed to create mutex\n", stderr);
 		ILDebuggerDestroy(debugger);
 		return 0;
 	}
@@ -3448,7 +3633,7 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	debugger->userData = ILUserDataCreate();
 	if(debugger->userData == 0)
 	{
-		fprintf(stderr, "il_debugger: failed to create user data\n");
+		fputs("debugger: failed to create user data\n", stderr);
 		ILDebuggerDestroy(debugger);
 		return 0;
 	}
@@ -3476,7 +3661,7 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	debugger->event = ILWaitEventCreate(0, 0);
 	if(!(debugger->event))
 	{
-		fprintf(stderr, "il_debugger: failed to create wait handle\n");
+		fputs("debugger: failed to create wait handle\n", stderr);
 		ILDebuggerDestroy(debugger);
 		return 0;
 	}
@@ -3484,8 +3669,8 @@ ILDebugger *ILDebuggerCreate(ILExecProcess *process)
 	/* Register debug hook function */
 	if(ILExecProcessDebugHook(process, DebugHook, 0) == 0)
 	{
-		fprintf(stderr, 
-			"il_debugger: the runtime engine does not support debugging.\n");
+		fputs("debugger: the runtime engine does not support debugging.\n",
+																	stderr);
 		ILDebuggerDestroy(debugger);
 		return 0;
 	}

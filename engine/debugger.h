@@ -233,6 +233,9 @@ struct _tagILDebugger
 	/* Return IL_HOOK_ABORT from hook function when this flag is set */ 
 	int volatile abort;
 
+	/* Nonzero to not start IO thread */
+	int dontStartIoThread;
+
 };
 
 

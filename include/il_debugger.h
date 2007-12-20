@@ -61,7 +61,8 @@ struct _tagILDebuggerIO
 	/*
 	 * Implementation specific data.
 	 */
-	void *data;
+	void *data1;
+	void *data2;
 
 	/*
 	 * Handle for socket stream implementation.
@@ -69,12 +70,14 @@ struct _tagILDebuggerIO
 	ILSysIOHandle sockfd;
 
 	/*
-	 * Stream used by debugger for recieving data.
+	 * Stream used for recieving data.
+	 * IO fills it with NIL terminated string on recieve.
 	 */
 	FILE *input;
 
 	/*
-	 * Stream used by debugger for sending data.
+	 * Stream used for sending data.
+	 * IO sends it's NIL terminated content to client on send.
 	 */
 	FILE *output;
 

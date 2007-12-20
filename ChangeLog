@@ -1,3 +1,19 @@
+2007-12-20  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Implemented debugger connecection to frontend. It
+	can be specified by IP address, it can work on stdio and it can be
+	tracing automat with output on stdout. Fixed unregistering debug hook
+	properly.
+
+	* engine/debugger.h: Added flag to not start IO thread.
+
+	* include/il_debugger.h: Added one more variable for user data.
+
+	* engine/ilrun.c: Removed unnecessary error output. Debugger
+	parameters cleanup.
+
+	* doc/debugger.txt: Added some documentation for debugger.
+
 2007-12-11  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Clean up a not needed commented _IL_JIT_OPTIMIZE_LOCALS.

@@ -191,6 +191,7 @@ int main(int argc, char *argv[])
 	int profilingEnabled = 0;
 #endif
 #ifdef IL_DEBUGGER
+	int debuggerEnabled = 0;
 	char *debuggerConnectionString = 0;
 	ILDebugger *debugger = 0;
 #endif
@@ -320,18 +321,16 @@ int main(int argc, char *argv[])
 		#endif
 
 		#ifdef IL_DEBUGGER
-			case 'g':
-			{
-				if(debuggerConnectionString == 0)
-				{
-					debuggerConnectionString = "tcp://localhost:4571";
-				}
-			}
-			break;
-
 			case 'G':
 			{
 				debuggerConnectionString = param;
+				debuggerEnabled = 1;
+			}
+			break;
+
+			case 'g':
+			{
+				debuggerEnabled = 1;
 			}
 			break;
 		#endif
@@ -416,12 +415,13 @@ int main(int argc, char *argv[])
 #ifdef IL_DEBUGGER
 	/* Extract debugger connection string from environment
 	 * if not specified on command line */
-	if(debuggerConnectionString == 0)
+	if(!debuggerEnabled)
 	{
 		debuggerConnectionString = getenv("IL_DEBUGGER_CONNECTION_STRING");
+		debuggerEnabled = (debuggerConnectionString != 0);
 	}
 	/* Connect to debugger client, if we have connection string */
-	if(debuggerConnectionString)
+	if(debuggerEnabled)
 	{
 		/* Create debugger */
 		debugger = ILDebuggerCreate(process);
@@ -437,9 +437,6 @@ int main(int argc, char *argv[])
 				/* Connect failed - destroy debugger and print error */
 				ILDebuggerDestroy(debugger);
 				debugger = 0;
-				fprintf(stderr, "%s: debugger connection failed on %s\n",
-											progname,
-											debuggerConnectionString);
 			}
 		}
 	}

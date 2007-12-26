@@ -1239,7 +1239,7 @@ static void AdjustMixedBinary(ILJITCoder *coder, int isUnsigned,
 			newType = _IL_JIT_TYPE_INT64;
 		}
 	}
-	else if(!type1IsPointer || type2IsPointer)
+	else if(type1IsPointer || type2IsPointer)
 	{
 		if(isUnsigned)
 		{

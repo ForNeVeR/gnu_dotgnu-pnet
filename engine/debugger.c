@@ -1632,24 +1632,106 @@ char *DebuggerHelper_ShowLocals(ILExecThread *thread)
 	return result;
 }
 
+static void UpdateThis(ILExecThread *thread, ILMethod *method, void *addr,
+					   ILUInt32 *paramDebugIndex)
+{
+	ILType *type;
+
+	type = ILType_FromClass(ILMethod_Owner(method));
+	DebuggerHelper_AddLocal(thread, "this", type, addr);
+	(*paramDebugIndex)++;
+}
+
+static void UpdatePram(ILExecThread *thread, ILMethod *method,
+					   ILUInt32 *currentParam, ILUInt32 offset, void *addr,
+					   ILUInt32 *paramDebugIndex, ILType *paramSignature,
+					   ILDebugContext *dbgc)
+{
+	ILType *type;
+	const char *name = 0;
+
+	type = ILTypeGetParam(paramSignature, *currentParam);
+	if(dbgc)
+	{
+		name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
+											(*paramDebugIndex) | 0x80000000);
+	}
+	if(ILType_IsComplex(type) && ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
+	{
+		DebuggerHelper_AddLocal(thread, name, ILType_Ref(type),
+														*((void **)(addr)));
+	}
+	else
+	{
+		DebuggerHelper_AddLocal(thread, name, type, addr);
+	}
+	(*currentParam)++;
+	(*paramDebugIndex)++;
+}
+
+static void UpdateLocal(ILExecThread *thread, ILMethod *method,
+						ILUInt32 *currentLocal, ILUInt32 offset, void *addr,
+						ILType *localSignature, ILDebugContext *dbgc)
+{
+	ILType *type;
+	const char *name = 0;
+
+	type = ILTypeGetLocal(localSignature, *currentLocal);
+	if(dbgc)
+	{
+		name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
+																*currentLocal);
+	}
+	if(name || dbgc == 0)
+	{
+		DebuggerHelper_AddLocal(thread, name, type, addr);
+	}
+	(*currentLocal)++;
+}
+
+/*
+ * Get the size of a type in stack words, taking float expansion into account.
+ * TODO: this function is already defined in cvmc.c but there is no way how
+ * to include it now.
+ */
+static ILUInt32 GetStackTypeSize(ILExecProcess *process, ILType *type)
+{
+	ILUInt32 size;
+	if(type == ILType_Float32 || type == ILType_Float64)
+	{
+		return CVM_WORDS_PER_NATIVE_FLOAT;
+	}
+	else
+	{
+		size = _ILSizeOfTypeLocked(process, type);
+	}
+	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
+}
+
 /*
  * Update locals in DebuggerHelper class.
  */
 static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 						 ILUInt32 offset)
 {
-#ifdef IL_USE_JIT
 	ILMethodCode code;
 	ILType *localSignature;
 	ILType *paramSignature;
 	ILUInt32 currentLocal;
 	ILUInt32 currentParam;
 	ILUInt32 paramDebugIndex;
+	ILDebugContext *dbgc = 0;
+	ILType *type;
+
+#ifdef IL_USE_JIT
 	ILUInt32 i;
 	ILLocalWatch *watch;
-	ILType *type;
-	const char *name = 0;
-	ILDebugContext *dbgc = 0;
+#else
+	CVMWord *p;
+	int hasThis;
+	ILUInt32 numParams;
+	ILUInt32 numLocals;
+#endif
 
 	/* Clear locals in helper class */
 	DebuggerHelper_ClearLocals(thread);
@@ -1678,7 +1760,8 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 		/* Get the symbol debug information */
 		if((dbgc = ILDebugCreate(ILProgramItem_Image(method))) == 0)
 		{
-			ILDbOutOfMemory();
+			DumpOutOfMemoryError(stream);
+			return;
 		}
 	}
 
@@ -1686,6 +1769,8 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 	currentLocal = 0;
 	currentParam = 1;
 	paramDebugIndex = 0;
+
+#if IL_USE_JIT
 	for(i = 0; i < thread->numWatches; i++)
 	{
 		watch = &(thread->watchStack[i]);
@@ -1698,46 +1783,59 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 
 		if(watch->type == IL_LOCAL_WATCH_TYPE_LOCAL_VAR)
 		{
-			type = ILTypeGetLocal(localSignature, currentLocal);
-			if(dbgc)
-			{
-				name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
-																currentLocal);
-			}
-			if(name || dbgc == 0)
-			{
-				DebuggerHelper_AddLocal(thread, name, type, watch->addr);
-			}
-			currentLocal++;
+			UpdateLocal(thread, method, &currentLocal, offset, watch->addr,
+														localSignature, dbgc);
 		}
 		else if(watch->type == IL_LOCAL_WATCH_TYPE_PARAM)
 		{
-			type = ILTypeGetParam(paramSignature, currentParam);
-			if(dbgc)
-			{
-				name = ILDebugGetVarName(dbgc, ILMethod_Token(method), offset,
-												paramDebugIndex | 0x80000000);
-			}
-			if(ILType_IsComplex(type) &&
-									ILType_Kind(type) == IL_TYPE_COMPLEX_BYREF)
-			{
-				DebuggerHelper_AddLocal(thread, name, ILType_Ref(type),
-													*((void **)(watch->addr)));
-			}
-			else
-			{
-				DebuggerHelper_AddLocal(thread, name, type, watch->addr);
-			}
-			currentParam++;
-			paramDebugIndex++;
+			UpdatePram(thread, method, &currentParam, offset, watch->addr,
+									&paramDebugIndex, paramSignature, dbgc);
 		}
 		else if(watch->type == IL_LOCAL_WATCH_TYPE_THIS)
 		{
-			type = ILType_FromClass(ILMethod_Owner(method));
-			DebuggerHelper_AddLocal(thread, "this", type, watch->addr);
-			paramDebugIndex++;
+			UpdateThis(thread, method, watch->addr, &paramDebugIndex);
 		}
 	}
+#else
+	p = thread->frame;
+	hasThis = ILType_HasThis(paramSignature);
+
+	/* Handle the "this" parameter as necessary */
+	if(hasThis)
+	{
+		UpdateThis(thread, method, (void *) p++, &paramDebugIndex);
+	}
+
+	/* Regular arguments */
+	numParams = ILTypeNumParams(paramSignature);
+
+	while(currentParam <= numParams)
+	{
+		type = ILTypeGetEnumType(ILTypeGetParam(paramSignature, currentParam));
+
+		UpdatePram(thread, method, &currentParam, offset, (void *) p,
+									&paramDebugIndex, paramSignature, dbgc);
+
+		p += GetStackTypeSize(ILExecThreadGetProcess(thread), type);
+	}
+
+	/* Local variables */
+	if(localSignature != 0)
+	{
+		numLocals = ILTypeNumLocals(localSignature);
+		while(currentLocal < numLocals)
+		{
+			type = ILTypeGetEnumType(ILTypeGetLocal(localSignature,
+																currentLocal));
+
+			UpdateLocal(thread, method, &currentLocal, offset, (void *) p,
+														localSignature, dbgc);
+
+			p += GetStackTypeSize(ILExecThreadGetProcess(thread), type);
+		}
+	}
+
+#endif	// IL_USE_JIT
 
 	if(dbgc)
 	{
@@ -1747,8 +1845,6 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
 	/* Update method's owner type */
 	type = ILType_FromClass(ILMethod_Owner(method));
 	DebuggerHelper_SetMethodOwner(thread, type);
-
-#endif
 }
 
 /*
@@ -1756,18 +1852,6 @@ static void UpdateLocals(FILE *stream, ILExecThread *thread, ILMethod *method,
  */
 void ShowLocals(ILDebugger *debugger, FILE *stream)
 {
-#ifdef IL_USE_CVM
-	CVMWord *p;
-	ILExecThread *thread = debugger->dbthread->execThread;
-	fputs("<LocalVariables>\n", stream);
-	for(p = thread->frame; p < thread->stackTop; p++)
-	{
-		fprintf(stream, "  <LocalVariable Value=\"%d\" />\n", p->intValue);
-	}
-	fputs("</LocalVariables>",stream);
-#endif
-
-#ifdef IL_USE_JIT
 	char *str;
 
 	/* Update locals in DebuggerHelper class */
@@ -1790,7 +1874,6 @@ void ShowLocals(ILDebugger *debugger, FILE *stream)
 	{
 		DumpOutOfMemoryError(stream);
 	}
-#endif  // IL_USE_JIT
 }
 
 /*

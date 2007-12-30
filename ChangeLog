@@ -1,3 +1,8 @@
+2007-12-30  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/debugger.c: Implemented local variables and function parameters
+	for CVM coder.
+
 2007-12-26  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c: Fix a bug in AdjustMixedBinary when checking for pointer

@@ -100,6 +100,12 @@ public class IrDAEndPoint : EndPoint
 					++posn;
 				}
 
+				// Make service name non empty on UNIX.
+				if(builder.Length == 0)
+				{
+					builder.Append("LSA");
+				}
+
 				// Build and return the new end point.
 				return new IrDAEndPoint(deviceID, builder.ToString());
 			}

@@ -52,13 +52,6 @@ public class IrDADeviceInfo
 				characterSet = (IrDACharacterSet)(data[posn + 28]);
 			}
 
-	// Fetch a host byte order Int32 from an array.
-	internal static int FetchInt32(byte[] data, int posn)
-			{
-				return ((data[0] << 24) | (data[1] << 16) |
-						(data[2] << 8) | data[3]);
-			}
-
 	// Get the device's properties.
 	public IrDACharacterSet CharacterSet
 			{

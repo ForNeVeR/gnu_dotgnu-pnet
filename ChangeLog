@@ -1,3 +1,14 @@
+2008-01-05  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Net.IrDA/IrDAClient.cs: Change to host byte order while
+	constructing device count.
+
+	* System.Net.IrDA/IrDADeviceInfo.cs: Remove unused function.
+
+	* System.Net.IrDA/IrDAEndPoint.cs: Make service name non empty. This is
+	needed for creating IrDA server socket on linux. Service name is here empty
+	which would throw exception later.
+
 2007-12-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 	* runtime/System/Resources/BuiltinResourceSet.cs: fixed a memory leak.
 

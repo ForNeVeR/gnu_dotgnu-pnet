@@ -99,14 +99,14 @@ public class IrDAClient
 				}
 
 				// Construct the device array.
-				int num = IrDADeviceInfo.FetchInt32(data, 0);
+				uint num = BitConverter.ToUInt32(data, 0);
 				if(num < 0)
 				{
 					num = 0;
 				}
 				else if(num > maxDevices)
 				{
-					num = maxDevices;
+					num = (uint) maxDevices;
 				}
 				IrDADeviceInfo[] devs = new IrDADeviceInfo [num];
 				int posn;

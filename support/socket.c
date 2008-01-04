@@ -99,8 +99,28 @@ extern	"C" {
 #ifdef IN6ADDR_ANY_INIT
 #define	IL_IPV6_PRESENT		1
 #endif
-#ifdef LSAP_ANY
+#if defined(LSAP_ANY) || defined(IL_WIN32_PLATFORM)
 #define	IL_IRDA_PRESENT		1
+#endif
+
+#ifdef IL_WIN32_PLATFORM
+
+/*
+ * Defines from AF_Irda.h
+ * This file is not part of cygwin thus we provide necessary definitions here.
+ */
+
+#define AF_IRDA				26
+#define SOL_IRLMP			0xFF
+#define IRLMP_ENUMDEVICES	0x10
+
+struct sockaddr_irda
+{
+	u_short irdaAddressFamily;
+	u_char  irdaDeviceID[4];
+	char	irdaServiceName[25];
+};
+
 #endif
 
 /*
@@ -230,14 +250,24 @@ static int SerializedToCombined(unsigned char *buf, ILInt32 len,
 		{
 			return 0;
 		}
+#if IL_WIN32_PLATFORM
+		addr->irda_addr.irdaAddressFamily = AF_IRDA;
+		addr->irda_addr.irdaDeviceID[0] = buf[2];
+		addr->irda_addr.irdaDeviceID[1] = buf[3];
+		addr->irda_addr.irdaDeviceID[2] = buf[4];
+		addr->irda_addr.irdaDeviceID[3] = buf[5];
+		ILMemCpy(addr->irda_addr.irdaServiceName, buf + 6, 24);
+#else
 		addr->irda_addr.sir_family = AF_IRDA;
 		addr->irda_addr.sir_lsap_sel = LSAP_ANY;
 		value = ((((long)(buf[2])) << 24) |
 		         (((long)(buf[3])) << 16) |
 		         (((long)(buf[4])) << 8) |
 		          ((long)(buf[5])));
+
 		addr->irda_addr.sir_addr = htonl((long)value);
 		ILMemCpy(addr->irda_addr.sir_name, buf + 6, 24);
+#endif
 		*addrlen = sizeof(struct sockaddr_irda);
 		return 1;
 	}
@@ -336,12 +366,20 @@ static int CombinedToSerialized(unsigned char *buf, ILInt32 len,
 		{
 			return 0;
 		}
+#if IL_WIN32_PLATFORM
+		buf[2] = addr->irda_addr.irdaDeviceID[0];
+		buf[3] = addr->irda_addr.irdaDeviceID[1];
+		buf[4] = addr->irda_addr.irdaDeviceID[2];
+		buf[5] = addr->irda_addr.irdaDeviceID[3];
+		ILMemCpy(buf + 6, addr->irda_addr.irdaServiceName, 24);
+#else
 		value = (long)(ntohl(addr->irda_addr.sir_addr));
 		buf[2] = (unsigned char)(value >> 24);
 		buf[3] = (unsigned char)(value >> 16);
 		buf[4] = (unsigned char)(value >> 8);
 		buf[5] = (unsigned char)value;
 		ILMemCpy(buf + 6, addr->irda_addr.sir_name, 24);
+#endif
 		return 1;
 	}
 #endif
@@ -496,7 +534,7 @@ ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, unsigned char *addr,
 		ILSysIOSetErrno(IL_ERRNO_EINVAL);
 		return (ILSysIOHandle)(ILNativeInt)(-1);
 	}
-  
+
   	/* Return the file descriptor to the caller */
 	return (ILSysIOHandle)(ILNativeInt)newfd;
 }
@@ -1090,7 +1128,7 @@ int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 	{
 		optlen = sizeof(optval.value);
 	}
-#endif	
+#endif
 
 	if(getsockopt((int)(ILNativeInt)sockfd,nativeLevel,nativeName,
 								(void *)&optval,&optlen) != 0)
@@ -1126,7 +1164,7 @@ int ILSysIOSocketSetLinger(ILSysIOHandle handle, int enabled, int seconds)
 	_linger.l_onoff=enabled;
 	_linger.l_linger=seconds;
 	if(setsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,
-						(void *)&(_linger), sizeof(struct linger)) < 0)
+						(void *)&(_linger), sizeof(struct linger)) != 0)
 	{
 		return 0;
 	}
@@ -1143,7 +1181,7 @@ int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds)
 	struct linger _linger;
 	int size=sizeof(struct linger);
 	if(getsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,
-				  (void *)&(_linger), &size) < 0)
+				  (void *)&(_linger), &size) != 0)
 	{
 		return 0;
 	}
@@ -1177,9 +1215,69 @@ int ILSysIOSocketGetMulticast(ILSysIOHandle handle, ILInt32 af, ILInt32 name,
 int ILSysIODiscoverIrDADevices(ILSysIOHandle handle, unsigned char *buf,
 							   ILInt32 bufLen)
 {
-	/* TODO */
+#if defined(HAVE_GETSOCKOPT) && defined(IL_WIN32_PLATFORM)
+	/*
+	 * Note: we must compile with --disable-cygwin to make IrDA working on
+	 * windows, because cygwin seems to be blocking irda socket options.
+	 */
+	if(getsockopt((int)(ILNativeInt)handle, SOL_IRLMP, IRLMP_ENUMDEVICES,
+				  buf, &bufLen) != 0)
+	{
+		return 0;
+	}
+	return 1;
+#elif defined(HAVE_GETSOCKOPT) && defined(IRLMP_ENUMDEVICES)
+	char *nativeBuf;
+	ILInt32 nativeLen;
+	struct irda_device_list *list;
+	int i;
+	int index;
+
+	/* Compute the option length for unix. Given option length is
+	   4 bytes for device count and 32 bytes for each device info */
+	nativeLen = sizeof(struct irda_device_list) +
+				sizeof(struct irda_device_info) * ((bufLen - 4) / 32);
+
+	nativeBuf = (void *) ILMalloc(nativeLen);
+	if(nativeBuf == 0)
+	{
+		ILSysIOSetErrno(IL_ERRNO_ENOMEM);
+		return 0;
+	}
+
+	/* Perform a discovery and get device list */
+	if(getsockopt((int)(ILNativeInt)handle, SOL_IRLMP, IRLMP_ENUMDEVICES,
+											nativeBuf, &nativeLen) != 0)
+	{
+		ILFree(nativeBuf);
+		return 0;
+	}
+
+	/* Convert list to buf that is used to construct IrDADeviceInfo */
+	list = (struct irda_device_list *) nativeBuf;
+
+	ILMemCpy((void *)(buf), (const void *)(&(list->len)), 4);
+	index = 4;
+
+	for(i = 0; i < list->len; ++i)
+	{
+		ILMemCpy((void *)(buf + index),
+									(const void *)(&(list->dev[i].daddr)), 4);
+		index += 4;
+		ILMemCpy((void *)(buf + index), (const void *)(list->dev[i].info), 22);
+		index += 22;
+		ILMemCpy((void *)(buf + index), (const void *)(list->dev[i].hints), 2);
+		index += 2;
+		buf[index] = list->dev[i].charset;
+		index += 4;
+	}
+
+	ILFree(nativeBuf);
+	return 1;
+#else
 	ILSysIOSetErrno(IL_ERRNO_EINVAL);
 	return 0;
+#endif
 }
 
 #ifdef	__cplusplus

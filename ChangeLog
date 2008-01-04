@@ -1,3 +1,8 @@
+2008-01-05  Radek Polak  <psonek2@seznam.cz>
+
+	* support/socket.c: Implemented IrDA device discovery. Fixed checking for
+	return values from getsockopt and setsockopt.
+
 2007-12-30  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/debugger.c: Implemented local variables and function parameters

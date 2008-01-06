@@ -1,3 +1,14 @@
+2008-01-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc_array.c: Rename GetArrayBase to _ILJitSArrayGetBase and
+	GetArrayLength to _ILJitSArrayGetLength. Pass the jit function instead of
+	the coder to the two functions.
+
+	* engine/jitc_pinvoke.c: Use the methods in jitc_array.c to get the base
+	or length of a simple array. Use the offsetof macro to get the actual
+	offset of the length in the array header instead of 0 when setting the
+	new array length.
+
 2008-01-05  Radek Polak  <psonek2@seznam.cz>
 
 	* support/socket.c: Implemented IrDA device discovery. Fixed checking for

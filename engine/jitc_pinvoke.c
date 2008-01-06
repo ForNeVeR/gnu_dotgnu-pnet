@@ -1192,9 +1192,8 @@ static ILJitValue MarshalValue(jit_function_t function, ILJitValue in, ILType *t
 			    jit_insn_store(function, newArray, srcArray);
 			    if(addressKind==MARSHAL_FIRST_LEVEL_VALUE)
 			    {
-				    jit_insn_store(function, newArray, jit_insn_add_relative(function,
-				    	    				newArray,
-				    					(jit_nint)(sizeof(ILUInt32))));
+				    jit_insn_store(function, newArray,
+								   _ILJitSArrayGetBase(function, newArray));
 			    }
 			    jit_insn_label(function, &endLoop);
 			    if(addressKind==MARSHAL_ITEM_OF_STRUCTURE || addressKind==MARSHAL_ITEM_OF_ARRAY)
@@ -1202,7 +1201,8 @@ static ILJitValue MarshalValue(jit_function_t function, ILJitValue in, ILType *t
 			    return newArray;
 		    }
 		    // The size of a simple array can be known only on run-time.
-		    arraySize = jit_insn_load_relative(function, srcArray, 0, _IL_JIT_TYPE_UINT32);
+		    arraySize = _ILJitSArrayGetLength(function, srcArray);
+
 		    thread = ILExecThreadCurrent();
 		    srcElemSize = jit_value_create_nint_constant(function,
 			    						_IL_JIT_TYPE_INT32,
@@ -1221,9 +1221,7 @@ static ILJitValue MarshalValue(jit_function_t function, ILJitValue in, ILType *t
 							    jit_value_create_nint_constant
 									(function, _IL_JIT_TYPE_UINT32, 0)),
 									&endLoop);
-		    srcElemAddress = jit_insn_add_relative(function,
-								srcArray,
-								(jit_nint)(sizeof(ILUInt32)));
+		    srcElemAddress = _ILJitSArrayGetBase(function, srcArray);
 		    newElemAddress = jit_value_create(function, jit_type_int);
 		    jit_insn_store(function, newElemAddress, newArray);
 		    counter = jit_insn_dup(function, arraySize);
@@ -1921,7 +1919,8 @@ static void MarshalByRefValue(jit_function_t function, ILJitValue in, ILType *ty
 				    return;
 			    }
 			    // The size of a simple array can be known only on run-time.
-			    arraySize = jit_insn_load_relative(function, outAddressValue, 0, _IL_JIT_TYPE_UINT32);
+			    arraySize = _ILJitSArrayGetLength(function, outAddressValue);
+
 			    thread = ILExecThreadCurrent();
 			    srcElemSize = jit_value_create_nint_constant(function,
 					    					_IL_JIT_TYPE_INT32,
@@ -1929,7 +1928,7 @@ static void MarshalByRefValue(jit_function_t function, ILJitValue in, ILType *ty
 			    newElemSize = jit_value_create_nint_constant(function,
 										_IL_JIT_TYPE_INT32,
 									    	(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
-			    newArray = jit_insn_add_relative(function, outAddressValue, (jit_nint)(sizeof(ILUInt32)));
+			    newArray = _ILJitSArrayGetBase(function, outAddressValue);
 			    jit_insn_branch_if(function,
 						jit_insn_eq(function, arraySize,
 									jit_value_create_nint_constant
@@ -2794,8 +2793,9 @@ static ILJitValue MarshalDelegateValue(jit_function_t function, ILJitValue in, I
 			    jit_insn_store(function, newArray, srcArray);
 			    jit_insn_branch_if_not(function, jit_insn_to_bool(function, srcArray),
 							    &endLoop);
-    			    // The size of a simple array can be known only on run-time.
-			    arraySize = jit_insn_load_relative(function, srcArray, 0, _IL_JIT_TYPE_UINT32);
+   			    // The size of a simple array can be known only on run-time.
+			    arraySize = _ILJitSArrayGetLength(function, srcArray);
+
 			    srcElemSize = jit_value_create_nint_constant(function,
 				    					    _IL_JIT_TYPE_INT32,
 									    (jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread),
@@ -2805,14 +2805,17 @@ static ILJitValue MarshalDelegateValue(jit_function_t function, ILJitValue in, I
 									    (jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread),
 												    elemType)));
 			    newArraySize = jit_insn_mul(function, arraySize, newElemSize);
-			    newArraySize = jit_insn_add_relative(function, newArraySize, (jit_nint)(sizeof(ILUInt32)));
+			    newArraySize = jit_insn_add_relative(function, newArraySize,
+													 (jit_nint)_IL_JIT_SARRAY_HEADERSIZE);
 			    args[0] = newArraySize;
 			    newArray = jit_insn_call_native(function, "_ILGCAllocAtomic",
 			    		    				ILGCAllocAtomic,
 			    		    				_ILJitSignature_malloc,
 									args, 1, 0);
-			    jit_insn_store_relative(function, newArray, 0, arraySize);
-			    newArray = jit_insn_add_relative(function, newArray, (jit_nint)(sizeof(ILUInt32)));
+			    jit_insn_store_relative(function, newArray,
+										offsetof(SArrayHeader, length),
+										arraySize);
+			    newArray = _ILJitSArrayGetBase(function, newArray);
 			    jit_insn_branch_if(function,
 						jit_insn_eq(function, arraySize,
 									jit_value_create_nint_constant
@@ -2822,7 +2825,7 @@ static ILJitValue MarshalDelegateValue(jit_function_t function, ILJitValue in, I
 								srcArray,
 								jit_value_create_nint_constant(function,
 												_IL_JIT_TYPE_INT32,
-												(jit_nint)(sizeof(ILUInt32))));
+												(jit_nint)_IL_JIT_SARRAY_HEADERSIZE));
 			    newElemAddress = jit_insn_dup(function, newArray);
 			    counter = jit_insn_dup(function, arraySize);
 			    jit_insn_label(function, &startLoop);
@@ -3583,7 +3586,8 @@ static void MarshalDelegateByRefValue(jit_function_t function, ILJitValue in, IL
 			    }
 
 			    // The size of a simple array can be known only on run-time.
-			    arraySize = jit_insn_load_relative(function, srcArray, 0, _IL_JIT_TYPE_UINT32);
+			    arraySize = _ILJitSArrayGetLength(function, srcArray);
+
 			    srcElemSize = jit_value_create_nint_constant(function,
 				    						_IL_JIT_TYPE_INT32,
 										(jit_nint)(_ILSizeOfTypeLocked(_ILExecThreadProcess(thread), elemType)));
@@ -3597,7 +3601,7 @@ static void MarshalDelegateByRefValue(jit_function_t function, ILJitValue in, IL
 										(function, _IL_JIT_TYPE_UINT32, 0)),
 										&endLoop);
 			    newElemAddress = jit_insn_dup(function, outAddressValue);
-			    srcElemAddress = jit_insn_add_relative(function, srcArray, (jit_nint)(sizeof(ILUInt32)));
+			    srcElemAddress = _ILJitSArrayGetBase(function, srcArray);
 			    counter = jit_insn_dup(function, arraySize);
 			    jit_insn_label(function, &startLoop);
 			    jit_insn_store(function, counter, jit_insn_sub(function,

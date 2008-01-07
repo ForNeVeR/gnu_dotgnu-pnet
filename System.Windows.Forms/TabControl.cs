@@ -368,11 +368,19 @@ namespace System.Windows.Forms
 
 			public override void Remove(Control control)
 			{
+				int newIdx = -1;
 				base.Remove(control);
 				tabOwner.InvalidateTabs	();
 				tabOwner.SetTabPageBounds();
 			}
 
+			public override void Clear()
+			{
+				base.Clear();
+				tabOwner.InvalidateTabs	();
+				tabOwner.SetTabPageBounds();
+			}
+			
 		};
 
 		// Collection of child control TabPages.
@@ -503,7 +511,9 @@ namespace System.Windows.Forms
 			}
 			public void Clear()
 			{
-				tabOwner.RemoveAll();
+				// tabOwner.RemoveAll();	// Brubbel recursion endless !!!
+				tabOwner.Controls.Clear();
+				tabOwner.selectedIndex = -1;
 			}
 			bool IList.Contains(Object value)
 			{
@@ -1338,6 +1348,17 @@ namespace System.Windows.Forms
 
 		internal void InvalidateTabs()
 		{
+			// Brubbel
+			int newIndex = selectedIndex;
+			if( newIndex != -1 ) {
+				if( newIndex >= tabPageCollection.Count ) {
+					newIndex = tabPageCollection.Count-1;
+				}
+				if( newIndex != -1 ) {
+					this.SelectedIndex = newIndex;
+				}
+			} 
+
 			positionInfo = null;
 			if (!IsHandleCreated)
 				return;

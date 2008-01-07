@@ -1,3 +1,7 @@
+2008-01-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TabControl.cs: fixed clearing tab pages.
+
 2008-01-07  Radek Polak  <psonek2@seznam.cz>
 
 	* samples/forms/forms.build: Fix wrong directory name.

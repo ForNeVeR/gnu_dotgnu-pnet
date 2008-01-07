@@ -1,3 +1,7 @@
+2008-01-07  Radek Polak  <psonek2@seznam.cz>
+
+	* samples/forms/forms.build: Fix wrong directory name.
+
 2008-01-05  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Net.IrDA/IrDAClient.cs: Change to host byte order while

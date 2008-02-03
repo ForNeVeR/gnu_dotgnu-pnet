@@ -67,6 +67,11 @@
 	#include <sys/modem.h>
 #endif
 
+/* BeOS needs socket.h */
+#ifdef HAVE_SYS_SOCKET_H
+	#include <sys/socket.h>
+#endif
+
 #ifndef CRTSCTS
 	#ifdef CNEW_RTSCTS
 		#define CRTSCTS CNEW_RTSCTS

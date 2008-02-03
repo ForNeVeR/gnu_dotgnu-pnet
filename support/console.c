@@ -77,6 +77,10 @@
 		#define	USE_TERMIOS	1
 	#endif
 #endif
+/* BeOS needs socket.h */
+#ifdef HAVE_SYS_SOCKET_H
+	#include <sys/socket.h>
+#endif
 #endif
 
 #ifdef	__cplusplus

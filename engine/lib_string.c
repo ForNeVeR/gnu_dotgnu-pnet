@@ -1031,12 +1031,16 @@ ILInt32 _IL_String_FindInRange(ILExecThread *thread, System_String *_this,
 							   ILInt32 srcFirst, ILInt32 srcLast,
 							   ILInt32 step, System_String *dest)
 {
-  	/* Searches for zero length strings always match */
-  	if(dest->length == 0)
-	  	return srcFirst;
-	ILUInt16 *buf1 = StringToBuffer(_this) + srcFirst;
-	ILUInt16 *buf2 = StringToBuffer(dest);
-	ILUInt32 size = (ILUInt32)(dest->length * sizeof(ILUInt16));
+	ILUInt16 *buf1;
+	ILUInt16 *buf2;
+	ILUInt32 size;
+
+	/* Searches for zero length strings always match */
+	if(dest->length == 0)
+		return srcFirst;
+	buf1 = StringToBuffer(_this) + srcFirst;
+	buf2 = StringToBuffer(dest);
+	size = (ILUInt32)(dest->length * sizeof(ILUInt16));
 	if(step > 0)
 	{
 		/* Scan forwards for the string */

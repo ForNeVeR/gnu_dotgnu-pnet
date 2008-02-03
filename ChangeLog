@@ -1,3 +1,10 @@
+2008-02-03  Andreas Färber  <andreas.faerber@web.de>
+
+	* csdoc/doc_valil.c, engine/lib_string.c: Move variable declarations
+	before any non variable declaration statements for gcc2 and ANSI C
+	compliance in GetClassNameInner and WithTypeToNameInner (doc_valil.c)
+	and _IL_String_FindInRange (lib_string.c).
+
 2008-01-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc_array.c: Rename GetArrayBase to _ILJitSArrayGetBase and

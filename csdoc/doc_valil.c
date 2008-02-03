@@ -223,9 +223,9 @@ static char *GetClassNameInner(ILClass *classInfo, ILUInt32 *firstGenParam)
 
 	if(nestedParent)
 	{
-		name = GetClassNameInner(nestedParent, firstGenParam);
 		char *tempName;
 
+		name = GetClassNameInner(nestedParent, firstGenParam);
 		tempName = (char *)ILMalloc(strlen(name) +
 									strlen(ILClass_Name(classInfo)) + 2);
 		if(!tempName)
@@ -826,10 +826,10 @@ static char *WithTypeToNameInner(ILClass *classInfo, int shortForm,
 
 	if(nestedParent)
 	{
-		name = WithTypeToNameInner(nestedParent, shortForm, scope, first,
-								   withType);
 		char *tempName;
 
+		name = WithTypeToNameInner(nestedParent, shortForm, scope, first,
+								   withType);
 		tempName = (char *)ILMalloc(strlen(name) +
 									strlen(ILClass_Name(classInfo)) + 2);
 		if(!tempName)

@@ -1,3 +1,9 @@
+2008-03-23  Klaus Treichel  <ktreichel@web.de>
+
+	* support/wait_mutex.c: Fix compiler warnings on X86_64. Number of shifted
+	bits of the pointer for the hashtable depends on the size of void * and
+	not on the size of int.
+
 2008-02-03  Andreas Färber  <andreas.faerber@web.de>
 
 	* csdoc/doc_valil.c, engine/lib_string.c: Move variable declarations

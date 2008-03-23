@@ -168,7 +168,11 @@ static void AddMutexToWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 
 		/* Grow the new hashtable */
 		
+	#if SIZEOF_INT <= 4
+		if (wakeup->ownedMutexesCapacity >= (IL_MAX_INT32) / 2)
+	#else
 		if (wakeup->ownedMutexesCapacity >= (IL_MAX_NATIVE_INT) / 2)
+	#endif
 		{
 			return;
 		}
@@ -213,10 +217,10 @@ static void AddMutexToWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 		
 			/* Find the new available bucket in the new hashtable */
 
-			#if SIZEOF_INT <= 4
-				x = (((int)ownedMutexes[i]) >> 2) % newCapacity;
+			#if SIZEOF_VOID_P <= 4
+				x = (int)(((ILNativeInt)ownedMutexes[i]) >> 2) % newCapacity;
 			#else
-				x = (((int)ownedMutexes[i]) >> 3) % newCapacity;
+				x = (int)(((ILNativeInt)ownedMutexes[i]) >> 3) % newCapacity;
 			#endif
 			
 			for (;;)
@@ -240,10 +244,10 @@ static void AddMutexToWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 
 	/* Get the initial bucket to try putting the mutex in */
 	
-	#if SIZEOF_INT <= 4
-		i = (((int)mutex) >> 2) % wakeup->ownedMutexesCapacity;
+	#if SIZEOF_VOID_P <= 4
+		i = (int)(((ILNativeInt)mutex) >> 2) % wakeup->ownedMutexesCapacity;
 	#else
-		i = (((int)mutex) >> 3) % wakeup->ownedMutexesCapacity;
+		i = (int)(((ILNativeInt)mutex) >> 3) % wakeup->ownedMutexesCapacity;
 	#endif
 
 	/* Scan the hashtable and find an empty bucket for the mutex */
@@ -277,10 +281,10 @@ static void RemoveMutexFromWakeup(ILWaitMutex *mutex, _ILWakeup *wakeup)
 
 	/* Get the initial (and correct right) bucket */
 
-	#if SIZEOF_INT <= 4
-		j = i = (((int)mutex) >> 2) % wakeup->ownedMutexesCapacity;
+	#if SIZEOF_VOID_P <= 4
+		j = i = (int)(((ILNativeInt)mutex) >> 2) % wakeup->ownedMutexesCapacity;
 	#else
-		j = i = (((int)mutex) >> 3) % wakeup->ownedMutexesCapacity;
+		j = i = (int)(((ILNativeInt)mutex) >> 3) % wakeup->ownedMutexesCapacity;
 	#endif
 
 	/* Scan the hashtable and clear the entry for the mutex (if found) */

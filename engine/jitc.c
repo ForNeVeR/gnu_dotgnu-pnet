@@ -4225,6 +4225,116 @@ static ILJitType _ILJitTypeSpecials(ILClassName *className)
 }
 
 /*
+ * Create the type representation including fields for libjit.
+ */
+static ILJitType _ILJitTypeCreate(ILClass *info, ILExecProcess *process)
+{
+	ILJitType jitType = 0;
+	ILField *field;
+	ILUInt32 numFields = 0;
+
+	/* The parent class is always the first field */
+	if(info->parent)
+	{
+		++numFields;
+	}
+
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind
+			(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+	{
+		if((field->member.attributes & IL_META_FIELDDEF_STATIC) == 0)
+		{
+			++numFields;
+		}
+	}
+
+	if(numFields > 0)
+	{
+		ILInt32 jitTypeIsUnion = 1;
+		ILUInt32 currentField = 0;
+		ILJitType fields[numFields];
+		ILUInt32 offsets[numFields];
+
+		if(info->parent)
+		{
+			/* The parent class must be laid out at this point */
+			ILClass *parent = ILClassGetParent(info);
+
+			if(parent && parent->userData)
+			{
+				fields[currentField] = ((ILClassPrivate *)(parent->userData))->jitTypes.jitTypeBase;
+				/* Check if the size of the base type is > 0 */
+				/* (it is not System.Object or System.ValueType for example */
+				if(jit_type_get_size(fields[currentField]) > 0)
+				{
+					offsets[currentField] = 0;
+					++currentField;
+				}
+			}
+			else
+			{
+				return 0;
+			}
+		}
+
+		field = 0;
+		while((field = (ILField *)ILClassNextMemberByKind
+				(info, (ILMember *)field, IL_META_MEMBERKIND_FIELD)) != 0)
+		{
+			if((field->member.attributes & IL_META_FIELDDEF_STATIC) == 0)
+			{
+				ILType *type = field->member.signature;
+				ILJitTypes *jitTypes;
+
+				type = ILTypeStripPrefixes(type);
+				if(ILType_IsClass(type))
+				{
+					jitTypes = ILJitPrimitiveClrTypeToJitTypes(IL_META_ELEMTYPE_PTR);
+				}
+				else
+				{
+					jitTypes = _ILJitGetTypes(type, process);
+				}
+				if(!jitTypes)
+				{
+					return 0;
+				}
+				fields[currentField] = jitTypes->jitTypeBase;
+				offsets[currentField] = field->offset;
+				jitTypeIsUnion &= (field->offset == 0);
+				++currentField;
+			}
+		}
+		if(jitTypeIsUnion && (currentField > 1))
+		{
+			/* All fields have a 0 offset */
+			jitType = jit_type_create_union(fields, currentField, 0);
+		}
+		else
+		{
+			jitType = jit_type_create_struct(fields, currentField, 0);
+			if(!jitType)
+			{
+				return 0;
+			}
+			/* Set the offsets of the fields in the struct */
+			for(currentField = 0; currentField < numFields; currentField++)
+			{
+				jit_type_set_offset(jitType, currentField, offsets[currentField]);
+			}
+		}
+	}
+	else
+	{
+		/* This must be the top level System.Object class. */
+		jitType = jit_type_create_struct(0, 0, 0);
+	}
+
+	return jitType;
+}
+
+/*
  * Create the class/struct representation of a clr type for libjit.
  * and store the type in classPrivate.
  * Returns the 1 on success else 0
@@ -4244,7 +4354,7 @@ int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process)
 		}
 		if(!jitType)
 		{
-			if(!(jitType = jit_type_create_struct(0, 0, 0)))
+			if(!(jitType = _ILJitTypeCreate(classPrivate->classInfo, process)))
 			{
 				return 0;
 			}
@@ -4571,6 +4681,7 @@ char *ILJitPrintMethod(void *pc)
 #endif /* _IL_JIT_ENABLE_DEBUG */
 
 #define	IL_JITC_FUNCTIONS
+#include "jitc_arith.c"
 #include "jitc_diag.c"
 #include "jitc_locals.c"
 #include "jitc_stack.c"

@@ -18,6 +18,62 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#ifdef	IL_JITC_FUNCTIONS
+
+static void AdjustShiftValue(ILJITCoder *jitCoder, int isUnsigned, ILJitValue *value)
+{
+	ILJitType type = jit_value_get_type(*value);
+	ILJitType newType = 0;
+	int typeKind = jit_type_get_kind(type);
+	int typeIsLong = _JIT_TYPEKIND_IS_LONG(typeKind);
+	int typeIsPointer = _JIT_TYPEKIND_IS_POINTER(typeKind);
+
+	if(typeIsLong)
+	{
+		/* If the arguments mix I8 and I4, then cast the I4 value to I8 */
+		if(isUnsigned)
+		{
+			newType = _IL_JIT_TYPE_UINT64;
+		}
+		else
+		{
+			newType = _IL_JIT_TYPE_INT64;
+		}
+	}
+	else if(typeIsPointer)
+	{
+		if(isUnsigned)
+		{
+			newType = _IL_JIT_TYPE_NUINT;
+		}
+		else
+		{
+			newType = _IL_JIT_TYPE_NINT;
+		}
+	}
+	else
+	{
+		/* We have only 32 bit values left. */
+		if(isUnsigned)
+		{
+			newType = _IL_JIT_TYPE_UINT32;
+		}
+		else
+		{
+			newType = _IL_JIT_TYPE_INT32;
+		}
+	}
+	
+	/* now do the conversion if necessairy. */
+	if(type != newType)
+	{
+		*value = _ILJitValueConvertImplicit(jitCoder->jitFunction, *value,
+											 newType);
+	}
+}
+
+#endif	/* IL_JITC_FUNCTIONS */
+
 #ifdef IL_JITC_CODE
 
 /*
@@ -302,10 +358,9 @@ static void JITCoder_Shift(ILCoder *coder, int opcode,
 	{
 		case IL_OP_SHL:
 		{
-			AdjustMixedBinary(jitCoder,
-							  0,
-							  &(_ILJitStackItemValue(value1)),
-							  &(_ILJitStackItemValue(value2)));
+			AdjustShiftValue(jitCoder,
+							 0,
+							 &(_ILJitStackItemValue(value1)));
 			result = jit_insn_shl(jitCoder->jitFunction,
 								  _ILJitStackItemValue(value1),
 								  _ILJitStackItemValue(value2));
@@ -314,10 +369,9 @@ static void JITCoder_Shift(ILCoder *coder, int opcode,
 
 		case IL_OP_SHR:
 		{
-			AdjustMixedBinary(jitCoder,
-							  0,
-							  &(_ILJitStackItemValue(value1)),
-							  &(_ILJitStackItemValue(value2)));
+			AdjustShiftValue(jitCoder,
+							 0,
+							 &(_ILJitStackItemValue(value1)));
 			result= jit_insn_shr(jitCoder->jitFunction,
 								 _ILJitStackItemValue(value1),
 								 _ILJitStackItemValue(value2));
@@ -326,10 +380,9 @@ static void JITCoder_Shift(ILCoder *coder, int opcode,
 
 		case IL_OP_SHR_UN:
 		{
-			AdjustMixedBinary(jitCoder,
-							  1,
-							  &(_ILJitStackItemValue(value1)),
-							  &(_ILJitStackItemValue(value2)));
+			AdjustShiftValue(jitCoder,
+							 1,
+							 &(_ILJitStackItemValue(value1)));
 			result = jit_insn_shr(jitCoder->jitFunction,
 								  _ILJitStackItemValue(value1),
 								  _ILJitStackItemValue(value2));

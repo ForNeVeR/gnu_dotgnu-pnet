@@ -379,7 +379,7 @@ static int _ILJitLocalInit(ILJITCoder *coder, ILJitLocalSlot *slot)
 	{
 		ILJitType type = jit_value_get_type(slot->value);
 
-		if(!jit_type_is_struct(type))
+		if(!jit_type_is_struct(type) && !jit_type_is_union(type))
 		{
 			int typeKind = jit_type_get_kind(type);
 			ILJitValue constant = 0;

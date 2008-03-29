@@ -628,6 +628,19 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 			arm_patch((patch), (inst))
 
 /*
+ * Advance reg1 to the first array element. This means adding 4 on EABI
+ * because sizeof(System_Array) is 8 here.
+ */
+#ifdef __ARM_EABI__
+	#define arm_bounds_check_advance(inst, reg1) \
+		do { \
+			md_add_reg_imm((inst), reg1, 4); \
+		} while (0)
+#else
+	#define arm_bounds_check_advance(inst, reg1)
+#endif
+
+/*
  * Check an array bounds value.  "reg1" points to the array,
  * and "reg2" is the array index to check.  This will advance
  * the pointer in "reg1" past the array bounds value.
@@ -635,6 +648,7 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 #define	md_bounds_check(inst,reg1,reg2)	\
 			do { \
 				arm_load_advance((inst), ARM_WORK, (reg1)); \
+				arm_bounds_check_advance((inst), (reg1)); \
 				arm_test_reg_reg((inst), ARM_CMP, (reg2), ARM_WORK); \
 			} while (0)
 

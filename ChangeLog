@@ -1,3 +1,12 @@
+2008-04-10  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* System.Drawing.Xsharp/DrawingMdiClient.cs, 
+	System.Drawing.Xsharp/DrawingPopupWindow.cs,
+	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,
+	System.Drawing.Xsharp/DrawingWindow.cs,
+	Xsharp/Drawable.cs: allow to get the X Window handle.
+	* System.Drawing.Xsharp/DrawingWindow.cs: fixed a null ref exception, when 
+	pressing a key and window is destroyed.
+
 2008-01-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TabControl.cs: fixed clearing tab pages.

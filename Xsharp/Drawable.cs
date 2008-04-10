@@ -90,7 +90,7 @@ public abstract class Drawable : IDisposable
 
 	// Get the handle for drawable, assuming that it is
 	// a widget.  Should be called with the display lock.
-	internal XWindow GetWidgetHandle()
+	public XWindow GetWidgetHandle()
 			{
 				if(handle != XDrawable.Zero)
 				{

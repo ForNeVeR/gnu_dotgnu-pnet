@@ -213,7 +213,7 @@ internal sealed class DrawingTopLevelWindow
 	// Get the HWND for this window.  IntPtr.Zero if not supported.
 	IntPtr IToolkitWindow.GetHwnd()
 			{
-				return IntPtr.Zero;
+				return new IntPtr( (int)GetWidgetHandle() );
 			}
 
 	// Invalidate this window.

@@ -210,7 +210,7 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 	// Get the HWND for this window.  IntPtr.Zero if not supported.
 	IntPtr IToolkitWindow.GetHwnd()
 			{
-				return IntPtr.Zero;
+				return new IntPtr( (int)GetWidgetHandle() );
 			}
 
 	// Invalidate this window.
@@ -550,9 +550,11 @@ internal sealed class DrawingWindow : InputOutputWidget, IToolkitWindow
 							// Clean old ASCII DEL (0x7F)
 							if(ch != (char)0x7F)
 							{
-								if(sink.ToolkitKeyChar(ch))
-								{
-									processed = true;
+								if( sink != null ) {  // window might be closed by sink.ToolkitKeyDown
+									if(sink.ToolkitKeyChar(ch))
+									{
+										processed = true;
+									}
 								}
 							}
 						}

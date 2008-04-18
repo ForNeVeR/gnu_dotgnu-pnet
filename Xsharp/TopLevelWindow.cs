@@ -1758,6 +1758,12 @@ public class TopLevelWindow : InputOutputWidget
 				if(!hasPrimaryFocus)
 				{
 					focusWidget = widget;
+					/* 
+						Some WindowManager activate and sets the focus to the window only
+						if mouse is positioned on it.
+						So simulte here, that we got the focus.
+					*/
+					this.PrimaryFocusIn();
 				}
 				else if(focusWidget != widget)
 				{
@@ -2257,6 +2263,15 @@ public class TopLevelWindow : InputOutputWidget
 									 0, -1);
 							}
 						}
+						
+						if(xevent.xconfigure.x != x ||
+						   xevent.xconfigure.y != y ) 
+						{
+								x = xevent.xconfigure.x;
+								y = xevent.xconfigure.y;
+								OnMoveResize(x, y, width, height);
+						}
+						
 						if(xevent.send_event || !reparented)
 						{
 							// The window manager moved us to a new position.

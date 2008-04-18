@@ -1,4 +1,10 @@
+2008-04-18  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/TopLevelWindow.cs: fixed a reparent and moving problem, if the 
+	window is embedded in another apps window.
+
 2008-04-10  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
 	* System.Drawing.Xsharp/DrawingMdiClient.cs, 
 	System.Drawing.Xsharp/DrawingPopupWindow.cs,
 	System.Drawing.Xsharp/DrawingTopLevelWindow.cs,

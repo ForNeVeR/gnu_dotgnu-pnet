@@ -52,6 +52,14 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 			ILMethod_Name(method));
 		ILMutexUnlock(globalTraceMutex);
 	}
+
+	if (coder->flags & IL_CODER_FLAG_METHOD_TRACE)
+	{
+		ILJitValue args[2];
+		args[0] = _ILJitCoderGetThread(coder);
+		args[1] = jit_value_create_nint_constant(coder->jitFunction, _IL_JIT_TYPE_VPTR, (jit_nint) method);
+		jit_insn_call_native(coder->jitFunction, "ILJitTraceIn", ILJitTraceIn, _ILJitSignature_ILJitTraceInOut, args, 2, JIT_CALL_NOTHROW);
+	}
 #endif
 
 #ifndef IL_CONFIG_REDUCE_CODE

@@ -321,6 +321,14 @@ static ILJitType _ILJitSignature_MarshalCustomToObject = 0;
 static ILJitType _ILJitSignature_ILInterlockedIncrement = 0;
 
 /*
+ * void ILJitTraceIn(ILExecThread *thread, ILMethod *method)
+ * void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
+ */
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+static ILJitType _ILJitSignature_ILJitTraceInOut = 0;
+#endif
+
+/*
  * Define offsetof macro if not present.
  */
 #ifndef offsetof
@@ -2507,6 +2515,17 @@ int ILJitInit()
 		return 0;
 	}
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILJitTraceInOut =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+#endif
+
 	return 1;
 }
 
@@ -4679,6 +4698,38 @@ char *ILJitPrintMethod(void *pc)
 }
 
 #endif /* _IL_JIT_ENABLE_DEBUG */
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+
+static void ILJitTraceIn(ILExecThread *thread, ILMethod *method)
+{
+	/* TODO: nesting level */
+	ILMutexLock(globalTraceMutex);
+	fputs("Entering ", stdout);
+	ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method),
+					 ILMethod_Name(method), method);
+	putc('\n',stdout);
+	fflush(stdout);
+	ILMutexUnlock(globalTraceMutex);
+}
+
+static void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
+{
+	/* TODO: nesting level */
+	ILMutexLock(globalTraceMutex);
+	fputs("Leaving ", stdout);
+	ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method),
+					 ILMethod_Name(method), method);
+	putc('\n',stdout);
+	fflush(stdout);
+	ILMutexUnlock(globalTraceMutex);
+}
+
+#endif
 
 #define	IL_JITC_FUNCTIONS
 #include "jitc_arith.c"

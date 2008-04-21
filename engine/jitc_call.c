@@ -1710,6 +1710,15 @@ static void JITCoder_ReturnInsn(ILCoder *coder, ILEngineType engineType,
 			"Return\n");
 		ILMutexUnlock(globalTraceMutex);
 	}
+
+	if (jitCoder->flags & IL_CODER_FLAG_METHOD_TRACE)
+	{
+		ILMethod *method = (ILMethod *)jit_function_get_meta(jitCoder->jitFunction, IL_JIT_META_METHOD);
+		ILJitValue args[2];
+		args[0] = _ILJitCoderGetThread(jitCoder);
+		args[1] = jit_value_create_nint_constant(jitCoder->jitFunction, _IL_JIT_TYPE_VPTR, (jit_nint) method);
+		jit_insn_call_native(jitCoder->jitFunction, "ILJitTraceOut", ILJitTraceOut, _ILJitSignature_ILJitTraceInOut, args, 2, JIT_CALL_NOTHROW);
+	}
 #endif
 
 #ifdef IL_DEBUGGER

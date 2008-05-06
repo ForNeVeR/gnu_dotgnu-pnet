@@ -1,3 +1,8 @@
+2008-05-06  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TextBox.cs: fixed changing text when setting or getting
+	if text has a newline (don't modify original text).
+
 2008-04-18  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* Xsharp/TopLevelWindow.cs: fixed a reparent and moving problem, if the 

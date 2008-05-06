@@ -80,6 +80,8 @@ public class TextBox : TextBoxBase
 	private bool showHScrollBar;
 
 	private int graphicsOffset;
+	
+	private string workingText = string.Empty;
 
 	[TODO]
 	public TextBox()
@@ -333,10 +335,10 @@ public class TextBox : TextBoxBase
 			// Fix: handle case right to left
 			int x = 0;
 			int y = 0;
-			if (Text.Length > 0)
+			if (this.workingText.Length > 0)
 			{
-				y = layout.Items[Text.Length - 1].bounds.Bottom;
-				x = layout.Items[Text.Length - 1].bounds.Right;
+				y = layout.Items[this.workingText.Length - 1].bounds.Bottom;
+				x = layout.Items[this.workingText.Length - 1].bounds.Right;
 			}
 			return new Size(x, y);
 		}
@@ -417,14 +419,14 @@ public class TextBox : TextBoxBase
 					}
 				}
 				
-				SetTextActual( sb.ToString());
+				SetTextActual( sb.ToString(), value );
 			}
 			else {
-				SetTextActual( value );
+				SetTextActual( value, value );
 			}
 			
 			// Set the position to the end
-			SelectInternal(Text.Length, 0);
+			SelectInternal(this.workingText.Length, 0);
 			if (!inTextChangedEvent)
 			{
 				if (IsHandleCreated)
@@ -446,7 +448,7 @@ public class TextBox : TextBoxBase
 			int line = 0;
 			int y = -1;
 			// Find the number of lines
-			for (int i = 0; i < Text.Length; i++)
+			for (int i = 0; i < this.workingText.Length; i++)
 			{
 				int currentY = layout.Items[i].bounds.Y;
 				if (currentY != y)
@@ -455,7 +457,7 @@ public class TextBox : TextBoxBase
 					y = currentY;
 				}
 			}
-			if(Text.Length != 0 && line == 0)
+			if(this.workingText.Length != 0 && line == 0)
 			{
 				line++; // At least one line
 			}
@@ -464,11 +466,11 @@ public class TextBox : TextBoxBase
 			int j = 0;
 			line = 0;
 			// Break into strings
-			while(j < Text.Length)
+			while(j < this.workingText.Length)
 			{
-				if (Text[j] == '\r' && j < Text.Length - 1 && Text[j+1] == '\n') // Look for CRLF
+				if (this.workingText[j] == '\r' && j < this.workingText.Length - 1 && this.workingText[j+1] == '\n') // Look for CRLF
 				{
-					lines[line++] = Text.Substring(start, j - start);
+					lines[line++] = this.workingText.Substring(start, j - start);
 					j+=2; 
 					start = j;
 				}
@@ -478,11 +480,11 @@ public class TextBox : TextBoxBase
 				}
 			}
 
-			if(start < Text.Length)
+			if(start < this.workingText.Length)
 			{
-				lines[line++] = Text.Substring(start);
+				lines[line++] = this.workingText.Substring(start);
 			}
-			else if(start != 0 && start == Text.Length)
+			else if(start != 0 && start == this.workingText.Length)
 			{
 				//FIXME: blank lines at end of text should be ""
 			}
@@ -500,7 +502,8 @@ public class TextBox : TextBoxBase
 					sb.Append("\r\n");
 				}
 			}
-			SetTextActual( sb.ToString());
+			string tmp = sb.ToString();
+			SetTextActual( tmp, tmp );
 			ResetView();
 			InvalidateDirty();
 			OnTextChanged(EventArgs.Empty);
@@ -521,7 +524,7 @@ public class TextBox : TextBoxBase
 				if (IsHandleCreated)
 				{
 					// Layout changes
-					LayoutFromText(Text);
+					LayoutFromText(this.workingText);
 					SetScrollBarPositions();
 					ResetView();
 				}
@@ -595,7 +598,7 @@ public class TextBox : TextBoxBase
 		base.OnLeave (e);
 		// Create a region containing the caret and all visible selected text
 		Region update = new Region(caretBounds);
-		for (int i = 0; i < Text.Length; i++)
+		for (int i = 0; i < this.workingText.Length; i++)
 		{
 			if (layout.Items[i].selected)
 			{
@@ -667,7 +670,7 @@ public class TextBox : TextBoxBase
 			return;
 		}
 
-		if (MaxLength>0 && Text.Length >= MaxLength)
+		if (MaxLength>0 && this.workingText.Length >= MaxLength)
 		{
 			return;
 		}
@@ -731,7 +734,7 @@ public class TextBox : TextBoxBase
 	{
 		if (layout == null)
 		{
-			LayoutFromText(Text, g);
+			LayoutFromText(this.workingText, g);
 			ResetView();
 		}
 		// Draw scrollbar corner if both are visible
@@ -1083,7 +1086,7 @@ public class TextBox : TextBoxBase
 		Region newRegion = new Region(RectangleF.Empty);
 		selectionStartActual = start;
 		selectionLengthActual = length;
-		for (int i = 0; i < Text.Length; i++) 
+		for (int i = 0; i < this.workingText.Length; i++) 
 		{
 			bool selected = (i>=GetSelectionStart() && i < GetSelectionStart() + GetSelectionLength());
 			layout.Items[i].selected = selected;
@@ -1114,13 +1117,12 @@ public class TextBox : TextBoxBase
 
 	protected override void SetTextInternal(string text)
 	{
-
-		SetTextActual(text);
+		SetTextActual(text,text);
 		InvalidateDirty();
 	}
 
 	// Called to change the text. Sets the update to whats needed to but doesnt change the selection point or caret
-	private void SetTextActual( string text)
+	private void SetTextActual( string text, string orgText )
 	{
 		if( !IsHandleCreated ) {
 			// create handle here to be sure that LayoutInfo will be set correct.
@@ -1133,10 +1135,14 @@ public class TextBox : TextBoxBase
 		{
 			oldLayout = (LayoutInfo)layout.Clone();
 		}
-		string oldText = Text;
-		LayoutFromText(text);
-		// We must not trigger the onTextChanged event yet else this controls text could be change in the event!
-		(this as Control).text = text;
+		string oldText = this.workingText;
+		this.workingText = text;
+				
+		LayoutFromText(this.workingText);
+		
+// We must not trigger the onTextChanged event yet else this controls text could be change in the event!
+		(this as Control).text = orgText;
+		
 		SetScrollBarPositions();
 		if (prevLayout)
 		{
@@ -1160,7 +1166,7 @@ public class TextBox : TextBoxBase
 					{
 						if( i < oldLen ) update.Union( oldLayout.Items[i].bounds);
 					}
-					else if ( (i < oldLen && i < newLen) && (Text[i] != oldText[i] || oldLayout.Items[i].bounds != layout.Items[i].bounds ) )
+					else if ( (i < oldLen && i < newLen) && (this.workingText[i] != oldText[i] || oldLayout.Items[i].bounds != layout.Items[i].bounds ) )
 					{
 						if( i < newLen ) {
 							update.Union( layout.Items[i].bounds);
@@ -1277,7 +1283,7 @@ public class TextBox : TextBoxBase
 			newPos = 0;
 			break;
 		case CaretDirection.TextEnd:
-			newPos = Text.Length;
+			newPos = this.workingText.Length;
 			break;
 		}
 		
@@ -1327,7 +1333,8 @@ public class TextBox : TextBoxBase
 					if (newPos < startPos)
 					{
 						int nbCharsToDelete = startPos - newPos;
-						SetTextActual(Text.Substring(0, GetSelectionStart() - nbCharsToDelete) + Text.Substring(GetSelectionStart()));
+						string tmp = this.workingText.Substring(0, GetSelectionStart() - nbCharsToDelete) + this.workingText.Substring(GetSelectionStart());
+						SetTextActual(tmp,tmp);
 						SelectInternal(GetSelectionStart()-nbCharsToDelete, 0);
 					}
 				}
@@ -1390,7 +1397,8 @@ public class TextBox : TextBoxBase
 						
 					if (newPos > startPos)
 					{
-						SetTextActual(Text.Substring(0, GetSelectionStart()) + Text.Substring(GetSelectionStart() + newPos - startPos));
+						string tmp = this.workingText.Substring(0, GetSelectionStart()) + this.workingText.Substring(GetSelectionStart() + newPos - startPos);
+						SetTextActual(tmp,tmp);
 					}
 				}
 				SelectInternal(GetSelectionStart(),0);
@@ -1429,7 +1437,7 @@ public class TextBox : TextBoxBase
 		if ((specified & BoundsSpecified.Height) != 0 | (specified & BoundsSpecified.Width) != 0)
 		{
 			layout = null;
-			LayoutFromText(Text);
+			LayoutFromText(this.workingText);
 			SetScrollBarPositions();
 			ResetView ();
 			// Redraw
@@ -1606,16 +1614,16 @@ public class TextBox : TextBoxBase
 							int startPos = closest;
 							for (; startPos > 0; --startPos)
 							{
-								if (!IsWordChar(Text[startPos-1]))
+								if (!IsWordChar(this.workingText[startPos-1]))
 								{
 									break;
 								}
 							}
 
 							int endPos = closest;
-							for (; endPos < Text.Length; ++endPos)
+							for (; endPos < this.workingText.Length; ++endPos)
 							{
-								if (!IsWordChar(Text[endPos]))
+								if (!IsWordChar(this.workingText[endPos]))
 								{
 									break;
 								}
@@ -1700,13 +1708,13 @@ public class TextBox : TextBoxBase
 		}
 		Rectangle newBounds = Rectangle.Empty;
 		int height = Font.Height;
-		if (Text.Length == 0)
+		if (this.workingText.Length == 0)
 		{
 			newBounds = new Rectangle(CaretXFromAlign, 1, 1, height);
 		}
 		else
 		{
-			if (position == Text.Length)
+			if (position == this.workingText.Length)
 			{
 				
 				// If the last character is a linefeed, position ourselves at the
@@ -1758,7 +1766,7 @@ public class TextBox : TextBoxBase
 		Rectangle bounds = new Rectangle(0, 0, 0, Font.Height);
 		Rectangle prevBounds = bounds;
 		int i=0;
-		for (; i<Text.Length;i++) 
+		for (; i<this.workingText.Length;i++) 
 		{
 			if (layout.Items[i].type != LayoutInfo.Item.CharType.OutOfBoundsChar)
 			{
@@ -1784,17 +1792,17 @@ public class TextBox : TextBoxBase
 		}
 
 		// CR's only get selected, so if this position is the beginning of a selection then select the LF as well
-		if (caretPosition < (GetSelectionStart()+ GetSelectionLength()) && Text.Length > 1 && layout.Items[caretPosition].type == LayoutInfo.Item.CharType.LF && layout.Items[caretPosition - 1].type == LayoutInfo.Item.CharType.CR)
+		if (caretPosition < (GetSelectionStart()+ GetSelectionLength()) && this.workingText.Length > 1 && layout.Items[caretPosition].type == LayoutInfo.Item.CharType.LF && layout.Items[caretPosition - 1].type == LayoutInfo.Item.CharType.CR)
 		{
 			caretPosition--;
 		}
 	
-		if (i == Text.Length)
+		if (i == this.workingText.Length)
 		{
 			// If the last character is a linefeed, set the caret to Text.Length only
 			// if they clicked underneath the linefeed.
 			caretPosition = i;
-			if (Text.Length > 0 &&
+			if (this.workingText.Length > 0 &&
 				layout.Items[i-1].type == LayoutInfo.Item.CharType.LF &&
 				pt.Y <= prevBounds.Bottom)
 			{
@@ -1821,13 +1829,13 @@ public class TextBox : TextBoxBase
 		int end = 0;
 		if (Multiline)
 		{
-			end = Text.Length;
+			end = this.workingText.Length;
 		}
 		else
 			// Position before the first linefeed
-			for (; end < Text.Length; end++)
+			for (; end < this.workingText.Length; end++)
 			{
-				if (Text[end] == '\n')
+				if (this.workingText[end] == '\n')
 				{
 					break;
 				}
@@ -1912,7 +1920,7 @@ public class TextBox : TextBoxBase
 	{
 		for (; fromPos > 0; --fromPos)
 		{
-			if (Text[fromPos-1] == '\n')
+			if (this.workingText[fromPos-1] == '\n')
 			{
 				break;
 			}
@@ -1922,9 +1930,9 @@ public class TextBox : TextBoxBase
 
 	private int ComputeLineEndPos(int fromPos)
 	{
-		for (; fromPos < Text.Length; ++fromPos)
+		for (; fromPos < this.workingText.Length; ++fromPos)
 		{
-			if (Text[fromPos] == '\r')
+			if (this.workingText[fromPos] == '\r')
 			{
 				break;
 			}
@@ -1936,7 +1944,7 @@ public class TextBox : TextBoxBase
 	{
 		int newPos = fromPos;
 		if (newPos > 0) --newPos;
-		if (newPos>0 && Text[newPos]=='\n')
+		if (newPos>0 && this.workingText[newPos]=='\n')
 		{
 			--newPos;
 		}
@@ -1946,8 +1954,8 @@ public class TextBox : TextBoxBase
 	private int ComputeCharRightPos(int fromPos)
 	{
 		int newPos = fromPos;
-		if (newPos < Text.Length) ++newPos;
-		if (newPos<Text.Length && Text[newPos]=='\n')
+		if (newPos < this.workingText.Length) ++newPos;
+		if (newPos<this.workingText.Length && this.workingText[newPos]=='\n')
 		{
 			++newPos;
 		}
@@ -1965,7 +1973,7 @@ public class TextBox : TextBoxBase
 
 		for (; fromPos > 0; --fromPos)
 		{
-			if (!IsWordChar(Text[fromPos-1]))
+			if (!IsWordChar(this.workingText[fromPos-1]))
 			{
 				break;
 			}
@@ -1983,17 +1991,17 @@ public class TextBox : TextBoxBase
 		// after the first non-word element to
 		// our left. Otherwise, we move to the
 		// second non-word element to our left.
-		for (; fromPos < Text.Length; ++fromPos)
+		for (; fromPos < this.workingText.Length; ++fromPos)
 		{
-			if (!IsWordChar(Text[fromPos]))
+			if (!IsWordChar(this.workingText[fromPos]))
 			{
 				break;
 			}
 		}
 
-		for (; fromPos < Text.Length; ++fromPos)
+		for (; fromPos < this.workingText.Length; ++fromPos)
 		{
-			if (IsWordChar(Text[fromPos]))
+			if (IsWordChar(this.workingText[fromPos]))
 			{
 				break;
 			}
@@ -2045,7 +2053,7 @@ public class TextBox : TextBoxBase
 		{
 			PropertyInfo setInfo;
 			Binding b = DataBindings["Text"];
-			b.UpdateSource(Text);
+			b.UpdateSource(this.workingText);
 		}
 		inTextChangedEvent = false;
 	}

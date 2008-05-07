@@ -1,3 +1,9 @@
+2008-05-07  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/TextBox.cs: reverting to old version with some null 
+	checks, because of layouting problems. 
+	TextBox should be made completely new. It's very buggy.
+
 2008-05-06  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/TextBox.cs: fixed changing text when setting or getting

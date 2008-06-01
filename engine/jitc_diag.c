@@ -27,9 +27,7 @@ ILMethod *_ILJitGetCallingMethod(ILExecThread *thread, ILUInt32 frames)
 	ILExecProcess *process = _ILExecThreadProcess(thread);
 	ILJITCoder *jitCoder;
 	ILJitFunction jitFunction = 0;
-	void *callFrame = jit_get_current_frame();
-	void *returnAddress = 0;
-	void *exceptionHandler = 0;
+	jit_unwind_context_t	unwindContext;
 
 	if(!process)
 	{
@@ -41,42 +39,38 @@ ILMethod *_ILJitGetCallingMethod(ILExecThread *thread, ILUInt32 frames)
 	}
 	/* Find the first callframe that has a jitFunction assigned. */
 	/* This callframe is usually the jitFunction for the internalcall. */
-	do {
-		returnAddress = jit_get_return_address(callFrame);
-		if(!(callFrame = jit_get_next_frame_address(callFrame)))
-		{
-			/* Could not get the next frame address. */
-			return 0;
-		}
-		if((jitFunction = jit_function_from_pc(jitCoder->context,
-											  returnAddress,
-											  &exceptionHandler)))
+	if(!jit_unwind_init(&unwindContext, jitCoder->context))
+	{
+		return 0;
+	}	
+	do
+	{
+		if((jitFunction = jit_unwind_get_function(&unwindContext)))
 		{
 			break;
 		}
-
+		if(!jit_unwind_next(&unwindContext))
+		{
+			return 0;
+		}
 	} while(1);
 
-	/* callFrame is the first frame with a jitFunction assigned. */
-	/* Now we have to find the return address frames down the stack */
-	/* with a jitFunction assigned. */
+	/* The unwind context is now at the first frame with a jitFunction */
+	/* assigned. */
+	/* Now we have to find the next frame with a jitFunction assigned. */
 	while(frames > 0)
 	{
-		returnAddress = jit_get_return_address(callFrame);
-		if((jitFunction = jit_function_from_pc(jitCoder->context,
-											  returnAddress,
-											  &exceptionHandler)))
+		if(jit_unwind_next(&unwindContext) == 0)
+		{
+			return 0;
+		}
+		if((jitFunction = jit_unwind_get_function(&unwindContext)))
 		{
 			frames--;
 			if(frames == 0)
 			{
 				break;
 			}
-		}
-		if(!(callFrame = jit_get_next_frame_address(callFrame)))
-		{
-			/* Could not get the next frame address. */
-			return 0;
 		}
 	};
 	/* And we return the ILMethod assigned to that jitFunction. */

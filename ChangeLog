@@ -1,3 +1,14 @@
+2008-06-01  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add check for existence of the header execinfo.h and the
+	functions backtrace and backtrace_symbols.
+
+	* engine/jitc.c (ILJitBacktrace): Add helper function for printing
+	backtraces in gdb.
+
+	* engine/jitc_diag.c (_ILJitGetCallingMethod): Rewrite to use the new
+	libjit unwind api.
+
 2008-04-21  Aleksey Demakov  <ademakov@gmail.com>
 
 	* engine/jitc.c: add ILJitTraceIn and ILJitTraceOut functions.

@@ -422,6 +422,7 @@ AC_CHECK_HEADERS([term.h], [], [],
 [[#ifdef HAVE_CURSES_H
 #include <curses.h>
 #endif]])
+AC_CHECK_HEADERS(execinfo.h)
 
 dnl Collect up the libraries that we need for termcap access.
 AC_SUBST(TERMCAPLIBS)
@@ -633,6 +634,7 @@ AC_CHECK_FUNC(gettimeofday,
     AC_DEFINE(HAVE_GETTIMEOFDAY, 1, [Define whether gettimeofday is available on this system])
 ])
 AC_FUNC_ALLOCA
+AC_CHECK_FUNCS(backtrace backtrace_symbols)
 
 AC_MSG_CHECKING([whether to use enhanced profiler])
 AC_ARG_ENABLE(enhanced-profiling,

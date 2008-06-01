@@ -36,6 +36,10 @@
 #include "lib_defs.h"
 #include "jitc_gen.h"
 #include "interlocked.h"
+/* Include header for backtrace support */
+#ifdef HAVE_EXECINFO_H
+#include <execinfo.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -4695,6 +4699,158 @@ char *ILJitPrintMethod(void *pc)
 	{
 		return "out of memory";
 	}
+}
+
+/*
+ * This is a helper function for displaying backtraces in gdb.
+ * gdb is using debug information for determining the current
+ * frame address and return addresses.
+ * Since libjit is not emitting debug information gdb doesn't
+ * know what the frame looks like in jitted functions and shows
+ * rubbish as soon as the first frame of a jitted function is
+ * encounterd.
+ * This is the reason for $fp (the current frame pointer in gdb)
+ * being incorrect.
+ * On some archs functions in foreign shared libraries might be
+ * compiled so that their frame is different than the frame
+ * emitted by libjit do its safest to do the following:
+ * 1. show the gdb backtrace
+ * 2. Select the first frame without function information with fr n
+ *    where n is the number in front of that frame shown in gdb.
+ * 3. enter call ILJitBacktrace($rbp, $pc, n)
+ *    where n is the number of frames you want to see.
+ *    $rbp is the frame pointer register on X86_64. On x86 replace
+ *    $rbp with $ebp.
+ *
+ * This is for libjit in native mode. If you are using libjit in 
+ * interpreter mode simply enter call ILJitBacktrace(0, 0, n)
+ *
+ * Sample gdb macro for x86
+ *
+   define iljit_bt
+   call ILJitBacktrace($ebp, $pc, $arg0)
+   end
+ *
+ * Sample gdb macro for x86_64
+ *
+   define iljit_bt
+   call ILJitBacktrace($rbp, $pc, $arg0)
+   end
+ *
+ * Sample gdb macro for libjit in interpreter mode
+ *
+   define iljit_bt
+   call ILJitBacktrace(0, 0, $arg0)
+   end
+ */
+void ILJitBacktrace(void *frame, void *pc, int numFrames)
+{
+	ILExecThread *thread;
+	ILJITCoder *coder;
+	int currentFrame = 0;
+	jit_unwind_context_t unwindContext;
+	void **returnAddresses;
+#ifdef HAVE_BACKTRACE_SYMBOLS
+	char **symbols;
+#endif
+
+	if(numFrames <= 0)
+	{
+		return;
+	}
+	thread = ILExecThreadCurrent();
+	if(thread == 0)
+	{
+		return;
+	}
+	coder = (ILJITCoder *)(thread->process->coder);
+
+	returnAddresses = (void **)alloca(sizeof(void *) * numFrames);
+
+	/* Collect the return addresses */
+	if(pc)
+	{
+		returnAddresses[0] = pc;
+		++currentFrame;
+	}
+	if(jit_unwind_init(&unwindContext, coder->context))
+	{
+		/* I hate to do this but a backtrace is not possible without */
+		/* setting the initial frame here */
+		if(frame)
+		{
+			unwindContext.frame = frame;
+		}
+		while(currentFrame < numFrames)
+		{
+			returnAddresses[currentFrame] = jit_unwind_get_pc(&unwindContext);
+			++currentFrame;
+			if(!jit_unwind_next(&unwindContext))
+			{
+				break;
+			}
+		}
+	}
+	numFrames = currentFrame;
+#ifdef HAVE_BACKTRACE_SYMBOLS
+	/* Get the native symbols */
+	symbols = backtrace_symbols(returnAddresses, numFrames);
+	if(!symbols)
+	{
+		return;
+	}
+	/* Now set the method names for the jitted functions */
+	for(currentFrame = 0; currentFrame < numFrames; ++currentFrame)
+	{
+		jit_function_t function;
+
+		function = jit_function_from_pc(coder->context,
+										returnAddresses[currentFrame], 0);
+		if(function)
+		{
+			symbols[currentFrame] = _ILJitFunctionGetMethodName(function);
+		}
+	}
+	/* Now print the information */
+	for(currentFrame = 0; currentFrame < numFrames; ++currentFrame)
+	{
+		if(symbols[currentFrame])
+		{
+			printf("%i:\t%s\n", currentFrame, symbols[currentFrame]);
+		}
+		else
+		{
+			printf("%i:\t[%p]\n", currentFrame, returnAddresses[currentFrame]);
+		}
+	}
+	ILFree(symbols);
+#else
+	/* Print the backtrace without having information about native functions */
+	/* Now print the information */
+	for(currentFrame = 0; currentFrame < numFrames; ++currentFrame)
+	{
+		jit_function_t function;
+
+		function = jit_function_from_pc(coder->context,
+										returnAddresses[currentFrame], 0);
+		if(function)
+		{
+			char *methodName = _ILJitFunctionGetMethodName(function);
+			if(methodName)
+			{
+				printf("%i:\t%s\n", currentFrame, methodName);
+			}
+			else
+			{
+				printf("%i:\t%s\n", currentFrame, "unnamed jitted function");
+			}
+		}
+		else
+		{
+			printf("%i:\t[%p]\n", currentFrame, returnAddresses[currentFrame]);
+		}
+	}
+#endif
 }
 
 #endif /* _IL_JIT_ENABLE_DEBUG */

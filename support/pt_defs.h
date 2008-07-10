@@ -21,6 +21,7 @@
 #ifndef	_PT_DEFS_H
 #define	_PT_DEFS_H
 
+#include <errno.h>
 #include <semaphore.h>
 #include <signal.h>
 #ifdef HAVE_LIBGC
@@ -118,7 +119,7 @@ typedef pthread_mutex_t		_ILRWLock;
 #define	_ILThreadSuspendOther(thread)	\
 			do { \
 				pthread_kill((thread)->handle, IL_SIG_SUSPEND); \
-				sem_wait(&((thread)->suspendAck)); \
+				_ILSemaphoreWait(&((thread)->suspendAck)); \
 			} while (0)
 #define	_ILThreadSuspendSelf(thread)	\
 			do { \
@@ -129,7 +130,7 @@ typedef pthread_mutex_t		_ILRWLock;
 			do { \
 				(thread)->resumeRequested = 1; \
 				pthread_kill((thread)->handle, IL_SIG_RESUME); \
-				sem_wait(&((thread)->resumeAck)); \
+				_ILSemaphoreWait(&((thread)->resumeAck)); \
 				(thread)->resumeRequested = 0; \
 			} while (0)
 #define	_ILThreadResumeSelf(thread)		_ILThreadResumeOther((thread))
@@ -204,7 +205,13 @@ extern pthread_mutexattr_t _ILMutexAttr;
  */
 #define	_ILSemaphoreCreate(sem)		(sem_init((sem), 0, 0))
 #define	_ILSemaphoreDestroy(sem)	(sem_destroy((sem)))
-#define	_ILSemaphoreWait(sem)		(sem_wait((sem)))
+#define	_ILSemaphoreWait(sem)		\
+	do { \
+		while(sem_wait((sem)) == -1 && errno == EINTR) \
+		{ \
+			continue; \
+		} \
+	} while(0)
 #define	_ILSemaphorePost(sem)		(sem_post((sem)))
 int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count);
 

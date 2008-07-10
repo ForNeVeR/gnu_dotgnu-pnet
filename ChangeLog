@@ -1,3 +1,10 @@
+2008-07-10  Klaus Treichel  <ktreichel@web.de>
+
+	* support/pt_defs.h (_ILSemaphoreWait): Retry sem_wait in the case the
+	call returned because the thread was interrupted.
+	* support/pt_defs.h (_ILThreadSuspendOther, _ILThreadResumeOther): Use
+	_ILSemaphoreWait instead of calling sem_wait directly (Heiko Weiss).
+
 2008-06-01  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add check for existence of the header execinfo.h and the

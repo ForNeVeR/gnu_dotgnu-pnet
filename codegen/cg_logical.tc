@@ -49,15 +49,11 @@ ILNode_GenDiscard(ILNode_LogicalNot)
  */
 ILNode_GenValue(ILNode_LogicalNot)
 {
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILNode_GenThen(node->expr, info, &label1);
+	ILNode_GenValue(node->expr, info);
 	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenLabel(info, &label2);
 	ILGenAdjust(info, 1);
+	ILGenSimple(info, IL_OP_XOR);
+	ILGenAdjust(info, -1);
 	return ILMachineType_Boolean;
 }
 

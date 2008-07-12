@@ -2264,14 +2264,6 @@ public class TopLevelWindow : InputOutputWidget
 							}
 						}
 						
-						if(xevent.xconfigure.x != x ||
-						   xevent.xconfigure.y != y ) 
-						{
-								x = xevent.xconfigure.x;
-								y = xevent.xconfigure.y;
-								OnMoveResize(x, y, width, height);
-						}
-						
 						if(xevent.send_event || !reparented)
 						{
 							// The window manager moved us to a new position.

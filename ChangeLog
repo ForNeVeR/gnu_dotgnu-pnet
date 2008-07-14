@@ -1,3 +1,11 @@
+2008-07-14  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/verify_branch.c (IL_PREFIX_OP_CEQ): Look for a following
+	"ldc.i4.1;xor" and "ldc.i4.0;ceq" which are sequences for a logical not,
+	pass the inverttest to the coder and skip the not sequence.
+	* engine/verify_branch.c (IL_PREFIX_OP_Cxx): Add the check for
+	"ldc.i4.0;ceq" too.
+
 2008-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_logical.tc (ILNode_GenValue(ILNode_LogicalNot)): Change the

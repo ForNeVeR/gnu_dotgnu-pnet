@@ -42,6 +42,7 @@ public class TopLevelWindow : InputOutputWidget
 	internal bool maximized;
 	internal bool hasPrimaryFocus;
 	internal bool reparented;
+	internal bool reparentedNeedMove;
 	internal bool sticky;
 	internal bool shaded;
 	internal bool hidden;
@@ -150,6 +151,7 @@ public class TopLevelWindow : InputOutputWidget
 				this.maximized = false;
 				this.hasPrimaryFocus = false;
 				this.reparented = false;
+				this.reparentedNeedMove = false;
 				this.sticky = false;
 				this.shaded = false;
 				this.hidden = false;
@@ -2264,6 +2266,15 @@ public class TopLevelWindow : InputOutputWidget
 							}
 						}
 						
+						if( reparentedNeedMove && 
+								(xevent.xconfigure.x != x || xevent.xconfigure.y != y )  )
+						{
+								x = xevent.xconfigure.x;
+								y = xevent.xconfigure.y;
+								OnMoveResize(x, y, width, height);
+								reparentedNeedMove = false;
+						}
+
 						if(xevent.send_event || !reparented)
 						{
 							// The window manager moved us to a new position.
@@ -2291,11 +2302,13 @@ public class TopLevelWindow : InputOutputWidget
 						{
 							// Reparented by the window manager.
 							reparented = true;
+							reparentedNeedMove = true;
 						}
 						else
 						{
 							// Window manager crashed: we are back on the root.
 							reparented = false;
+							reparentedNeedMove = false;
 							x = xevent.xreparent.x;
 							y = xevent.xreparent.y;
 							OnMoveResize(x, y, width, height);

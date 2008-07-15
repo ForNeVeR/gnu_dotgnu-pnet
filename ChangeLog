@@ -1,3 +1,8 @@
+2008-07-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* Xsharp/TopLevelWindow.cs (DispatchEvent): Fix a positioning problem 
+	if a window of an app is embedded in an other apps container.
+
 2008-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* Xsharp/TopLevelWindow.cs (DispatchEvent): Remove a duplicate move/resize

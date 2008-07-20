@@ -168,7 +168,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJITLabel *label = 0;
-	ILJitValue temp = 0;
 	_ILJitStackItemNew(value2);
 	_ILJitStackItemNew(value1);
 
@@ -225,9 +224,61 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 
 		default:
 		{
+			int invertBranch = 0;
+			ILJitValue temp = 0;
 			_ILJitStackPop(jitCoder, value2);
 			_ILJitStackPop(jitCoder, value1);
 			label = _ILJitLabelGet(jitCoder, dest, _IL_JIT_LABEL_NORMAL);
+
+			/*
+			 * Note: Adjust the unsigned/unordered branch opcodes for float
+			 * values so that NaN values are handled correctly.
+			 */
+			if(type1 == ILEngineType_F)
+			{
+				switch(opcode)
+				{
+					case IL_OP_BNE_UN:
+					case IL_OP_BNE_UN_S:
+					{
+						opcode = IL_OP_BEQ;
+						invertBranch = 1;
+					}
+					break;
+
+					case IL_OP_BGT_UN:
+					case IL_OP_BGT_UN_S:
+					{
+						opcode = IL_OP_BLE;
+						invertBranch = 1;
+					}
+					break;
+
+					case IL_OP_BGE_UN:
+					case IL_OP_BGE_UN_S:
+					{
+						opcode = IL_OP_BLT;
+						invertBranch = 1;
+					}
+					break;
+
+					case IL_OP_BLT_UN:
+					case IL_OP_BLT_UN_S:
+					{
+						opcode = IL_OP_BGE;
+						invertBranch = 1;
+					}
+					break;
+
+					case IL_OP_BLE_UN:
+					case IL_OP_BLE_UN_S:
+					{
+						opcode = IL_OP_BGT;
+						invertBranch = 1;
+					}
+					break;
+				}
+			}
 
 			switch(opcode)
 			{
@@ -238,8 +289,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BEQ,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp, 
-									   &(label->label));
 				}
 				break;
 
@@ -250,8 +299,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BNE_UN,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp, 
-									   &(label->label));
 				}
 				break;
 
@@ -262,8 +309,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BGT,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp,
-									   &(label->label));
 				}
 				break;
 
@@ -274,8 +319,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BGT_UN,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp,
-									   &(label->label));
 				}
 				break;
 
@@ -286,8 +329,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BGE,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp,
-									   &(label->label));
 				}
 				break;
 
@@ -298,8 +339,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BGE_UN,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp,
-									   &(label->label));
 				}
 				break;
 
@@ -310,8 +349,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BLT,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp,
-									   &(label->label));
 				}
 				break;
 
@@ -322,8 +359,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BLT_UN,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp,
-									   &(label->label));
 				}
 				break;
 
@@ -334,8 +369,6 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BLE,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
-					jit_insn_branch_if(jitCoder->jitFunction, temp,
-									   &(label->label));
 				}
 				break;
 
@@ -346,10 +379,21 @@ static void JITCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 					temp = OutputCompare(jitCoder, IL_OP_BLE_UN,
 										 &(_ILJitStackItemValue(value1)),
 										 &(_ILJitStackItemValue(value2)));
+				}
+				break;
+			}
+			if(temp)
+			{
+				if(invertBranch)
+				{
+					jit_insn_branch_if_not(jitCoder->jitFunction, temp,
+										   &(label->label));
+				}
+				else
+				{
 					jit_insn_branch_if(jitCoder->jitFunction, temp,
 									   &(label->label));
 				}
-				break;
 			}
 		}
 		break;
@@ -437,16 +481,37 @@ static void JITCoder_Compare(ILCoder *coder, int opcode,
 
 	_ILJitStackPop(jitCoder, value2);
 	_ILJitStackPop(jitCoder, value1);
+
+	/*
+	 * Note: Adjust the unsigned/unordered compare opcodes for float values
+	 * so that NaN values are handled correctly.
+	 */
+	if(type1 == ILEngineType_F)
+	{
+		switch(opcode)
+		{
+			case IL_OP_PREFIX + IL_PREFIX_OP_CGT_UN:
+			{
+				opcode = IL_OP_BLE;
+				invertTest = ((invertTest == 0) ? 1 : 0);
+			}
+			break;
+
+			case IL_OP_PREFIX + IL_PREFIX_OP_CLT_UN:
+			{
+				opcode = IL_OP_BGE;
+				invertTest = ((invertTest == 0) ? 1 : 0);
+			}
+			break;
+		}
+	}
+
 	temp = OutputCompare(jitCoder, opcode,
 						 &(_ILJitStackItemValue(value1)),
 						 &(_ILJitStackItemValue(value2)));
 	if(invertTest)
 	{
 		temp = jit_insn_to_not_bool(jitCoder->jitFunction, temp);
-	}
-	else
-	{
-		temp = jit_insn_to_bool(jitCoder->jitFunction, temp);
 	}
 	_ILJitStackPushValue(jitCoder, temp);
 }

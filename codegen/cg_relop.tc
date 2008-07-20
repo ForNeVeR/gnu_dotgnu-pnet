@@ -238,16 +238,7 @@ ILRelational_ApplyOp(ILNode_Eq, ILMachineType_Float32),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_Float64),
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_NativeFloat)
 {
-	/* We must use branch instructions or NaN will not
-	   be handled correctly by the comparison */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BEQ, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CEQ);
 }
 ILRelational_ApplyOp(ILNode_Eq, ILMachineType_Decimal)
 {
@@ -296,16 +287,9 @@ ILRelational_ApplyOp(ILNode_Ne, ILMachineType_Float32),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_Float64),
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_NativeFloat)
 {
-	/* We must use branch instructions or NaN will not
-	   be handled correctly by the comparison */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BNE_UN, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CEQ);
 	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_XOR);
 }
 ILRelational_ApplyOp(ILNode_Ne, ILMachineType_Decimal)
 {
@@ -356,16 +340,7 @@ ILRelational_ApplyOp(ILNode_Lt, ILMachineType_Float32),
 ILRelational_ApplyOp(ILNode_Lt, ILMachineType_Float64),
 ILRelational_ApplyOp(ILNode_Lt, ILMachineType_NativeFloat)
 {
-	/* We must use branch instructions or NaN will not
-	   be handled correctly by the comparison */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BLT, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CLT);
 }
 ILRelational_ApplyOp(ILNode_Lt, ILMachineType_Decimal)
 {
@@ -414,16 +389,13 @@ ILRelational_ApplyOp(ILNode_Le, ILMachineType_Float32),
 ILRelational_ApplyOp(ILNode_Le, ILMachineType_Float64),
 ILRelational_ApplyOp(ILNode_Le, ILMachineType_NativeFloat)
 {
-	/* We must use branch instructions or NaN will not
-	   be handled correctly by the comparison */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BLE, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
+	/*
+	 * Note: We have to use the unsigned/unordered version here so that
+	 * NaN values are handled correctly (return false)
+	 */
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CGT_UN);
 	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_XOR);
 }
 ILRelational_ApplyOp(ILNode_Le, ILMachineType_Decimal)
 {
@@ -468,16 +440,7 @@ ILRelational_ApplyOp(ILNode_Gt, ILMachineType_Float32),
 ILRelational_ApplyOp(ILNode_Gt, ILMachineType_Float64),
 ILRelational_ApplyOp(ILNode_Gt, ILMachineType_NativeFloat)
 {
-	/* We must use branch instructions or NaN will not
-	   be handled correctly by the comparison */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BGT, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CGT);
 }
 ILRelational_ApplyOp(ILNode_Gt, ILMachineType_Decimal)
 {
@@ -526,16 +489,13 @@ ILRelational_ApplyOp(ILNode_Ge, ILMachineType_Float32),
 ILRelational_ApplyOp(ILNode_Ge, ILMachineType_Float64),
 ILRelational_ApplyOp(ILNode_Ge, ILMachineType_NativeFloat)
 {
-	/* We must use branch instructions or NaN will not
-	   be handled correctly by the comparison */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BGE, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
+	/*
+	 * Note: We have to use the unsigned/unordered version here so that
+	 * NaN values are handled correctly (return false)
+	 */
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CLT_UN);
 	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_XOR);
 }
 ILRelational_ApplyOp(ILNode_Ge, ILMachineType_Decimal)
 {
@@ -927,10 +887,11 @@ ILRelational_ElseOp(ILNode_Lt, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_NativeFloat)
 {
-	ILLabel label1 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BLT, &label1);
-	ILGenJump(info, IL_OP_BR, label);
-	ILGenLabel(info, &label1);
+	/*
+	 * Note: We have to use the unsigned/unordered version here so that
+	 * NaN values are handled correctly (return true)
+	 */
+	ILGenJump(info, IL_OP_BGE_UN, label);
 }
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_UInt8),
 ILRelational_ElseOp(ILNode_Lt, ILMachineType_UInt16),
@@ -977,10 +938,11 @@ ILRelational_ElseOp(ILNode_Le, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Le, ILMachineType_NativeFloat)
 {
-	ILLabel label1 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BLE, &label1);
-	ILGenJump(info, IL_OP_BR, label);
-	ILGenLabel(info, &label1);
+	/*
+	 * Note: We have to use the unsigned/unordered version here so that
+	 * NaN values are handled correctly (return true)
+	 */
+	ILGenJump(info, IL_OP_BGT_UN, label);
 }
 
 ILRelational_ElseOp(ILNode_Le, ILMachineType_UInt8),
@@ -1027,10 +989,11 @@ ILRelational_ElseOp(ILNode_Gt, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_NativeFloat)
 {
-	ILLabel label1 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BGT, &label1);
-	ILGenJump(info, IL_OP_BR, label);
-	ILGenLabel(info, &label1);
+	/*
+	 * Note: We have to use the unsigned/unordered version here so that
+	 * NaN values are handled correctly (return true)
+	 */
+	ILGenJump(info, IL_OP_BLE_UN, label);
 }
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_UInt8),
 ILRelational_ElseOp(ILNode_Gt, ILMachineType_UInt16),
@@ -1076,10 +1039,11 @@ ILRelational_ElseOp(ILNode_Ge, ILMachineType_Float32),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_Float64),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_NativeFloat)
 {
-	ILLabel label1 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BGE, &label1);
-	ILGenJump(info, IL_OP_BR, label);
-	ILGenLabel(info, &label1);
+	/*
+	 * Note: We have to use the unsigned/unordered version here so that
+	 * NaN values are handled correctly (return true)
+	 */
+	ILGenJump(info, IL_OP_BLT_UN, label);
 }
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_UInt8),
 ILRelational_ElseOp(ILNode_Ge, ILMachineType_UInt16),

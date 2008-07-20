@@ -1,5 +1,9 @@
 2008-07-20  Klaus Treichel  <ktreichel@web.de>
 
+	* codegen/cg_relop.tc: Change the code generation for float compares.
+	Replace the branches with branchless solutions using the unordered
+	compares/branches.
+
 	* engine/jitc_branch.c (JITCoder_Branch): Handle the unsigned/unordered
 	branch opcodes correctly for float compares (Fixes result for NaN values).
 	(JITCoder_Compare): Handle the unsigned/unordered check opcodes correctly

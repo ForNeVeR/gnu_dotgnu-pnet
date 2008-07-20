@@ -4,6 +4,8 @@
 	branch opcodes correctly for float compares (Fixes result for NaN values).
 	(JITCoder_Compare): Handle the unsigned/unordered check opcodes correctly
 	for float values (Fixes result for NaN values).
+
+	* engine/cvmc_branch.c (CVMCoder_Branch, CVMCoder_Compare): likewise.
 	
 2008-07-14  Klaus Treichel  <ktreichel@web.de>
 

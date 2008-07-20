@@ -363,10 +363,10 @@ static void CVMCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		case IL_OP_BGT_UN:
 		case IL_OP_BGT_UN_S:
 		{
-			/* Unsigned greater than testing branch */
+			/* Unsigned/unordered greater than testing branch */
 			AdjustMixedBinary(coder, 1, &type1, &type2);
 			OutputCondBranch(coder, COP_BGT_UN, COP_PREFIX_LCMP_UN,
-							 COP_PREFIX_FCMPL, COP_BGT, type1, dest);
+							 COP_PREFIX_FCMPG, COP_BGT, type1, dest);
 		}
 		break;
 
@@ -383,10 +383,10 @@ static void CVMCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		case IL_OP_BGE_UN:
 		case IL_OP_BGE_UN_S:
 		{
-			/* Unsigned greater than or equal testing branch */
+			/* Unsigned/unordered greater than or equal testing branch */
 			AdjustMixedBinary(coder, 1, &type1, &type2);
 			OutputCondBranch(coder, COP_BGE_UN, COP_PREFIX_LCMP_UN,
-							 COP_PREFIX_FCMPL, COP_BGE, type1, dest);
+							 COP_PREFIX_FCMPG, COP_BGE, type1, dest);
 		}
 		break;
 
@@ -403,10 +403,10 @@ static void CVMCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		case IL_OP_BLT_UN:
 		case IL_OP_BLT_UN_S:
 		{
-			/* Unsigned less than testing branch */
+			/* Unsigned/unordered less than testing branch */
 			AdjustMixedBinary(coder, 1, &type1, &type2);
 			OutputCondBranch(coder, COP_BLT_UN, COP_PREFIX_LCMP_UN,
-							 COP_PREFIX_FCMPG, COP_BLT, type1, dest);
+							 COP_PREFIX_FCMPL, COP_BLT, type1, dest);
 		}
 		break;
 
@@ -423,10 +423,10 @@ static void CVMCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
 		case IL_OP_BLE_UN:
 		case IL_OP_BLE_UN_S:
 		{
-			/* Unsigned less than or equal testing branch */
+			/* Unsigned/unordered less than or equal testing branch */
 			AdjustMixedBinary(coder, 1, &type1, &type2);
 			OutputCondBranch(coder, COP_BLE_UN, COP_PREFIX_LCMP_UN,
-							 COP_PREFIX_FCMPG, COP_BLE, type1, dest);
+							 COP_PREFIX_FCMPL, COP_BLE, type1, dest);
 		}
 		break;
 	}
@@ -585,10 +585,10 @@ static void CVMCoder_Compare(ILCoder *coder, int opcode,
 
 		case IL_OP_PREFIX + IL_PREFIX_OP_CGT_UN:
 		{
-			/* Test two unsigned values for greater than */
+			/* Test two unsigned/unordered values for greater than */
 			AdjustMixedBinary(coder, 0, &type1, &type2);
 			OutputCondCompare(coder, COP_PREFIX_ICMP_UN, COP_PREFIX_LCMP_UN,
-							  COP_PREFIX_FCMPL, COP_PREFIX_FCMPG,
+							  COP_PREFIX_FCMPG, COP_PREFIX_FCMPG,
 							  COP_PREFIX_SETGT, COP_PREFIX_SETLE,
 							  type1, invertTest);
 		}
@@ -607,10 +607,10 @@ static void CVMCoder_Compare(ILCoder *coder, int opcode,
 
 		case IL_OP_PREFIX + IL_PREFIX_OP_CLT_UN:
 		{
-			/* Test two unsigned values for less than */
+			/* Test two unsigned/unordered values for less than */
 			AdjustMixedBinary(coder, 0, &type1, &type2);
 			OutputCondCompare(coder, COP_PREFIX_ICMP_UN, COP_PREFIX_LCMP_UN,
-							  COP_PREFIX_FCMPG, COP_PREFIX_FCMPL,
+							  COP_PREFIX_FCMPL, COP_PREFIX_FCMPL,
 							  COP_PREFIX_SETLT, COP_PREFIX_SETGE,
 							  type1, invertTest);
 		}

@@ -466,6 +466,11 @@ void ILGCRegisterGeneralWeak(void *ptr, void *obj)
 	GC_general_register_disappearing_link(ptr, obj);
 }
 
+void *ILGCRunFunc(void *(* thread_func)(void *), void *arg)
+{
+	return GC_run_thread(thread_func, arg);
+}
+
 #ifdef	__cplusplus
 };
 #endif

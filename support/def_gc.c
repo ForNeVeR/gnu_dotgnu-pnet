@@ -223,6 +223,11 @@ void ILGCRegisterGeneralWeak(void *ptr, void *obj)
 	/* Nothing to do here because we don't do finalization */
 }
 
+void *ILGCRunFunc(void *(* thread_func)(void *), void *arg)
+{
+	return thread_func(arg);
+}
+
 #ifdef	__cplusplus
 };
 #endif

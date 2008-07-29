@@ -285,11 +285,7 @@ void *ILThreadRunSelf(void *(* thread_func)(void *), void *arg)
 	/* Set the thread object for the thread */
 	_ILThreadSetSelf(thread_self);
 
-	#ifdef HAVE_LIBGC
-		result = GC_run_thread(thread_func, arg);
-	#else
-		result = thread_func(arg);
-	#endif
+	result = ILGCRunFunc(thread_func, arg);
 
 	_ILThreadRunAndFreeCleanups(thread_self);
 

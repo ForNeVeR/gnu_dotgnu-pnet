@@ -1,3 +1,15 @@
+2008-07-29  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_gc.h (ILGCRunFunc): Add prototype for the function that
+	allows running a function under GC control by a thread not created
+	by the GC functions.
+
+	* support/def_gc.c, support/hb_gc.c (ILGCRunFunc): Implement the
+	function.
+
+	* support/thread.c (ILThreadRunSelf): Use ILGCRunFunc instead of calling
+	libgc functions directly.
+
 2008-07-20  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_relop.tc: Change the code generation for float compares.

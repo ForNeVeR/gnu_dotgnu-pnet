@@ -140,6 +140,18 @@ ILNativeInt ILGCCreateTypeDescriptor(ILNativeUInt bitmap[], ILNativeUInt len);
  */
 void *ILGCAllocExplicitlyTyped(unsigned long size, ILNativeInt descriptor);
 
+/*
+ * Run a function under control of the garbage collector.
+ * Thie function is intended to be used by threads not created through
+ * the gc thread routines like a callback with a thread created by a
+ * third party library.
+ * The return value must not be an object under gc control because the
+ * stack of this thread will not be scanned after returning from this
+ * function and the memory of this object is likely to be reclaimed by
+ * the garbage collector.
+ */
+void *ILGCRunFunc(void *(* thread_func)(void *), void *arg);
+
 #ifdef	__cplusplus
 };
 #endif

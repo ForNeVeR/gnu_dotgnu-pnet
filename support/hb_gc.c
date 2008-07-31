@@ -468,7 +468,27 @@ void ILGCRegisterGeneralWeak(void *ptr, void *obj)
 
 void *ILGCRunFunc(void *(* thread_func)(void *), void *arg)
 {
-	return GC_run_thread(thread_func, arg);
+	struct GC_stack_base gcStackBase;
+	int rc;
+
+	/* 
+	 * simply use gcStackBase as stack base because no objects to be 
+	 * scanned will be below this point on the stack.
+	 */
+	gcStackBase.mem_base = &gcStackBase;
+
+	rc = GC_register_my_thread(&gcStackBase);
+	if(rc == GC_SUCCESS)
+	{
+		void *result = thread_func(arg);
+		GC_unregister_my_thread();
+		return result;
+	}
+	else if((rc == GC_DUPLICATE) || (rc == GC_NO_THREADS))
+	{
+		return thread_func(arg);
+	}
+	return 0;
 }
 
 #ifdef	__cplusplus

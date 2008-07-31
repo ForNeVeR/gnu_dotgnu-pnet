@@ -92,7 +92,9 @@ mknumber_SOURCES = mknumber.c
 
 mkcase_SOURCES = mkcase.c
 
-AM_CFLAGS = -I$(top_srcdir)/libgc/include -I$(top_srcdir)/include \
+AM_CFLAGS = -I$(top_srcdir)/libgc/include \
+			-I$(top_builddir)/libgc/libatomic_ops/src \
+			-I$(top_srcdir)/include \
 			-DCSCC_LIB_PREFIX=\"$(libdir)\" \
 		    -DCSCC_BIN_PREFIX=\"$(bindir)\" \
 		    -DCSCC_DATA_PREFIX=\"$(datadir)\" \

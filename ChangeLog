@@ -34,6 +34,7 @@
 	libgc/libatomic_ops-1.2/Makefile.am, libgc/libatomic_ops-1.2/missing,
 	libgc/libatomic_ops-1.2/mkinstalldirs, libgc/libatomic_ops-1.2/NEWS,
 	libgc/libatomic_ops-1.2/README, libgc/libatomic_ops-1.2/doc/COPYING,
+	libgc/libatomic_ops-1.2/Makefile.in,
 	libgc/libatomic_ops-1.2/doc/LICENSING.txt,
 	libgc/libatomic_ops-1.2/doc/Makefile.am,
 	libgc/libatomic_ops-1.2/doc/Makefile.in,

@@ -126,7 +126,7 @@ namespace System.Threading
 		//
 		~Timer()
 		{
-			DisposeInternal(null);
+			DisposeInternal(null, false);
 		}
 
 		//
@@ -193,7 +193,7 @@ namespace System.Threading
 		//
 		public void Dispose()
 		{
-			DisposeInternal(null);
+			DisposeInternal(null, true);
 		}
 
 		//
@@ -204,29 +204,47 @@ namespace System.Threading
 		{
 			if (notifyObject == null)
 				throw new ArgumentNullException("notifyObject");
-			return DisposeInternal(notifyObject);
+			return DisposeInternal(notifyObject, true);
 		}
 
 		//
 		// Internal version of "Dispose".
 		//
-		private bool DisposeInternal(WaitHandle notifyObject)
+		private bool DisposeInternal(WaitHandle notifyObject, bool disposing)
 		{
-			lock (this)
+			if(disposing)
 			{
-				if (this.disposed)
-					return false;
-				this.disposed = true;
-				this.notifyObject = notifyObject;
+				// Add the timer to the dispose list only if it is disposed
+				// by the application.
+				lock (this)
+				{
+					if (this.disposed)
+						return false;
+					this.disposed = true;
+					this.notifyObject = notifyObject;
+				}
+				this.alarm.SetAlarm(AlarmClock.INFINITE, AlarmClock.INFINITE);
+				if (this.notifyObject != null)
+				{
+					lock (typeof(Timer))
+						Timer.disposeQueue.Enqueue(this);
+					Timer.threadWakeup.Set();
+				}
+				GC.SuppressFinalize(this);
 			}
-			this.alarm.SetAlarm(AlarmClock.INFINITE, AlarmClock.INFINITE);
-			if (this.notifyObject != null)
+			else
 			{
-				lock (typeof(Timer))
-					Timer.disposeQueue.Enqueue(this);
-				Timer.threadWakeup.Set();
+				// disable the timer
+				// Hopefully the GC sets the references of garbage collected
+				// objects to null in circular references like the delegate
+				// in the alarm here. So we have to check if the alarm is
+				// not null here before disabling it.
+				if(this.alarm != null)
+				{
+					this.alarm.SetAlarm(AlarmClock.INFINITE,
+										AlarmClock.INFINITE);
+				}
 			}
-			GC.SuppressFinalize(this);
 			return true;
 		}
 

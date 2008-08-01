@@ -1,3 +1,13 @@
+2008-08-01  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Threading/Timer.cs (DisposeInternal): Add an additional
+	bool argument disposing to specify if the function is invoked by one
+	of the Dispose functions or the finalizer. Handle the notify object only
+	if the function is invoked by one of the Dispose functions.
+	Handle the case when the alarm is already collected.
+	(~Timer): Pass false as additional argument to DisposeInternal.
+	(Dispose): Pass true as additional argument to DisposeInternal.
+	
 2008-07-15  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* Xsharp/TopLevelWindow.cs (DispatchEvent): Fix a positioning problem 

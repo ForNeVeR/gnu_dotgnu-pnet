@@ -144,6 +144,11 @@ unsigned long ILImageLength(ILImage *image)
 	return image->len;
 }
 
+const char *ILImageGetFileName(ILImage *image)
+{
+	return image->filename;
+}
+
 unsigned long ILImageGetSectionAddr(ILImage *image, int section)
 {
 	unsigned long virtAddr = 0;

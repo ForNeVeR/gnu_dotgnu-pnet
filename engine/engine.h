@@ -258,6 +258,9 @@ struct _tagILExecProcess
 	/* Hash table that contains all intern'ed strings within the system */
 	void		   *internHash;
 
+	/* name of this appDomain / ILExecProcess */
+	char		   *friendlyName;
+
 	/* linked list of class private data */
 	/* This is supposed to prevent them to be collected */
 	/* when they are alloceted using GC_MALLOC. */
@@ -352,6 +355,14 @@ typedef struct _tagILLocalWatch
 #define IL_LOCAL_WATCH_TYPE_LOCAL_VAR		(2)
 
 #endif
+
+/*
+ * Get the display name if this AppDomain.
+ * The caller has to make sure that this string exists for the
+ * time it is used. It might be destroyed if the Set function is
+ * called by an other thread.
+ */
+#define _ILExecProcessGetFriendlyName(process) ((process)->friendlyName)
 
 /*
  * Information that is stored in a stack call frame.
@@ -567,7 +578,7 @@ void ILExecEngineDestroy(ILExecEngine *engine);
  * Create a new execution engine.
  * Returns the ILExecEngine or 0 if the function fails.
  */
-ILExecEngine *ILExecEngineCreate();
+ILExecEngine *ILExecEngineCreate(unsigned long stackSize);
 
 /*
  * Let the thread return from an other ILExecProcess and restore the saved

@@ -156,23 +156,136 @@ void ILContextSetSystem(ILContext *context, ILImage *image);
 ILImage *ILContextGetSystem(ILContext *context);
 
 /*
+ * Set the base directory of the application.
+ * The old applicationBaseDir will be freed.
+ */
+ void ILContextSetApplicationBaseDir(ILContext *context, char *applicationBaseDir);
+
+/*
+ * Get the base directory of the application.
+ * The caller has to make sure that this string exists for the
+ * time it is used. It might be destroyed if the Set function is
+ * called by an other thread.
+ */
+const char *ILContextGetApplicationBaseDir(ILContext *context);
+
+/*
+ * Set the directory where the shadow copies will be copied to.
+ * The old cacheDir will be freed.
+ */
+void ILContextSetCacheDir(ILContext *context, char *cacheDir);
+
+/*
+ * Get the directory where the shadow copies will be copied to.
+ * The caller has to make sure that this string exists for the
+ * time it is used. It might be destroyed if the Set function is
+ * called by an other thread.
+ */
+const char *ILContextGetCacheDir(ILContext *context);
+
+/*
+ * Set the directory where dynamically created files are stored and
+ * accessed..
+ * The old dynamicBaseDir will be freed.
+ */
+void ILContextSetDynamicBaseDir(ILContext *context, char *dynamicBaseDir);
+
+/*
+ * Get the directory where dynamically created files are stored and
+ * accessed..
+ * The caller has to make sure that this string exists for the
+ * time it is used. It might be destroyed if the Set function is
+ * called by an other thread.
+ */
+const char *ILContextGetDynamicBaseDir(ILContext *context);
+
+/*
  * Set the list of directories to be used for library path
  * searching, before inspecting the standard directories.
- * It is assumed that the list will persist for the lifetime
- * of the context.
+ * The list and the paths must be allocated by ILMalloc. 
+ * The old list and the containing paths will be freed when
+ * this function is called again.
  */
 void ILContextSetLibraryDirs(ILContext *context,
 							 char **libraryDirs,
 							 int numLibraryDirs);
 
 /*
- *	Used by the engine to attach user data to the context instance.
+ * Get the list of directories to be used for library path
+ * searching, before inspecting the standard directories.
+ * The caller has to make sure that the list and the paths
+ * will not be freed by an other thread calling the Set or
+ * Clear function.
+ */
+void ILContextGetLibraryDirs(ILContext *context,
+							 char ***libraryDirs,
+							 int *numLibraryDirs);
+
+/*
+ * Clear the list of directories to be used for library path
+ * searching.
+ * The old list and the containing paths will be freed.
+ */
+void ILContextClearLibraryDirs(ILContext *context);
+
+/*
+ * Get the directory relative to the applicationBaseDir where
+ * should be searched for Assemblies.
+ * The caller has to make sure that this string exists for the
+ * time it is used. It might be destroyed if the Set function is
+ * called by an other thread.
+ */
+const char *ILContextGetRelativeSearchDir(ILContext *context);
+
+/*
+ * Set the directory relative to the applicationBaseDir where
+ * should be searched for Assemblies.
+ * The old relativeSearchDir will be freed.
+ */
+void ILContextSetRelativeSearchDir(ILContext *context, char *relativeSearchDir);
+
+/*
+ * Set the list of directories that have to be cached in the
+ * directory specified in cacheDir.
+ * The list and the paths must be allocated by ILMalloc. 
+ * The old list and the containing paths will be freed when
+ * this function is called again.
+ */
+void ILContextSetShadowCopyDirs(ILContext *context,
+								 char **shadowCopyDirs,
+								 int numShadowCopyDirs);
+
+/*
+ * Get the list of directories that have to be cached in the
+ * directory specified in cacheDir.
+ * The caller has to make sure that the list and the paths
+ * will not be freed by an other thread calling the Set or
+ * Clear function.
+ */
+void ILContextGetShadowCopyDirs(ILContext *context,
+							 	char ***shadowCopyDirs,
+							 	int *numShadowCopyDirs);
+
+/*
+ * Crear the list of directories that have to be cached.
+ * The old list and the containing paths will be freed.
+ */
+void ILContextClearShadowCopyDirs(ILContext *context);
+
+/*
+ * Set shadowCopyFiles to a 0 to disable shadow copies or a non null
+ * value to enable shadow copies.
+ */
+void ILContextSetShadowCopyFiles(ILContext *context, int shadowCopyFiles);
+
+/*
+ * Used by the engine to attach user data to the context instance.
  */
 void ILContextSetUserData(ILContext *context, void *userData);
 
 /*
-*	Used by the engine to get attached user data from the context instance.
-*/
+ * Used by the engine to get attached user data from the context instance.
+ */
 void *ILContextGetUserData(ILContext *context);
 
 /*
@@ -233,6 +346,11 @@ int ILImageLoadAssembly(const char *name, ILContext *context,
  * Destroy an IL image and all memory associated with it.
  */
 void ILImageDestroy(ILImage *image);
+
+/*
+ * Get the filename from which an image was loaded.
+ */
+const char *ILImageGetFileName(ILImage *image);
 
 /*
  * Get the context associated with an IL image.

@@ -250,7 +250,12 @@ int main(int argc, char *argv[])
 			{
 				if(libraryDirs != 0)
 				{
-					libraryDirs[numLibraryDirs++] = param;
+					char *path = (char *)ILMalloc(strlen(param) + 1);
+					if(path)
+					{
+						strcpy(path, param);
+						libraryDirs[numLibraryDirs++] = path;
+					}
 				}
 			}
 			break;

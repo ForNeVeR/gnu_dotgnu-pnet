@@ -267,6 +267,20 @@ void ILExecProcessSetCoderFlags(ILExecProcess *process,
 ILContext *ILExecProcessGetContext(ILExecProcess *process);
 
 /*
+ * Set the display name if this AppDomain.
+ * The old friendlyName will be freed.
+ */
+void ILExecProcessSetFriendlyName(ILExecProcess *process, char *friendlyName);
+
+/*
+ * Get the display name if this AppDomain.
+ * The caller has to make sure that this string exists for the
+ * time it is used. It might be destroyed if the Set function is
+ * called by an other thread.
+ */
+char *ILExecProcessGetFriendlyName(ILExecProcess *process);
+
+/*
  * Get the "main" thread for a process.
  */
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process);

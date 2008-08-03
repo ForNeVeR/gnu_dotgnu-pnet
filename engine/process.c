@@ -135,6 +135,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->gcHandles = 0;
 	process->entryImage = 0;
 	process->internalClassTable = 0;
+	process->friendlyName = 0;
 	process->firstClassPrivate = 0;
 #ifdef IL_CONFIG_DEBUG_LINES
 	process->debugHookFunc = 0;
@@ -567,6 +568,13 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	}
 #endif
 
+	/* free the friendly name if available */
+	if(process->friendlyName != 0)
+	{
+		ILFree(process->friendlyName);
+		process->friendlyName = 0;
+	}
+
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
 
@@ -871,6 +879,20 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 
 	/* Return the "Main" arguments to the caller */
 	return mainArgs;
+}
+
+void ILExecProcessSetFriendlyName(ILExecProcess *process, char *friendlyName)
+{
+	if(process->friendlyName && (process->friendlyName != friendlyName))
+	{
+		ILFree(process->friendlyName);
+	}
+	process->friendlyName = friendlyName;
+}
+
+char *ILExecProcessGetFriendlyName(ILExecProcess *process)
+{
+	return _ILExecProcessGetFriendlyName(process);
 }
 
 #ifndef IL_CONFIG_APPDOMAINS

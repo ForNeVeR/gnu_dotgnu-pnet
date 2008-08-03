@@ -571,7 +571,35 @@ static int InitCodeGen(void)
 	   references can be resolved properly */
 	if(num_link_dirs)
 	{
-		ILContextSetLibraryDirs(CCCodeGen.context, link_dirs, num_link_dirs);
+		char **libraryDirs;
+		int numLibraryDirs = 0;
+		int current;
+
+		libraryDirs = (char **)ILMalloc(sizeof(char *) * num_link_dirs);
+		if(!libraryDirs)
+		{
+			return 1;
+		}
+		for(current = 0; current < num_link_dirs; current++)
+		{
+			if(link_dirs[current])
+			{
+				char *dir = ILMalloc(strlen(link_dirs[current]) + 1);
+				if(dir)
+				{
+					strcpy(dir, link_dirs[current]);
+					libraryDirs[numLibraryDirs++] = dir;
+				}
+			}
+		}
+		if(numLibraryDirs)
+		{
+			ILContextSetLibraryDirs(CCCodeGen.context, libraryDirs, numLibraryDirs);
+		}
+		else
+		{
+			ILFree(libraryDirs);
+		}
 	}
 
 	/* Load all of the other libraries, in reverse order */

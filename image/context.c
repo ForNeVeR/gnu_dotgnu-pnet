@@ -25,6 +25,29 @@ extern	"C" {
 #endif
 
 /*
+ * Free a path list and the containing paths.
+ */
+static void PathListFree(char **dirs, int numDirs)
+{
+	if(dirs)
+	{
+		if(numDirs > 0)
+		{
+			int i; /* a loop counter */
+			for(i = 0; i < numDirs; i++)
+			{
+				if(dirs[i])
+				{
+					ILFree(dirs[i]);
+				}
+			}
+		}
+		/* we don't know anything about the size so free at least the array */
+		ILFree(dirs);
+	}
+}
+
+/*
  * Hash a string, while ignoring case.
  */
 static unsigned long HashIgnoreCase(unsigned long start,
@@ -284,6 +307,24 @@ void ILContextDestroy(ILContext *context)
 		ILFree(context->redoItems);
 	}
 
+	/* destroy the list of search directories */
+	PathListFree(context->libraryDirs, context->numLibraryDirs);
+
+	/* destroy the list of shadow copy directories */
+	PathListFree(context->shadowCopyDirs, context->numShadowCopyDirs);
+
+	/* destroy the cache directory */
+	if(context->cacheDir)
+	{
+		ILFree(context->cacheDir);
+	}
+
+	/* destroy the applicationBaseDir */
+	if(context->applicationBaseDir)
+	{
+		ILFree(context->applicationBaseDir);
+	}
+
 	/* Destroy the context itself */
 	ILFree(context);
 }
@@ -493,12 +534,135 @@ void *ILContextGetUserData(ILContext *context)
 	return context->userData;
 }
 
+void ILContextSetApplicationBaseDir(ILContext *context, char *applicationBaseDir)
+{
+	if(context->applicationBaseDir &&
+	   (context->applicationBaseDir != applicationBaseDir))
+	{
+		ILFree(context->applicationBaseDir);
+	}
+	context->applicationBaseDir = applicationBaseDir;
+
+}
+
+const char *ILContextGetApplicationBaseDir(ILContext *context)
+{
+	return context->applicationBaseDir;
+}
+
+void ILContextSetCacheDir(ILContext *context, char *cacheDir)
+{
+	if(context->cacheDir && (context->cacheDir != cacheDir))
+	{
+		ILFree(context->cacheDir);
+	}
+	context->cacheDir = cacheDir;
+}
+
+const char *ILContextGetCacheDir(ILContext *context)
+{
+	return context->cacheDir;
+}
+
+void ILContextSetDynamicBaseDir(ILContext *context, char *dynamicBaseDir)
+{
+	if(context->dynamicBaseDir && (context->dynamicBaseDir != dynamicBaseDir))
+	{
+		ILFree(context->dynamicBaseDir);
+	}
+	context->dynamicBaseDir = dynamicBaseDir;
+}
+
+const char *ILContextGetDynamicBaseDir(ILContext *context)
+{
+	return context->dynamicBaseDir;
+}
+
 void ILContextSetLibraryDirs(ILContext *context,
 							 char **libraryDirs,
 							 int numLibraryDirs)
 {
+	if(context->libraryDirs && (context->libraryDirs != libraryDirs))
+	{
+		PathListFree(context->libraryDirs, context->numLibraryDirs);
+	}
 	context->libraryDirs = libraryDirs;
 	context->numLibraryDirs = numLibraryDirs;
+}
+
+void ILContextGetLibraryDirs(ILContext *context,
+							 char ***libraryDirs,
+							 int *numLibraryDirs)
+{
+	*libraryDirs = context->libraryDirs;
+	*numLibraryDirs = context->numLibraryDirs;
+}
+
+void ILContextClearLibraryDirs(ILContext *context)
+{
+	if(context->libraryDirs)
+	{
+		PathListFree(context->libraryDirs, context->numLibraryDirs);
+	}
+	context->libraryDirs = 0;
+	context->numLibraryDirs = 0;
+}
+
+void ILContextSetRelativeSearchDir(ILContext *context, char *relativeSearchDir)
+{
+	if(context->relativeSearchDir &&
+	   (context->relativeSearchDir != relativeSearchDir))
+	{
+		ILFree(context->relativeSearchDir);
+	}
+	context->relativeSearchDir = relativeSearchDir;
+
+}
+
+const char *ILContextGetRelativeSearchDir(ILContext *context)
+{
+	return context->relativeSearchDir;
+}
+
+void ILContextSetShadowCopyDirs(ILContext *context,
+								 char **shadowCopyDirs,
+								 int numShadowCopyDirs)
+{
+	if(context->shadowCopyDirs &&
+	  (context->numShadowCopyDirs != numShadowCopyDirs))
+	{
+		PathListFree(context->shadowCopyDirs, context->numShadowCopyDirs);
+	}
+	context->shadowCopyDirs = shadowCopyDirs;
+	context->numShadowCopyDirs = numShadowCopyDirs;
+}
+
+void ILContextGetShadowCopyDirs(ILContext *context,
+							 	char ***shadowCopyDirs,
+							 	int *numShadowCopyDirs)
+{
+	*shadowCopyDirs = context->shadowCopyDirs;
+	*numShadowCopyDirs = context->numShadowCopyDirs;
+}
+
+void ILContextClearShadowCopyDirs(ILContext *context)
+{
+	if(context->shadowCopyDirs)
+	{
+		PathListFree(context->shadowCopyDirs, context->numShadowCopyDirs);
+	}
+	context->shadowCopyDirs = 0;
+	context->numShadowCopyDirs = 0;
+}
+
+void ILContextSetShadowCopyFiles(ILContext *context, int shadowCopyFiles)
+{
+	context->shadowCopyFiles = shadowCopyFiles;
+}
+
+int ILContextGetShadowCopyFiles(ILContext *context)
+{
+	return context->shadowCopyFiles;
 }
 
 #ifdef	__cplusplus

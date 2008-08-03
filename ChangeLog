@@ -1,11 +1,63 @@
 2008-08-03  Klaus Treichel  <ktreichel@web.de>
 
+	* cscc/common/cc_main.c (InitCodeGen): Pass an array that can safely be
+	modified and freed of the passed library directories to
+	ILContextSetLibraryDirs because they will be freed on context destruction
+	now.
+
+	* cscc/cs_main.c (CCPluginInit): Remove erroneous comment about nothing
+	to do.
+
+	* engine/engine.h: Add friendlyName member to the ILExecProcess. Add macro
+	_ILExecProcessGetFriendlyName for access to the new member.
+	Fix prototype of ILExecEngineCreate,
+
+	* engine/ilrun.c (main): Fill the array of library paths with allocated
+	copies of the args because they might be modified and freed by the
+	application.
+
+	* engine/process.c (ILExecProcessSetFriendlyName,
+	ILExecProcessSetFriendlyName): Add getter and setter for the friendlyName
+	member.
+
+	* image/context.c (PathListFree): Add function to free the memory used by
+	a path list.
+	(ILContextDestroy): Free the new introduced members.
+	(ILContextSetLibraryDirs): Free the old library dirs.
+	(ILContextSetApplicationBaseDir, ILContextGetApplicationBaseDir,
+	ILContextSetCacheDir, ILContextGetCacheDir, ILContextGetDynamicBaseDir,
+	ILContextSetDynamicBaseDir, ILContextGetLibraryDirs,
+	ILContextClearLibraryDirs, ILContextSetRelativeSearchDir,
+	ILContextGetRelativeSearchDir, ILContextSetShadowCopyDirs,
+	ILContextGetShadowCopyDirs, ILContextClearShadowCopyDirs,
+	ILContextSetShadowCopyFiles, ILContextGetShadowCopyFiles): Add functions
+	to manage the new introduced members.
+
+	* image/image.c (ILImageGetFileName): Add function to get the filename of
+	the image.
+
+	* image/image.h: Add members applicationBaseDir, relativeSearchDir,
+	cacheDir, dynamicBaseDir, shadowCopyFiles and shadowCopyDirs to the
+	ILContext struct.
+
 	* image/link.c (TestPathForFile): Avoid adding an additional path separator
 	if the last character in the path is allready one.
 	(ILPinvokeResolveModule): Fix a compiler warning (posn is used only on non
 	windows platforms). Look for the libraries starting with cyg instead of lib
-	on cygwin systems too. 
+	on cygwin systems too.
 
+	* include/il_engine.h (ILExecProcessSetFriendlyName,
+	ILExecProcessGetFriendlyName): Add prototypes.
+
+	* include/il_image.h (ILContextSetApplicationBaseDir,
+	ILContextGetApplicationBaseDir,	ILContextSetCacheDir,
+	ILContextGetCacheDir, ILContextGetDynamicBaseDir,
+	ILContextSetDynamicBaseDir, ILContextGetLibraryDirs,
+	ILContextClearLibraryDirs, ILContextSetRelativeSearchDir,
+	ILContextGetRelativeSearchDir, ILContextSetShadowCopyDirs,
+	ILContextGetShadowCopyDirs, ILContextClearShadowCopyDirs,
+	ILContextSetShadowCopyFiles, ILContextGetShadowCopyFiles): Add prototypes.
+: 
 2008-07-31  Klaus Treichel  <ktreichel@web.de>
 
 	* support/hb_gc.c (ILGCRunFunc): Use the new functions for registering

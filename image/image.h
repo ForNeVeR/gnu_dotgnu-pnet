@@ -86,6 +86,25 @@ struct _tagILContext
 	char		  **libraryDirs;
 	int				numLibraryDirs;
 
+	/* Base directory of the application */
+	char		   *applicationBaseDir;
+
+	/* Directory relative to applicationBaseDir to search for assemblies */
+	char		   *relativeSearchDir;
+
+	/* cache path for shadow copies */
+	char		   *cacheDir;
+
+	/* Directory where dynamically created assemblies are stored and accessed */
+	char		   *dynamicBaseDir;
+
+	/* Flag if shadow copying is enabled */
+	int				shadowCopyFiles;
+
+	/* Directory names that are to be cached */
+	char		  **shadowCopyDirs;
+	int				numShadowCopyDirs;
+
 	/* Hash table to keeps track of valid namespaces */
 	ILHashTable	   *namespaceHash;
 

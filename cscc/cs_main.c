@@ -44,7 +44,6 @@ int const CCPluginForceStdlib = 0;
 
 int CCPluginInit(void)
 {
-	/* Nothing to do here */
 	if(CCStringListContains(extension_flags, num_extension_flags,
 							"metadata-only"))
 	{

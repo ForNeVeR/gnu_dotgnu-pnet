@@ -1,3 +1,11 @@
+2008-08-03  Klaus Treichel  <ktreichel@web.de>
+
+	* image/link.c (TestPathForFile): Avoid adding an additional path separator
+	if the last character in the path is allready one.
+	(ILPinvokeResolveModule): Fix a compiler warning (posn is used only on non
+	windows platforms). Look for the libraries starting with cyg instead of lib
+	on cygwin systems too. 
+
 2008-07-31  Klaus Treichel  <ktreichel@web.de>
 
 	* support/hb_gc.c (ILGCRunFunc): Use the new functions for registering

@@ -271,8 +271,15 @@ static char *TestPathForFile(const char *pathname, int pathlen,
 	if(pathlen)
 	{
 		ILMemCpy(path, pathname, pathlen);
-		path[pathlen] = '/';
-		posn = pathlen + 1;
+		if(path[pathlen - 1] != '/' && path[pathlen - 1] != '\\')
+		{
+			path[pathlen] = '/';
+			posn = pathlen + 1;
+		}
+		else
+		{
+			posn = pathlen;
+		}
 	}
 	else
 	{
@@ -1362,7 +1369,9 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	const char *name;
 	const char *remapName;
 	int namelen;
+#ifndef IL_WIN32_PLATFORM
 	int posn;
+#endif
 	char *baseName;
 	char *fullName;
 	const char *optPrefix = 0;
@@ -1481,6 +1490,33 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke)
 	{
 		return fullName;
 	}
+
+#ifdef IL_WIN32_CYGWIN
+	/* retry with the cygwin library prefix cyg */
+	if(namelen >= 3 && strncmp(name, "lib", 3) != 0)
+	{
+		ILFree(baseName);
+		optPrefix = "cyg";
+		baseName = ILDupNString(name + 3, namelen - 3);
+
+		/* Search the path for the name, without remappings */
+		fullName = PInvokeSearchPath(pinvoke, baseName, optPrefix, suffix);
+		if(fullName)
+		{
+			return fullName;
+		}
+	}
+	ILFree(baseName);
+	optPrefix = "cyg";
+	baseName = ILDupNString(name, namelen);
+
+	/* Search the path for the name, without remappings */
+	fullName = PInvokeSearchPath(pinvoke, baseName, optPrefix, suffix);
+	if(fullName)
+	{
+		return fullName;
+	}
+#endif
 
 	/* Try the "pinvoke.map" files to see if we have a remapping */
 	dir = mapDirs;

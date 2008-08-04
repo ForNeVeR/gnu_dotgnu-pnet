@@ -875,6 +875,12 @@ ILClass *ILClassExpand(ILImage *image, ILClass *classInfo,
 					   ILType *classArgs, ILType *methodArgs);
 
 /*
+ * Check if the instance if a generic class has has to be expanded 
+ * with the members of the underlying generic class.
+ */
+int ILClassNeedsExpansion(ILClass *info);
+
+/*
  * Return true is the generic class is already expanded.
  */
 int ILClassIsExpanded(ILClass *info);
@@ -1098,6 +1104,11 @@ ILMember *ILMemberImport(ILImage *image, ILMember *member);
  * Get the base "virtual" definition for an "override" member.
  */
 ILMember *ILMemberGetBase(ILMember *member);
+
+/*
+ * Determine if a member is a generic instanciation.
+ */
+int ILMemberIsGenericInstance(ILMember *member);
 
 /*
  * Helper macros for querying information about members.

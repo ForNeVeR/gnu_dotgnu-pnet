@@ -1,3 +1,18 @@
+2008-08-04  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_object.c (_ILGetClrType): Optimize function so that the
+	clrType will simply be returned if it was created previously without
+	trying to layout the class again (and acquiring the metadata lock).
+	Use ILInterlockedCompareAndExchangePointers to set the clrType to
+	make sure that only one clrType will be used for one class (fix
+	possible race codition).
+
+	* include/il_image.h (ILContextGetShadowCopyFiles): Add missed prototype
+	from previous commit.
+
+	* include/il_program.h (ILClassNeedsExpansion, ILMemberIsGenericInstance):
+	Add missing prototypes.
+	
 2008-08-03  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/common/cc_main.c (InitCodeGen): Pass an array that can safely be

@@ -20,6 +20,7 @@
 
 #include "engine_private.h"
 #include "lib_defs.h"
+#include "../support/interlocked.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -128,8 +129,6 @@ ILObject *_IL_Object_MemberwiseClone(ILExecThread *thread, ILObject *_this)
 
 ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 {
-	ILObject *obj;
-
 	classInfo = ILClassResolve(classInfo);
 
 	if(!classInfo)
@@ -139,45 +138,57 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 		return 0;
 	}
 
-	/* Make sure that the class has been laid out */
-	IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
-	if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
+	if((!classInfo->userData) ||
+	   !((ILClassPrivate *)(classInfo->userData))->clrType)
 	{
+		ILClassPrivate *classPrivate;
+		ILObject *obj;
+
+		/* Make sure that the class has been laid out */
+		IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
+		if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
+		{
+			IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
+			thread->thrownException = _ILSystemException
+				(thread, "System.TypeInitializationException");
+			return 0;
+		}
 		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
-		thread->thrownException = _ILSystemException
-			(thread, "System.TypeInitializationException");
-		return 0;
-	}
-	IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
 
-	/* Does the class already have a "ClrType" instance? */
-	if(((ILClassPrivate *)(classInfo->userData))->clrType)
-	{
-		return ((ILClassPrivate *)(classInfo->userData))->clrType;
-	}
+		classPrivate = (ILClassPrivate *)(classInfo->userData);
 
-	/* Create a new "ClrType" instance */
-	if(!(thread->process->clrTypeClass))
-	{
-		thread->thrownException = _ILSystemException
-			(thread, "System.TypeInitializationException");
-		return 0;
-	}
-	obj = _ILEngineAllocObject(thread, thread->process->clrTypeClass);
-	if(!obj)
-	{
-		return 0;
-	}
+		/* Does the class already have a "ClrType" instance? */
+		if(!classPrivate->clrType)
+		{
+			/* Create a new "ClrType" instance */
+			if(!(thread->process->clrTypeClass))
+			{
+				thread->thrownException = _ILSystemException
+					(thread, "System.TypeInitializationException");
+				return 0;
+			}
+			obj = _ILEngineAllocObject(thread, thread->process->clrTypeClass);
+			if(!obj)
+			{
+				return 0;
+			}
 
-	/* Fill in the object with the class information */
-	((System_Reflection *)obj)->privateData = classInfo;
+			/* Fill in the object with the class information */
+			((System_Reflection *)obj)->privateData = classInfo;
 
-	/* Attach the object to the class so that it will be returned
-	   for future calls to this function */
-	((ILClassPrivate *)(classInfo->userData))->clrType = obj;
+			/* Attach the object to the class so that it will be returned
+			   for future calls to this function.
+			   We have to use a locked compare and exchange here because of
+			   possible race conditions to be sure that only one clr object
+			   for each class is used.
+			   If there was one extra object created it will be collected by
+			   the garbage collector */
+			ILInterlockedCompareAndExchangePointers((void **)&(classPrivate->clrType), obj, 0);
+		}
+	}
 
 	/* Return the object to the caller */
-	return obj;
+	return ((ILClassPrivate *)(classInfo->userData))->clrType;
 }
 
 ILClass *_ILGetClrClass(ILExecThread *thread, ILObject *type)

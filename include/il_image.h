@@ -273,10 +273,15 @@ void ILContextGetShadowCopyDirs(ILContext *context,
 void ILContextClearShadowCopyDirs(ILContext *context);
 
 /*
- * Set shadowCopyFiles to a 0 to disable shadow copies or a non null
- * value to enable shadow copies.
+ * Set shadowCopyFiles to a 0 to disable shadow copies or a value != 0
+ * to enable shadow copies.
  */
 void ILContextSetShadowCopyFiles(ILContext *context, int shadowCopyFiles);
+
+/*
+ * Get the shadowCopyFiles setting of the context
+ */
+int ILContextGetShadowCopyFiles(ILContext *context);
 
 /*
  * Used by the engine to attach user data to the context instance.

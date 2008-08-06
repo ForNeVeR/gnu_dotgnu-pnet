@@ -688,7 +688,7 @@ static void *GetUserData(ILDebugger *debugger, const void *ptr, int type)
  */
 static int GetId(ILDebugger *debugger, const void *ptr, int type)
 {
-	int id = (int) GetUserData(debugger, ptr, type);
+	ILNativeInt id = (ILNativeInt) GetUserData(debugger, ptr, type);
 	if(id == 0)
 	{
 		id = --(debugger->minId);
@@ -1350,8 +1350,8 @@ ILMethod *FindMethodByLocation(ILDebugger *debugger, const char *sourceFile,
 void SetId(ILDebugger *debugger, FILE *stream)
 {
 	char *arg = 0;
-	int oldId;
-	int newId;
+	ILNativeInt oldId;
+	ILNativeInt newId;
 	int size;
 	ILUserDataEntry *entry;
 	int found = 0;
@@ -2300,8 +2300,8 @@ void ShowProfiling(ILDebugger *debugger, FILE *stream)
 {
 	int size;
 	ILUserDataEntry *entry;
-	ILUInt32 time;
-	ILUInt32 count;
+	ILNativeUInt time;
+	ILNativeUInt count;
 	int memberId;
 
 	fputs("<Profiling>\n", stream);
@@ -2313,14 +2313,14 @@ void ShowProfiling(ILDebugger *debugger, FILE *stream)
 		/* Case with entry->ptr==0 is valid and must be skipped */
 		if(entry->type == IL_USER_DATA_METHOD_TIME && entry->ptr != 0)
 		{
-			time = (ILUInt32) entry->data;
-			count = (ILUInt32) GetUserData(debugger, entry->ptr,
-											IL_USER_DATA_METHOD_CALL_COUNT);
+			time = (ILNativeUInt) entry->data;
+			count = (ILNativeUInt) GetUserData(debugger, entry->ptr,
+											   IL_USER_DATA_METHOD_CALL_COUNT);
 			memberId = GetId(debugger, entry->ptr, IL_USER_DATA_MEMBER_ID);
 			
 			fprintf(stream,
-						"  <ProfilingEntry MemberId=\"%d\" CallCount=\"%d\" "
-						"Time=\"%d\"", memberId, count, time);
+					"  <ProfilingEntry MemberId=\"%d\" CallCount=\"%d\" "
+					"Time=\"%d\"", memberId, (ILUInt32)count, (ILUInt32)time);
 
 			if(memberId >= 0)
 			{
@@ -2536,7 +2536,7 @@ void ShowSourceFiles(ILDebugger *debugger, FILE *stream)
 
 					SetUserData(debugger, (void *) sourceFile,
 											IL_USER_DATA_SOURCE_FILE_IMAGE_ID,
-											(void *) imageId);
+											(void *)(ILNativeInt) imageId);
 				}
 			}
 		}
@@ -3339,7 +3339,7 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 	ILCurrTime time;
 	ILInt64 delta;
 	ILInt64 total;
-	ILUInt32 count;
+	ILNativeUInt count;
 
 	/* Get debugger attached to thread's process */
 	debugger = _ILExecThreadProcess(thread)->debugger;
@@ -3386,19 +3386,19 @@ static int DebugHook(void *userData, ILExecThread *thread, ILMethod *method,
 					(time.secs - info->profilerLastStopTime.secs);
 
 		/* Add time delta to previous hit */
-		total = (ILUInt32) GetUserData(debugger,
-											(void *) info->profilerLastMethod,
-											IL_USER_DATA_METHOD_TIME);
+		total = (ILNativeUInt) GetUserData(debugger,
+										   (void *) info->profilerLastMethod,
+										   IL_USER_DATA_METHOD_TIME);
 		total += delta;
 		SetUserData(debugger, (void *) info->profilerLastMethod,
-													IL_USER_DATA_METHOD_TIME,
-													(void *)(ILUInt32)total);
+					IL_USER_DATA_METHOD_TIME,
+					(void *)(ILNativeUInt)total);
 
 		/* Increase method call count */
 		if(offset == 0)
 		{
-			count = (ILUInt32) GetUserData(debugger, (void *) method,
-											IL_USER_DATA_METHOD_CALL_COUNT);
+			count = (ILNativeUInt) GetUserData(debugger, (void *) method,
+											   IL_USER_DATA_METHOD_CALL_COUNT);
 			count++;
 			SetUserData(debugger, (void *) method,
 											IL_USER_DATA_METHOD_CALL_COUNT,

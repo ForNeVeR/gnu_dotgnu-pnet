@@ -1,3 +1,56 @@
+2008-08-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvmc.c (_ILCVMUnrollInitStack): Use the current thread for
+	initializing the unrooler stack instead of the mainthread of the
+	process. The thread must be initialitzed for managed execution and
+	running in the process.
+
+	* engine/debugger.c (GetId, SetId): Use ILNativeUInt instead of ILUInt32
+	for the ids for working correctly on 64bit systems.
+	(ShowProfiling): Use ILNativeInt instead of ILInt32 for time and count to
+	fix compiler warnings on 64bit systems.
+	(ShowSourceFiles, DebugHook): Add additional casts to fix compiler
+	warnings on 64bit systems.
+
+	* engine/engine.c (ILExecInit, ILExecDeinit): Create the global engine
+	without appdomain support too. Use the default stackSize only if built
+	with cvm.
+	(ILExecEngineCreate): Initialize the process list only if built with
+	appdomain support.
+	(ILExecEngineDestroy): Destroy the processes in the list only if built
+	with appdomain support.
+
+	* engine/engine.h: Include cvm specific members in ILExecThread,
+	ILExecProcess and ILExecEngine only if built with cvm now.
+	Change prototypes of ILExecEngineInstance and ILExecEngineCreate.
+	Move the declaration of ILExecEngine from include/il_engine.h to here.
+
+	*engine/ilrun.c, engine/il_verify.c (main): Use the general calls to
+	ILExecInit and ILExecProcessCreate again.
+
+	* engine/lib_diag.c(_ILBreak, _IL_Debugger_Break): compile code only if
+	built with debugger support.
+
+	* engine/lib_thread.c(_IL_Thread_ResetAbort): Handle cvm specific stuff
+	only if built with cvm.
+
+	* engine/process.c (ILExecProcessJoinEngine,
+	ILExecProcessDetachFromEngine): Remove the IL_INLINE from the methods.
+	Compile the methods with and without appdomain support. Add some sanity
+	checks and don't add the default process to the list of attached
+	processes. Handle the list of attached processes to the engine only if
+	built with appdomain support.
+	(ILExecProcessGetMain): Return the managed thread of the current thread
+	instead of the process' main thread because this is what would have
+	happened with the old implementation anyways.
+
+	* engine/thread.c: Compile in cvm specific stuff only if built with cvm.
+
+	* include/il_engine.h (ILExecInit, ILExecProcessCreate): Use the same
+	prototypes independent of appdomain support.
+	(ILExecProcessGetMain): Add some comments and mark it obsolete.
+	Move the declaration of ILExecEngine to engine/engine.h
+	
 2008-08-04  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_object.c (_ILGetClrType): Optimize function so that the

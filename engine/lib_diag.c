@@ -158,6 +158,7 @@ int _ILIsBreak(ILExecThread *thread, ILMethod *method)
 
 void _ILBreak(ILExecThread *thread, int type)
 {
+#ifdef IL_CONFIG_DEBUGGER
 	int action;
 #ifdef IL_USE_CVM
 	unsigned char *start;
@@ -194,6 +195,7 @@ void _ILBreak(ILExecThread *thread, int type)
 			exit(7);
 		}
 	}
+#endif /* IL_CONFIG_DEBUGGER */
 }
 
 /*
@@ -213,6 +215,7 @@ ILBool _IL_Debugger_InternalIsAttached(ILExecThread *thread)
  */
 void _IL_Debugger_Break(ILExecThread *thread)
 {
+#ifdef IL_CONFIG_DEBUGGER
 	ILInt32 offset;
 	int action;
 
@@ -230,6 +233,7 @@ void _IL_Debugger_Break(ILExecThread *thread)
 			exit(7);
 		}
 	}
+#endif /* IL_CONFIG_DEBUGGER */
 }
 
 /*

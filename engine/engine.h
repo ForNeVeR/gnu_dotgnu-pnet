@@ -125,25 +125,29 @@ struct _tagILLoadedModule
 
 };
 
-#ifdef IL_CONFIG_APPDOMAINS
 /*
  * structure that keeps track of the created processes
  */  
+typedef struct __tagILExecEngine ILExecEngine;
 struct __tagILExecEngine
 {
-	/* Default stack size for new threads */
-	ILUInt32	  	stackSize;
-	ILUInt32	  	frameStackSize;
+	/* default appdomain */
+	ILExecProcess  *defaultProcess;
 
 	/* lock to serialize access to application domains */
 	ILMutex        *processLock;
+
+#ifdef IL_USE_CVM
+	/* Default stack size for new threads */
+	ILUInt32	  	stackSize;
+	ILUInt32	  	frameStackSize;
+#endif
+
+#ifdef IL_CONFIG_APPDOMAINS
 	/* linked list of application domains */
 	ILExecProcess  *firstProcess;
-
-	/* default appdomain */
-	ILExecProcess  *defaultProcess;
-};
 #endif
+};
 
 /*
  * Structure of a breakpoint watch registration.
@@ -209,6 +213,9 @@ struct _tagILExecProcess
 	/* Lock to serialize access to this object */
 	ILMutex        *lock;
 
+	/* The engine this process is attached to */
+	ILExecEngine	*engine;
+
 	/* List of threads that are active within this process */
 	ILExecThread   *firstThread;
 
@@ -217,12 +224,6 @@ struct _tagILExecProcess
 
 	/* The finalizer thread for the process */
 	ILExecThread   *finalizerThread;
-
-#ifndef IL_CONFIG_APPDOMAINS
-	/* Default stack size for new threads */
-	ILUInt32	  	stackSize;
-	ILUInt32	  	frameStackSize;
-#endif
 
 	/* Context that holds all images that have been loaded by this process */
 	ILContext 	   *context;
@@ -290,6 +291,19 @@ struct _tagILExecProcess
 	/* The custom internal call table which is runtime settable */
 	ILEngineInternalClassList* internalClassTable;
 
+	/* Cryptographic seed material */
+	ILMutex        	   *randomLock;
+	int					randomBytesDelivered;
+	ILInt64				randomLastTime;
+	unsigned char		randomPool[20];
+	int					randomCount;
+
+	/* Size of the global thread-static allocation */
+	ILUInt32			numThreadStaticSlots;
+
+	/* Image loading flags */
+	int					loadFlags;
+
 #ifdef IL_CONFIG_DEBUG_LINES
 
 	/* Breakpoint debug information */
@@ -307,18 +321,11 @@ struct _tagILExecProcess
 
 #endif
 
-	/* Cryptographic seed material */
-	ILMutex        	   *randomLock;
-	int					randomBytesDelivered;
-	ILInt64				randomLastTime;
-	unsigned char		randomPool[20];
-	int					randomCount;
-
-	/* Size of the global thread-static allocation */
-	ILUInt32			numThreadStaticSlots;
-
-	/* Image loading flags */
-	int					loadFlags;
+#ifdef IL_USE_CVM
+	/* Default stack size for new threads */
+	ILUInt32	  	stackSize;
+	ILUInt32	  	frameStackSize;
+#endif
 
 #ifdef IL_USE_IMTS
 
@@ -332,8 +339,6 @@ struct _tagILExecProcess
 	/* sibling app domains */
 	ILExecProcess	*prevProcess;
 	ILExecProcess	*nextProcess;
-
-	ILExecEngine	*engine;
 
 #endif /* IL_CONFIG_APPDOMAINS */
 };
@@ -398,20 +403,25 @@ struct _tagILExecThread
 	/* Support thread object */
 	ILThread       *supportThread;
 
-	/* Extent of the execution stack */
-	CVMWord		   *stackBase;
-	CVMWord		   *stackLimit;
+	/* Current method being executed */
+	ILMethod       *method;
 
-	/* Current thread state */
-	unsigned char  *pc;				/* Current program position */
-	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
-	CVMWord		   *frame;			/* Base of the local variable frame */
-	CVMWord        *stackTop;		/* Current stack top */
-	ILMethod       *method;			/* Current method being executed */
-	ILUInt32		offset;			/* Current IL offset */
+	/* Thread-static values for this thread */
+	void		  **threadStaticSlots;
+	ILUInt32		threadStaticSlotsUsed;
+
+	/* Flagged if the thread is running managed code */
+	int		runningManagedCode;
+
+	/* The last exception that was thrown (as seen from the CVM)
+	   This always stores the last exception thrown and is never reset */
+	ILObject	*currentException;
 
 	/* Last exception that was thrown */
 	ILObject       *thrownException;
+
+	/* The ThreadAbortException instance of the thread is being aborted */
+	ILObject	*threadAbortException;
 
 	/* Flag that indicates whether a thread is aborting */
 	volatile int	aborting;
@@ -433,37 +443,40 @@ struct _tagILExecThread
 	/* Number of monitors in the free monitor list */
 	int freeMonitorCount;
 
-	/* Stack of call frames in use */
-	ILCallFrame	   *frameStack;
-	ILUInt32		numFrames;
-	ILUInt32		maxFrames;
+#ifdef IL_USE_CVM
+	/* Extent of the execution stack */
+	CVMWord		   *stackBase;
+	CVMWord		   *stackLimit;
 
-#ifdef IL_DEBUGGER
-	/* Stack for watching local variables and function params */
-	ILLocalWatch   *watchStack;
-	ILUInt32		numWatches;
-	ILUInt32		maxWatches;
-#endif
-
-	/* Thread-static values for this thread */
-	void		  **threadStaticSlots;
-	ILUInt32		threadStaticSlotsUsed;
-
-	/* Flagged if the thread is running managed code */
-	int		runningManagedCode;
-
-	/* The last exception that was thrown (as seen from the CVM)
-	   This always stores the last exception thrown and is never reset */
-	ILObject	*currentException;
-
-	/* The ThreadAbortException instance of the thread is being aborted */
-	ILObject	*threadAbortException;
+	/* Current thread state */
+	unsigned char  *pc;				/* Current program position */
+	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
+	CVMWord		   *frame;			/* Base of the local variable frame */
+	CVMWord        *stackTop;		/* Current stack top */
+	ILUInt32		offset;			/* Current IL offset */
 
 	/* The PC where the ThreadAbortException should be rethrown */
 	unsigned char	*abortHandlerEndPC;
 
 	/* The frame where the ThreadAbortException was first noticed */
 	ILUInt32		abortHandlerFrame;
+
+	/* Stack of call frames in use */
+	ILCallFrame	   *frameStack;
+	ILUInt32		numFrames;
+	ILUInt32		maxFrames;
+#endif
+
+#ifdef IL_DEBUGGER
+	/* Stack for watching local variables and function params */
+	ILLocalWatch   *watchStack;
+	ILUInt32		numWatches;
+	ILUInt32		maxWatches;
+#ifdef IL_USE_JIT
+	void		   *frame;			/* Base of the local variable frame */
+	ILUInt32		offset;			/* Current IL offset */
+#endif
+#endif
 
 #if defined(ENHANCED_PROFILER)
 	int		profilingEnabled;
@@ -565,9 +578,8 @@ struct _tagObjectHeader
 #endif
 };
 
-#ifdef IL_CONFIG_APPDOMAINS
 /* global accessor function to get the global engine object */
-ILExecEngine *ILExecEngineInstance();
+ILExecEngine *ILExecEngineInstance(void);
 
 /*
  * Destroy the engine.
@@ -578,8 +590,9 @@ void ILExecEngineDestroy(ILExecEngine *engine);
  * Create a new execution engine.
  * Returns the ILExecEngine or 0 if the function fails.
  */
-ILExecEngine *ILExecEngineCreate(unsigned long stackSize);
+ILExecEngine *ILExecEngineCreate(void);
 
+#ifdef IL_CONFIG_APPDOMAINS
 /*
  * Let the thread return from an other ILExecProcess and restore the saved
  * state.

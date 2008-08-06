@@ -30,20 +30,12 @@
 extern	"C" {
 #endif
 
-#ifdef IL_CONFIG_APPDOMAINS
 /* global engine object */
-ILExecEngine *globalEngine;
-#endif
+ILExecEngine *globalEngine = 0;
 
-#ifdef IL_CONFIG_APPDOMAINS
-int ILExecInit(unsigned long maxSize, unsigned long stackSize)
-#else
 int ILExecInit(unsigned long maxSize)
-#endif
 {
-#ifdef IL_CONFIG_APPDOMAINS
 	globalEngine = 0;
-#endif
 
 	/* Initialize the thread routines */	
 	ILThreadInit();
@@ -65,25 +57,21 @@ int ILExecInit(unsigned long maxSize)
 	/* Initialize the global garbage collector */	
 	ILGCInit(maxSize);
 
-#ifdef IL_CONFIG_APPDOMAINS
-	globalEngine = ILExecEngineCreate(stackSize);
+	globalEngine = ILExecEngineCreate();
 	if (!globalEngine)
 	{
 		return IL_EXEC_INIT_OUTOFMEMORY;
 	}	
-#endif
 
 	return IL_EXEC_INIT_OK;
 }
 
 void ILExecDeinit()
 {	
-#ifdef IL_CONFIG_APPDOMAINS
 	if (globalEngine)
 	{
 		ILExecEngineDestroy(globalEngine);
 	}
-#endif
 
 	/* Deinitialize the global garbage collector */	
 	ILGCDeinit();	
@@ -97,8 +85,6 @@ void ILExecDeinit()
 #endif
 }
 
-
-#ifdef IL_CONFIG_APPDOMAINS
 /* global accessor function to get the global engine object */
 ILExecEngine *ILExecEngineInstance()
 {
@@ -109,7 +95,7 @@ ILExecEngine *ILExecEngineInstance()
  * Create a new execution engine.
  * Returns the ILExecEngine or 0 if the function fails.
  */
-ILExecEngine *ILExecEngineCreate(unsigned long stackSize)
+ILExecEngine *ILExecEngineCreate(void)
 {
 	ILExecEngine *engine;
 
@@ -121,12 +107,14 @@ ILExecEngine *ILExecEngineCreate(unsigned long stackSize)
 	}
 	/* Initialize the fields */
 	engine->processLock = 0;
-	engine->firstProcess = 0;
 	engine->defaultProcess = 0;
-	engine->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
-							? IL_CONFIG_STACK_SIZE : stackSize);
+#ifdef IL_CONFIG_APPDOMAINS
+	engine->firstProcess = 0;
+#endif
+#ifdef IL_USE_CVM
+	engine->stackSize = IL_CONFIG_STACK_SIZE;
 	engine->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
-
+#endif
 
 	/* Initialize the process lock */
 	engine->processLock = ILMutexCreate();
@@ -145,8 +133,9 @@ ILExecEngine *ILExecEngineCreate(unsigned long stackSize)
  */
 void ILExecEngineDestroy(ILExecEngine *engine)
 {
-	int count;
 	ILExecProcess *process;	
+#ifdef IL_CONFIG_APPDOMAINS
+	int count;
 	ILQueueEntry *unloadQueue, *destroyQueue;
 	
 	unloadQueue = ILQueueCreate();
@@ -200,6 +189,7 @@ void ILExecEngineDestroy(ILExecEngine *engine)
 		process = (ILExecProcess *)ILQueueRemove(&destroyQueue);
 		ILExecProcessDestroy(process);
 	}
+#endif
  
 	/* now unload and destroy the default process */
 	if(engine->defaultProcess)
@@ -217,7 +207,7 @@ void ILExecEngineDestroy(ILExecEngine *engine)
 	/* Free the engine block itself */
 	ILGCFreePersistent(engine);
 }
-#endif
+
 #ifdef	__cplusplus
 };
 #endif

@@ -385,9 +385,17 @@ int _ILCVMUnrollInitStack(ILExecProcess *process)
 {
 #if defined(IL_CVM_DIRECT_UNROLLED) && defined(IL_NO_REGISTERS_USED)
 	ILCVMCoder *coder;
+	ILExecThread *thread;
 
 	coder = _ILCoderToILCVMCoder(process->coder);
+	thread = ILExecThreadCurrent();
 
+	/* This function must be called from a managed thread in the process */
+	if(!thread || thread->process != process)
+	{
+		return 0;
+	}
+	
 	/* Find some room in the cache */
 	coder->start = ILCacheStartMethod(coder->cache, &(coder->codePosn), 1, 0);
 	if(!(coder->start))
@@ -402,8 +410,8 @@ int _ILCVMUnrollInitStack(ILExecProcess *process)
 	ILCacheEndMethod(&coder->codePosn);
 
 	/* Execute register initialization code */
-	process->mainThread->pc = coder->start;
-	_ILCVMInterpreter(process->mainThread);
+	thread->pc = coder->start;
+	_ILCVMInterpreter(thread);
 
 	return 1;
 #else

@@ -28,13 +28,6 @@
 extern	"C" {
 #endif
 
-#ifdef IL_CONFIG_APPDOMAINS
-/*
- * structure that keeps track of the created processes
- */  
-typedef struct __tagILExecEngine ILExecEngine;
-#endif
-
 /*
  *	Structure used by the EE for storing monitors.
  */
@@ -192,11 +185,7 @@ typedef int (*ILExecDebugHookFunc)(void *userData,
  *
  * Returns 0 if the engine was successfully initialized.
  */
-#ifdef IL_CONFIG_APPDOMAINS
-int ILExecInit(unsigned long maxSize, unsigned long frameStackSize);
-#else
 int ILExecInit(unsigned long maxSize);
-#endif
 
 /*
  *	Deinitialize the engine.
@@ -216,11 +205,7 @@ void ILThreadUnregisterForManagedExecution(ILThread *thread);
 /*
  * Create a new process, including the "main" thread.
  */
-#ifdef IL_CONFIG_APPDOMAINS
-ILExecProcess *ILExecProcessCreate(unsigned long cachePageSize);
-#else
 ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize, unsigned long cachePageSize);
-#endif
 
 /*
  * Destroy a process and all threads associated with it.
@@ -282,6 +267,13 @@ char *ILExecProcessGetFriendlyName(ILExecProcess *process);
 
 /*
  * Get the "main" thread for a process.
+ * This function is obsolete.
+ * It worked only correctly if called from the thread that created the
+ * ILExecProcess with calling ILExecProcessCreate.
+ * Failing to do so resulted the same ILExecThread being used by multiple
+ * threads and causing trouble as soon as both of them started executing
+ * managed code.
+ * Simply use ILExecThreadCurrent() instead.
  */
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process);
 

@@ -29,7 +29,6 @@
 extern	"C" {
 #endif
 
-#ifdef IL_CONFIG_APPDOMAINS
 /*
  * Add an application domain to the list of application domains.
  * param:	process = application domain to join to the linked list
@@ -37,12 +36,27 @@ extern	"C" {
  *			engine  = ILExecEngine to join.
  * Returns: void
  */
-static IL_INLINE void ILExecProcessJoinEngine(ILExecProcess *process,
-												ILExecEngine *engine)
+static void ILExecProcessJoinEngine(ILExecProcess *process,
+									ILExecEngine *engine)
 {
+	if(!process || !engine)
+	{
+		return;
+	}
+
 	ILMutexLock(engine->processLock);
 
 	process->engine = engine;
+
+	/* The first ILExecProcess attached will be the default process */
+	if (!engine->defaultProcess)
+	{
+		engine->defaultProcess = process;
+		ILMutexUnlock(engine->processLock);
+		return;
+	}
+
+#ifdef IL_CONFIG_APPDOMAINS
 	process->nextProcess = engine->firstProcess;
 	process->prevProcess = 0;
 	if(engine->firstProcess)
@@ -50,11 +64,8 @@ static IL_INLINE void ILExecProcessJoinEngine(ILExecProcess *process,
 		engine->firstProcess->prevProcess = process;
 	}
 	engine->firstProcess = process;
+#endif
 
-	if (!engine->defaultProcess)
-	{
-		engine->defaultProcess = process;
-	}
 	ILMutexUnlock(engine->processLock);
 }
 
@@ -64,12 +75,33 @@ static IL_INLINE void ILExecProcessJoinEngine(ILExecProcess *process,
  *			(must be not null)
  * Returns: void
  */
-static IL_INLINE void ILExecProcessDetachFromEngine(ILExecProcess *process)
+static void ILExecProcessDetachFromEngine(ILExecProcess *process)
 {
 	ILExecEngine *engine = process->engine;
 	
+	if(!process)
+	{
+		return;
+	}
+
+	engine = process->engine;
+	
+	if(!engine)
+	{
+		return;
+	}
+
 	ILMutexLock(engine->processLock);
 
+	if(engine->defaultProcess == process)
+	{
+		engine->defaultProcess = 0;
+		process->engine = 0,
+		ILMutexUnlock(engine->processLock);
+		return;
+	}
+
+#ifdef IL_CONFIG_APPDOMAINS
 	/* Detach the application domain from its process */
 	if(process->nextProcess)
 	{
@@ -83,27 +115,38 @@ static IL_INLINE void ILExecProcessDetachFromEngine(ILExecProcess *process)
 	{
 		engine->firstProcess = process->nextProcess;
 	}
-
-	if (engine->defaultProcess == process)
-	{
-		engine->defaultProcess = 0;
-	}
 	ILMutexUnlock(engine->processLock);
 
 	/* reset the links */
 	process->engine = 0,
 	process->prevProcess = 0;
 	process->nextProcess = 0;
+#else /* !IL_CONFIG_APPDOMAINS */
+	/* We should never get here but to be sure release the lock. */
+	ILMutexUnlock(engine->processLock);
+#endif
 }
-#endif
 
-#ifdef IL_CONFIG_APPDOMAINS
-ILExecProcess *ILExecProcessCreate(unsigned long cachePageSize)
-#else
 ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
-#endif
 {
 	ILExecProcess *process;
+	ILExecEngine *engine;
+
+	engine = ILExecEngineInstance();
+
+	/* The engine must be initialized prior to creating any processes */
+	if(!engine)
+	{
+		return 0;
+	}
+
+#ifndef IL_CONFIG_APPDOMAINS
+	/* Multiple processes are not supported */
+	if(engine->defaultProcess)
+	{
+		return 0;
+	}
+#endif
 
 	/* Create the process record */
 	if((process = (ILExecProcess *)ILGCAllocPersistent
@@ -114,6 +157,7 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	/* Initialize the fields */
 	process->lock = 0;
 	process->state = _IL_PROCESS_STATE_CREATED;
+	process->engine = 0;
 	process->firstThread = 0;
 	process->mainThread = 0;
 	process->finalizerThread = 0;
@@ -137,29 +181,27 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 	process->internalClassTable = 0;
 	process->friendlyName = 0;
 	process->firstClassPrivate = 0;
+	process->randomBytesDelivered = 1024;
+	process->randomLastTime = 0;
+	process->randomCount = 0;
+	process->numThreadStaticSlots = 0;
+	process->loadFlags = IL_LOADFLAG_FORCE_32BIT;
 #ifdef IL_CONFIG_DEBUG_LINES
 	process->debugHookFunc = 0;
 	process->debugHookData = 0;
 	process->debugWatchList = 0;
 	process->debugWatchAll = 0;
 #endif
-	process->randomBytesDelivered = 1024;
-	process->randomLastTime = 0;
-	process->randomCount = 0;
-	process->numThreadStaticSlots = 0;
-	process->loadFlags = IL_LOADFLAG_FORCE_32BIT;
 #ifdef IL_USE_IMTS
 	process->imtBase = 1;
 #endif
 
-#ifdef IL_CONFIG_APPDOMAINS
-	process->engine = 0;
-	ILExecProcessJoinEngine(process, ILExecEngineInstance());
-#else
+#ifdef IL_USE_CVM
 	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
 							? IL_CONFIG_STACK_SIZE : stackSize);
 	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
 #endif
+
 	/* Initialize the image loading context */
 	if((process->context = ILContextCreate()) == 0)
 	{
@@ -246,6 +288,9 @@ ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cacheP
 		return 0;
 	}
 
+	/* Attach the process to the engine */
+	ILExecProcessJoinEngine(process, ILExecEngineInstance());
+
 	/* Return the process record to the caller */
 	return process;
 }
@@ -318,13 +363,10 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	{
 		if (mainIsFinalizer)
 		{
+#ifdef IL_USE_CVM
 			/* If the main thread is the finalizer thread then
 			   we have to zero the memory of the CVM stack so that
 			   stray pointers are erased */
-#ifdef IL_CONFIG_APPDOMAINS
-			ILMemZero(process->mainThread->stackBase, process->engine->stackSize);
-			ILMemZero(process->mainThread->frameStack, process->engine->frameStackSize);
-#else
 			ILMemZero(process->mainThread->stackBase, process->stackSize);
 			ILMemZero(process->mainThread->frameStack, process->frameStackSize);
 #endif
@@ -554,19 +596,16 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	_ILExecMonitorProcessDestroy(process);
 
+	if (process->engine)
+	{
+		ILExecProcessDetachFromEngine(process);
+	}
+
 	if (process->lock)
 	{
 		/* Destroy the object lock */
 		ILMutexDestroy(process->lock);
 	}
-
-#ifdef IL_CONFIG_APPDOMAINS
-
-	if (process->engine)
-	{
-		ILExecProcessDetachFromEngine(process);
-	}
-#endif
 
 	/* free the friendly name if available */
 	if(process->friendlyName != 0)
@@ -596,7 +635,13 @@ ILContext *ILExecProcessGetContext(ILExecProcess *process)
 
 ILExecThread *ILExecProcessGetMain(ILExecProcess *process)
 {
-	return process->mainThread;
+	ILExecThread *thread = ILExecThreadCurrent();
+
+	if(!thread)
+	{
+		thread = ILThreadRegisterForManagedExecution(process, ILThreadSelf());
+	}
+	return thread;
 }
 
 /*

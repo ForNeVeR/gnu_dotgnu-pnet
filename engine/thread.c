@@ -315,10 +315,11 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 			ILThreadAtomicEnd();
 
 			thread->aborting = 1;
-			thread->abortHandlerEndPC = 0;
 			thread->threadAbortException = 0;
+#ifdef IL_USE_CVM
+			thread->abortHandlerEndPC = 0;
 			thread->abortHandlerFrame = 0;
-
+#endif
 			ILExecThreadSetException(thread, exception);
 
 			return 0;
@@ -602,30 +603,35 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 		return 0;
 	}
 
+	/* Initialize the thread state */
+	thread->supportThread = 0;
+	thread->clrThread = 0;
+	thread->aborting = 0;
+	thread->freeMonitor = 0;
+	thread->freeMonitorCount = 0;
+	thread->isFinalizerThread = 0;
+	thread->method = 0;
+	thread->thrownException = 0;	
+	thread->threadStaticSlots = 0;
+	thread->threadStaticSlotsUsed = 0;
+	thread->currentException = 0;
+	thread->managedSafePointFlags = 0;
+	thread->runningManagedCode = 0;	
+	thread->threadAbortException = 0;
+
+#ifdef IL_USE_CVM
 	/* Allocate space for the thread-specific value stack */
 	if((thread->stackBase = (CVMWord *)ILGCAllocPersistent
-#ifdef IL_CONFIG_APPDOMAINS
-					(sizeof(CVMWord) * process->engine->stackSize)) == 0)
-#else
 					(sizeof(CVMWord) * process->stackSize)) == 0)
-#endif
 	{
 		ILGCFreePersistent(thread);
 		return 0;
 	}
-#ifdef IL_CONFIG_APPDOMAINS
-	thread->stackLimit = thread->stackBase + process->engine->stackSize;
-#else
 	thread->stackLimit = thread->stackBase + process->stackSize;
-#endif
 
 	/* Allocate space for the initial frame stack */
 	if((thread->frameStack = (ILCallFrame *)ILGCAllocPersistent
-#ifdef IL_CONFIG_APPDOMAINS
-					(sizeof(ILCallFrame) * process->engine->frameStackSize))
-#else
 					(sizeof(ILCallFrame) * process->frameStackSize))
-#endif
 			== 0)
 	{
 		ILGCFreePersistent(thread->stackBase);
@@ -634,32 +640,13 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	}
 
 	thread->numFrames = 0;
-#ifdef IL_CONFIG_APPDOMAINS
-	thread->maxFrames = process->engine->frameStackSize;
-#else
 	thread->maxFrames = process->frameStackSize;
-#endif
-
-	/* Initialize the thread state */
-	thread->supportThread = 0;
-	thread->clrThread = 0;
-	thread->aborting = 0;
-	thread->freeMonitor = 0;
-	thread->freeMonitorCount = 0;
 	thread->pc = 0;
-	thread->isFinalizerThread = 0;
+	thread->abortHandlerEndPC = 0;
+	thread->abortHandlerFrame = 0;
 	thread->frame = thread->stackBase;
 	thread->stackTop = thread->stackBase;
-	thread->method = 0;
-	thread->thrownException = 0;	
-	thread->threadStaticSlots = 0;
-	thread->threadStaticSlotsUsed = 0;
-	thread->currentException = 0;
-	thread->managedSafePointFlags = 0;
-	thread->runningManagedCode = 0;	
-	thread->abortHandlerEndPC = 0;
-	thread->threadAbortException = 0;
-	thread->abortHandlerFrame = 0;
+#endif /* IL_USE_CVM */
 
 #ifdef IL_DEBUGGER
 	thread->numWatches = 0;
@@ -671,8 +658,10 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	if (!ignoreProcessState
 		&& process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING))
 	{
+#ifdef IL_USE_CVM
 		ILGCFreePersistent(thread->stackBase);
 		ILGCFreePersistent(thread->frameStack);
+#endif
 		ILGCFreePersistent(thread);
 
 		ILMutexUnlock(process->lock);
@@ -718,11 +707,13 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 		_ILThreadClearExecContext(thread->supportThread);
 	}
 
+#ifdef IL_USE_CVM
 	/* Destroy the operand stack */
 	ILGCFreePersistent(thread->stackBase);
 
 	/* Destroy the call frame stack */
 	ILGCFreePersistent(thread->frameStack);
+#endif
 
 #ifdef IL_DEBUGGER
 	/* Destroy the watch stack */
@@ -747,6 +738,7 @@ ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)
 
 ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n)
 {
+#ifdef IL_USE_CVM
 	ILCallFrame *frame;
 	ILUInt32 posn;
 	if(n < 0)
@@ -764,11 +756,13 @@ ILCallFrame *_ILGetCallFrame(ILExecThread *thread, ILInt32 n)
 		}
 		--n;
 	}
+#endif
 	return 0;
 }
 
 ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
 {
+#ifdef IL_USE_CVM
 	ILUInt32 posn;
 	posn = frame - thread->frameStack;
 	if(posn > 0)
@@ -780,6 +774,9 @@ ILCallFrame *_ILGetNextCallFrame(ILExecThread *thread, ILCallFrame *frame)
 	{
 		return 0;
 	}
+#else
+	return 0;
+#endif
 }
 
 #ifdef IL_DEBUGGER

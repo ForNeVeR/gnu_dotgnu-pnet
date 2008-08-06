@@ -98,18 +98,10 @@ int main(int argc, char *argv[])
 	}
 
 	/* Initialize the engine, to ensure that the garbage collector is OK */
-#ifdef IL_CONFIG_APPDOMAINS
-	ILExecInit(0, 0);
-#else
 	ILExecInit(0);
-#endif
 
 	/* Create the default appdomain for the image loading. */
-#ifdef IL_CONFIG_APPDOMAINS
-	if(!(process = ILExecProcessCreate(0)))
-#else
 	if(!(process = ILExecProcessCreate(0, 0)))
-#endif
 	{
 		fprintf(stderr, "%s: out of memory\n", progname);
 		return 1;

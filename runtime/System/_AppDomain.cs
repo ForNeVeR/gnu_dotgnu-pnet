@@ -211,10 +211,10 @@ interface _AppDomain
 								Evidence securityAttributes);
 
 	// Create a remote instance of a type within this application domain.
-	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName);
-	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName,
+	ObjectHandle CreateInstanceFrom(String assemblyFile, String typeName);
+	ObjectHandle CreateInstanceFrom(String assemblyFile, String typeName,
 								    Object[] activationAttributes);
-	ObjectHandle CreateInstanceFrom(String assemblyName, String typeName,
+	ObjectHandle CreateInstanceFrom(String assemblyFile, String typeName,
 								    bool ignoreCase, BindingFlags bindingAttr,
 								    Binder binder, Object[] args,
 								    CultureInfo culture,

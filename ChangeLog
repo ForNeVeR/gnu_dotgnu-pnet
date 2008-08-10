@@ -1,3 +1,19 @@
+2008-08-10  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/_AppDomain.cs: Rename the argument assemblyName to
+	assemblyFile in the CreateInstanceFrom members.
+
+	* runtime/System/AppDomain.cs: Replace the dummy implementations with
+	real ines using the new internalcalls
+
+	* runtime/System/AppDomainSetup.cs: Implement the GetPrivateBinPaths
+	property.
+
+	* tests/runtime/System/SuiteSystem.cs: Add the AppDomain tests to the
+	suite.
+
+	* tests/runtime/System/TestAppDomain.cs: Add tests for AppDomain support.
+
 2008-08-01  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Threading/Timer.cs (DisposeInternal): Add an additional

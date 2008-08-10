@@ -50,7 +50,7 @@ public sealed class AppDomain
 {
 	// Internal state.
 	private static int nextDomainID = 0;
-	private String friendlyName;
+	private IntPtr appDomain;  // Pointer to the ILExecProcess this AppDomain represents
 	internal int domainID;
 #if !ECMA_COMPAT
 	private Evidence evidence;
@@ -63,8 +63,85 @@ public sealed class AppDomain
 	internal LifetimeServices.Manager lifetimeManager;
 #endif
 
+	// InternalCalls
+	// Append the Paths to the private paths for the appDomain
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void AppendPrivatePathsInternal(IntPtr appDomain, String[] paths);
+
+	// Clear the search paths for private assemblies
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClearPrivatePathInternal(IntPtr appDomain);
+
+	// Clear the paths which assemblies should be shadow copied
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void ClearShadowCopyPathInternal(IntPtr appDomain);
+
+	// Create a new instance of ILExecProcess
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void CreateAppDomain(ref IntPtr appDomain);
+
+	// Get the current instance of ILExecProcess
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void CurrentAppDomain(ref IntPtr appDomain);
+
+	// Get the base directory for this application domain.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String GetBaseDirectoryInternal(IntPtr appDomain);
+
+	// Get the friendly name associated with this application domain.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String GetFriendlyNameInternal(IntPtr appDomain);
+
+	// Get the search path relative to the application base for this application domain.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static String GetRelativeSearchPathInternal(IntPtr appDomain);
+
+	// Get the flag if files should be shadow copied.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool GetShadowCopyFilesInternal(IntPtr appDomain);
+
+	// Check if this is the default AppDomain
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool IsDefaultAppDomainInternal(IntPtr appDomain);
+
+	// Set the base directory for this application domain.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void SetBaseDirectoryInternal(IntPtr appDomain, String baseDirectory);
+
+	// Set the friendly name associated with this application domain.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void SetFriendlyNameInternal(IntPtr appDomain, String friendlyName);
+
+	// Set the search path relative to the application base for this application domain.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void SetRelativeSearchPathInternal(IntPtr appDomain, String appRelativePath);
+
+	// Set the flag if files should be shadow copied.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void SetShadowCopyFilesInternal(IntPtr appDomain, bool shadowCopyFiles);
+
+	// Set the paths which assemblies should be shadow copied for the appDomain
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void SetShadowCopyPathInternal(IntPtr appDomain, String[] paths);
+
+	// Unload the instance of ILExecProcess
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void UnloadAppDomain(IntPtr appDomain);
+
+
+	// Constructor for the CurrentDomain
+	private AppDomain(IntPtr appDomain)
+	{
+		this.appDomain = appDomain;
+#if !ECMA_COMPAT
+				setup = new AppDomainSetup(appDomain);
+				items = new Hashtable();
+				this.evidence = new Evidence();
+#endif
+	}
+
 	// Construct a new AppDomain instance.
-	private AppDomain(String name)
+	private AppDomain(String name, IntPtr appDomain)
 			{
 				if(name == null)
 				{
@@ -74,20 +151,22 @@ public sealed class AppDomain
 				{
 					domainID = ++nextDomainID;
 				}
-				friendlyName = name;
+				this.appDomain = appDomain;
+				SetFriendlyNameInternal(appDomain, name);
 #if !ECMA_COMPAT
-				setup = new AppDomainSetup();
+				setup = new AppDomainSetup(appDomain);
 				items = new Hashtable();
 #endif
 			}
 #if !ECMA_COMPAT
-	private AppDomain(String name, Evidence evidence, AppDomainSetup setup)
+	private AppDomain(String name, Evidence evidence, AppDomainSetup setup, IntPtr appDomain)
 			{
 				if(name == null)
 				{
 					throw new ArgumentNullException("name");
 				}
-				friendlyName = name;
+				this.appDomain = appDomain;
+				SetFriendlyNameInternal(appDomain, name);
 				this.evidence = evidence;
 				this.setup = setup;
 				this.items = new Hashtable();
@@ -97,27 +176,30 @@ public sealed class AppDomain
 	// Create a new application domain with a specified name.
 	public static AppDomain CreateDomain(String friendlyName)
 			{
-				// we have only one app domain , fake creation for now
-				return CurrentDomain;
-				// return new AppDomain(friendlyName);
+				IntPtr appDomain;
+
+				CreateAppDomain(ref appDomain);
+				return new AppDomain(friendlyName, appDomain);
 			}
 #if !ECMA_COMPAT
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo)
 			{
-				// we have only one app domain , fake creation for now
-				return CurrentDomain;
-				/* return new AppDomain(friendlyName, securityInfo,
-									 new AppDomainSetup()); */
+				IntPtr appDomain;
+
+				CreateAppDomain(ref appDomain);
+				return new AppDomain(friendlyName, securityInfo,
+									 new AppDomainSetup(appDomain),
+									 appDomain);
 			}
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo,
 										 AppDomainSetup info)
 			{
-				// we have only one app domain , fake creation for now
-				CurrentDomain.setup = info;
-				return CurrentDomain;
-				// return new AppDomain(friendlyName, securityInfo, info);
+				IntPtr appDomain;
+
+				CreateAppDomain(ref appDomain);
+				return new AppDomain(friendlyName, securityInfo, info, appDomain);
 			}
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo,
@@ -125,22 +207,22 @@ public sealed class AppDomain
 										 String appRelativeSearchPath,
 										 bool shadowCopyFiles)
 			{
-				// we have only one app domain , fake creation for now
-				AppDomainSetup setup = new AppDomainSetup();
-				setup.ApplicationBase = appBasePath;
-				setup.PrivateBinPath = appRelativeSearchPath;
-				setup.ShadowCopyFiles = shadowCopyFiles.ToString();
-				CurrentDomain.setup = setup;
-				return CurrentDomain;
-				/*
-				return new AppDomain(friendlyName, securityInfo, setup);*/
+				IntPtr appDomain;
+
+				CreateAppDomain(ref appDomain);
+				SetBaseDirectoryInternal(appDomain, appBasePath);
+				SetRelativeSearchPathInternal(appDomain, appRelativeSearchPath);
+				SetShadowCopyFilesInternal(appDomain, shadowCopyFiles);
+				return new AppDomain(friendlyName, securityInfo,
+									 new AppDomainSetup(appDomain),
+									 appDomain);
 			}
 #endif
 
 	// Return a string representing the current instance.
 	public override String ToString()
 			{
-				return friendlyName;
+				return FriendlyName;
 			}
 
 	// Unload a specific application domain.
@@ -150,7 +232,16 @@ public sealed class AppDomain
 				{
 					throw new ArgumentNullException("domain");
 				}
-				// All domains are local, and we cannot unload them at present.
+				// We must not unload the default AppDomain
+				if (IsDefaultAppDomainInternal(domain.appDomain))
+				{
+					throw new CannotUnloadAppDomainException();
+				}
+				if (domain.DomainUnload != null)
+				{
+					domain.DomainUnload(domain, new EventArgs());
+				}
+				UnloadAppDomain(domain.appDomain);
 			}
 
 	// Get the friendly name associated with this application domain.
@@ -158,7 +249,12 @@ public sealed class AppDomain
 			{
 				get
 				{
-					return friendlyName;
+					String name = GetFriendlyNameInternal(appDomain);
+					if(name == null)
+					{
+						return String.Empty;
+					}
+					return name;
 				}
 			}
 
@@ -174,9 +270,9 @@ public sealed class AppDomain
 #if !ECMA_COMPAT
 
 	// Create the setup information block for the current domain.
-	private static AppDomainSetup CreateCurrentSetup()
+	private static AppDomainSetup CreateCurrentSetup(IntPtr appDomain)
 			{
-				AppDomainSetup setup = new AppDomainSetup();
+				AppDomainSetup setup = new AppDomainSetup(appDomain);
 
 				// Get the location information for the assembly
 				// that contains the program entry point.
@@ -220,13 +316,9 @@ public sealed class AppDomain
 					{
 						if(currentDomain == null)
 						{
-						#if !ECMA_COMPAT
-							currentDomain = new AppDomain
-								("current", new Evidence(), 
-											CreateCurrentSetup());
-						#else
-							currentDomain = new AppDomain("current");
-						#endif
+							IntPtr domain = IntPtr.Zero;
+							CurrentAppDomain(ref domain);
+							currentDomain = new AppDomain(domain);
 						}
 						return currentDomain;
 					}
@@ -240,7 +332,7 @@ public sealed class AppDomain
 			{
 				get
 				{
-					return setup.ApplicationBase;
+					return GetBaseDirectoryInternal(appDomain);
 				}
 			}
 
@@ -267,7 +359,7 @@ public sealed class AppDomain
 			{
 				get
 				{
-					return setup.PrivateBinPath;
+					return GetRelativeSearchPathInternal(appDomain);
 				}
 			}
 
@@ -276,7 +368,7 @@ public sealed class AppDomain
 			{
 				get
 				{
-					return (setup.ShadowCopyFiles == "true");
+					return GetShadowCopyFilesInternal(appDomain);
 				}
 			}
 
@@ -290,30 +382,34 @@ public sealed class AppDomain
 			}
 
 	// Append a directory to the private path.
+#if CONFIG_FRAMEWORK_2_0
+	[Obsolete()]
+#endif
 	public void AppendPrivatePath(String path)
 			{
-				String previous = setup.PrivateBinPath;
-				if(previous == null || previous == String.Empty)
+				if (path == null || path.Length == 0)
 				{
-					setup.PrivateBinPath = path;
+					// Nothing to do
+					return;
 				}
-				else
-				{
-					setup.PrivateBinPath =
-						previous + Path.PathSeparator + path;
-				}
+				String[] splitPaths = path.Split(Path.PathSeparator);
+
+				AppendPrivatePathsInternal(appDomain, splitPaths);
 			}
 
 	// Clear the private path.
+#if CONFIG_FRAMEWORK_2_0
+	[Obsolete()]
+#endif
 	public void ClearPrivatePath()
 			{
-				setup.PrivateBinPath = String.Empty;
+				ClearPrivatePathInternal(appDomain);
 			}
 
 	// Clear the shadow copy path.
 	public void ClearShadowCopyPath()
 			{
-				setup.ShadowCopyDirectories = String.Empty;
+				ClearShadowCopyPathInternal(appDomain);
 			}
 
 #endif // !ECMA_COMPAT
@@ -613,7 +709,13 @@ public sealed class AppDomain
 
 	// Get a list of all assemblies in this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public Assembly[] GetAssemblies();
+	extern private static Assembly[] GetAssembliesInternal(IntPtr appDomain);
+
+	// Get a list of all assemblies in this application domain.
+	public Assembly[] GetAssemblies()
+	{
+		return GetAssembliesInternal(appDomain);
+	}
 
 	// Get the current thread identifier.
 	public static int GetCurrentThreadId()
@@ -633,10 +735,21 @@ public sealed class AppDomain
 				return base.GetType();
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+	public bool IsDefaultAppDomain()
+			{
+				return IsDefaultAppDomainInternal(appDomain);
+			}
+#endif
+
+	// Determine if this domain is running finalizers prior to unload.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static bool IsFinalizingForUnloadInternal(IntPtr appDomain);
+
 	// Determine if this domain is running finalizers prior to unload.
 	public bool IsFinalizingForUnload()
 			{
-				return false;
+				return IsFinalizingForUnloadInternal(appDomain);
 			}
 
 	// Load an assembly into this application domain by name.
@@ -753,13 +866,20 @@ public sealed class AppDomain
 	// Turn on shadow copying.
 	public void SetShadowCopyFiles()
 			{
-				setup.ShadowCopyFiles = "true";
+				SetShadowCopyFilesInternal(appDomain, true);
 			}
 
 	// Set the location of the shadow copy directory.
 	public void SetShadowCopyPath(String s)
 			{
-				setup.ShadowCopyDirectories = s;
+				if (s == null || s.Length == 0)
+				{
+					// Clear the directories to be shadow copied (now all private assemblies are shadow copied)
+					ClearShadowCopyPathInternal(appDomain);;
+				}
+				String[] splitPaths = s.Split(Path.PathSeparator);
+
+				SetShadowCopyPathInternal(appDomain, splitPaths);
 			}
 
 	// Event that is emitted to resolve assemblies.

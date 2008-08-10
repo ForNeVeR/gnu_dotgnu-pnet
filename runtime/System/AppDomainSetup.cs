@@ -25,7 +25,9 @@ namespace System
 
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 [Serializable]
 #if CONFIG_COM_INTEROP
@@ -34,6 +36,7 @@ using System.Runtime.InteropServices;
 public sealed class AppDomainSetup : IAppDomainSetup
 {
 	// Internal state.
+	private IntPtr appDomain; // pointer to the ILExecProcess
 	private String applicationBase;
 	private String applicationName;
 	private String cachePath;
@@ -49,10 +52,24 @@ public sealed class AppDomainSetup : IAppDomainSetup
 	private bool disallowCodeDownload;
 	private LoaderOptimization loaderOptimization;
 
+	// Get an array with the private paths of the appDomain
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void GetPrivateBinPaths(IntPtr appDomain, ref String[] paths);
+
+	// Set the private paths of the appDomain
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static void SetPrivateBinPaths(IntPtr appDomain, String[] paths);
+
+
 	// Constructor.
 	public AppDomainSetup()
 			{
-				// Nothing to do here.
+				appDomain = IntPtr.Zero;
+			}
+
+	internal AppDomainSetup(IntPtr appDomain)
+			{
+				this.appDomain = appDomain;
 			}
 
 	// Implement the IAppDomainSetup interface.
@@ -139,11 +156,53 @@ public sealed class AppDomainSetup : IAppDomainSetup
 			{
 				get
 				{
-					return privateBinPath;
+					if (appDomain == IntPtr.Zero)
+					{
+						return privateBinPath;
+					}
+					else
+					{
+						String[] paths;
+
+						GetPrivateBinPaths(appDomain, ref paths);
+
+						if (paths != null && paths.Length > 0)
+						{
+							StringBuilder builder = new StringBuilder();
+							int index;
+
+							builder.Append(paths[0]);
+							for (index = 1; index < paths.Length; index++)
+							{
+								builder.Append(Path.PathSeparator);
+								builder.Append(paths[index]);
+							}
+							return builder.ToString();
+						}
+						else
+						{
+							return String.Empty;
+						}
+					}
 				}
 				set
 				{
-					privateBinPath = value;
+					if (appDomain == IntPtr.Zero)
+					{
+						privateBinPath = value;
+					}
+					else
+					{
+						if (value != null)
+						{
+							String[] paths = value.Split(Path.PathSeparator);
+							SetPrivateBinPaths(appDomain, paths);
+						}
+						else
+						{
+							SetPrivateBinPaths(appDomain, null);
+						}
+					}
 				}
 			}
 	public String PrivateBinPathProbe

@@ -30,6 +30,9 @@ public class SuiteSystem
 #if CONFIG_FRAMEWORK_2_0	
 				suite.AddTests(typeof(TestActivationArguments));
 				suite.AddTests(typeof(TestActivationContext));
+#endif
+				suite.AddTests(typeof(TestAppDomain));
+#if CONFIG_FRAMEWORK_2_0	
 				suite.AddTests(typeof(TestApplicationId));
 				suite.AddTests(typeof(TestApplicationIdentity));
 #endif

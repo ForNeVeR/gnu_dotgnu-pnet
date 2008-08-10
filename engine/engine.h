@@ -40,10 +40,12 @@ extern	"C" {
 #endif
 
 /* State of an ILExecProcess/AppDomain */
-#define _IL_PROCESS_STATE_CREATED	(0)
-#define _IL_PROCESS_STATE_LOADED	(1)
-#define _IL_PROCESS_STATE_UNLOADING (2)
-#define _IL_PROCESS_STATE_UNLOADED  (4)
+#define _IL_PROCESS_STATE_CREATED				(0)
+#define _IL_PROCESS_STATE_LOADED				(1)
+#define _IL_PROCESS_STATE_EXECUTABLE			(2)
+#define _IL_PROCESS_STATE_UNLOADING				(4)
+#define _IL_PROCESS_STATE_RUNNING_FINALIZERS	(8)
+#define _IL_PROCESS_STATE_UNLOADED				(16)
 
 /* Flags that represents various tasks that need to be performed
    at safe points */
@@ -218,9 +220,6 @@ struct _tagILExecProcess
 
 	/* List of threads that are active within this process */
 	ILExecThread   *firstThread;
-
-	/* The "main" thread for the process */
-	ILExecThread   *mainThread;
 
 	/* The finalizer thread for the process */
 	ILExecThread   *finalizerThread;
@@ -1077,6 +1076,13 @@ void *_ILObjectToCustom(ILExecThread *thread, ILObject *obj,
 ILObject *_ILCustomToObject(ILExecThread *thread, void *ptr,
 							const char *customName, int customNameLen,
 							const char *customCookie, int customCookieLen);
+
+
+/*
+ * Load the standard classes in the process.
+ */
+void _ILExecProcessLoadStandard(ILExecProcess *process,
+								ILImage *image);
 
 /*
  * Get an ILExecThread from the given support thread.

@@ -1098,6 +1098,9 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	ILMethodCode code;
 #ifdef IL_USE_JIT
 	void **jitVtable;
+	int isJitCoder;
+
+	isJitCoder = (process->coder->classInfo == &_ILJITCoderClass);
 #endif
 
 	/* Determine if we have already tried to lay out this class */
@@ -1505,12 +1508,15 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 				/* Use the same index as the ancestor */
 				method->index = ancestor->index;
 			#ifdef IL_USE_JIT
-				if(!ILJitFunctionCreateFromAncestor(process->coder,
-													method,
-													ancestor))
+				if(isJitCoder)
 				{
-					info->userData = 0;
-					return 0;
+					if(!ILJitFunctionCreateFromAncestor(process->coder,
+														method,
+														ancestor))
+					{
+						info->userData = 0;
+						return 0;
+					}
 				}
 			#endif
 			}
@@ -1536,11 +1542,14 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	}
 
 #ifdef IL_USE_JIT
-	if(!ILJitCreateFunctionsForClass(process->coder, info))
+	if(isJitCoder)
 	{
-		ILJitTypesDestroy(&(classPrivate->jitTypes));
-		info->userData = 0;
-		return 0;
+		if(!ILJitCreateFunctionsForClass(process->coder, info))
+		{
+			ILJitTypesDestroy(&(classPrivate->jitTypes));
+			info->userData = 0;
+			return 0;
+		}
 	}
 #endif
 

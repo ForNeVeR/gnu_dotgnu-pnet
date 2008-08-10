@@ -34,6 +34,12 @@
 extern	"C" {
 #endif
 
+struct _ILGCRunArgs
+{
+	void *(* threadFunc)(void *);
+	void *args;
+};
+
 /*#define GC_TRACE_ENABLE*/
 
 #define GC_TRY_INVOKE_SYNCHRONOUSLY 1
@@ -466,29 +472,21 @@ void ILGCRegisterGeneralWeak(void *ptr, void *obj)
 	GC_general_register_disappearing_link(ptr, obj);
 }
 
-void *ILGCRunFunc(void *(* thread_func)(void *), void *arg)
+static void *RunFunc(struct GC_stack_base *stackBase, void *args)
 {
-	struct GC_stack_base gcStackBase;
-	int rc;
+	struct _ILGCRunArgs *runArgs = (struct _ILGCRunArgs *)args;
 
-	/* 
-	 * simply use gcStackBase as stack base because no objects to be 
-	 * scanned will be below this point on the stack.
-	 */
-	gcStackBase.mem_base = &gcStackBase;
+	return (runArgs->threadFunc)(runArgs->args);
+}
 
-	rc = GC_register_my_thread(&gcStackBase);
-	if(rc == GC_SUCCESS)
-	{
-		void *result = thread_func(arg);
-		GC_unregister_my_thread();
-		return result;
-	}
-	else if((rc == GC_DUPLICATE) || (rc == GC_NO_THREADS))
-	{
-		return thread_func(arg);
-	}
-	return 0;
+void *ILGCRunFunc(void *(* threadFunc)(void *), void *args)
+{
+	struct _ILGCRunArgs runArgs;
+
+	runArgs.threadFunc = threadFunc;
+	runArgs.args = args;
+
+	return GC_call_with_stack_base(RunFunc, (void *)&runArgs);
 }
 
 #ifdef	__cplusplus

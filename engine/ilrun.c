@@ -166,18 +166,13 @@ int main(int argc, char *argv[])
 	int state, opt;
 	char *param;
 	ILExecProcess *process;
-	ILMethod *method;
 	int error;
 	ILInt32 retval;
 	ILExecThread *thread;
-	ILObject *args;
-	int sawException;
 	int registerMode = 0;
 	char *ilprogram;
 	char *newExePath;
 	int ilprogramLen;
-	ILExecValue execValue;
-	ILExecValue retValue;
 	int flags=0;
 	int loadFlags = 0;
 #ifndef IL_CONFIG_REDUCE_CODE
@@ -478,109 +473,79 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	/* Attempt to load the program into the process */
-	error = ILExecProcessLoadFile(process, ilprogram);
-	if(error < 0)
-	{
-	#ifndef REDUCED_STDIO
-		perror(ilprogram);
-	#else
-		printf("%s: could not open file", ilprogram);
-	#endif
-		return 1;
-	}
-#if !defined(__palmos__)
-	else if(error == IL_LOADERR_NOT_IL)
-	{
-		/* This is a regular Windows executable */
-		argv[1] = ilprogram;
-	#ifndef IL_WIN32_PLATFORM
-		/* Hand the program off to Wine for execution */
-		argv[0] = getenv("WINE");
-		if(!(argv[0]))
-		{
-			argv[0] = "wine";
-		}
-		execvp(argv[0], argv);
-		perror(argv[0]);
-		return 1;
-	#else
-		/* We are running under Windows, so execute the program directly */
-		return ILSpawnProcess(argv + 1);
-	#endif
-	}
-#endif
-	else if(error > 0)
-	{
-	#ifndef REDUCED_STDIO
-		fprintf(stderr, "%s: %s\n", ilprogram, ILImageLoadError(error));
-	#else
-		printf("%s: %s\n", ilprogram, ILImageLoadError(error));
-	#endif
-		return 1;
-	}
-
-	/* Find the entry point method */
-	method = ILExecProcessGetEntry(process);
-	if(!method)
-	{
-	#ifndef REDUCED_STDIO
-		fprintf(stderr, "%s: no program entry point\n", ilprogram);
-	#else
-		printf("%s: no program entry point\n", ilprogram);
-	#endif
-		ILExecProcessDestroy(process);
-		return 1;
-	}
-
-	/* Validate the entry point */
-	if(ILExecProcessEntryType(method) == IL_ENTRY_INVALID)
-	{
-	#ifndef REDUCED_STDIO
-		fprintf(stderr, "%s: invalid entry point\n", ilprogram);
-	#else
-		printf("%s: invalid entry point\n", ilprogram);
-	#endif
-		ILExecProcessDestroy(process);
-		return 1;
-	}
-
-	/* Convert the arguments into an array of strings */
+	/* Attempt to execute the program in the process */
 	thread = ILExecProcessGetMain(process);
-	args = ILExecProcessSetCommandLine(process, ilprogram, argv + 2);
-
 #ifdef ENHANCED_PROFILER
 	thread->profilingEnabled = profilingEnabled;
 #endif
-
-	/* Call the entry point */
-	sawException = 0;
-	if(args != 0 && !ILExecThreadHasException(thread))
+	error = ILExecProcessExecuteFile(process, ilprogram, argv + 2, &retval);
+	if((error != IL_EXECUTE_OK) && (error != IL_EXECUTE_ERR_EXCEPTION))
 	{
-		execValue.ptrValue = args;
-		ILMemZero(&retValue, sizeof(retValue));
-		if(ILExecThreadCallV(thread, method, &retValue, &execValue))
+		if(error == IL_EXECUTE_ERR_FILE_OPEN)
 		{
-			/* An exception was thrown while executing the program */
-			sawException = 1;
-			retval = 1;
+		#ifndef REDUCED_STDIO
+			perror(ilprogram);
+		#else
+			printf("%s: could not open file", ilprogram);
+		#endif
+			return 1;
 		}
-		else if(!sawException)
+#if !defined(__palmos__)
+		else if(error == IL_EXECUTE_LOADERR_NOT_IL)
 		{
-			retval = retValue.int32Value;
+			/* This is a regular Windows executable */
+			ILExecDeinit();
+			argv[1] = ilprogram;
+		#ifndef IL_WIN32_PLATFORM
+			/* Hand the program off to Wine for execution */
+			argv[0] = getenv("WINE");
+			if(!(argv[0]))
+			{
+				argv[0] = "wine";
+			}
+			execvp(argv[0], argv);
+			perror(argv[0]);
+			return 1;
+		#else
+			/* We are running under Windows, so execute the program directly */
+			return ILSpawnProcess(argv + 1);
+		#endif
 		}
+#endif
+		else if(error <= IL_LOADERR_MAX)
+		{
+		#ifndef REDUCED_STDIO
+			fprintf(stderr, "%s: %s\n", ilprogram, ILImageLoadError(error));
+		#else
+			printf("%s: %s\n", ilprogram, ILImageLoadError(error));
+		#endif
+		}
+		else if(error == IL_EXECUTE_ERR_NO_ENTRYPOINT)
+		{
+		#ifndef REDUCED_STDIO
+			fprintf(stderr, "%s: no program entry point\n", ilprogram);
+		#else
+			printf("%s: no program entry point\n", ilprogram);
+		#endif
+		}
+		else if(error == IL_EXECUTE_ERR_INVALID_ENTRYPOINT)
+		{
+		#ifndef REDUCED_STDIO
+			fprintf(stderr, "%s: invalid entry point\n", ilprogram);
+		#else
+			printf("%s: invalid entry point\n", ilprogram);
+		#endif
+		}
+		ILExecDeinit();
+		return 1;
 	}
-	else
+	if(error == IL_EXECUTE_ERR_EXCEPTION)
 	{
-		/* An exception was thrown while building the argument array */
-		retval = 1;
-	}
-
-	/* Print the top-level exception that occurred */
-	if(sawException && 
-		!ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
-	{		
-		ILExecThreadPrintException(thread);
+		/* Print the top-level exception that occurred */
+		if(!ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
+		{		
+			ILExecThreadPrintException(thread);
+		}
 	}
 
 #ifdef IL_DEBUGGER
@@ -644,7 +609,6 @@ int main(int argc, char *argv[])
 
 	/* Clean up the process and exit */
 	error = ILExecProcessGetStatus(process);
-	ILExecProcessDestroy(process);
 	ILExecDeinit();
 
 	return (int)retval;

@@ -30,6 +30,11 @@ extern	"C" {
 #endif
 
 /*
+ * Enable this to print some debug messages.
+ */
+/*#define PROCESS_DEBUG 1*/
+
+/*
  * Add an application domain to the list of application domains.
  * param:	process = application domain to join to the linked list
  *			(must be not null)
@@ -127,226 +132,36 @@ static void ILExecProcessDetachFromEngine(ILExecProcess *process)
 #endif
 }
 
-ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
-{
-	ILExecProcess *process;
-	ILExecEngine *engine;
-
-	engine = ILExecEngineInstance();
-
-	/* The engine must be initialized prior to creating any processes */
-	if(!engine)
-	{
-		return 0;
-	}
-
-#ifndef IL_CONFIG_APPDOMAINS
-	/* Multiple processes are not supported */
-	if(engine->defaultProcess)
-	{
-		return 0;
-	}
-#endif
-
-	/* Create the process record */
-	if((process = (ILExecProcess *)ILGCAllocPersistent
-						(sizeof(ILExecProcess))) == 0)
-	{
-		return 0;
-	}
-	/* Initialize the fields */
-	process->lock = 0;
-	process->state = _IL_PROCESS_STATE_CREATED;
-	process->engine = 0;
-	process->firstThread = 0;
-	process->mainThread = 0;
-	process->finalizerThread = 0;
-	process->context = 0;
-	process->metadataLock = 0;
-	process->exitStatus = 0;
-	process->coder = 0;
-	process->objectClass = 0;
-	process->stringClass = 0;
-	process->exceptionClass = 0;
-	process->clrTypeClass = 0;
-	process->outOfMemoryObject = 0;	
-	process->commandLineObject = 0;
-	process->threadAbortClass = 0;
-	ILGetCurrTime(&(process->startTime));
-	process->internHash = 0;
-	process->reflectionHash = 0;
-	process->loadedModules = 0;
-	process->gcHandles = 0;
-	process->entryImage = 0;
-	process->internalClassTable = 0;
-	process->friendlyName = 0;
-	process->firstClassPrivate = 0;
-	process->randomBytesDelivered = 1024;
-	process->randomLastTime = 0;
-	process->randomCount = 0;
-	process->numThreadStaticSlots = 0;
-	process->loadFlags = IL_LOADFLAG_FORCE_32BIT;
-#ifdef IL_CONFIG_DEBUG_LINES
-	process->debugHookFunc = 0;
-	process->debugHookData = 0;
-	process->debugWatchList = 0;
-	process->debugWatchAll = 0;
-#endif
-#ifdef IL_USE_IMTS
-	process->imtBase = 1;
-#endif
-
-#ifdef IL_USE_CVM
-	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
-							? IL_CONFIG_STACK_SIZE : stackSize);
-	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
-#endif
-
-	/* Initialize the image loading context */
-	if((process->context = ILContextCreate()) == 0)
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-	/* Associate the process with the context */
-	ILContextSetUserData(process->context, process);
-
-#ifdef IL_USE_JIT
-	/* Initialize the JIT coder */
-	process->coder = ILCoderCreate(&_ILJITCoderClass, process, 100000, cachePageSize);
-#else
-	/* Initialize the CVM coder */
-	process->coder = ILCoderCreate(&_ILCVMCoderClass, process, 100000, cachePageSize);
-#endif
-	if(!(process->coder))
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-	/* Initialize the object lock */
-	process->lock = ILMutexCreate();
-	if(!(process->lock))
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-	/* Initialize the finalization context */
-	process->finalizationContext = (ILFinalizationContext *)ILGCAlloc(sizeof(ILFinalizationContext));
-	if (!process->finalizationContext)
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-	if (!_ILExecMonitorProcessCreate(process))
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-	process->finalizationContext->process = process;
-
-	/* Initialize the metadata lock */
-	process->metadataLock = ILRWLockCreate();
-	if(!(process->metadataLock))
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-	/* Register the main thread for managed execution */
-	process->mainThread = ILThreadRegisterForManagedExecution(process, ILThreadSelf());
-	
-	if(!(process->mainThread))
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-#ifdef IL_USE_CVM
-	if(!_ILCVMUnrollInitStack(process))
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-#endif
-
-	/* If threading isn't supported, then the main thread is the finalizer thread */
-	if (!ILHasThreads())
-	{
-		process->finalizerThread = process->mainThread;
-	}
-	
-	/* Initialize the random seed pool lock */
-	process->randomLock = ILMutexCreate();
-	if(!(process->randomLock))
-	{
-		ILExecProcessDestroy(process);
-		return 0;
-	}
-
-	/* Attach the process to the engine */
-	ILExecProcessJoinEngine(process, ILExecEngineInstance());
-
-	/* Return the process record to the caller */
-	return process;
-}
-
 /*
- * Unloads a process and all threads associated with it.
- * The process may not unload immediately (or even ever).
- * If the current thread exists inside the process, a
- * new thread will be created to unload & destroy the
- * process.  When this function exits, the thread that
- * calls this method will still be able to execute managed
- * code even if it resides within the process it tried to
- * destroy.  The process will eventually be destroyed
- * when the thread (and all other process-owned threads)
- * exit.
+ * The internal function that does the whole unloading of the process.
+ * It simply sets the flag accordingly and aborts all threads that are
+ * currently in this process except the finalizer thread.
+ * After this is done the collector gets a chance to collect and finalize
+ * some stuff.
+ * Destruction of the management stuff is up to ILExecProcessDestroyInternal.
  */
-void ILExecProcessUnload(ILExecProcess *process)
+static void _ILExecProcessUnloadInternal(ILExecProcess *process)
 {
-	/* TODO: Implement same semantics as AppDomain.Unload
-	   for embedders */
-}
+	ILThread *self = ILThreadSelf();
+	ILExecThread *thread;
+	ILQueueEntry *joinQueue;
+	int count = 0;
 
-/*
- * Destroy a process.
- *
- * DO NOT call this function from a thread that expects to be
- * alive after the function returns.  This is *NOT* an implementation
- * of AppDomain.Unload.  A thread that calls this function but exists
- * inside the process will be *unusable* from managed code when this
- * function exits.
- *
- * In the implementation of AppDomain.Unload, this method should
- * not be called by a thread that runs inside the domain it is trying
- * to destroy otherwise the thread will return dead & to a dead domain.
- * A new domain-less thread should be created to destroy the domain.
- * On single threaded systems, this method can be called directly
- * by AppDomain.Unload unless the current thread is living in the
- * domain it is trying to unload in which case AppDomain.Unload *MUST*
- * just return without doing anything.
- *
- * Thong Nguyen (tum@veridicus.com)
- */
-void ILExecProcessDestroy(ILExecProcess *process)
-{
-	int count;
-	ILThread *target;
-	int mainIsFinalizer;
-	ILExecThread *thread;	
-	ILQueueEntry *abortQueue1, *abortQueue2;
-	
-	abortQueue1 = ILQueueCreate();
-	abortQueue2 = ILQueueCreate();
+	joinQueue = ILQueueCreate();
 
 	/* Lock down the process */
 	ILMutexLock(process->lock);
 
+	/* Check if the process is already unloading or is unloaded. */
+	if(process->state >= _IL_PROCESS_STATE_UNLOADING)
+	{
+		/* Unlock the process */
+		ILMutexUnlock(process->lock);
+
+		return;
+	}
+
+	/* and flag the process unloading */
 	process->state = _IL_PROCESS_STATE_UNLOADING;
 
 	/* From this point on, no threads can be created inside or enter the AppDomain */
@@ -355,46 +170,26 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	   that may still be picked up by not so accurate collectors */
 	ILThreadClearStack(4096);
 
-	/* Determine if this is a single-threaded system where the main
-	   thread is the finalizer thread */
-	mainIsFinalizer = process->mainThread == process->finalizerThread;
-
-	if (process->mainThread)
-	{
-		if (mainIsFinalizer)
-		{
-#ifdef IL_USE_CVM
-			/* If the main thread is the finalizer thread then
-			   we have to zero the memory of the CVM stack so that
-			   stray pointers are erased */
-			ILMemZero(process->mainThread->stackBase, process->stackSize);
-			ILMemZero(process->mainThread->frameStack, process->frameStackSize);
-#endif
-		}
-		else
-		{
-			/* If the main thread isn't the finalizer then it's
-			   possible to simply destroy the main thread before
-			   calling the finalizers */
-		}
-	}
-
-	count = 0;
-
 	/* Walk all the threads, collecting CLR thread pointers since they are GC
-	managed and stable */
+	   managed and stable */
 
 	thread = process->firstThread;
 
-	while (thread)
+	while(thread)
 	{
-		if (thread != process->finalizerThread
-			/* Make sure its a managed thread */
-			&& (thread->clrThread || thread == process->mainThread)
-			&& thread->supportThread != ILThreadSelf())
+		if(thread != process->finalizerThread &&
+		   thread->supportThread &&
+		   thread->supportThread != self)
 		{
-			ILQueueAdd(&abortQueue1, thread->supportThread);
-			ILQueueAdd(&abortQueue2, thread->supportThread);
+			ILQueueAdd(&joinQueue, thread->supportThread);
+
+			/* Cancel possible blocking in kernel call on background threads */
+			if(ILThreadGetBackground(thread->supportThread))
+			{
+				ILThreadSigAbort(thread->supportThread);
+			}
+
+			_ILExecThreadAbortThread(ILExecThreadCurrent(), thread->supportThread);
 
 			thread = thread->nextThread;
 
@@ -410,88 +205,53 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Unlock the process */
 	ILMutexUnlock(process->lock);
 
-	if (!abortQueue1 || !abortQueue2)
-	{
-		if (count != 0)
-		{
-			/* Probably ran out of memory trying to build the abortQueues */
-			return;
-		}
-	}
-
-	/* Abort all threads */
-	while (abortQueue1)
-	{
-		target = (ILThread *)ILQueueRemove(&abortQueue1);
-
-		/* Cancel possible blocking in kernel call on background threads */
-		if(ILThreadGetBackground(target))
-		{
-			ILThreadSigAbort(target);
-		}
-
-		_ILExecThreadAbortThread(ILExecThreadCurrent(), target);
-	}
-
 	/* Wait for all threads */
-	while (abortQueue2)
+	while(joinQueue)
 	{
-		target = (ILThread *)ILQueueRemove(&abortQueue2);
+		ILThread *target;
+
+		target = (ILThread *)ILQueueRemove(&joinQueue);
 
 		ILThreadJoin(target, -1);
 	}
 	
-#ifndef IL_USE_JIT
-	/* Unregister (and destroy) the current thread if it isn't needed
-	for finalization and if it belongs to this domain. */
-	if (!mainIsFinalizer 
-		&& ILExecThreadCurrent()
-		&& ILExecThreadCurrent() != process->finalizerThread
-		&& ILExecThreadCurrent()->process == process)
-	{
-		ILThreadUnregisterForManagedExecution(ILThreadSelf());
-	}
-#endif
+	process->state = _IL_PROCESS_STATE_RUNNING_FINALIZERS;
 
 	/* Invoke the finalizers -- hopefully finalizes all objects left in the
 	   process being destroyed.  Objects left lingering are orphans */
 	ILGCCollect();
 
-	if (ILGCInvokeFinalizers(30000) != 0)
+	ILGCInvokeFinalizers(30000);
+
+	if (process->engine)
 	{
-		/* Finalizers are taking too long.  Abandon unloading of this process */
-		return;
+		ILExecProcessDetachFromEngine(process);
 	}
 
-	/* We must ensure that objects created and then orphaned by this process
-	   won't finalize themselves from this point on (because the process will
-	   no longer be valid).  Objects can be orphaned if the GC is conservative
-	   (like the boehm GC) */
+	process->state = _IL_PROCESS_STATE_UNLOADED;
+}
 
-	/* Disable finalizers to ensure no finalizers are running until we 
-	   reenable them */
-	if (ILGCDisableFinalizers(10000) != 0)
-	{
-		/* Finalizers are taking too long.  Abandon unloading of this process */
-		return;
-	}
-
-	/* Mark the process as dead in the finalization context.  This prevents
-	   orphans from finalizing */
+/*
+ * Internal function to destroy a process.
+ * It cleans up all non managed ressources of the process.
+ * This function must be called only after the process was unloaded by
+ * calling ILExecProcessUnload.
+ */
+static void _ILExecProcessDestroyInternal(ILExecProcess *process,
+										  int isFinalizing)
+{
+#ifdef PROCESS_DEBUG
+#ifndef REDUCED_STDIO
+	fprintf(stderr, "DestroyProcess : %p\n", (void *)process);	
+#else
+	printf("DestroyProcess : %p\n", (void *)process);	
+#endif
+#endif
+	/* Mark the process as dead in the finalization context. */
+	/* This prevents orphans from finalizing. */
+	/* If multiple appdomains are supported this function is called  */
+	/* during finalization. */
 	process->finalizationContext->process = 0;
-
-	/* Reenable finalizers */
-	ILGCEnableFinalizers();
-
-	/* Unregister (and destroy) the current thread if it 
-	   wasn't destroyed above and if it belongs to this domain */
-	if (mainIsFinalizer
-		&& ILExecThreadCurrent()
-		&& ILExecThreadCurrent() != process->finalizerThread
-		&& ILExecThreadCurrent()->process == process)
-	{
-		ILThreadUnregisterForManagedExecution(ILThreadSelf());
-	}
 
 	/* Destroy the finalizer thread */
 	if (process->finalizerThread)
@@ -509,7 +269,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	}
 #endif
 
-	/* Destroy the CVM coder instance */
+	/* Destroy the coder instance */
 	if (process->coder)
 	{
 		ILCoderDestroy(process->coder);
@@ -524,6 +284,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 	/* Destroy the image loading context */
 	if(process->context)
 	{
+		/* and destroy the context */
 		ILContextDestroy(process->context);
 	}
 
@@ -596,11 +357,6 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	_ILExecMonitorProcessDestroy(process);
 
-	if (process->engine)
-	{
-		ILExecProcessDetachFromEngine(process);
-	}
-
 	if (process->lock)
 	{
 		/* Destroy the object lock */
@@ -613,12 +369,391 @@ void ILExecProcessDestroy(ILExecProcess *process)
 		ILFree(process->friendlyName);
 		process->friendlyName = 0;
 	}
+}
 
+#ifdef IL_CONFIG_APPDOMAINS
+/*
+ * Finalizer for processes.
+ */
+static void _ILExecProcessFinalizer(void *block, void *data)
+{
+	ILExecProcess *process = (ILExecProcess *)block;
+
+	_ILExecProcessDestroyInternal(process, 1);
+}
+#endif
+
+/*
+ * Create the ILExecProcess without creating the coder.
+ * Initializing the coder to use is up to the caller.
+ */
+static ILExecProcess *_ILExecProcessCreateInternal(void)
+{
+	ILExecProcess *process;
+
+	/* Create the process record */
+#ifdef IL_CONFIG_APPDOMAINS
+	if((process = (ILExecProcess *)ILGCAlloc
+						(sizeof(ILExecProcess))) == 0)
+#else
+	if((process = (ILExecProcess *)ILGCAllocPersistent
+						(sizeof(ILExecProcess))) == 0)
+#endif
+	{
+		return 0;
+	}
+	/* Initialize the fields */
+	process->lock = 0;
+	process->state = _IL_PROCESS_STATE_CREATED;
+	process->engine = 0;
+	process->firstThread = 0;
+	process->finalizerThread = 0;
+	process->context = 0;
+	process->metadataLock = 0;
+	process->exitStatus = 0;
+	process->coder = 0;
+	process->objectClass = 0;
+	process->stringClass = 0;
+	process->exceptionClass = 0;
+	process->clrTypeClass = 0;
+	process->outOfMemoryObject = 0;	
+	process->commandLineObject = 0;
+	process->threadAbortClass = 0;
+	ILGetCurrTime(&(process->startTime));
+	process->internHash = 0;
+	process->reflectionHash = 0;
+	process->loadedModules = 0;
+	process->gcHandles = 0;
+	process->entryImage = 0;
+	process->internalClassTable = 0;
+	process->friendlyName = 0;
+	process->firstClassPrivate = 0;
+	process->randomBytesDelivered = 1024;
+	process->randomLastTime = 0;
+	process->randomCount = 0;
+	process->numThreadStaticSlots = 0;
+	process->loadFlags = IL_LOADFLAG_FORCE_32BIT;
+#if IL_CONFIG_DEBUG_LINES
+	process->debugHookFunc = 0;
+	process->debugHookData = 0;
+	process->debugWatchList = 0;
+	process->debugWatchAll = 0;
+#endif
+#ifdef IL_USE_IMTS
+	process->imtBase = 1;
+#endif
+
+	/* Initialize the image loading context */
+	if((process->context = ILContextCreate()) == 0)
+	{
+		_ILExecProcessDestroyInternal(process, 0);
+		return 0;
+	}
+
+	/* Associate the process with the context */
+	ILContextSetUserData(process->context, process);
+
+	/* Initialize the object lock */
+	process->lock = ILMutexCreate();
+	if(!(process->lock))
+	{
+		_ILExecProcessDestroyInternal(process, 0);
+		return 0;
+	}
+
+	/* Initialize the finalization context */
+	process->finalizationContext = (ILFinalizationContext *)ILGCAlloc(sizeof(ILFinalizationContext));
+	if (!process->finalizationContext)
+	{
+		_ILExecProcessDestroyInternal(process, 0);
+		return 0;
+	}
+
+	if (!_ILExecMonitorProcessCreate(process))
+	{
+		_ILExecProcessDestroyInternal(process, 0);
+		return 0;
+	}
+
+	process->finalizationContext->process = process;
+
+	/* Initialize the metadata lock */
+	process->metadataLock = ILRWLockCreate();
+	if(!(process->metadataLock))
+	{
+		_ILExecProcessDestroyInternal(process, 0);
+		return 0;
+	}
+
+	/* Initialize the random seed pool lock */
+	process->randomLock = ILMutexCreate();
+	if(!(process->randomLock))
+	{
+		_ILExecProcessDestroyInternal(process, 0);
+		return 0;
+	}
+
+#ifdef IL_CONFIG_APPDOMAINS
+	ILGCRegisterFinalizer(process, _ILExecProcessFinalizer, 0);
+#endif
+
+	/* Return the process record to the caller */
+	return process;
+}
+
+/*
+ * Create an ILExecProcess in which code can be executed.
+ */
+ILExecProcess *ILExecProcessCreate(unsigned long stackSize, unsigned long cachePageSize)
+{
+	ILExecProcess *process;
+	ILExecEngine *engine;
+
+	engine = ILExecEngineInstance();
+
+	/* The engine must be initialized prior to creating any processes */
+	if(!engine)
+	{
+		return 0;
+	}
+
+#ifndef	IL_CONFIG_APPDOMAINS
+	/* Multiple processes are not supported */
+	if(engine->defaultProcess)
+	{
+		return 0;
+	}
+#endif
+
+	process = _ILExecProcessCreateInternal();
+	if(!process)
+	{
+		return 0;
+	}
+
+#ifdef IL_USE_CVM
+	process->stackSize = ((stackSize < IL_CONFIG_STACK_SIZE)
+							? IL_CONFIG_STACK_SIZE : stackSize);
+	process->frameStackSize = IL_CONFIG_FRAME_STACK_SIZE;
+#endif
+
+#ifdef IL_USE_JIT
+	/* Initialize the JIT coder */
+	process->coder = ILCoderCreate(&_ILJITCoderClass, process, 100000, cachePageSize);
+#else
+	/* Initialize the CVM coder */
+	process->coder = ILCoderCreate(&_ILCVMCoderClass, process, 100000, cachePageSize);
+#endif
+	if(!(process->coder))
+	{
+		_ILExecProcessDestroyInternal(process, 0);
+		return 0;
+	}
+
+	/* Attach the process to the engine */
+	ILExecProcessJoinEngine(process, ILExecEngineInstance());
+
+	/* Return the process record to the caller */
+	return process;
+}
+
+/*
+ * Import the null coder from "null_coder.c".
+ */
+extern ILCoder _ILNullCoder;
+
+/*
+ * Create an ILExecProcess associated with the null coder.
+ * In this process no code can be executed.
+ */
+ILExecProcess *ILExecProcessCreateNull(void)
+{
+	ILExecProcess *process;
+	ILExecEngine *engine;
+
+	engine = ILExecEngineInstance();
+
+	/* The engine must be initialized prior to creating any processes */
+	if(!engine)
+	{
+		return 0;
+	}
+
+#ifndef	IL_CONFIG_APPDOMAINS
+	/* Multiple processes are not supported */
+	if(engine->defaultProcess)
+	{
+		return 0;
+	}
+#endif
+
+	process = _ILExecProcessCreateInternal();
+	if(!process)
+	{
+		return 0;
+	}
+
+#ifdef IL_USE_CVM
+	process->stackSize = 0;
+	process->frameStackSize = 0;
+#endif
+
+	process->coder = &_ILNullCoder;
+
+	/* Attach the process to the engine */
+	ILExecProcessJoinEngine(process, ILExecEngineInstance());
+
+	/* Return the process record to the caller */
+	return process;
+}
+
+/*
+ * Unloads a process and all threads associated with it.
+ * The process may not unload immediately (or even ever).
+ * If the current thread exists inside the process, a
+ * new thread will be created to unload & destroy the
+ * process.  When this function exits, the thread that
+ * calls this method will still be able to execute managed
+ * code even if it resides within the process it tried to
+ * destroy.  The process will eventually be destroyed
+ * when the thread (and all other process-owned threads)
+ * exit.
+ */
+void ILExecProcessUnload(ILExecProcess *process)
+{
+	ILExecThread *thread = ILExecThreadCurrent();
+
+	if(!process)
+	{
+		return;
+	}
+
+	if(process->state >= _IL_PROCESS_STATE_UNLOADING)
+	{
+		/* The process is already unloading or was unloaded previously */
+		return;
+	}
+
+	if(!thread)
+	{
+		/* Unload was called from an unmanaged thread */
+		ILThread *self = ILThreadSelf();
+
+		thread = ILThreadRegisterForManagedExecution(0, self);
+
+		if(thread)
+		{
+			_ILExecProcessUnloadInternal(process);
+			ILThreadUnregisterForManagedExecution(self);
+		}
+		return;
+	}
+
+	if(thread->process != process)
+	{
+		/* We can invoke the unload directly */
+		_ILExecProcessUnloadInternal(process);
+	}
+	else
+	{
+		/* We have to run the unload from different thread */
+		if(ILHasThreads())
+		{
+			/* TODO */
+
+		}
+	}
+}
+
+/*
+ * Destroy a process.
+ *
+ * DO NOT call this function from a thread that expects to be
+ * alive after the function returns.  This is *NOT* an implementation
+ * of AppDomain.Unload.  A thread that calls this function but exists
+ * inside the process will be *unusable* from managed code when this
+ * function exits.
+ *
+ * In the implementation of AppDomain.Unload, this method should
+ * not be called by a thread that runs inside the domain it is trying
+ * to destroy otherwise the thread will return dead & to a dead domain.
+ * A new domain-less thread should be created to destroy the domain.
+ * On single threaded systems, this method can be called directly
+ * by AppDomain.Unload unless the current thread is living in the
+ * domain it is trying to unload in which case AppDomain.Unload *MUST*
+ * just return without doing anything.
+ *
+ * Thong Nguyen (tum@veridicus.com)
+ */
+void ILExecProcessDestroy(ILExecProcess *process)
+{
+	ILExecThread *thread;
+
+#ifdef IL_CONFIG_APPDOMAINS
+	/* Remove the finalization function from this process */
+	ILGCRegisterFinalizer(process, 0, 0);
+#endif
+
+	if(process->state < _IL_PROCESS_STATE_UNLOADING)
+	{
+		ILExecProcessUnload(process);
+	}
+	if(process->state < _IL_PROCESS_STATE_UNLOADED)
+	{
+		if(ILHasThreads())
+		{
+			/* something went wrong
+			   Is there an other thread executing the unload currently? */
+		}
+		else
+		{
+			thread = ILExecThreadCurrent();
+			if (thread &&
+				thread != process->finalizerThread &&
+				thread->process == process)
+			{
+				ILThreadUnregisterForManagedExecution(ILThreadSelf());
+			}
+			_ILExecProcessUnloadInternal(process);
+		}
+	}
+
+	/* We must ensure that objects created and then orphaned by this process
+	   won't finalize themselves from this point on (because the process will
+	   no longer be valid).  Objects can be orphaned if the GC is conservative
+	   (like the boehm GC) */
+
+	/* Disable finalizers to ensure no finalizers are running until we 
+	   reenable them */
+	if (ILGCDisableFinalizers(10000) != 0)
+	{
+		/* Finalizers are taking too long.  Abandon unloading of this process */
+		return;
+	}
+
+	/* Mark the process as dead in the finalization context.  This prevents
+	   orphans from finalizing */
+	process->finalizationContext->process = 0;
+
+	/* Reenable finalizers */
+	ILGCEnableFinalizers();
+
+	/* Unregister (and destroy) the current thread if it 
+	   wasn't destroyed above and if it belongs to this domain */
+	thread = ILExecThreadCurrent();
+	if (thread &&
+		thread != process->finalizerThread &&
+		thread->process == process)
+	{
+		ILThreadUnregisterForManagedExecution(ILThreadSelf());
+	}
+
+	_ILExecProcessDestroyInternal(process, 0);
+
+#ifndef IL_CONFIG_APPDOMAINS
 	/* Free the process block itself */
 	ILGCFreePersistent(process);
-
-	/* Reset the console to the "normal" mode */
-	ILConsoleSetMode(IL_CONSOLE_NORMAL);
+#endif
 }
 
 void ILExecProcessSetLibraryDirs(ILExecProcess *process,
@@ -647,9 +782,15 @@ ILExecThread *ILExecProcessGetMain(ILExecProcess *process)
 /*
  * Load standard classes and objects.
  */
-static void LoadStandard(ILExecProcess *process, ILImage *image)
+void _ILExecProcessLoadStandard(ILExecProcess *process,
+								ILImage *image)
 {
 	ILClass *classInfo;
+
+	if(process->state > _IL_PROCESS_STATE_CREATED)
+	{
+		return;
+	}
 
 	if(!(process->outOfMemoryObject))
 	{
@@ -669,7 +810,7 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 			to avoid various circularity problems at this stage
 			of the loading process */
 			process->outOfMemoryObject =
-				_ILEngineAllocObject(process->mainThread, classInfo);
+				_ILEngineAllocObject(ILExecProcessGetMain(process), classInfo);
 		}
 	}
 	
@@ -707,6 +848,31 @@ static void LoadStandard(ILExecProcess *process, ILImage *image)
 		process->threadAbortClass = ILClassLookupGlobal(ILImageToContext(image),
 			"ThreadAbortException", "System.Threading");
 	}
+
+	process->state = _IL_PROCESS_STATE_LOADED;
+}
+
+/*
+ * Perform the actions needed prior to executing any code in the process.
+ */
+static int ILExecProcessInitForExecute(ILExecProcess *process)
+{
+	if(process->state < _IL_PROCESS_STATE_LOADED)
+	{
+		return 0;
+	}
+	else if(process->state == _IL_PROCESS_STATE_LOADED)
+	{
+#ifdef IL_USE_CVM
+		if(!_ILCVMUnrollInitStack(process))
+		{
+			return 0;
+		}
+#endif
+		process->state = _IL_PROCESS_STATE_EXECUTABLE;
+	}
+
+	return 1;
 }
 
 #ifndef REDUCED_STDIO
@@ -721,7 +887,7 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file)
 	ILRWLockUnlock(process->metadataLock);
 	if(loadError == 0)
 	{
-		LoadStandard(process, image);
+		_ILExecProcessLoadStandard(process, image);
 	}
 	return loadError;
 }
@@ -738,8 +904,212 @@ int ILExecProcessLoadFile(ILExecProcess *process, const char *filename)
 	ILRWLockUnlock(process->metadataLock);
 	if(error == 0)
 	{
-		LoadStandard(process, image);
+		_ILExecProcessLoadStandard(process, image);
 	}
+	return error;
+}
+
+/*
+ * Get the last occurance of a directoryseparator in a path
+ * up to len.
+ *
+ * Returns the length of the remaining path including the separator if found else -1.
+ */
+static int GetLastDirectorySeparator(const char *path, int len)
+{
+
+	if(path)
+	{
+		while(len > 0 && path[len - 1] != '/' &&
+		      path[len - 1] != '\\')
+		{
+			--len;
+		}
+		return len;
+	}
+	return -1;
+}
+
+/*
+ * Setup the application base dir and the friendly name in an ILContext
+ * from a filename
+ */
+static void SetupApplication(ILExecProcess *process, const char *file)
+{
+	if(file)
+	{
+		int len = strlen(file);
+		int pathLen = GetLastDirectorySeparator(file, len);
+
+		if(pathLen > 0)
+		{
+			ILContextSetApplicationBaseDir(process->context, ILDupNString(file, pathLen));
+			ILExecProcessSetFriendlyName(process, ILDupString(file + pathLen));
+		}
+		else
+		{
+			ILContextSetApplicationBaseDir(process->context, 0);
+			ILExecProcessSetFriendlyName(process, ILDupString(file));
+		}
+	}
+	else
+	{
+		ILContextSetApplicationBaseDir(process->context, 0);
+		ILExecProcessSetFriendlyName(process, 0);
+	}
+}
+
+static int ILExecProcessLoadFileInternal(ILExecProcess *process,
+										 const char *filename,
+										 ILImage **image)
+{
+	int error;
+	ILRWLockWriteLock(process->metadataLock);
+	error = ILImageLoadFromFile(filename, process->context, image,
+								process->loadFlags, 0);
+	ILRWLockUnlock(process->metadataLock);
+	return error;
+}
+
+static ILMethod *ILExecProcessGetEntryInternal(ILExecProcess *process,
+											   ILImage *image)
+{
+	ILMethod *method = 0;
+
+	ILRWLockReadLock(process->metadataLock);
+
+	if(ILImageType(image) == IL_IMAGETYPE_EXE)
+	{
+		ILToken token;
+
+		token = ILImageGetEntryPoint(image);
+		if(token && (token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF)
+		{
+			process->entryImage = image;
+			method = ILMethod_FromToken(image, token);
+		}
+	}
+
+	ILRWLockUnlock(process->metadataLock);
+
+	return method;
+}
+
+/*
+ * Internal worker for ILExecProcessExecuteFile.
+ * This function must be called from a managed thread that is in the
+ * process where the file has to be executed.
+ */
+int ILExecProcessExecuteFileInternal(ILExecThread *thread,
+									 const char *filename,
+									 char *argv[],
+									 int* retval)
+{
+	int error;
+	ILMethod *method;
+	ILObject *args;
+	ILImage *entryImage;
+	ILExecValue execValue;
+	ILExecValue retValue;
+	ILExecProcess *process;
+
+	if(!thread)
+	{
+		return IL_EXECUTE_ERR_MEMORY;
+	}
+
+	if(!(process = _ILExecThreadProcess(thread)))
+	{
+		return IL_EXECUTE_ERR_MEMORY;
+	}
+
+	/* Attempt to load the program into the process */
+	error = ILExecProcessLoadFileInternal(process, filename, &entryImage);
+	if(error < 0)
+	{
+		return IL_EXECUTE_ERR_FILE_OPEN;
+	}
+	else
+	{
+		if(error > 0)
+		{
+			return error;
+		}
+	}
+	if(process->state == _IL_PROCESS_STATE_CREATED)
+	{
+		_ILExecProcessLoadStandard(process, entryImage);
+	}
+	if(!ILExecProcessInitForExecute(process))
+	{
+		return IL_EXECUTE_ERR_MEMORY;
+	}
+
+	SetupApplication(process, ILImageGetFileName(entryImage));
+
+	method = ILExecProcessGetEntryInternal(process, entryImage);
+	if(!method)
+	{
+		return IL_EXECUTE_ERR_NO_ENTRYPOINT;
+	}
+	if(ILExecProcessEntryType(method) == IL_ENTRY_INVALID)
+	{
+		return IL_EXECUTE_ERR_INVALID_ENTRYPOINT;
+	}
+	args = ILExecProcessSetCommandLine(process, filename, argv);
+
+	/* Call the entry point */
+	if(args != 0 && !ILExecThreadHasException(thread))
+	{
+		execValue.ptrValue = args;
+		ILMemZero(&retValue, sizeof(retValue));
+		if(ILExecThreadCallV(thread, method, &retValue, &execValue))
+		{
+			/* An exception was thrown while executing the program */
+			return IL_EXECUTE_ERR_EXCEPTION;
+		}
+		else
+		{
+			*retval = retValue.int32Value;
+		}
+	}
+	else
+	{
+		/* An exception was thrown while building the argument array */
+		return IL_EXECUTE_ERR_EXCEPTION;
+	}
+	return IL_EXECUTE_OK;
+}
+
+int ILExecProcessExecuteFile(ILExecProcess *process,
+							 const char *filename,
+							 char *argv[],
+							 int* retval)
+{
+	ILExecThread *thread;
+	int error;
+
+	thread = ILExecThreadCurrent();
+	if(!thread)
+	{
+		ILThread *self = ILThreadSelf();
+
+		/* Called from an unmanaged thread */
+		thread = ILThreadRegisterForManagedExecution(process, self);
+		if(!thread)
+		{
+			return IL_EXECUTE_ERR_MEMORY;
+		}
+		error = ILExecProcessExecuteFileInternal(thread, filename, argv, retval);
+		ILThreadUnregisterForManagedExecution(self);
+	}
+	else
+	{
+		IL_BEGIN_EXECPROCESS_SWITCH(thread, process)
+		error = ILExecProcessExecuteFileInternal(thread, filename, argv, retval);
+		IL_END_EXECPROCESS_SWITCH(thread)
+	}
+
 	return error;
 }
 

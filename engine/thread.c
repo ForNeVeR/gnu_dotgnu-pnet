@@ -212,7 +212,8 @@ void _ILThreadClearExecContext(ILThread *thread)
 		ILThreadUnregisterInterruptHandler(thread, _ILInterruptHandler);
 	#endif
 
-	ILThreadSetObject(thread, 0);}
+	ILThreadSetObject(thread, 0);
+}
 
 /*
  *	Cleanup handler for threads that have been registered for managed execution.
@@ -230,7 +231,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 	ILExecThread *execThread;
 	ILThreadExecContext context;
 
-	if (process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING))
+	if(process && (process->state >= _IL_PROCESS_STATE_UNLOADING))
 	{
 		return 0;
 	}
@@ -509,8 +510,10 @@ void _ILExecThreadAbortThread(ILExecThread *thread, ILThread *supportThread)
 	   state */
 	ILThreadAbort(supportThread);
 
-	/* If the current thread is aborting itself then abort immediately */
-	if (supportThread == thread->supportThread)
+	/* If the current thread is aborting itself then abort immediately.
+	   We have to check the thread here because the thread can be aborted
+	   from an unmanaged thread. Then thread will be 0. */
+	if (thread && (supportThread == thread->supportThread))
 	{
 		_ILExecThreadSelfAborting(execThread);		
 	}
@@ -596,6 +599,13 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 {
 	ILExecThread *thread;
 
+	/* Check the process state early the first time */
+	if (!ignoreProcessState && process &&
+		(process->state >= _IL_PROCESS_STATE_UNLOADING))
+	{
+		return 0;
+	}
+
 	/* Create a new thread block */
 	if((thread = (ILExecThread *)ILGCAllocPersistent
 									(sizeof(ILExecThread))) == 0)
@@ -618,63 +628,73 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	thread->managedSafePointFlags = 0;
 	thread->runningManagedCode = 0;	
 	thread->threadAbortException = 0;
+	thread->process = 0;
+
+#ifdef IL_CONFIG_APPDOMAINS
+	thread->prevContext = 0;
+#endif
 
 #ifdef IL_USE_CVM
-	/* Allocate space for the thread-specific value stack */
-	if((thread->stackBase = (CVMWord *)ILGCAllocPersistent
-					(sizeof(CVMWord) * process->stackSize)) == 0)
-	{
-		ILGCFreePersistent(thread);
-		return 0;
-	}
-	thread->stackLimit = thread->stackBase + process->stackSize;
-
-	/* Allocate space for the initial frame stack */
-	if((thread->frameStack = (ILCallFrame *)ILGCAllocPersistent
-					(sizeof(ILCallFrame) * process->frameStackSize))
-			== 0)
-	{
-		ILGCFreePersistent(thread->stackBase);
-		ILGCFreePersistent(thread);
-		return 0;
-	}
-
 	thread->numFrames = 0;
-	thread->maxFrames = process->frameStackSize;
+	thread->maxFrames = 0;
 	thread->pc = 0;
 	thread->abortHandlerEndPC = 0;
 	thread->abortHandlerFrame = 0;
-	thread->frame = thread->stackBase;
-	thread->stackTop = thread->stackBase;
-#endif /* IL_USE_CVM */
+	thread->frame = 0;
+	thread->stackTop = 0;
+#endif
 
 #ifdef IL_DEBUGGER
 	thread->numWatches = 0;
 	thread->maxWatches = 0;
 #endif
 
-	/* Attach the thread to the process */
-	ILMutexLock(process->lock);
-	if (!ignoreProcessState
-		&& process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING))
+	if(process)
 	{
+		/* Lock down the process */
+		ILMutexLock(process->lock);
+
+		if (!ignoreProcessState &&
+			(process->state >= _IL_PROCESS_STATE_UNLOADING))
+		{
+			ILMutexUnlock(process->lock);
+			ILGCFreePersistent(thread);
+
+			return 0;
+		}
+
 #ifdef IL_USE_CVM
-		ILGCFreePersistent(thread->stackBase);
-		ILGCFreePersistent(thread->frameStack);
-#endif
-		ILGCFreePersistent(thread);
+		/* Allocate space for the thread-specific value stack */
+		if((thread->stackBase = (CVMWord *)ILGCAllocPersistent
+						(sizeof(CVMWord) * process->stackSize)) == 0)
+		{
+			ILMutexUnlock(process->lock);
+			ILGCFreePersistent(thread);
+			return 0;
+		}
+		thread->stackLimit = thread->stackBase + process->stackSize;
+
+		/* Allocate space for the initial frame stack */
+		if((thread->frameStack = (ILCallFrame *)ILGCAllocPersistent
+					(sizeof(ILCallFrame) * process->frameStackSize)) == 0)
+		{
+			ILMutexUnlock(process->lock);
+			ILGCFreePersistent(thread->stackBase);
+			ILGCFreePersistent(thread);
+			return 0;
+		}
+
+		thread->maxFrames = process->frameStackSize;
+		thread->frame = thread->stackBase;
+		thread->stackTop = thread->stackBase;
+#endif /* IL_USE_CVM */
+
+		/* Attach the thread to the process */
+		ILExecThreadJoinProcess(thread, process);
 
 		ILMutexUnlock(process->lock);
-
-		return 0;
 	}
-#ifdef IL_CONFIG_APPDOMAINS
-	thread->prevContext = 0;
-#endif
-	ILExecThreadJoinProcess(thread, process);
 
-	ILMutexUnlock(process->lock);
-	
 	/* Return the thread block to the caller */
 	return thread;
 }
@@ -683,23 +703,24 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 {	
 	ILExecProcess *process = _ILExecThreadProcess(thread);
 
-	/* Lock down the process */
-	ILMutexLock(process->lock);
-
-	/* If this is the "main" thread, then clear "process->mainThread" */
-	if(process->mainThread == thread)
+	if(process)
 	{
-		process->mainThread = 0;
+		/* Lock down the process */
+		ILMutexLock(process->lock);
+
+		/* If this is the finalizer thread then clear process->finalizerThread */
+		if (process->finalizerThread == thread)
+		{
+			process->finalizerThread = 0;
+		}
+
+		/* Detach the thread from its process */
+		ILExecThreadDetachFromProcess(thread);
+
+		/* Unlock the process */
+		ILMutexUnlock(process->lock);
 	}
-
-	if (process->finalizerThread == thread)
-	{
-		process->finalizerThread = 0;
-	}
-
-	/* Detach the thread from its process */
-	ILExecThreadDetachFromProcess(thread);
-
+	
 	/* Remove associations between ILExecThread and ILThread if they
 	   haven't already been removed */
 	if (thread->supportThread)
@@ -709,10 +730,16 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 
 #ifdef IL_USE_CVM
 	/* Destroy the operand stack */
-	ILGCFreePersistent(thread->stackBase);
+	if(thread->stackBase)
+	{
+		ILGCFreePersistent(thread->stackBase);
+	}
 
 	/* Destroy the call frame stack */
-	ILGCFreePersistent(thread->frameStack);
+	if(thread->frameStack)
+	{
+		ILGCFreePersistent(thread->frameStack);
+	}
 #endif
 
 #ifdef IL_DEBUGGER
@@ -725,10 +752,6 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 
 	/* Destroy the thread block */
 	ILGCFreePersistent(thread);
-
-	/* Unlock the process */
-	ILMutexUnlock(process->lock);
-	
 }
 
 ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)

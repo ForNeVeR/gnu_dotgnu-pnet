@@ -111,6 +111,7 @@ libILEngine_a_SOURCES = cctormgr.c \
 						internal.c \
 						jitc.c \
 						layout.c \
+						lib_appdomain.c \
 						lib_array.c \
 						lib_charinfo.c \
 						lib_crypt.c \

@@ -83,6 +83,9 @@ void ILExecDeinit()
 	/* Destroy the global trace mutex */
 	ILMutexDestroy(globalTraceMutex);
 #endif
+
+	/* Reset the console to the "normal" mode */
+	ILConsoleSetMode(IL_CONSOLE_NORMAL);
 }
 
 /* global accessor function to get the global engine object */
@@ -133,8 +136,8 @@ ILExecEngine *ILExecEngineCreate(void)
  */
 void ILExecEngineDestroy(ILExecEngine *engine)
 {
-	ILExecProcess *process;	
 #ifdef IL_CONFIG_APPDOMAINS
+	ILExecProcess *process;	
 	int count;
 	ILQueueEntry *unloadQueue, *destroyQueue;
 	

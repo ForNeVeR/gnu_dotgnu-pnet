@@ -1,7 +1,89 @@
+2008-08-10  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.c (ILExecDeInit): Reset the console mode to normal here
+	now and not on destruction of an ILExecProcess.
+
+	* engine/engine.h: Add more process states. Add prototype for
+	_ILExecProcessLoadStandard.
+
+	* engine/ilrun.c (main): Use ILExecProcessExecuteFile now to execute the
+	program. Remove explicit destruction of the process as this will be done
+	on destruction of the engine.
+
+	* engine/ilverify.c (main): Create the process with
+	ILExecProcessCreateNull instead of ILExecProcessCreate to create a non
+	executable process. Make sure that the current thread is managed and
+	in the process created.
+
+	* engine/int_table.c, engine/int_proto.h: Regenerated.
+
+	* engine/layout.c (LayoutClass): Check if the coder is actually the jit
+	coder if built with libjit prior to creating the libjit functions for
+	the methods of the class.
+
+	* engine/lib_appdomain.c: Added for implementing more appdomain support.
+	Move _IL_AppDomain_GetAssemblies from lib_reflect to here.
+
+	* engine/lib_reflect.c (_IL_AppDomain_GetAssemblies): Move to ...
+
+	* engine/Makefile.am: Add lib_appdomain.c to the sources.
+
+	* engine/process.c (ILExecProcessDestroy): Split this function into two
+	parts (_ILExecProcessUnloadInternal, _ILExecProcessDestroyInternal) to be
+	able to do AppDomain.Unload. Move resetting the console to standard to
+	ILExecDeInit.
+	(_ILExecProcessUnloadInternal): Added. Abort all managed threads except
+	the	finalizer thread in the	process and disassociate the process from the
+	engine.
+	(_ILExecProcessDestroyInternal): Destroy the management contents of the
+	process.
+	(ILExecProcessFinalizer): Add finalizer function for an	ILExecProcess.
+	(_ILExecProcessCreateInternal): Added. Allocate the ILExecProcessBlock
+	collectable by the gc if built with appdomain support and attach the
+	finalizer to the process. Dont initialize the coder here.
+	(ILExecProcessCreate): Use _ILExecProcessCreateInternal to create the
+	basic ILExecProcessBlock.
+	Don't register the current thread for managed execution anymore and don't
+	initialize the cvm unroll stack (this is done in
+	ILExecProcessInitForExecute now).
+	(ILExecProcessCreateNull): Added. Like ILExecProcessCreate but the
+	NullCoder is used.
+	(ILExecProcessUnload): Implement AppDomain.Unload. Unloading from a new
+	thread if the current thread is in the unloaded process is still TODO.
+	(LoadStandard): Rename to _ILExecProcessLoadStandard and make it public
+	available. Check the process state and update it if done.
+	(ILExecProcessInitForExecute): Added to setup the process for execution.
+	Initialize the cvm unroll stack here now.
+	(ILExecProcessExecuteFile): Added to execute a program in a specific
+	process from managed and unmanaged code.
+
+	* engine/thread.c (_ILThreadClearExecContext): Do some reformatting.
+	(ILThreadRegisterForManagedExecution): Allow NULL process and change the
+	check for an unloading/unloaded process.
+	(_ILExecThreadAbortThread): Allow aborting a thread now from an unmanaged
+	thread where thread is NULL.
+	(_ILExecThreadCreate): Allow creating a managed thread without being
+	associated to a process (process arg is NULL).
+	Perform first check for the process state before doing anything. Reorder
+	the member initialization so theat the process dependant stuff comes at
+	the very end.
+	(_ILExecThreadDestroy): Allowing destruction from a thread that has no
+	connection to a process (thread->process is NULL).
+
+	* include/il_engine.h: Add definitions for the IL_EXECUTE_* errors.
+	Add prototypes for ILExecProcessExecuteFile and ILExecProcessCreateNull.
+
+	* libgc/configure.ac: Remove the duplicate for --enable-munmap since it's
+	provided by libgc now.
+
+	* support/hb_gc.c (ILGCRunFunc): Use GC_call_with_stack_base instead of
+	registering and unregistering the thread since this is implemented
+	everywhere.
+
 2008-08-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvmc.c (_ILCVMUnrollInitStack): Use the current thread for
-	initializing the unrooler stack instead of the mainthread of the
+	initializing the unroller stack instead of the mainthread of the
 	process. The thread must be initialitzed for managed execution and
 	running in the process.
 

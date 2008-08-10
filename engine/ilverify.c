@@ -60,6 +60,7 @@ int main(int argc, char *argv[])
 	char *param;
 	int errors;
 	ILExecProcess *process = 0;
+	ILExecThread *thread = 0;
 
 	/* Parse the command-line arguments */
 	state = 0;
@@ -101,7 +102,14 @@ int main(int argc, char *argv[])
 	ILExecInit(0);
 
 	/* Create the default appdomain for the image loading. */
-	if(!(process = ILExecProcessCreate(0, 0)))
+	if(!(process = ILExecProcessCreateNull()))
+	{
+		fprintf(stderr, "%s: out of memory\n", progname);
+		return 1;
+	}
+
+	/* Make sure the current thread is assiciated to the process */
+	if(!(thread = ILExecProcessGetMain(process)))
 	{
 		fprintf(stderr, "%s: out of memory\n", progname);
 		return 1;

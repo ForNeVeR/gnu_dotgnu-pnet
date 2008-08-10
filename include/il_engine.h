@@ -179,6 +179,29 @@ typedef int (*ILExecDebugHookFunc)(void *userData,
 #define IL_EXEC_INIT_OUTOFMEMORY	(1)
 
 /*
+ * Return values of the ILExecProcessExecute functions.
+ * They must be kept in sync with the IL_IMAGE_LOADERR values.
+ */
+#define IL_EXECUTE_OK						0
+#define	IL_EXECUTE_LOADERR_TRUNCATED 		IL_LOADERR_TRUNCATED
+#define	IL_EXECUTE_LOADERR_NOT_PE			IL_LOADERR_NOT_PE
+#define	IL_EXECUTE_LOADERR_NOT_IL			IL_LOADERR_NOT_IL
+#define	IL_EXECUTE_LOADERR_VERSION			IL_LOADERR_VERSION
+#define	IL_EXECUTE_LOADERR_32BIT_ONLY		IL_LOADERR_32BIT_ONLY
+#define	IL_EXECUTE_LOADERR_BACKWARDS		IL_LOADERR_BACKWARDS
+#define	IL_EXECUTE_LOADERR_MEMORY			IL_LOADERR_MEMORY
+#define	IL_EXECUTE_LOADERR_BAD_ADDR			IL_LOADERR_BAD_ADDR
+#define	IL_EXECUTE_LOADERR_BAD_META			IL_LOADERR_BAD_META
+#define	IL_EXECUTE_LOADERR_UNDOC_META		IL_LOADERR_UNDOC_META
+#define	IL_EXECUTE_LOADERR_UNRESOLVED		IL_LOADERR_UNRESOLVED
+#define	IL_EXECUTE_LOADERR_ARCHIVE			IL_LOADERR_ARCHIVE
+#define	IL_EXECUTE_ERR_MEMORY				(IL_LOADERR_MAX + 1)	/* out of memory */
+#define	IL_EXECUTE_ERR_FILE_OPEN			(IL_LOADERR_MAX + 2)	/* could not open the file */
+#define	IL_EXECUTE_ERR_NO_ENTRYPOINT		(IL_LOADERR_MAX + 3)	/* there is no entry point */
+#define	IL_EXECUTE_ERR_INVALID_ENTRYPOINT	(IL_LOADERR_MAX + 4)	/* the entry point is invalid */
+#define	IL_EXECUTE_ERR_EXCEPTION			(IL_LOADERR_MAX + 5)	/* finish with an exception */
+
+/*
  * Initialize the engine and set a default maximum heap size.
  * If the size is zero, then use all of memory for the heap.
  * This should be called only once per application.
@@ -203,9 +226,15 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 void ILThreadUnregisterForManagedExecution(ILThread *thread);
 
 /*
- * Create a new process, including the "main" thread.
+ * Create a new process where code can be executed.
  */
 ILExecProcess *ILExecProcessCreate(unsigned long frameStackSize, unsigned long cachePageSize);
+
+/*
+ * Create an ILExecProcess associated with the null coder.
+ * In this process no code can be executed.
+ */
+ILExecProcess *ILExecProcessCreateNull(void);
 
 /*
  * Destroy a process and all threads associated with it.
@@ -293,6 +322,14 @@ int ILExecProcessLoadImage(ILExecProcess *process, FILE *file);
  * or an image load error code otherwise.
  */
 int ILExecProcessLoadFile(ILExecProcess *process, const char *filename);
+
+/*
+ * Load an assembly into the ILExecProcess and execute the entypoint.
+ */
+int ILExecProcessExecuteFile(ILExecProcess *process,
+							 const char *filename,
+							 char *argv[],
+							 int* retval);
 
 /*
  * Set the load flags to use with "ILImageLoad".

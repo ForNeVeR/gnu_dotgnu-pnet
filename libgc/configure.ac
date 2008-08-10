@@ -22,7 +22,7 @@ AC_INIT(gc,7.1,Hans.Boehm@hp.com)
 AC_CONFIG_SRCDIR(gcj_mlc.c)
 AC_CANONICAL_TARGET 
 AC_PREREQ(2.53)
-AC_REVISION($Revision: 1.1 $)
+AC_REVISION($Revision: 1.2 $)
 GC_SET_VERSION
 AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects nostdinc])
 AM_MAINTAINER_MODE
@@ -67,9 +67,6 @@ AC_ARG_ENABLE(parallel-mark,
 
 AC_ARG_ENABLE(cplusplus,
     [AC_HELP_STRING([--enable-cplusplus], [install C++ support])])
-
-AC_ARG_ENABLE(munmap,
-    [AC_HELP_STRING([--enable-munmap], [enable returning freed memory to the os])])
 
 INCLUDES=-I${srcdir}/include
 THREADDLLIBS=

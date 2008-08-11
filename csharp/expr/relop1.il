@@ -120,22 +120,12 @@
 	ldloc.1
 	conv.r4
 	ldloc.s	23
-	beq	?L1
-	ldc.i4.0
-	br	?L2
-?L1:
-	ldc.i4.1
-?L2:
+	ceq
 	stloc.0
 	ldloc.1
 	conv.r8
 	ldloc.s	24
-	beq	?L3
-	ldc.i4.0
-	br	?L4
-?L3:
-	ldc.i4.1
-?L4:
+	ceq
 	stloc.0
 	ldloc.1
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
@@ -201,22 +191,16 @@
 	ldloc.2
 	conv.r.un
 	ldloc.s	23
-	bne.un	?L5
-	ldc.i4.0
-	br	?L6
-?L5:
+	ceq
 	ldc.i4.1
-?L6:
+	xor
 	stloc.0
 	ldloc.2
 	conv.r.un
 	ldloc.s	24
-	bne.un	?L7
-	ldc.i4.0
-	br	?L8
-?L7:
+	ceq
 	ldc.i4.1
-?L8:
+	xor
 	stloc.0
 	ldloc.2
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
@@ -261,22 +245,12 @@
 	ldloc.3
 	conv.r4
 	ldloc.s	23
-	blt	?L9
-	ldc.i4.0
-	br	?L10
-?L9:
-	ldc.i4.1
-?L10:
+	clt
 	stloc.0
 	ldloc.3
 	conv.r8
 	ldloc.s	24
-	blt	?L11
-	ldc.i4.0
-	br	?L12
-?L11:
-	ldc.i4.1
-?L12:
+	clt
 	stloc.0
 	ldloc.3
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int16)
@@ -342,22 +316,16 @@
 	ldloc.s	4
 	conv.r.un
 	ldloc.s	23
-	ble	?L13
-	ldc.i4.0
-	br	?L14
-?L13:
+	cgt.un
 	ldc.i4.1
-?L14:
+	xor
 	stloc.0
 	ldloc.s	4
 	conv.r.un
 	ldloc.s	24
-	ble	?L15
-	ldc.i4.0
-	br	?L16
-?L15:
+	cgt.un
 	ldc.i4.1
-?L16:
+	xor
 	stloc.0
 	ldloc.s	4
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int16)
@@ -402,22 +370,12 @@
 	ldloc.s	5
 	conv.r4
 	ldloc.s	23
-	bgt	?L17
-	ldc.i4.0
-	br	?L18
-?L17:
-	ldc.i4.1
-?L18:
+	cgt
 	stloc.0
 	ldloc.s	5
 	conv.r8
 	ldloc.s	24
-	bgt	?L19
-	ldc.i4.0
-	br	?L20
-?L19:
-	ldc.i4.1
-?L20:
+	cgt
 	stloc.0
 	ldloc.s	5
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
@@ -490,22 +448,16 @@
 	conv.r.un
 	conv.r4
 	ldloc.s	23
-	bge	?L21
-	ldc.i4.0
-	br	?L22
-?L21:
+	clt.un
 	ldc.i4.1
-?L22:
+	xor
 	stloc.0
 	ldloc.s	6
 	conv.r.un
 	ldloc.s	24
-	bge	?L23
-	ldc.i4.0
-	br	?L24
-?L23:
+	clt.un
 	ldc.i4.1
-?L24:
+	xor
 	stloc.0
 	ldloc.s	6
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int32)
@@ -554,22 +506,12 @@
 	ldloc.s	7
 	conv.r4
 	ldloc.s	23
-	beq	?L25
-	ldc.i4.0
-	br	?L26
-?L25:
-	ldc.i4.1
-?L26:
+	ceq
 	stloc.0
 	ldloc.s	7
 	conv.r8
 	ldloc.s	24
-	beq	?L27
-	ldc.i4.0
-	br	?L28
-?L27:
-	ldc.i4.1
-?L28:
+	ceq
 	stloc.0
 	ldloc.s	7
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int64)
@@ -614,23 +556,17 @@
 	conv.r.un
 	conv.r4
 	ldloc.s	23
-	bne.un	?L29
-	ldc.i4.0
-	br	?L30
-?L29:
+	ceq
 	ldc.i4.1
-?L30:
+	xor
 	stloc.0
 	ldloc.s	8
 	conv.r.un
 	conv.r8
 	ldloc.s	24
-	bne.un	?L31
-	ldc.i4.0
-	br	?L32
-?L31:
+	ceq
 	ldc.i4.1
-?L32:
+	xor
 	stloc.0
 	ldloc.s	8
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int64)
@@ -640,221 +576,133 @@
 	ldloc.s	10
 	ldloc.s	14
 	conv.r4
-	blt	?L33
-	ldc.i4.0
-	br	?L34
-?L33:
-	ldc.i4.1
-?L34:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	15
 	conv.r.un
-	blt	?L35
-	ldc.i4.0
-	br	?L36
-?L35:
-	ldc.i4.1
-?L36:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	16
 	conv.r4
-	blt	?L37
-	ldc.i4.0
-	br	?L38
-?L37:
-	ldc.i4.1
-?L38:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	17
 	conv.r.un
-	blt	?L39
-	ldc.i4.0
-	br	?L40
-?L39:
-	ldc.i4.1
-?L40:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	18
 	conv.r4
-	blt	?L41
-	ldc.i4.0
-	br	?L42
-?L41:
-	ldc.i4.1
-?L42:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	19
 	conv.r.un
 	conv.r4
-	blt	?L43
-	ldc.i4.0
-	br	?L44
-?L43:
-	ldc.i4.1
-?L44:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	20
 	conv.r4
-	blt	?L45
-	ldc.i4.0
-	br	?L46
-?L45:
-	ldc.i4.1
-?L46:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	21
 	conv.r.un
 	conv.r4
-	blt	?L47
-	ldc.i4.0
-	br	?L48
-?L47:
-	ldc.i4.1
-?L48:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	22
 	conv.r.un
-	blt	?L49
-	ldc.i4.0
-	br	?L50
-?L49:
-	ldc.i4.1
-?L50:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	23
-	blt	?L51
-	ldc.i4.0
-	br	?L52
-?L51:
-	ldc.i4.1
-?L52:
+	clt
 	stloc.0
 	ldloc.s	10
 	ldloc.s	24
-	blt	?L53
-	ldc.i4.0
-	br	?L54
-?L53:
-	ldc.i4.1
-?L54:
+	clt
 	stloc.0
 	ldloc.s	11
 	ldloc.s	14
 	conv.r8
-	ble	?L55
-	ldc.i4.0
-	br	?L56
-?L55:
+	cgt.un
 	ldc.i4.1
-?L56:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	15
 	conv.r.un
-	ble	?L57
-	ldc.i4.0
-	br	?L58
-?L57:
+	cgt.un
 	ldc.i4.1
-?L58:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	16
 	conv.r8
-	ble	?L59
-	ldc.i4.0
-	br	?L60
-?L59:
+	cgt.un
 	ldc.i4.1
-?L60:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	17
 	conv.r.un
-	ble	?L61
-	ldc.i4.0
-	br	?L62
-?L61:
+	cgt.un
 	ldc.i4.1
-?L62:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	18
 	conv.r8
-	ble	?L63
-	ldc.i4.0
-	br	?L64
-?L63:
+	cgt.un
 	ldc.i4.1
-?L64:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	19
 	conv.r.un
-	ble	?L65
-	ldc.i4.0
-	br	?L66
-?L65:
+	cgt.un
 	ldc.i4.1
-?L66:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	20
 	conv.r8
-	ble	?L67
-	ldc.i4.0
-	br	?L68
-?L67:
+	cgt.un
 	ldc.i4.1
-?L68:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	21
 	conv.r.un
 	conv.r8
-	ble	?L69
-	ldc.i4.0
-	br	?L70
-?L69:
+	cgt.un
 	ldc.i4.1
-?L70:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	22
 	conv.r.un
-	ble	?L71
-	ldc.i4.0
-	br	?L72
-?L71:
+	cgt.un
 	ldc.i4.1
-?L72:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	23
-	ble	?L73
-	ldc.i4.0
-	br	?L74
-?L73:
+	cgt.un
 	ldc.i4.1
-?L74:
+	xor
 	stloc.0
 	ldloc.s	11
 	ldloc.s	24
-	ble	?L75
-	ldc.i4.0
-	br	?L76
-?L75:
+	cgt.un
 	ldc.i4.1
-?L76:
+	xor
 	stloc.0
 	ldloc.s	12
 	ldloc.s	14
@@ -915,2110 +763,2050 @@
 	ldc.i4.1
 	xor
 	stloc.0
-	br	?L77
-?L78:
+	br	?L1
+?L2:
 	ldc.i4.1
 	stloc.0
-?L77:
+?L1:
 	ldloc.1
 	ldloc.s	14
-	beq	?L78
-?L79:
-	br	?L80
-?L81:
+	beq	?L2
+?L3:
+	br	?L4
+?L5:
 	ldc.i4.1
 	stloc.0
-?L80:
+?L4:
 	ldloc.1
 	ldloc.s	15
-	beq	?L81
-?L82:
-	br	?L83
-?L84:
+	beq	?L5
+?L6:
+	br	?L7
+?L8:
 	ldc.i4.1
 	stloc.0
-?L83:
+?L7:
 	ldloc.1
 	ldloc.s	16
-	beq	?L84
-?L85:
-	br	?L86
-?L87:
+	beq	?L8
+?L9:
+	br	?L10
+?L11:
 	ldc.i4.1
 	stloc.0
-?L86:
+?L10:
 	ldloc.1
 	ldloc.s	17
-	beq	?L87
-?L88:
-	br	?L89
-?L90:
+	beq	?L11
+?L12:
+	br	?L13
+?L14:
 	ldc.i4.1
 	stloc.0
-?L89:
+?L13:
 	ldloc.1
 	ldloc.s	18
-	beq	?L90
-?L91:
-	br	?L92
-?L93:
+	beq	?L14
+?L15:
+	br	?L16
+?L17:
 	ldc.i4.1
 	stloc.0
-?L92:
+?L16:
 	ldloc.1
 	conv.i8
 	ldloc.s	19
 	conv.u8
-	beq	?L93
-?L94:
-	br	?L95
-?L96:
+	beq	?L17
+?L18:
+	br	?L19
+?L20:
 	ldc.i4.1
 	stloc.0
-?L95:
+?L19:
 	ldloc.1
 	conv.i8
 	ldloc.s	20
-	beq	?L96
-?L97:
-	br	?L98
-?L99:
+	beq	?L20
+?L21:
+	br	?L22
+?L23:
 	ldc.i4.1
 	stloc.0
-?L98:
+?L22:
 	ldloc.1
 	ldloc.s	22
-	beq	?L99
-?L100:
-	br	?L101
-?L102:
+	beq	?L23
+?L24:
+	br	?L25
+?L26:
 	ldc.i4.1
 	stloc.0
-?L101:
+?L25:
 	ldloc.1
 	conv.r4
 	ldloc.s	23
-	beq	?L102
-?L103:
-	br	?L104
-?L105:
+	beq	?L26
+?L27:
+	br	?L28
+?L29:
 	ldc.i4.1
 	stloc.0
-?L104:
+?L28:
 	ldloc.1
 	conv.r8
 	ldloc.s	24
-	beq	?L105
-?L106:
-	br	?L107
-?L108:
+	beq	?L29
+?L30:
+	br	?L31
+?L32:
 	ldc.i4.1
 	stloc.0
-?L107:
+?L31:
 	ldloc.1
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_Equality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L108
-?L109:
-	br	?L110
-?L111:
+	brtrue	?L32
+?L33:
+	br	?L34
+?L35:
 	ldc.i4.1
 	stloc.0
-?L110:
+?L34:
 	ldloc.2
 	ldloc.s	14
-	bne.un	?L111
-?L112:
-	br	?L113
-?L114:
+	bne.un	?L35
+?L36:
+	br	?L37
+?L38:
 	ldc.i4.1
 	stloc.0
-?L113:
+?L37:
 	ldloc.2
 	ldloc.s	15
-	bne.un	?L114
-?L115:
-	br	?L116
-?L117:
+	bne.un	?L38
+?L39:
+	br	?L40
+?L41:
 	ldc.i4.1
 	stloc.0
-?L116:
+?L40:
 	ldloc.2
 	ldloc.s	16
-	bne.un	?L117
-?L118:
-	br	?L119
-?L120:
+	bne.un	?L41
+?L42:
+	br	?L43
+?L44:
 	ldc.i4.1
 	stloc.0
-?L119:
+?L43:
 	ldloc.2
 	ldloc.s	17
-	bne.un	?L120
-?L121:
-	br	?L122
-?L123:
+	bne.un	?L44
+?L45:
+	br	?L46
+?L47:
 	ldc.i4.1
 	stloc.0
-?L122:
+?L46:
 	ldloc.2
 	ldloc.s	18
-	bne.un	?L123
-?L124:
-	br	?L125
-?L126:
+	bne.un	?L47
+?L48:
+	br	?L49
+?L50:
 	ldc.i4.1
 	stloc.0
-?L125:
+?L49:
 	ldloc.2
 	ldloc.s	19
-	bne.un	?L126
-?L127:
-	br	?L128
-?L129:
+	bne.un	?L50
+?L51:
+	br	?L52
+?L53:
 	ldc.i4.1
 	stloc.0
-?L128:
+?L52:
 	ldloc.2
 	conv.i8
 	ldloc.s	20
-	bne.un	?L129
-?L130:
-	br	?L131
-?L132:
+	bne.un	?L53
+?L54:
+	br	?L55
+?L56:
 	ldc.i4.1
 	stloc.0
-?L131:
+?L55:
 	ldloc.2
 	conv.u8
 	ldloc.s	21
-	bne.un	?L132
-?L133:
-	br	?L134
-?L135:
+	bne.un	?L56
+?L57:
+	br	?L58
+?L59:
 	ldc.i4.1
 	stloc.0
-?L134:
+?L58:
 	ldloc.2
 	ldloc.s	22
-	bne.un	?L135
-?L136:
-	br	?L137
-?L138:
+	bne.un	?L59
+?L60:
+	br	?L61
+?L62:
 	ldc.i4.1
 	stloc.0
-?L137:
+?L61:
 	ldloc.2
 	conv.r.un
 	ldloc.s	23
-	bne.un	?L138
-?L139:
-	br	?L140
-?L141:
+	bne.un	?L62
+?L63:
+	br	?L64
+?L65:
 	ldc.i4.1
 	stloc.0
-?L140:
+?L64:
 	ldloc.2
 	conv.r.un
 	ldloc.s	24
-	bne.un	?L141
-?L142:
-	br	?L143
-?L144:
+	bne.un	?L65
+?L66:
+	br	?L67
+?L68:
 	ldc.i4.1
 	stloc.0
-?L143:
+?L67:
 	ldloc.2
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_Inequality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L144
-?L145:
-	br	?L146
-?L147:
+	brtrue	?L68
+?L69:
+	br	?L70
+?L71:
 	ldc.i4.1
 	stloc.0
-?L146:
+?L70:
 	ldloc.3
 	ldloc.s	14
-	blt	?L147
-?L148:
-	br	?L149
-?L150:
+	blt	?L71
+?L72:
+	br	?L73
+?L74:
 	ldc.i4.1
 	stloc.0
-?L149:
+?L73:
 	ldloc.3
 	ldloc.s	15
-	blt	?L150
-?L151:
-	br	?L152
-?L153:
+	blt	?L74
+?L75:
+	br	?L76
+?L77:
 	ldc.i4.1
 	stloc.0
-?L152:
+?L76:
 	ldloc.3
 	ldloc.s	16
-	blt	?L153
-?L154:
-	br	?L155
-?L156:
+	blt	?L77
+?L78:
+	br	?L79
+?L80:
 	ldc.i4.1
 	stloc.0
-?L155:
+?L79:
 	ldloc.3
 	ldloc.s	17
-	blt	?L156
-?L157:
-	br	?L158
-?L159:
+	blt	?L80
+?L81:
+	br	?L82
+?L83:
 	ldc.i4.1
 	stloc.0
-?L158:
+?L82:
 	ldloc.3
 	ldloc.s	18
-	blt	?L159
-?L160:
-	br	?L161
-?L162:
+	blt	?L83
+?L84:
+	br	?L85
+?L86:
 	ldc.i4.1
 	stloc.0
-?L161:
+?L85:
 	ldloc.3
 	conv.i8
 	ldloc.s	19
 	conv.u8
-	blt	?L162
-?L163:
-	br	?L164
-?L165:
+	blt	?L86
+?L87:
+	br	?L88
+?L89:
 	ldc.i4.1
 	stloc.0
-?L164:
+?L88:
 	ldloc.3
 	conv.i8
 	ldloc.s	20
-	blt	?L165
-?L166:
-	br	?L167
-?L168:
+	blt	?L89
+?L90:
+	br	?L91
+?L92:
 	ldc.i4.1
 	stloc.0
-?L167:
+?L91:
 	ldloc.3
 	ldloc.s	22
-	blt	?L168
-?L169:
-	br	?L170
-?L171:
+	blt	?L92
+?L93:
+	br	?L94
+?L95:
 	ldc.i4.1
 	stloc.0
-?L170:
+?L94:
 	ldloc.3
 	conv.r4
 	ldloc.s	23
-	blt	?L171
-?L172:
-	br	?L173
-?L174:
+	blt	?L95
+?L96:
+	br	?L97
+?L98:
 	ldc.i4.1
 	stloc.0
-?L173:
+?L97:
 	ldloc.3
 	conv.r8
 	ldloc.s	24
-	blt	?L174
-?L175:
-	br	?L176
-?L177:
+	blt	?L98
+?L99:
+	br	?L100
+?L101:
 	ldc.i4.1
 	stloc.0
-?L176:
+?L100:
 	ldloc.3
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int16)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_LessThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L177
-?L178:
-	br	?L179
-?L180:
+	brtrue	?L101
+?L102:
+	br	?L103
+?L104:
 	ldc.i4.1
 	stloc.0
-?L179:
+?L103:
 	ldloc.s	4
 	ldloc.s	14
-	ble	?L180
-?L181:
-	br	?L182
-?L183:
+	ble	?L104
+?L105:
+	br	?L106
+?L107:
 	ldc.i4.1
 	stloc.0
-?L182:
+?L106:
 	ldloc.s	4
 	ldloc.s	15
-	ble	?L183
-?L184:
-	br	?L185
-?L186:
+	ble	?L107
+?L108:
+	br	?L109
+?L110:
 	ldc.i4.1
 	stloc.0
-?L185:
+?L109:
 	ldloc.s	4
 	ldloc.s	16
-	ble	?L186
-?L187:
-	br	?L188
-?L189:
+	ble	?L110
+?L111:
+	br	?L112
+?L113:
 	ldc.i4.1
 	stloc.0
-?L188:
+?L112:
 	ldloc.s	4
 	ldloc.s	17
-	ble	?L189
-?L190:
-	br	?L191
-?L192:
+	ble	?L113
+?L114:
+	br	?L115
+?L116:
 	ldc.i4.1
 	stloc.0
-?L191:
+?L115:
 	ldloc.s	4
 	ldloc.s	18
-	ble	?L192
-?L193:
-	br	?L194
-?L195:
+	ble	?L116
+?L117:
+	br	?L118
+?L119:
 	ldc.i4.1
 	stloc.0
-?L194:
+?L118:
 	ldloc.s	4
 	ldloc.s	19
-	ble.un	?L195
-?L196:
-	br	?L197
-?L198:
+	ble.un	?L119
+?L120:
+	br	?L121
+?L122:
 	ldc.i4.1
 	stloc.0
-?L197:
+?L121:
 	ldloc.s	4
 	conv.i8
 	ldloc.s	20
-	ble	?L198
-?L199:
-	br	?L200
-?L201:
+	ble	?L122
+?L123:
+	br	?L124
+?L125:
 	ldc.i4.1
 	stloc.0
-?L200:
+?L124:
 	ldloc.s	4
 	conv.u8
 	ldloc.s	21
-	ble.un	?L201
-?L202:
-	br	?L203
-?L204:
+	ble.un	?L125
+?L126:
+	br	?L127
+?L128:
 	ldc.i4.1
 	stloc.0
-?L203:
+?L127:
 	ldloc.s	4
 	ldloc.s	22
-	ble	?L204
-?L205:
-	br	?L206
-?L207:
+	ble	?L128
+?L129:
+	br	?L130
+?L131:
 	ldc.i4.1
 	stloc.0
-?L206:
+?L130:
 	ldloc.s	4
 	conv.r.un
 	ldloc.s	23
-	ble	?L207
-?L208:
-	br	?L209
-?L210:
+	ble	?L131
+?L132:
+	br	?L133
+?L134:
 	ldc.i4.1
 	stloc.0
-?L209:
+?L133:
 	ldloc.s	4
 	conv.r.un
 	ldloc.s	24
-	ble	?L210
-?L211:
-	br	?L212
-?L213:
+	ble	?L134
+?L135:
+	br	?L136
+?L137:
 	ldc.i4.1
 	stloc.0
-?L212:
+?L136:
 	ldloc.s	4
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int16)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_LessThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L213
-?L214:
-	br	?L215
-?L216:
+	brtrue	?L137
+?L138:
+	br	?L139
+?L140:
 	ldc.i4.1
 	stloc.0
-?L215:
+?L139:
 	ldloc.s	5
 	ldloc.s	14
-	bgt	?L216
-?L217:
-	br	?L218
-?L219:
+	bgt	?L140
+?L141:
+	br	?L142
+?L143:
 	ldc.i4.1
 	stloc.0
-?L218:
+?L142:
 	ldloc.s	5
 	ldloc.s	15
-	bgt	?L219
-?L220:
-	br	?L221
-?L222:
+	bgt	?L143
+?L144:
+	br	?L145
+?L146:
 	ldc.i4.1
 	stloc.0
-?L221:
+?L145:
 	ldloc.s	5
 	ldloc.s	16
-	bgt	?L222
-?L223:
-	br	?L224
-?L225:
+	bgt	?L146
+?L147:
+	br	?L148
+?L149:
 	ldc.i4.1
 	stloc.0
-?L224:
+?L148:
 	ldloc.s	5
 	ldloc.s	17
-	bgt	?L225
-?L226:
-	br	?L227
-?L228:
+	bgt	?L149
+?L150:
+	br	?L151
+?L152:
 	ldc.i4.1
 	stloc.0
-?L227:
+?L151:
 	ldloc.s	5
 	ldloc.s	18
-	bgt	?L228
-?L229:
-	br	?L230
-?L231:
+	bgt	?L152
+?L153:
+	br	?L154
+?L155:
 	ldc.i4.1
 	stloc.0
-?L230:
+?L154:
 	ldloc.s	5
 	conv.i8
 	ldloc.s	19
 	conv.u8
-	bgt	?L231
-?L232:
-	br	?L233
-?L234:
+	bgt	?L155
+?L156:
+	br	?L157
+?L158:
 	ldc.i4.1
 	stloc.0
-?L233:
+?L157:
 	ldloc.s	5
 	conv.i8
 	ldloc.s	20
-	bgt	?L234
-?L235:
-	br	?L236
-?L237:
+	bgt	?L158
+?L159:
+	br	?L160
+?L161:
 	ldc.i4.1
 	stloc.0
-?L236:
+?L160:
 	ldloc.s	5
 	ldloc.s	22
-	bgt	?L237
-?L238:
-	br	?L239
-?L240:
+	bgt	?L161
+?L162:
+	br	?L163
+?L164:
 	ldc.i4.1
 	stloc.0
-?L239:
+?L163:
 	ldloc.s	5
 	conv.r4
 	ldloc.s	23
-	bgt	?L240
-?L241:
-	br	?L242
-?L243:
+	bgt	?L164
+?L165:
+	br	?L166
+?L167:
 	ldc.i4.1
 	stloc.0
-?L242:
+?L166:
 	ldloc.s	5
 	conv.r8
 	ldloc.s	24
-	bgt	?L243
-?L244:
-	br	?L245
-?L246:
+	bgt	?L167
+?L168:
+	br	?L169
+?L170:
 	ldc.i4.1
 	stloc.0
-?L245:
+?L169:
 	ldloc.s	5
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L246
-?L247:
-	br	?L248
-?L249:
+	brtrue	?L170
+?L171:
+	br	?L172
+?L173:
 	ldc.i4.1
 	stloc.0
-?L248:
+?L172:
 	ldloc.s	6
 	conv.u8
 	ldloc.s	14
 	conv.i8
-	bge	?L249
-?L250:
-	br	?L251
-?L252:
+	bge	?L173
+?L174:
+	br	?L175
+?L176:
 	ldc.i4.1
 	stloc.0
-?L251:
+?L175:
 	ldloc.s	6
 	ldloc.s	15
-	bge.un	?L252
-?L253:
-	br	?L254
-?L255:
+	bge.un	?L176
+?L177:
+	br	?L178
+?L179:
 	ldc.i4.1
 	stloc.0
-?L254:
+?L178:
 	ldloc.s	6
 	conv.u8
 	ldloc.s	16
 	conv.i8
-	bge	?L255
-?L256:
-	br	?L257
-?L258:
+	bge	?L179
+?L180:
+	br	?L181
+?L182:
 	ldc.i4.1
 	stloc.0
-?L257:
+?L181:
 	ldloc.s	6
 	ldloc.s	17
-	bge.un	?L258
-?L259:
-	br	?L260
-?L261:
+	bge.un	?L182
+?L183:
+	br	?L184
+?L185:
 	ldc.i4.1
 	stloc.0
-?L260:
+?L184:
 	ldloc.s	6
 	conv.u8
 	ldloc.s	18
 	conv.i8
-	bge	?L261
-?L262:
-	br	?L263
-?L264:
+	bge	?L185
+?L186:
+	br	?L187
+?L188:
 	ldc.i4.1
 	stloc.0
-?L263:
+?L187:
 	ldloc.s	6
 	ldloc.s	19
-	bge.un	?L264
-?L265:
-	br	?L266
-?L267:
+	bge.un	?L188
+?L189:
+	br	?L190
+?L191:
 	ldc.i4.1
 	stloc.0
-?L266:
+?L190:
 	ldloc.s	6
 	conv.u8
 	ldloc.s	20
-	bge	?L267
-?L268:
-	br	?L269
-?L270:
+	bge	?L191
+?L192:
+	br	?L193
+?L194:
 	ldc.i4.1
 	stloc.0
-?L269:
+?L193:
 	ldloc.s	6
 	conv.u8
 	ldloc.s	21
-	bge.un	?L270
-?L271:
-	br	?L272
-?L273:
+	bge.un	?L194
+?L195:
+	br	?L196
+?L197:
 	ldc.i4.1
 	stloc.0
-?L272:
+?L196:
 	ldloc.s	6
 	ldloc.s	22
-	bge.un	?L273
-?L274:
-	br	?L275
-?L276:
+	bge.un	?L197
+?L198:
+	br	?L199
+?L200:
 	ldc.i4.1
 	stloc.0
-?L275:
+?L199:
 	ldloc.s	6
 	conv.r.un
 	conv.r4
 	ldloc.s	23
-	bge	?L276
-?L277:
-	br	?L278
-?L279:
+	bge	?L200
+?L201:
+	br	?L202
+?L203:
 	ldc.i4.1
 	stloc.0
-?L278:
+?L202:
 	ldloc.s	6
 	conv.r.un
 	ldloc.s	24
-	bge	?L279
-?L280:
-	br	?L281
-?L282:
+	bge	?L203
+?L204:
+	br	?L205
+?L206:
 	ldc.i4.1
 	stloc.0
-?L281:
+?L205:
 	ldloc.s	6
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int32)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L282
-?L283:
-	br	?L284
-?L285:
+	brtrue	?L206
+?L207:
+	br	?L208
+?L209:
 	ldc.i4.1
 	stloc.0
-?L284:
+?L208:
 	ldloc.s	7
 	ldloc.s	14
 	conv.i8
-	beq	?L285
-?L286:
-	br	?L287
-?L288:
+	beq	?L209
+?L210:
+	br	?L211
+?L212:
 	ldc.i4.1
 	stloc.0
-?L287:
+?L211:
 	ldloc.s	7
 	ldloc.s	15
 	conv.i8
-	beq	?L288
-?L289:
-	br	?L290
-?L291:
+	beq	?L212
+?L213:
+	br	?L214
+?L215:
 	ldc.i4.1
 	stloc.0
-?L290:
+?L214:
 	ldloc.s	7
 	ldloc.s	16
 	conv.i8
-	beq	?L291
-?L292:
-	br	?L293
-?L294:
+	beq	?L215
+?L216:
+	br	?L217
+?L218:
 	ldc.i4.1
 	stloc.0
-?L293:
+?L217:
 	ldloc.s	7
 	ldloc.s	17
 	conv.i8
-	beq	?L294
-?L295:
-	br	?L296
-?L297:
+	beq	?L218
+?L219:
+	br	?L220
+?L221:
 	ldc.i4.1
 	stloc.0
-?L296:
+?L220:
 	ldloc.s	7
 	ldloc.s	18
 	conv.i8
-	beq	?L297
-?L298:
-	br	?L299
-?L300:
+	beq	?L221
+?L222:
+	br	?L223
+?L224:
 	ldc.i4.1
 	stloc.0
-?L299:
+?L223:
 	ldloc.s	7
 	ldloc.s	19
 	conv.u8
-	beq	?L300
-?L301:
-	br	?L302
-?L303:
+	beq	?L224
+?L225:
+	br	?L226
+?L227:
 	ldc.i4.1
 	stloc.0
-?L302:
+?L226:
 	ldloc.s	7
 	ldloc.s	20
-	beq	?L303
-?L304:
-	br	?L305
-?L306:
+	beq	?L227
+?L228:
+	br	?L229
+?L230:
 	ldc.i4.1
 	stloc.0
-?L305:
+?L229:
 	ldloc.s	7
 	ldloc.s	22
 	conv.i8
-	beq	?L306
-?L307:
-	br	?L308
-?L309:
+	beq	?L230
+?L231:
+	br	?L232
+?L233:
 	ldc.i4.1
 	stloc.0
-?L308:
+?L232:
 	ldloc.s	7
 	conv.r4
 	ldloc.s	23
-	beq	?L309
-?L310:
-	br	?L311
-?L312:
+	beq	?L233
+?L234:
+	br	?L235
+?L236:
 	ldc.i4.1
 	stloc.0
-?L311:
+?L235:
 	ldloc.s	7
 	conv.r8
 	ldloc.s	24
-	beq	?L312
-?L313:
-	br	?L314
-?L315:
+	beq	?L236
+?L237:
+	br	?L238
+?L239:
 	ldc.i4.1
 	stloc.0
-?L314:
+?L238:
 	ldloc.s	7
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int64)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_Equality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L315
-?L316:
-	br	?L317
-?L318:
+	brtrue	?L239
+?L240:
+	br	?L241
+?L242:
 	ldc.i4.1
 	stloc.0
-?L317:
+?L241:
 	ldloc.s	8
 	ldloc.s	15
 	conv.u8
-	bne.un	?L318
-?L319:
-	br	?L320
-?L321:
+	bne.un	?L242
+?L243:
+	br	?L244
+?L245:
 	ldc.i4.1
 	stloc.0
-?L320:
+?L244:
 	ldloc.s	8
 	ldloc.s	17
 	conv.u8
-	bne.un	?L321
-?L322:
-	br	?L323
-?L324:
+	bne.un	?L245
+?L246:
+	br	?L247
+?L248:
 	ldc.i4.1
 	stloc.0
-?L323:
+?L247:
 	ldloc.s	8
 	ldloc.s	19
 	conv.u8
-	bne.un	?L324
-?L325:
-	br	?L326
-?L327:
+	bne.un	?L248
+?L249:
+	br	?L250
+?L251:
 	ldc.i4.1
 	stloc.0
-?L326:
+?L250:
 	ldloc.s	8
 	ldloc.s	21
-	bne.un	?L327
-?L328:
-	br	?L329
-?L330:
+	bne.un	?L251
+?L252:
+	br	?L253
+?L254:
 	ldc.i4.1
 	stloc.0
-?L329:
+?L253:
 	ldloc.s	8
 	ldloc.s	22
 	conv.u8
-	bne.un	?L330
-?L331:
-	br	?L332
-?L333:
+	bne.un	?L254
+?L255:
+	br	?L256
+?L257:
 	ldc.i4.1
 	stloc.0
-?L332:
+?L256:
 	ldloc.s	8
 	conv.r.un
 	conv.r4
 	ldloc.s	23
-	bne.un	?L333
-?L334:
-	br	?L335
-?L336:
+	bne.un	?L257
+?L258:
+	br	?L259
+?L260:
 	ldc.i4.1
 	stloc.0
-?L335:
+?L259:
 	ldloc.s	8
 	conv.r.un
 	conv.r8
 	ldloc.s	24
-	bne.un	?L336
-?L337:
-	br	?L338
-?L339:
+	bne.un	?L260
+?L261:
+	br	?L262
+?L263:
 	ldc.i4.1
 	stloc.0
-?L338:
+?L262:
 	ldloc.s	8
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int64)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_Inequality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L339
-?L340:
-	br	?L341
-?L342:
+	brtrue	?L263
+?L264:
+	br	?L265
+?L266:
 	ldc.i4.1
 	stloc.0
-?L341:
+?L265:
 	ldloc.s	10
 	ldloc.s	14
 	conv.r4
-	blt	?L342
-?L343:
-	br	?L344
-?L345:
+	blt	?L266
+?L267:
+	br	?L268
+?L269:
 	ldc.i4.1
 	stloc.0
-?L344:
+?L268:
 	ldloc.s	10
 	ldloc.s	15
 	conv.r.un
-	blt	?L345
-?L346:
-	br	?L347
-?L348:
+	blt	?L269
+?L270:
+	br	?L271
+?L272:
 	ldc.i4.1
 	stloc.0
-?L347:
+?L271:
 	ldloc.s	10
 	ldloc.s	16
 	conv.r4
-	blt	?L348
-?L349:
-	br	?L350
-?L351:
+	blt	?L272
+?L273:
+	br	?L274
+?L275:
 	ldc.i4.1
 	stloc.0
-?L350:
+?L274:
 	ldloc.s	10
 	ldloc.s	17
 	conv.r.un
-	blt	?L351
-?L352:
-	br	?L353
-?L354:
+	blt	?L275
+?L276:
+	br	?L277
+?L278:
 	ldc.i4.1
 	stloc.0
-?L353:
+?L277:
 	ldloc.s	10
 	ldloc.s	18
 	conv.r4
-	blt	?L354
-?L355:
-	br	?L356
-?L357:
+	blt	?L278
+?L279:
+	br	?L280
+?L281:
 	ldc.i4.1
 	stloc.0
-?L356:
+?L280:
 	ldloc.s	10
 	ldloc.s	19
 	conv.r.un
 	conv.r4
-	blt	?L357
-?L358:
-	br	?L359
-?L360:
+	blt	?L281
+?L282:
+	br	?L283
+?L284:
 	ldc.i4.1
 	stloc.0
-?L359:
+?L283:
 	ldloc.s	10
 	ldloc.s	20
 	conv.r4
-	blt	?L360
-?L361:
-	br	?L362
-?L363:
+	blt	?L284
+?L285:
+	br	?L286
+?L287:
 	ldc.i4.1
 	stloc.0
-?L362:
+?L286:
 	ldloc.s	10
 	ldloc.s	21
 	conv.r.un
 	conv.r4
-	blt	?L363
-?L364:
-	br	?L365
-?L366:
+	blt	?L287
+?L288:
+	br	?L289
+?L290:
 	ldc.i4.1
 	stloc.0
-?L365:
+?L289:
 	ldloc.s	10
 	ldloc.s	22
 	conv.r.un
-	blt	?L366
+	blt	?L290
+?L291:
+	br	?L292
+?L293:
+	ldc.i4.1
+	stloc.0
+?L292:
+	ldloc.s	10
+	ldloc.s	23
+	blt	?L293
+?L294:
+	br	?L295
+?L296:
+	ldc.i4.1
+	stloc.0
+?L295:
+	ldloc.s	10
+	ldloc.s	24
+	blt	?L296
+?L297:
+	br	?L298
+?L299:
+	ldc.i4.1
+	stloc.0
+?L298:
+	ldloc.s	11
+	ldloc.s	14
+	conv.r8
+	ble	?L299
+?L300:
+	br	?L301
+?L302:
+	ldc.i4.1
+	stloc.0
+?L301:
+	ldloc.s	11
+	ldloc.s	15
+	conv.r.un
+	ble	?L302
+?L303:
+	br	?L304
+?L305:
+	ldc.i4.1
+	stloc.0
+?L304:
+	ldloc.s	11
+	ldloc.s	16
+	conv.r8
+	ble	?L305
+?L306:
+	br	?L307
+?L308:
+	ldc.i4.1
+	stloc.0
+?L307:
+	ldloc.s	11
+	ldloc.s	17
+	conv.r.un
+	ble	?L308
+?L309:
+	br	?L310
+?L311:
+	ldc.i4.1
+	stloc.0
+?L310:
+	ldloc.s	11
+	ldloc.s	18
+	conv.r8
+	ble	?L311
+?L312:
+	br	?L313
+?L314:
+	ldc.i4.1
+	stloc.0
+?L313:
+	ldloc.s	11
+	ldloc.s	19
+	conv.r.un
+	ble	?L314
+?L315:
+	br	?L316
+?L317:
+	ldc.i4.1
+	stloc.0
+?L316:
+	ldloc.s	11
+	ldloc.s	20
+	conv.r8
+	ble	?L317
+?L318:
+	br	?L319
+?L320:
+	ldc.i4.1
+	stloc.0
+?L319:
+	ldloc.s	11
+	ldloc.s	21
+	conv.r.un
+	conv.r8
+	ble	?L320
+?L321:
+	br	?L322
+?L323:
+	ldc.i4.1
+	stloc.0
+?L322:
+	ldloc.s	11
+	ldloc.s	22
+	conv.r.un
+	ble	?L323
+?L324:
+	br	?L325
+?L326:
+	ldc.i4.1
+	stloc.0
+?L325:
+	ldloc.s	11
+	ldloc.s	23
+	ble	?L326
+?L327:
+	br	?L328
+?L329:
+	ldc.i4.1
+	stloc.0
+?L328:
+	ldloc.s	11
+	ldloc.s	24
+	ble	?L329
+?L330:
+	br	?L331
+?L332:
+	ldc.i4.1
+	stloc.0
+?L331:
+	ldloc.s	12
+	ldloc.s	14
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
+	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L332
+?L333:
+	br	?L334
+?L335:
+	ldc.i4.1
+	stloc.0
+?L334:
+	ldloc.s	12
+	ldloc.s	15
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
+	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L335
+?L336:
+	br	?L337
+?L338:
+	ldc.i4.1
+	stloc.0
+?L337:
+	ldloc.s	12
+	ldloc.s	16
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int16)
+	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L338
+?L339:
+	br	?L340
+?L341:
+	ldc.i4.1
+	stloc.0
+?L340:
+	ldloc.s	12
+	ldloc.s	17
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int16)
+	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L341
+?L342:
+	br	?L343
+?L344:
+	ldc.i4.1
+	stloc.0
+?L343:
+	ldloc.s	12
+	ldloc.s	18
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
+	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L344
+?L345:
+	br	?L346
+?L347:
+	ldc.i4.1
+	stloc.0
+?L346:
+	ldloc.s	12
+	ldloc.s	19
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int32)
+	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L347
+?L348:
+	br	?L349
+?L350:
+	ldc.i4.1
+	stloc.0
+?L349:
+	ldloc.s	12
+	ldloc.s	20
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int64)
+	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L350
+?L351:
+	br	?L352
+?L353:
+	ldc.i4.1
+	stloc.0
+?L352:
+	ldloc.s	12
+	ldloc.s	21
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int64)
+	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L353
+?L354:
+	br	?L355
+?L356:
+	ldc.i4.1
+	stloc.0
+?L355:
+	ldloc.s	12
+	ldloc.s	22
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(char)
+	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L356
+?L357:
+	br	?L358
+?L359:
+	ldc.i4.1
+	stloc.0
+?L358:
+	ldloc.s	12
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brtrue	?L359
+?L360:
+	br	?L361
+?L362:
+	ldc.i4.1
+	stloc.0
+?L361:
+	ldloc.s	13
+	ldloc.s	26
+	beq	?L362
+?L363:
+	br	?L364
+?L365:
+	ldc.i4.1
+	stloc.0
+?L364:
+	ldloc.s	13
+	ldloc.s	26
+	bne.un	?L365
+?L366:
+	ldloc.1
+	ldloc.s	14
+	bne.un	?L367
+	ldc.i4.1
+	stloc.0
 ?L367:
-	br	?L368
-?L369:
+	ldloc.1
+	ldloc.s	15
+	bne.un	?L368
 	ldc.i4.1
 	stloc.0
 ?L368:
-	ldloc.s	10
-	ldloc.s	23
-	blt	?L369
+	ldloc.1
+	ldloc.s	16
+	bne.un	?L369
+	ldc.i4.1
+	stloc.0
+?L369:
+	ldloc.1
+	ldloc.s	17
+	bne.un	?L370
+	ldc.i4.1
+	stloc.0
 ?L370:
-	br	?L371
-?L372:
+	ldloc.1
+	ldloc.s	18
+	bne.un	?L371
 	ldc.i4.1
 	stloc.0
 ?L371:
-	ldloc.s	10
-	ldloc.s	24
-	blt	?L372
+	ldloc.1
+	conv.i8
+	ldloc.s	19
+	conv.u8
+	bne.un	?L372
+	ldc.i4.1
+	stloc.0
+?L372:
+	ldloc.1
+	conv.i8
+	ldloc.s	20
+	bne.un	?L373
+	ldc.i4.1
+	stloc.0
 ?L373:
-	br	?L374
-?L375:
+	ldloc.1
+	ldloc.s	22
+	bne.un	?L374
 	ldc.i4.1
 	stloc.0
 ?L374:
-	ldloc.s	11
-	ldloc.s	14
+	ldloc.1
+	conv.r4
+	ldloc.s	23
+	bne.un	?L375
+	ldc.i4.1
+	stloc.0
+?L375:
+	ldloc.1
 	conv.r8
-	ble	?L375
+	ldloc.s	24
+	bne.un	?L376
+	ldc.i4.1
+	stloc.0
 ?L376:
-	br	?L377
-?L378:
+	ldloc.1
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_Equality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L377
 	ldc.i4.1
 	stloc.0
 ?L377:
-	ldloc.s	11
+	ldloc.2
+	ldloc.s	14
+	beq	?L378
+	ldc.i4.1
+	stloc.0
+?L378:
+	ldloc.2
 	ldloc.s	15
-	conv.r.un
-	ble	?L378
+	beq	?L379
+	ldc.i4.1
+	stloc.0
 ?L379:
-	br	?L380
-?L381:
+	ldloc.2
+	ldloc.s	16
+	beq	?L380
 	ldc.i4.1
 	stloc.0
 ?L380:
-	ldloc.s	11
-	ldloc.s	16
-	conv.r8
-	ble	?L381
+	ldloc.2
+	ldloc.s	17
+	beq	?L381
+	ldc.i4.1
+	stloc.0
+?L381:
+	ldloc.2
+	ldloc.s	18
+	beq	?L382
+	ldc.i4.1
+	stloc.0
 ?L382:
-	br	?L383
-?L384:
+	ldloc.2
+	ldloc.s	19
+	beq	?L383
 	ldc.i4.1
 	stloc.0
 ?L383:
-	ldloc.s	11
-	ldloc.s	17
-	conv.r.un
-	ble	?L384
+	ldloc.2
+	conv.i8
+	ldloc.s	20
+	beq	?L384
+	ldc.i4.1
+	stloc.0
+?L384:
+	ldloc.2
+	conv.u8
+	ldloc.s	21
+	beq	?L385
+	ldc.i4.1
+	stloc.0
 ?L385:
-	br	?L386
-?L387:
+	ldloc.2
+	ldloc.s	22
+	beq	?L386
 	ldc.i4.1
 	stloc.0
 ?L386:
-	ldloc.s	11
-	ldloc.s	18
-	conv.r8
-	ble	?L387
+	ldloc.2
+	conv.r.un
+	ldloc.s	23
+	beq	?L387
+	ldc.i4.1
+	stloc.0
+?L387:
+	ldloc.2
+	conv.r.un
+	ldloc.s	24
+	beq	?L388
+	ldc.i4.1
+	stloc.0
 ?L388:
-	br	?L389
-?L390:
+	ldloc.2
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_Inequality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L389
 	ldc.i4.1
 	stloc.0
 ?L389:
-	ldloc.s	11
-	ldloc.s	19
-	conv.r.un
-	ble	?L390
+	ldloc.3
+	ldloc.s	14
+	bge	?L390
+	ldc.i4.1
+	stloc.0
+?L390:
+	ldloc.3
+	ldloc.s	15
+	bge	?L391
+	ldc.i4.1
+	stloc.0
 ?L391:
-	br	?L392
-?L393:
+	ldloc.3
+	ldloc.s	16
+	bge	?L392
 	ldc.i4.1
 	stloc.0
 ?L392:
-	ldloc.s	11
-	ldloc.s	20
-	conv.r8
-	ble	?L393
+	ldloc.3
+	ldloc.s	17
+	bge	?L393
+	ldc.i4.1
+	stloc.0
+?L393:
+	ldloc.3
+	ldloc.s	18
+	bge	?L394
+	ldc.i4.1
+	stloc.0
 ?L394:
-	br	?L395
-?L396:
+	ldloc.3
+	conv.i8
+	ldloc.s	19
+	conv.u8
+	bge	?L395
 	ldc.i4.1
 	stloc.0
 ?L395:
-	ldloc.s	11
-	ldloc.s	21
-	conv.r.un
-	conv.r8
-	ble	?L396
+	ldloc.3
+	conv.i8
+	ldloc.s	20
+	bge	?L396
+	ldc.i4.1
+	stloc.0
+?L396:
+	ldloc.3
+	ldloc.s	22
+	bge	?L397
+	ldc.i4.1
+	stloc.0
 ?L397:
-	br	?L398
-?L399:
+	ldloc.3
+	conv.r4
+	ldloc.s	23
+	bge.un	?L398
 	ldc.i4.1
 	stloc.0
 ?L398:
-	ldloc.s	11
-	ldloc.s	22
-	conv.r.un
-	ble	?L399
+	ldloc.3
+	conv.r8
+	ldloc.s	24
+	bge.un	?L399
+	ldc.i4.1
+	stloc.0
+?L399:
+	ldloc.3
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int16)
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_LessThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L400
+	ldc.i4.1
+	stloc.0
 ?L400:
-	br	?L401
-?L402:
+	ldloc.s	4
+	ldloc.s	14
+	bgt	?L401
 	ldc.i4.1
 	stloc.0
 ?L401:
-	ldloc.s	11
-	ldloc.s	23
-	ble	?L402
+	ldloc.s	4
+	ldloc.s	15
+	bgt	?L402
+	ldc.i4.1
+	stloc.0
+?L402:
+	ldloc.s	4
+	ldloc.s	16
+	bgt	?L403
+	ldc.i4.1
+	stloc.0
 ?L403:
-	br	?L404
-?L405:
+	ldloc.s	4
+	ldloc.s	17
+	bgt	?L404
 	ldc.i4.1
 	stloc.0
 ?L404:
-	ldloc.s	11
-	ldloc.s	24
-	ble	?L405
+	ldloc.s	4
+	ldloc.s	18
+	bgt	?L405
+	ldc.i4.1
+	stloc.0
+?L405:
+	ldloc.s	4
+	ldloc.s	19
+	bgt.un	?L406
+	ldc.i4.1
+	stloc.0
 ?L406:
-	br	?L407
-?L408:
+	ldloc.s	4
+	conv.i8
+	ldloc.s	20
+	bgt	?L407
 	ldc.i4.1
 	stloc.0
 ?L407:
-	ldloc.s	12
-	ldloc.s	14
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
-	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L408
+	ldloc.s	4
+	conv.u8
+	ldloc.s	21
+	bgt.un	?L408
+	ldc.i4.1
+	stloc.0
+?L408:
+	ldloc.s	4
+	ldloc.s	22
+	bgt	?L409
+	ldc.i4.1
+	stloc.0
 ?L409:
-	br	?L410
-?L411:
+	ldloc.s	4
+	conv.r.un
+	ldloc.s	23
+	bgt.un	?L410
 	ldc.i4.1
 	stloc.0
 ?L410:
-	ldloc.s	12
-	ldloc.s	15
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
-	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L411
+	ldloc.s	4
+	conv.r.un
+	ldloc.s	24
+	bgt.un	?L411
+	ldc.i4.1
+	stloc.0
+?L411:
+	ldloc.s	4
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int16)
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_LessThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L412
+	ldc.i4.1
+	stloc.0
 ?L412:
-	br	?L413
-?L414:
+	ldloc.s	5
+	ldloc.s	14
+	ble	?L413
 	ldc.i4.1
 	stloc.0
 ?L413:
-	ldloc.s	12
+	ldloc.s	5
+	ldloc.s	15
+	ble	?L414
+	ldc.i4.1
+	stloc.0
+?L414:
+	ldloc.s	5
 	ldloc.s	16
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int16)
-	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L414
+	ble	?L415
+	ldc.i4.1
+	stloc.0
 ?L415:
-	br	?L416
-?L417:
+	ldloc.s	5
+	ldloc.s	17
+	ble	?L416
 	ldc.i4.1
 	stloc.0
 ?L416:
-	ldloc.s	12
-	ldloc.s	17
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int16)
-	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L417
+	ldloc.s	5
+	ldloc.s	18
+	ble	?L417
+	ldc.i4.1
+	stloc.0
+?L417:
+	ldloc.s	5
+	conv.i8
+	ldloc.s	19
+	conv.u8
+	ble	?L418
+	ldc.i4.1
+	stloc.0
 ?L418:
-	br	?L419
-?L420:
+	ldloc.s	5
+	conv.i8
+	ldloc.s	20
+	ble	?L419
 	ldc.i4.1
 	stloc.0
 ?L419:
-	ldloc.s	12
-	ldloc.s	18
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
-	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L420
+	ldloc.s	5
+	ldloc.s	22
+	ble	?L420
+	ldc.i4.1
+	stloc.0
+?L420:
+	ldloc.s	5
+	conv.r4
+	ldloc.s	23
+	ble.un	?L421
+	ldc.i4.1
+	stloc.0
 ?L421:
-	br	?L422
-?L423:
+	ldloc.s	5
+	conv.r8
+	ldloc.s	24
+	ble.un	?L422
 	ldc.i4.1
 	stloc.0
 ?L422:
-	ldloc.s	12
-	ldloc.s	19
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int32)
-	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L423
+	ldloc.s	5
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L423
+	ldc.i4.1
+	stloc.0
+?L423:
+	ldloc.s	6
+	conv.u8
+	ldloc.s	14
+	conv.i8
+	blt	?L424
+	ldc.i4.1
+	stloc.0
 ?L424:
-	br	?L425
-?L426:
+	ldloc.s	6
+	ldloc.s	15
+	blt.un	?L425
 	ldc.i4.1
 	stloc.0
 ?L425:
-	ldloc.s	12
-	ldloc.s	20
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int64)
-	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L426
+	ldloc.s	6
+	conv.u8
+	ldloc.s	16
+	conv.i8
+	blt	?L426
+	ldc.i4.1
+	stloc.0
+?L426:
+	ldloc.s	6
+	ldloc.s	17
+	blt.un	?L427
+	ldc.i4.1
+	stloc.0
 ?L427:
-	br	?L428
-?L429:
+	ldloc.s	6
+	conv.u8
+	ldloc.s	18
+	conv.i8
+	blt	?L428
 	ldc.i4.1
 	stloc.0
 ?L428:
-	ldloc.s	12
-	ldloc.s	21
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int64)
-	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L429
+	ldloc.s	6
+	ldloc.s	19
+	blt.un	?L429
+	ldc.i4.1
+	stloc.0
+?L429:
+	ldloc.s	6
+	conv.u8
+	ldloc.s	20
+	blt	?L430
+	ldc.i4.1
+	stloc.0
 ?L430:
-	br	?L431
-?L432:
+	ldloc.s	6
+	conv.u8
+	ldloc.s	21
+	blt.un	?L431
 	ldc.i4.1
 	stloc.0
 ?L431:
-	ldloc.s	12
+	ldloc.s	6
 	ldloc.s	22
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(char)
-	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L432
+	blt.un	?L432
+	ldc.i4.1
+	stloc.0
+?L432:
+	ldloc.s	6
+	conv.r.un
+	conv.r4
+	ldloc.s	23
+	blt.un	?L433
+	ldc.i4.1
+	stloc.0
 ?L433:
-	br	?L434
-?L435:
+	ldloc.s	6
+	conv.r.un
+	ldloc.s	24
+	blt.un	?L434
 	ldc.i4.1
 	stloc.0
 ?L434:
-	ldloc.s	12
+	ldloc.s	6
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int32)
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brtrue	?L435
+	brfalse	?L435
+	ldc.i4.1
+	stloc.0
+?L435:
+	ldloc.s	7
+	ldloc.s	14
+	conv.i8
+	bne.un	?L436
+	ldc.i4.1
+	stloc.0
 ?L436:
-	br	?L437
-?L438:
+	ldloc.s	7
+	ldloc.s	15
+	conv.i8
+	bne.un	?L437
 	ldc.i4.1
 	stloc.0
 ?L437:
-	ldloc.s	13
-	ldloc.s	26
-	beq	?L438
+	ldloc.s	7
+	ldloc.s	16
+	conv.i8
+	bne.un	?L438
+	ldc.i4.1
+	stloc.0
+?L438:
+	ldloc.s	7
+	ldloc.s	17
+	conv.i8
+	bne.un	?L439
+	ldc.i4.1
+	stloc.0
 ?L439:
-	br	?L440
-?L441:
+	ldloc.s	7
+	ldloc.s	18
+	conv.i8
+	bne.un	?L440
 	ldc.i4.1
 	stloc.0
 ?L440:
-	ldloc.s	13
-	ldloc.s	26
+	ldloc.s	7
+	ldloc.s	19
+	conv.u8
 	bne.un	?L441
+	ldc.i4.1
+	stloc.0
+?L441:
+	ldloc.s	7
+	ldloc.s	20
+	bne.un	?L442
+	ldc.i4.1
+	stloc.0
 ?L442:
-	ldloc.1
-	ldloc.s	14
+	ldloc.s	7
+	ldloc.s	22
+	conv.i8
 	bne.un	?L443
 	ldc.i4.1
 	stloc.0
 ?L443:
-	ldloc.1
-	ldloc.s	15
+	ldloc.s	7
+	conv.r4
+	ldloc.s	23
 	bne.un	?L444
 	ldc.i4.1
 	stloc.0
 ?L444:
-	ldloc.1
-	ldloc.s	16
+	ldloc.s	7
+	conv.r8
+	ldloc.s	24
 	bne.un	?L445
 	ldc.i4.1
 	stloc.0
 ?L445:
-	ldloc.1
-	ldloc.s	17
-	bne.un	?L446
+	ldloc.s	7
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int64)
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_Equality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L446
 	ldc.i4.1
 	stloc.0
 ?L446:
-	ldloc.1
-	ldloc.s	18
-	bne.un	?L447
+	ldloc.s	8
+	ldloc.s	15
+	conv.u8
+	beq	?L447
 	ldc.i4.1
 	stloc.0
 ?L447:
-	ldloc.1
-	conv.i8
-	ldloc.s	19
+	ldloc.s	8
+	ldloc.s	17
 	conv.u8
-	bne.un	?L448
+	beq	?L448
 	ldc.i4.1
 	stloc.0
 ?L448:
-	ldloc.1
-	conv.i8
-	ldloc.s	20
-	bne.un	?L449
+	ldloc.s	8
+	ldloc.s	19
+	conv.u8
+	beq	?L449
 	ldc.i4.1
 	stloc.0
 ?L449:
-	ldloc.1
-	ldloc.s	22
-	bne.un	?L450
+	ldloc.s	8
+	ldloc.s	21
+	beq	?L450
 	ldc.i4.1
 	stloc.0
 ?L450:
-	ldloc.1
-	conv.r4
-	ldloc.s	23
-	bne.un	?L451
+	ldloc.s	8
+	ldloc.s	22
+	conv.u8
+	beq	?L451
 	ldc.i4.1
 	stloc.0
 ?L451:
-	ldloc.1
-	conv.r8
-	ldloc.s	24
-	bne.un	?L452
+	ldloc.s	8
+	conv.r.un
+	conv.r4
+	ldloc.s	23
+	beq	?L452
 	ldc.i4.1
 	stloc.0
 ?L452:
-	ldloc.1
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_Equality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L453
+	ldloc.s	8
+	conv.r.un
+	conv.r8
+	ldloc.s	24
+	beq	?L453
 	ldc.i4.1
 	stloc.0
 ?L453:
-	ldloc.2
-	ldloc.s	14
-	beq	?L454
+	ldloc.s	8
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int64)
+	ldloc.s	25
+	call	bool [.library]System.Decimal::op_Inequality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L454
 	ldc.i4.1
 	stloc.0
 ?L454:
-	ldloc.2
-	ldloc.s	15
-	beq	?L455
+	ldloc.s	10
+	ldloc.s	14
+	conv.r4
+	bge.un	?L455
 	ldc.i4.1
 	stloc.0
 ?L455:
-	ldloc.2
-	ldloc.s	16
-	beq	?L456
+	ldloc.s	10
+	ldloc.s	15
+	conv.r.un
+	bge.un	?L456
 	ldc.i4.1
 	stloc.0
 ?L456:
-	ldloc.2
-	ldloc.s	17
-	beq	?L457
+	ldloc.s	10
+	ldloc.s	16
+	conv.r4
+	bge.un	?L457
 	ldc.i4.1
 	stloc.0
 ?L457:
-	ldloc.2
-	ldloc.s	18
-	beq	?L458
+	ldloc.s	10
+	ldloc.s	17
+	conv.r.un
+	bge.un	?L458
 	ldc.i4.1
 	stloc.0
 ?L458:
-	ldloc.2
-	ldloc.s	19
-	beq	?L459
+	ldloc.s	10
+	ldloc.s	18
+	conv.r4
+	bge.un	?L459
 	ldc.i4.1
 	stloc.0
 ?L459:
-	ldloc.2
-	conv.i8
-	ldloc.s	20
-	beq	?L460
+	ldloc.s	10
+	ldloc.s	19
+	conv.r.un
+	conv.r4
+	bge.un	?L460
 	ldc.i4.1
 	stloc.0
 ?L460:
-	ldloc.2
-	conv.u8
-	ldloc.s	21
-	beq	?L461
+	ldloc.s	10
+	ldloc.s	20
+	conv.r4
+	bge.un	?L461
 	ldc.i4.1
 	stloc.0
 ?L461:
-	ldloc.2
-	ldloc.s	22
-	beq	?L462
+	ldloc.s	10
+	ldloc.s	21
+	conv.r.un
+	conv.r4
+	bge.un	?L462
 	ldc.i4.1
 	stloc.0
 ?L462:
-	ldloc.2
+	ldloc.s	10
+	ldloc.s	22
 	conv.r.un
-	ldloc.s	23
-	beq	?L463
+	bge.un	?L463
 	ldc.i4.1
 	stloc.0
 ?L463:
-	ldloc.2
-	conv.r.un
-	ldloc.s	24
-	beq	?L464
+	ldloc.s	10
+	ldloc.s	23
+	bge.un	?L464
 	ldc.i4.1
 	stloc.0
 ?L464:
-	ldloc.2
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_Inequality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L465
+	ldloc.s	10
+	ldloc.s	24
+	bge.un	?L465
 	ldc.i4.1
 	stloc.0
 ?L465:
-	ldloc.3
+	ldloc.s	11
 	ldloc.s	14
-	bge	?L466
+	conv.r8
+	bgt.un	?L466
 	ldc.i4.1
 	stloc.0
 ?L466:
-	ldloc.3
+	ldloc.s	11
 	ldloc.s	15
-	bge	?L467
+	conv.r.un
+	bgt.un	?L467
 	ldc.i4.1
 	stloc.0
 ?L467:
-	ldloc.3
+	ldloc.s	11
 	ldloc.s	16
-	bge	?L468
+	conv.r8
+	bgt.un	?L468
 	ldc.i4.1
 	stloc.0
 ?L468:
-	ldloc.3
+	ldloc.s	11
 	ldloc.s	17
-	bge	?L469
+	conv.r.un
+	bgt.un	?L469
 	ldc.i4.1
 	stloc.0
 ?L469:
-	ldloc.3
+	ldloc.s	11
 	ldloc.s	18
-	bge	?L470
+	conv.r8
+	bgt.un	?L470
 	ldc.i4.1
 	stloc.0
 ?L470:
-	ldloc.3
-	conv.i8
+	ldloc.s	11
 	ldloc.s	19
-	conv.u8
-	bge	?L471
+	conv.r.un
+	bgt.un	?L471
 	ldc.i4.1
 	stloc.0
 ?L471:
-	ldloc.3
-	conv.i8
+	ldloc.s	11
 	ldloc.s	20
-	bge	?L472
+	conv.r8
+	bgt.un	?L472
 	ldc.i4.1
 	stloc.0
 ?L472:
-	ldloc.3
-	ldloc.s	22
-	bge	?L473
+	ldloc.s	11
+	ldloc.s	21
+	conv.r.un
+	conv.r8
+	bgt.un	?L473
 	ldc.i4.1
 	stloc.0
 ?L473:
-	ldloc.3
-	conv.r4
-	ldloc.s	23
-	blt	?L474
-	br	?L475
+	ldloc.s	11
+	ldloc.s	22
+	conv.r.un
+	bgt.un	?L474
+	ldc.i4.1
+	stloc.0
 ?L474:
+	ldloc.s	11
+	ldloc.s	23
+	bgt.un	?L475
 	ldc.i4.1
 	stloc.0
 ?L475:
-	ldloc.3
-	conv.r8
+	ldloc.s	11
 	ldloc.s	24
-	blt	?L476
-	br	?L477
+	bgt.un	?L476
+	ldc.i4.1
+	stloc.0
 ?L476:
+	ldloc.s	12
+	ldloc.s	14
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
+	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	brfalse	?L477
 	ldc.i4.1
 	stloc.0
 ?L477:
-	ldloc.3
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int16)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_LessThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
+	ldloc.s	12
+	ldloc.s	15
+	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
+	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
 	brfalse	?L478
 	ldc.i4.1
 	stloc.0
 ?L478:
-	ldloc.s	4
-	ldloc.s	14
-	bgt	?L479
-	ldc.i4.1
-	stloc.0
-?L479:
-	ldloc.s	4
-	ldloc.s	15
-	bgt	?L480
-	ldc.i4.1
-	stloc.0
-?L480:
-	ldloc.s	4
-	ldloc.s	16
-	bgt	?L481
-	ldc.i4.1
-	stloc.0
-?L481:
-	ldloc.s	4
-	ldloc.s	17
-	bgt	?L482
-	ldc.i4.1
-	stloc.0
-?L482:
-	ldloc.s	4
-	ldloc.s	18
-	bgt	?L483
-	ldc.i4.1
-	stloc.0
-?L483:
-	ldloc.s	4
-	ldloc.s	19
-	bgt.un	?L484
-	ldc.i4.1
-	stloc.0
-?L484:
-	ldloc.s	4
-	conv.i8
-	ldloc.s	20
-	bgt	?L485
-	ldc.i4.1
-	stloc.0
-?L485:
-	ldloc.s	4
-	conv.u8
-	ldloc.s	21
-	bgt.un	?L486
-	ldc.i4.1
-	stloc.0
-?L486:
-	ldloc.s	4
-	ldloc.s	22
-	bgt	?L487
-	ldc.i4.1
-	stloc.0
-?L487:
-	ldloc.s	4
-	conv.r.un
-	ldloc.s	23
-	ble	?L488
-	br	?L489
-?L488:
-	ldc.i4.1
-	stloc.0
-?L489:
-	ldloc.s	4
-	conv.r.un
-	ldloc.s	24
-	ble	?L490
-	br	?L491
-?L490:
-	ldc.i4.1
-	stloc.0
-?L491:
-	ldloc.s	4
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int16)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_LessThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L492
-	ldc.i4.1
-	stloc.0
-?L492:
-	ldloc.s	5
-	ldloc.s	14
-	ble	?L493
-	ldc.i4.1
-	stloc.0
-?L493:
-	ldloc.s	5
-	ldloc.s	15
-	ble	?L494
-	ldc.i4.1
-	stloc.0
-?L494:
-	ldloc.s	5
-	ldloc.s	16
-	ble	?L495
-	ldc.i4.1
-	stloc.0
-?L495:
-	ldloc.s	5
-	ldloc.s	17
-	ble	?L496
-	ldc.i4.1
-	stloc.0
-?L496:
-	ldloc.s	5
-	ldloc.s	18
-	ble	?L497
-	ldc.i4.1
-	stloc.0
-?L497:
-	ldloc.s	5
-	conv.i8
-	ldloc.s	19
-	conv.u8
-	ble	?L498
-	ldc.i4.1
-	stloc.0
-?L498:
-	ldloc.s	5
-	conv.i8
-	ldloc.s	20
-	ble	?L499
-	ldc.i4.1
-	stloc.0
-?L499:
-	ldloc.s	5
-	ldloc.s	22
-	ble	?L500
-	ldc.i4.1
-	stloc.0
-?L500:
-	ldloc.s	5
-	conv.r4
-	ldloc.s	23
-	bgt	?L501
-	br	?L502
-?L501:
-	ldc.i4.1
-	stloc.0
-?L502:
-	ldloc.s	5
-	conv.r8
-	ldloc.s	24
-	bgt	?L503
-	br	?L504
-?L503:
-	ldc.i4.1
-	stloc.0
-?L504:
-	ldloc.s	5
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L505
-	ldc.i4.1
-	stloc.0
-?L505:
-	ldloc.s	6
-	conv.u8
-	ldloc.s	14
-	conv.i8
-	blt	?L506
-	ldc.i4.1
-	stloc.0
-?L506:
-	ldloc.s	6
-	ldloc.s	15
-	blt.un	?L507
-	ldc.i4.1
-	stloc.0
-?L507:
-	ldloc.s	6
-	conv.u8
-	ldloc.s	16
-	conv.i8
-	blt	?L508
-	ldc.i4.1
-	stloc.0
-?L508:
-	ldloc.s	6
-	ldloc.s	17
-	blt.un	?L509
-	ldc.i4.1
-	stloc.0
-?L509:
-	ldloc.s	6
-	conv.u8
-	ldloc.s	18
-	conv.i8
-	blt	?L510
-	ldc.i4.1
-	stloc.0
-?L510:
-	ldloc.s	6
-	ldloc.s	19
-	blt.un	?L511
-	ldc.i4.1
-	stloc.0
-?L511:
-	ldloc.s	6
-	conv.u8
-	ldloc.s	20
-	blt	?L512
-	ldc.i4.1
-	stloc.0
-?L512:
-	ldloc.s	6
-	conv.u8
-	ldloc.s	21
-	blt.un	?L513
-	ldc.i4.1
-	stloc.0
-?L513:
-	ldloc.s	6
-	ldloc.s	22
-	blt.un	?L514
-	ldc.i4.1
-	stloc.0
-?L514:
-	ldloc.s	6
-	conv.r.un
-	conv.r4
-	ldloc.s	23
-	bge	?L515
-	br	?L516
-?L515:
-	ldc.i4.1
-	stloc.0
-?L516:
-	ldloc.s	6
-	conv.r.un
-	ldloc.s	24
-	bge	?L517
-	br	?L518
-?L517:
-	ldc.i4.1
-	stloc.0
-?L518:
-	ldloc.s	6
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int32)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L519
-	ldc.i4.1
-	stloc.0
-?L519:
-	ldloc.s	7
-	ldloc.s	14
-	conv.i8
-	bne.un	?L520
-	ldc.i4.1
-	stloc.0
-?L520:
-	ldloc.s	7
-	ldloc.s	15
-	conv.i8
-	bne.un	?L521
-	ldc.i4.1
-	stloc.0
-?L521:
-	ldloc.s	7
-	ldloc.s	16
-	conv.i8
-	bne.un	?L522
-	ldc.i4.1
-	stloc.0
-?L522:
-	ldloc.s	7
-	ldloc.s	17
-	conv.i8
-	bne.un	?L523
-	ldc.i4.1
-	stloc.0
-?L523:
-	ldloc.s	7
-	ldloc.s	18
-	conv.i8
-	bne.un	?L524
-	ldc.i4.1
-	stloc.0
-?L524:
-	ldloc.s	7
-	ldloc.s	19
-	conv.u8
-	bne.un	?L525
-	ldc.i4.1
-	stloc.0
-?L525:
-	ldloc.s	7
-	ldloc.s	20
-	bne.un	?L526
-	ldc.i4.1
-	stloc.0
-?L526:
-	ldloc.s	7
-	ldloc.s	22
-	conv.i8
-	bne.un	?L527
-	ldc.i4.1
-	stloc.0
-?L527:
-	ldloc.s	7
-	conv.r4
-	ldloc.s	23
-	bne.un	?L528
-	ldc.i4.1
-	stloc.0
-?L528:
-	ldloc.s	7
-	conv.r8
-	ldloc.s	24
-	bne.un	?L529
-	ldc.i4.1
-	stloc.0
-?L529:
-	ldloc.s	7
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int64)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_Equality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L530
-	ldc.i4.1
-	stloc.0
-?L530:
-	ldloc.s	8
-	ldloc.s	15
-	conv.u8
-	beq	?L531
-	ldc.i4.1
-	stloc.0
-?L531:
-	ldloc.s	8
-	ldloc.s	17
-	conv.u8
-	beq	?L532
-	ldc.i4.1
-	stloc.0
-?L532:
-	ldloc.s	8
-	ldloc.s	19
-	conv.u8
-	beq	?L533
-	ldc.i4.1
-	stloc.0
-?L533:
-	ldloc.s	8
-	ldloc.s	21
-	beq	?L534
-	ldc.i4.1
-	stloc.0
-?L534:
-	ldloc.s	8
-	ldloc.s	22
-	conv.u8
-	beq	?L535
-	ldc.i4.1
-	stloc.0
-?L535:
-	ldloc.s	8
-	conv.r.un
-	conv.r4
-	ldloc.s	23
-	beq	?L536
-	ldc.i4.1
-	stloc.0
-?L536:
-	ldloc.s	8
-	conv.r.un
-	conv.r8
-	ldloc.s	24
-	beq	?L537
-	ldc.i4.1
-	stloc.0
-?L537:
-	ldloc.s	8
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int64)
-	ldloc.s	25
-	call	bool [.library]System.Decimal::op_Inequality(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L538
-	ldc.i4.1
-	stloc.0
-?L538:
-	ldloc.s	10
-	ldloc.s	14
-	conv.r4
-	blt	?L539
-	br	?L540
-?L539:
-	ldc.i4.1
-	stloc.0
-?L540:
-	ldloc.s	10
-	ldloc.s	15
-	conv.r.un
-	blt	?L541
-	br	?L542
-?L541:
-	ldc.i4.1
-	stloc.0
-?L542:
-	ldloc.s	10
-	ldloc.s	16
-	conv.r4
-	blt	?L543
-	br	?L544
-?L543:
-	ldc.i4.1
-	stloc.0
-?L544:
-	ldloc.s	10
-	ldloc.s	17
-	conv.r.un
-	blt	?L545
-	br	?L546
-?L545:
-	ldc.i4.1
-	stloc.0
-?L546:
-	ldloc.s	10
-	ldloc.s	18
-	conv.r4
-	blt	?L547
-	br	?L548
-?L547:
-	ldc.i4.1
-	stloc.0
-?L548:
-	ldloc.s	10
-	ldloc.s	19
-	conv.r.un
-	conv.r4
-	blt	?L549
-	br	?L550
-?L549:
-	ldc.i4.1
-	stloc.0
-?L550:
-	ldloc.s	10
-	ldloc.s	20
-	conv.r4
-	blt	?L551
-	br	?L552
-?L551:
-	ldc.i4.1
-	stloc.0
-?L552:
-	ldloc.s	10
-	ldloc.s	21
-	conv.r.un
-	conv.r4
-	blt	?L553
-	br	?L554
-?L553:
-	ldc.i4.1
-	stloc.0
-?L554:
-	ldloc.s	10
-	ldloc.s	22
-	conv.r.un
-	blt	?L555
-	br	?L556
-?L555:
-	ldc.i4.1
-	stloc.0
-?L556:
-	ldloc.s	10
-	ldloc.s	23
-	blt	?L557
-	br	?L558
-?L557:
-	ldc.i4.1
-	stloc.0
-?L558:
-	ldloc.s	10
-	ldloc.s	24
-	blt	?L559
-	br	?L560
-?L559:
-	ldc.i4.1
-	stloc.0
-?L560:
-	ldloc.s	11
-	ldloc.s	14
-	conv.r8
-	ble	?L561
-	br	?L562
-?L561:
-	ldc.i4.1
-	stloc.0
-?L562:
-	ldloc.s	11
-	ldloc.s	15
-	conv.r.un
-	ble	?L563
-	br	?L564
-?L563:
-	ldc.i4.1
-	stloc.0
-?L564:
-	ldloc.s	11
-	ldloc.s	16
-	conv.r8
-	ble	?L565
-	br	?L566
-?L565:
-	ldc.i4.1
-	stloc.0
-?L566:
-	ldloc.s	11
-	ldloc.s	17
-	conv.r.un
-	ble	?L567
-	br	?L568
-?L567:
-	ldc.i4.1
-	stloc.0
-?L568:
-	ldloc.s	11
-	ldloc.s	18
-	conv.r8
-	ble	?L569
-	br	?L570
-?L569:
-	ldc.i4.1
-	stloc.0
-?L570:
-	ldloc.s	11
-	ldloc.s	19
-	conv.r.un
-	ble	?L571
-	br	?L572
-?L571:
-	ldc.i4.1
-	stloc.0
-?L572:
-	ldloc.s	11
-	ldloc.s	20
-	conv.r8
-	ble	?L573
-	br	?L574
-?L573:
-	ldc.i4.1
-	stloc.0
-?L574:
-	ldloc.s	11
-	ldloc.s	21
-	conv.r.un
-	conv.r8
-	ble	?L575
-	br	?L576
-?L575:
-	ldc.i4.1
-	stloc.0
-?L576:
-	ldloc.s	11
-	ldloc.s	22
-	conv.r.un
-	ble	?L577
-	br	?L578
-?L577:
-	ldc.i4.1
-	stloc.0
-?L578:
-	ldloc.s	11
-	ldloc.s	23
-	ble	?L579
-	br	?L580
-?L579:
-	ldc.i4.1
-	stloc.0
-?L580:
-	ldloc.s	11
-	ldloc.s	24
-	ble	?L581
-	br	?L582
-?L581:
-	ldc.i4.1
-	stloc.0
-?L582:
-	ldloc.s	12
-	ldloc.s	14
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int8)
-	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L583
-	ldc.i4.1
-	stloc.0
-?L583:
-	ldloc.s	12
-	ldloc.s	15
-	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int8)
-	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L584
-	ldc.i4.1
-	stloc.0
-?L584:
 	ldloc.s	12
 	ldloc.s	16
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int16)
 	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L585
+	brfalse	?L479
 	ldc.i4.1
 	stloc.0
-?L585:
+?L479:
 	ldloc.s	12
 	ldloc.s	17
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int16)
 	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L586
+	brfalse	?L480
 	ldc.i4.1
 	stloc.0
-?L586:
+?L480:
 	ldloc.s	12
 	ldloc.s	18
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int32)
 	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L587
+	brfalse	?L481
 	ldc.i4.1
 	stloc.0
-?L587:
+?L481:
 	ldloc.s	12
 	ldloc.s	19
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int32)
 	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L588
+	brfalse	?L482
 	ldc.i4.1
 	stloc.0
-?L588:
+?L482:
 	ldloc.s	12
 	ldloc.s	20
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(int64)
 	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L589
+	brfalse	?L483
 	ldc.i4.1
 	stloc.0
-?L589:
+?L483:
 	ldloc.s	12
 	ldloc.s	21
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(unsigned int64)
 	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L590
+	brfalse	?L484
 	ldc.i4.1
 	stloc.0
-?L590:
+?L484:
 	ldloc.s	12
 	ldloc.s	22
 	call	valuetype [.library]System.Decimal [.library]System.Decimal::op_Implicit(char)
 	call	bool [.library]System.Decimal::op_GreaterThan(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L591
+	brfalse	?L485
 	ldc.i4.1
 	stloc.0
-?L591:
+?L485:
 	ldloc.s	12
 	ldloc.s	25
 	call	bool [.library]System.Decimal::op_GreaterThanOrEqual(valuetype [.library]System.Decimal, valuetype [.library]System.Decimal)
-	brfalse	?L592
+	brfalse	?L486
 	ldc.i4.1
 	stloc.0
-?L592:
+?L486:
 	ldloc.s	13
 	ldloc.s	26
-	bne.un	?L593
+	bne.un	?L487
 	ldc.i4.1
 	stloc.0
-?L593:
+?L487:
 	ldloc.s	13
 	ldloc.s	26
-	beq	?L594
+	beq	?L488
 	ldc.i4.1
 	stloc.0
-?L594:
+?L488:
 	ret
 	.maxstack 5
 } // method m1

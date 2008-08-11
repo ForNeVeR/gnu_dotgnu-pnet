@@ -1,3 +1,7 @@
+2008-08-11  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/expr/relop.il: Update to reflect the latest cscc changes.
+
 2007-10-30  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/class/access1.cs, csharp/class/access1.il,

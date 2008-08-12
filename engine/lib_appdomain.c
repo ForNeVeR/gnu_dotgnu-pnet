@@ -1,7 +1,7 @@
 /*
  * lib_appdomain.c - Internalcall methods for the "System.AppDomain" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -82,9 +82,9 @@ static char *_ToAnsiString(ILExecThread *thread, ILString *str)
 }
 
 /*
- * private static void AppendPrivatePathInternal(IntPtr appDomain, String[] splitPaths);
+ * private static void AppendPrivatePathInternal(Object appDomain, String[] splitPaths);
  */
-void _IL_AppDomain_AppendPrivatePathsInternal(ILExecThread *thread, ILNativeInt appDomain, System_Array *splitPaths)
+void _IL_AppDomain_AppendPrivatePathsInternal(ILExecThread *thread, ILObject *appDomain, System_Array *splitPaths)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -133,9 +133,9 @@ void _IL_AppDomain_AppendPrivatePathsInternal(ILExecThread *thread, ILNativeInt 
 }
 
 /*
- * private static void CreateAppDomain(ref IntPtr appDomain);
+ * private static void CreateAppDomain(ref Object appDomain);
  */
-void _IL_AppDomain_CreateAppDomain(ILExecThread *thread, ILNativeInt *appDomain)
+void _IL_AppDomain_CreateAppDomain(ILExecThread *thread, ILObject **appDomain)
 {
 #ifdef IL_CONFIG_APPDOMAINS
 	ILExecProcess *process = ILExecProcessCreate(0, 0);
@@ -159,7 +159,7 @@ void _IL_AppDomain_CreateAppDomain(ILExecThread *thread, ILNativeInt *appDomain)
 		{
 			 _ILExecProcessLoadStandard(process, corlibImage);
 			/* return the new process */
-			*appDomain = (ILNativeInt)((void *)process);
+			*appDomain = (ILObject *)process;
 		}
 	}
 	else
@@ -173,9 +173,9 @@ void _IL_AppDomain_CreateAppDomain(ILExecThread *thread, ILNativeInt *appDomain)
 }
 
 /*
- * private static void ClearPrivatePathInternal(IntPtr appDomain);
+ * private static void ClearPrivatePathInternal(Object appDomain);
  */
-void _IL_AppDomain_ClearPrivatePathInternal(ILExecThread *thread, ILNativeInt appDomain)
+void _IL_AppDomain_ClearPrivatePathInternal(ILExecThread *thread, ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -188,9 +188,9 @@ void _IL_AppDomain_ClearPrivatePathInternal(ILExecThread *thread, ILNativeInt ap
 }
 
 /*
- * private static void ClearShadowCopyPathInternal(IntPtr appDomain);
+ * private static void ClearShadowCopyPathInternal(Object appDomain);
  */
-void _IL_AppDomain_ClearShadowCopyPathInternal(ILExecThread *thread, ILNativeInt appDomain)
+void _IL_AppDomain_ClearShadowCopyPathInternal(ILExecThread *thread, ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -203,18 +203,18 @@ void _IL_AppDomain_ClearShadowCopyPathInternal(ILExecThread *thread, ILNativeInt
 }
 
 /*
- * private static void CurrentAppDomain(ref IntPtr appDomain);
+ * private static void CurrentAppDomain(ref Object appDomain);
  */
-void _IL_AppDomain_CurrentAppDomain(ILExecThread *thread, ILNativeInt *appDomain)
+void _IL_AppDomain_CurrentAppDomain(ILExecThread *thread, ILObject **appDomain)
 {
-	*appDomain = (ILNativeInt)((void *)thread->process);
+	*appDomain = (ILObject *)(thread->process);
 }
 
 /*
- * private static Assembly[] GetAssembliesInternal(IntPtr appDomain);
+ * private static Assembly[] GetAssembliesInternal(Object appDomain);
  */
 System_Array *_IL_AppDomain_GetAssembliesInternal(ILExecThread *thread,
-													ILNativeInt appDomain)
+												  ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -288,9 +288,21 @@ System_Array *_IL_AppDomain_GetAssembliesInternal(ILExecThread *thread,
 }
 
 /*
- * private static bool IsDefaultAppDomainInternal(IntPtr appDomain);
+ * private static int GetIdInternal(Object appDomain);
  */
-ILBool _IL_AppDomain_IsDefaultAppDomainInternal(ILExecThread *thread, ILNativeInt appDomain)
+ILInt32 _IL_AppDomain_GetIdInternal(ILExecThread *thread, ILObject *appDomain)
+{
+#ifdef IL_CONFIG_APPDOMAINS
+	return ((ILExecProcess *)appDomain)->id;
+#else
+	return 1;
+#endif
+}
+
+/*
+ * private static bool IsDefaultAppDomainInternal(Object appDomain);
+ */
+ILBool _IL_AppDomain_IsDefaultAppDomainInternal(ILExecThread *thread, ILObject *appDomain)
 {
 #ifdef IL_CONFIG_APPDOMAINS
 	ILExecEngine *engine = ILExecEngineInstance();
@@ -310,9 +322,9 @@ ILBool _IL_AppDomain_IsDefaultAppDomainInternal(ILExecThread *thread, ILNativeIn
 }
 
 /*
- * private static bool IsFinalizingForUnloadInternal(IntPtr appDomain);
+ * private static bool IsFinalizingForUnloadInternal(Object appDomain);
  */
-ILBool _IL_AppDomain_IsFinalizingForUnloadInternal(ILExecThread *thread, ILNativeInt appDomain)
+ILBool _IL_AppDomain_IsFinalizingForUnloadInternal(ILExecThread *thread, ILObject *appDomain)
 {
 	if(((ILExecProcess *)appDomain)->state == _IL_PROCESS_STATE_RUNNING_FINALIZERS)
 	{
@@ -325,9 +337,9 @@ ILBool _IL_AppDomain_IsFinalizingForUnloadInternal(ILExecThread *thread, ILNativ
 }
 
 /*
- * private static String GetBaseDirectoryInternal(IntPtr appDomain);
+ * private static String GetBaseDirectoryInternal(Object appDomain);
  */
-ILString *_IL_AppDomain_GetBaseDirectoryInternal(ILExecThread *thread, ILNativeInt appDomain)
+ILString *_IL_AppDomain_GetBaseDirectoryInternal(ILExecThread *thread, ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -357,9 +369,9 @@ ILString *_IL_AppDomain_GetBaseDirectoryInternal(ILExecThread *thread, ILNativeI
 }
 
 /*
- * private static void SetBaseDirectoryInternal(IntPtr appDomain, String baseDirectory);
+ * private static void SetBaseDirectoryInternal(Object appDomain, String baseDirectory);
  */
-void _IL_AppDomain_SetBaseDirectoryInternal(ILExecThread *thread, ILNativeInt appDomain, ILString *baseDirectory)
+void _IL_AppDomain_SetBaseDirectoryInternal(ILExecThread *thread, ILObject *appDomain, ILString *baseDirectory)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -389,9 +401,9 @@ void _IL_AppDomain_SetBaseDirectoryInternal(ILExecThread *thread, ILNativeInt ap
 
 
 /*
- * private static String GetFriendlyNameInternal(IntPtr appDomain);
+ * private static String GetFriendlyNameInternal(Object appDomain);
  */
-ILString *_IL_AppDomain_GetFriendlyNameInternal(ILExecThread *thread, ILNativeInt appDomain)
+ILString *_IL_AppDomain_GetFriendlyNameInternal(ILExecThread *thread, ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -421,9 +433,9 @@ ILString *_IL_AppDomain_GetFriendlyNameInternal(ILExecThread *thread, ILNativeIn
 }
 
 /*
- * private static void SetFriendlyNameInternal(IntPtr appDomain, String friendlyName);
+ * private static void SetFriendlyNameInternal(Object appDomain, String friendlyName);
  */
-void _IL_AppDomain_SetFriendlyNameInternal(ILExecThread *thread, ILNativeInt appDomain, ILString *friendlyName)
+void _IL_AppDomain_SetFriendlyNameInternal(ILExecThread *thread, ILObject *appDomain, ILString *friendlyName)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -452,9 +464,9 @@ void _IL_AppDomain_SetFriendlyNameInternal(ILExecThread *thread, ILNativeInt app
 }
 
 /*
- * private static String GetRelativeSearchPathInternal(IntPtr appDomain);
+ * private static String GetRelativeSearchPathInternal(Object appDomain);
  */
-ILString *_IL_AppDomain_GetRelativeSearchPathInternal(ILExecThread *thread, ILNativeInt appDomain)
+ILString *_IL_AppDomain_GetRelativeSearchPathInternal(ILExecThread *thread, ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -484,9 +496,11 @@ ILString *_IL_AppDomain_GetRelativeSearchPathInternal(ILExecThread *thread, ILNa
 }
 
 /*
- * private static void SetRelativeSearchPathInternal(IntPtr appDomain, String appRelativePath);
+ * private static void SetRelativeSearchPathInternal(Object appDomain, String appRelativePath);
  */
-void _IL_AppDomain_SetRelativeSearchPathInternal(ILExecThread *thread, ILNativeInt appDomain, ILString *appRelativePath)
+void _IL_AppDomain_SetRelativeSearchPathInternal(ILExecThread *thread,
+												 ILObject *appDomain,
+												 ILString *appRelativePath)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -515,9 +529,9 @@ void _IL_AppDomain_SetRelativeSearchPathInternal(ILExecThread *thread, ILNativeI
 }
 
 /*
- * private static bool GetShadowCopyFilesInternal(IntPtr appDomain);
+ * private static bool GetShadowCopyFilesInternal(Object appDomain);
  */
-ILBool _IL_AppDomain_GetShadowCopyFilesInternal(ILExecThread *thread, ILNativeInt appDomain)
+ILBool _IL_AppDomain_GetShadowCopyFilesInternal(ILExecThread *thread, ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -530,9 +544,11 @@ ILBool _IL_AppDomain_GetShadowCopyFilesInternal(ILExecThread *thread, ILNativeIn
 }
 
 /*
- * private static void SetShadowCopyFilesInternal(IntPtr appDomain, ILBool shadowCopyFiles);
+ * private static void SetShadowCopyFilesInternal(Object appDomain, ILBool shadowCopyFiles);
  */
-void _IL_AppDomain_SetShadowCopyFilesInternal(ILExecThread *thread, ILNativeInt appDomain, ILBool shadowCopyFiles)
+void _IL_AppDomain_SetShadowCopyFilesInternal(ILExecThread *thread,
+											  ILObject *appDomain,
+											  ILBool shadowCopyFiles)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -545,9 +561,11 @@ void _IL_AppDomain_SetShadowCopyFilesInternal(ILExecThread *thread, ILNativeInt 
 }
 
 /*
- * private static void SetShadowCopyPathInternal(IntPtr appDomain, String[] splitPaths);
+ * private static void SetShadowCopyPathInternal(Object appDomain, String[] splitPaths);
  */
-void _IL_AppDomain_SetShadowCopyPathInternal(ILExecThread *thread, ILNativeInt appDomain, System_Array *splitPaths)
+void _IL_AppDomain_SetShadowCopyPathInternal(ILExecThread *thread,
+											 ILObject *appDomain,
+											 System_Array *splitPaths)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -604,7 +622,7 @@ void _IL_AppDomain_SetShadowCopyPathInternal(ILExecThread *thread, ILNativeInt a
  *										Assembly parent);
  */
 ILObject *_IL_AppDomain_LoadFromName(ILExecThread *thread,
-									ILNativeInt appDomain,
+									ILObject *appDomain,
 									ILString *name,
 									ILInt32 *error,
 									ILObject *parent)
@@ -664,7 +682,7 @@ ILObject *_IL_AppDomain_LoadFromName(ILExecThread *thread,
  *										 Assembly parent);
  */
 ILObject *_IL_AppDomain_LoadFromFile(ILExecThread *thread,
-									ILNativeInt appDomain,
+									ILObject *appDomain,
 									ILString *name,
 									ILInt32 *error,
 									ILObject *parent)
@@ -734,7 +752,7 @@ ILObject *_IL_AppDomain_LoadFromFile(ILExecThread *thread,
  *										  Assembly parent);
  */
 ILObject *_IL_AppDomain_LoadFromBytes(ILExecThread *thread,
-									 ILNativeInt appDomain,
+									 ILObject *appDomain,
 									 System_Array *bytes,
 									 ILInt32 *error,
 									 ILObject *parent)
@@ -787,9 +805,9 @@ ILObject *_IL_AppDomain_LoadFromBytes(ILExecThread *thread,
 }
 
 /*
- * private static void UnloadAppDomain(IntPtr appDomain);
+ * private static void UnloadAppDomain(Object appDomain);
  */
-void _IL_AppDomain_UnloadAppDomain(ILExecThread *thread, ILNativeInt appDomain)
+void _IL_AppDomain_UnloadAppDomain(ILExecThread *thread, ILObject *appDomain)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -825,9 +843,11 @@ void _IL_AppDomain_UnloadAppDomain(ILExecThread *thread, ILNativeInt appDomain)
 }
 
 /*
- * private static void GetPrivateBinPaths(IntPtr appDomain, ref String[] splitPaths);
+ * private static void GetPrivateBinPaths(Object appDomain, ref String[] splitPaths);
  */
-void _IL_AppDomainSetup_GetPrivateBinPaths(ILExecThread *thread, ILNativeInt appDomain, System_Array **splitPaths)
+void _IL_AppDomainSetup_GetPrivateBinPaths(ILExecThread *thread,
+										   ILObject *appDomain,
+										   System_Array **splitPaths)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{
@@ -874,9 +894,11 @@ void _IL_AppDomainSetup_GetPrivateBinPaths(ILExecThread *thread, ILNativeInt app
 }
 
 /*
- * private static void SetPrivateBinPaths(IntPtr appDomain, String[] splitPaths);
+ * private static void SetPrivateBinPaths(Object appDomain, String[] splitPaths);
  */
-void _IL_AppDomainSetup_SetPrivateBinPaths(ILExecThread *thread, ILNativeInt appDomain, System_Array *splitPaths)
+void _IL_AppDomainSetup_SetPrivateBinPaths(ILExecThread *thread,
+										   ILObject *appDomain,
+										   System_Array *splitPaths)
 {
 	if(!IsAppDomainUnloaded(thread, (ILExecProcess *)appDomain))
 	{

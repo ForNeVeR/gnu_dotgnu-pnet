@@ -231,45 +231,27 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vpjp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_vppp(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*(void (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
+	(*(void (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
 }
 
 #endif
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vpj(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_bpp(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*(void (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_ppj(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_vppb(void (*fn)(), void *rvalue, void **avalue)
 {
-	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpj(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpjb(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILNativeUInt, ILInt8))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((ILInt8 *)(avalue[2])));
+	(*(void (*)(void *, void *, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt8 *)(avalue[2])));
 }
 
 #endif
@@ -277,24 +259,25 @@ static void marshal_vpjb(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_AppDomain_suppressed
 
 IL_METHOD_BEGIN(AppDomain_Methods)
-	IL_METHOD("AppendPrivatePathsInternal", "(j[oSystem.String;)V", _IL_AppDomain_AppendPrivatePathsInternal, marshal_vpjp)
-	IL_METHOD("ClearPrivatePathInternal", "(j)V", _IL_AppDomain_ClearPrivatePathInternal, marshal_vpj)
-	IL_METHOD("ClearShadowCopyPathInternal", "(j)V", _IL_AppDomain_ClearShadowCopyPathInternal, marshal_vpj)
-	IL_METHOD("CreateAppDomain", "(&j)V", _IL_AppDomain_CreateAppDomain, marshal_vpp)
-	IL_METHOD("CurrentAppDomain", "(&j)V", _IL_AppDomain_CurrentAppDomain, marshal_vpp)
-	IL_METHOD("GetBaseDirectoryInternal", "(j)oSystem.String;", _IL_AppDomain_GetBaseDirectoryInternal, marshal_ppj)
-	IL_METHOD("GetFriendlyNameInternal", "(j)oSystem.String;", _IL_AppDomain_GetFriendlyNameInternal, marshal_ppj)
-	IL_METHOD("GetRelativeSearchPathInternal", "(j)oSystem.String;", _IL_AppDomain_GetRelativeSearchPathInternal, marshal_ppj)
-	IL_METHOD("GetShadowCopyFilesInternal", "(j)Z", _IL_AppDomain_GetShadowCopyFilesInternal, marshal_bpj)
-	IL_METHOD("IsDefaultAppDomainInternal", "(j)Z", _IL_AppDomain_IsDefaultAppDomainInternal, marshal_bpj)
-	IL_METHOD("SetBaseDirectoryInternal", "(joSystem.String;)V", _IL_AppDomain_SetBaseDirectoryInternal, marshal_vpjp)
-	IL_METHOD("SetFriendlyNameInternal", "(joSystem.String;)V", _IL_AppDomain_SetFriendlyNameInternal, marshal_vpjp)
-	IL_METHOD("SetRelativeSearchPathInternal", "(joSystem.String;)V", _IL_AppDomain_SetRelativeSearchPathInternal, marshal_vpjp)
-	IL_METHOD("SetShadowCopyFilesInternal", "(jZ)V", _IL_AppDomain_SetShadowCopyFilesInternal, marshal_vpjb)
-	IL_METHOD("SetShadowCopyPathInternal", "(j[oSystem.String;)V", _IL_AppDomain_SetShadowCopyPathInternal, marshal_vpjp)
-	IL_METHOD("UnloadAppDomain", "(j)V", _IL_AppDomain_UnloadAppDomain, marshal_vpj)
-	IL_METHOD("GetAssembliesInternal", "(j)[oSystem.Reflection.Assembly;", _IL_AppDomain_GetAssembliesInternal, marshal_ppj)
-	IL_METHOD("IsFinalizingForUnloadInternal", "(j)Z", _IL_AppDomain_IsFinalizingForUnloadInternal, marshal_bpj)
+	IL_METHOD("AppendPrivatePathsInternal", "(oSystem.Object;[oSystem.String;)V", _IL_AppDomain_AppendPrivatePathsInternal, marshal_vppp)
+	IL_METHOD("ClearPrivatePathInternal", "(oSystem.Object;)V", _IL_AppDomain_ClearPrivatePathInternal, marshal_vpp)
+	IL_METHOD("ClearShadowCopyPathInternal", "(oSystem.Object;)V", _IL_AppDomain_ClearShadowCopyPathInternal, marshal_vpp)
+	IL_METHOD("CreateAppDomain", "(&oSystem.Object;)V", _IL_AppDomain_CreateAppDomain, marshal_vpp)
+	IL_METHOD("CurrentAppDomain", "(&oSystem.Object;)V", _IL_AppDomain_CurrentAppDomain, marshal_vpp)
+	IL_METHOD("GetBaseDirectoryInternal", "(oSystem.Object;)oSystem.String;", _IL_AppDomain_GetBaseDirectoryInternal, marshal_ppp)
+	IL_METHOD("GetIdInternal", "(oSystem.Object;)i", _IL_AppDomain_GetIdInternal, marshal_ipp)
+	IL_METHOD("GetFriendlyNameInternal", "(oSystem.Object;)oSystem.String;", _IL_AppDomain_GetFriendlyNameInternal, marshal_ppp)
+	IL_METHOD("GetRelativeSearchPathInternal", "(oSystem.Object;)oSystem.String;", _IL_AppDomain_GetRelativeSearchPathInternal, marshal_ppp)
+	IL_METHOD("GetShadowCopyFilesInternal", "(oSystem.Object;)Z", _IL_AppDomain_GetShadowCopyFilesInternal, marshal_bpp)
+	IL_METHOD("IsDefaultAppDomainInternal", "(oSystem.Object;)Z", _IL_AppDomain_IsDefaultAppDomainInternal, marshal_bpp)
+	IL_METHOD("SetBaseDirectoryInternal", "(oSystem.Object;oSystem.String;)V", _IL_AppDomain_SetBaseDirectoryInternal, marshal_vppp)
+	IL_METHOD("SetFriendlyNameInternal", "(oSystem.Object;oSystem.String;)V", _IL_AppDomain_SetFriendlyNameInternal, marshal_vppp)
+	IL_METHOD("SetRelativeSearchPathInternal", "(oSystem.Object;oSystem.String;)V", _IL_AppDomain_SetRelativeSearchPathInternal, marshal_vppp)
+	IL_METHOD("SetShadowCopyFilesInternal", "(oSystem.Object;Z)V", _IL_AppDomain_SetShadowCopyFilesInternal, marshal_vppb)
+	IL_METHOD("SetShadowCopyPathInternal", "(oSystem.Object;[oSystem.String;)V", _IL_AppDomain_SetShadowCopyPathInternal, marshal_vppp)
+	IL_METHOD("UnloadAppDomain", "(oSystem.Object;)V", _IL_AppDomain_UnloadAppDomain, marshal_vpp)
+	IL_METHOD("GetAssembliesInternal", "(oSystem.Object;)[oSystem.Reflection.Assembly;", _IL_AppDomain_GetAssembliesInternal, marshal_ppp)
+	IL_METHOD("IsFinalizingForUnloadInternal", "(oSystem.Object;)Z", _IL_AppDomain_IsFinalizingForUnloadInternal, marshal_bpp)
 IL_METHOD_END
 
 #endif
@@ -577,15 +560,6 @@ IL_METHOD_BEGIN(String_Methods)
 	IL_METHOD("Replace", "(ToSystem.String;oSystem.String;)oSystem.String;", _IL_String_Replace_StringString, marshal_ppppp)
 	IL_METHOD("SetChar", "(Tic)V", _IL_String_SetChar, marshal_vppiS)
 IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vppp(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])));
-}
 
 #endif
 
@@ -893,8 +867,8 @@ IL_METHOD_END
 #ifndef _IL_AppDomainSetup_suppressed
 
 IL_METHOD_BEGIN(AppDomainSetup_Methods)
-	IL_METHOD("GetPrivateBinPaths", "(j&[oSystem.String;)V", _IL_AppDomainSetup_GetPrivateBinPaths, marshal_vpjp)
-	IL_METHOD("SetPrivateBinPaths", "(j[oSystem.String;)V", _IL_AppDomainSetup_SetPrivateBinPaths, marshal_vpjp)
+	IL_METHOD("GetPrivateBinPaths", "(oSystem.Object;&[oSystem.String;)V", _IL_AppDomainSetup_GetPrivateBinPaths, marshal_vppp)
+	IL_METHOD("SetPrivateBinPaths", "(oSystem.Object;[oSystem.String;)V", _IL_AppDomainSetup_SetPrivateBinPaths, marshal_vppp)
 IL_METHOD_END
 
 #endif
@@ -944,6 +918,15 @@ IL_METHOD_END
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ppj(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((void * *)rvalue) = (*(void * (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
+}
+
+#endif
+
 #ifndef _IL_ClrProperty_suppressed
 
 IL_METHOD_BEGIN(ClrProperty_Methods)
@@ -957,15 +940,6 @@ IL_METHOD_END
 static void marshal_ppppbb(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((void * *)rvalue) = (*(void * (*)(void *, void *, void *, ILInt8, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((void * *)(avalue[2])), *((ILInt8 *)(avalue[3])), *((ILInt8 *)(avalue[4])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpp(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])));
 }
 
 #endif
@@ -999,6 +973,15 @@ IL_METHOD_BEGIN(ClrParameter_Methods)
 	IL_METHOD("GetParamName", "(j)oSystem.String;", _IL_ClrParameter_GetParamName, marshal_ppj)
 	IL_METHOD("GetDefault", "(j)oSystem.Object;", _IL_ClrParameter_GetDefault, marshal_ppj)
 IL_METHOD_END
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_bpj(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
+}
 
 #endif
 
@@ -1480,6 +1463,15 @@ IL_METHOD_END
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vpjp(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt, void *))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])), *((void * *)(avalue[2])));
+}
+
+#endif
+
 #ifndef _IL_FieldBuilder_suppressed
 
 IL_METHOD_BEGIN(FieldBuilder_Methods)
@@ -1833,6 +1825,15 @@ static void marshal_bpji(void (*fn)(), void *rvalue, void **avalue)
 
 #if !defined(HAVE_LIBFFI)
 
+static void marshal_vpj(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *, ILNativeUInt))fn)(*((void * *)(avalue[0])), *((ILNativeUInt *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
 static void marshal_bppib(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])), *((ILInt8 *)(avalue[3])));
@@ -1938,15 +1939,6 @@ IL_METHOD_BEGIN(WaitEvent_Methods)
 	IL_METHOD("InternalSetEvent", "(j)Z", _IL_WaitEvent_InternalSetEvent, marshal_bpj)
 	IL_METHOD("InternalResetEvent", "(j)Z", _IL_WaitEvent_InternalResetEvent, marshal_bpj)
 IL_METHOD_END
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vppb(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, void *, ILInt8))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt8 *)(avalue[2])));
-}
 
 #endif
 

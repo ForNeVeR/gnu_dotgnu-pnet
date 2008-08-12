@@ -1,7 +1,7 @@
 /*
  * engine.c - Manage multiple application domains in the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * Contributions by Klaus Treichel (ktreichel@web.de)
  *
@@ -67,7 +67,10 @@ int ILExecInit(unsigned long maxSize)
 }
 
 void ILExecDeinit()
-{	
+{
+	/* unregister the current threas for managed execution */
+	ILThreadUnregisterForManagedExecution(ILThreadSelf());
+
 	if (globalEngine)
 	{
 		ILExecEngineDestroy(globalEngine);
@@ -112,6 +115,7 @@ ILExecEngine *ILExecEngineCreate(void)
 	engine->processLock = 0;
 	engine->defaultProcess = 0;
 #ifdef IL_CONFIG_APPDOMAINS
+	engine->lastId = 0;
 	engine->firstProcess = 0;
 #endif
 #ifdef IL_USE_CVM
@@ -136,13 +140,14 @@ ILExecEngine *ILExecEngineCreate(void)
  */
 void ILExecEngineDestroy(ILExecEngine *engine)
 {
+	ILExecProcess *defaultProcess;
+
 #ifdef IL_CONFIG_APPDOMAINS
 	ILExecProcess *process;	
 	int count;
-	ILQueueEntry *unloadQueue, *destroyQueue;
+	ILQueueEntry *unloadQueue;
 	
 	unloadQueue = ILQueueCreate();
-	destroyQueue = ILQueueCreate();
 
 	/* Lock the engine process list*/
 	ILMutexLock(engine->processLock);
@@ -162,7 +167,6 @@ void ILExecEngineDestroy(ILExecEngine *engine)
 				ILQueueAdd(&unloadQueue, process);
 
 			}
-			ILQueueAdd(&destroyQueue, process);
 			count++;
 		}
 		/* Move onto the next process */
@@ -172,10 +176,9 @@ void ILExecEngineDestroy(ILExecEngine *engine)
 	/* Unlock the engine process list */
 	ILMutexUnlock(engine->processLock);
 
-	if ((!unloadQueue || !destroyQueue) && count != 0)
+	if (!unloadQueue && count != 0)
 	{
-		/* Probably ran out of memory trying to build the unload and destroy
-			queue */
+		/* Probably ran out of memory trying to build the unload queue */
 		return;
 	}
 
@@ -186,20 +189,21 @@ void ILExecEngineDestroy(ILExecEngine *engine)
 		ILExecProcessUnload(process);
 	}
 
-	/* now destroy the processes */
-	while (destroyQueue)
-	{
-		process = (ILExecProcess *)ILQueueRemove(&destroyQueue);
-		ILExecProcessDestroy(process);
-	}
 #endif
  
 	/* now unload and destroy the default process */
-	if(engine->defaultProcess)
+	defaultProcess = engine->defaultProcess;
+	if(defaultProcess)
 	{
-		ILExecProcessUnload(engine->defaultProcess);
+		ILExecProcessUnload(defaultProcess);
+	}
+
+#ifndef IL_CONFIG_APPDOMAINS
+	if(defaultProcess)
+	{
 		ILExecProcessDestroy(engine->defaultProcess);
 	}
+#endif
 
 	if (engine->processLock)
 	{

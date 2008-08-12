@@ -1,7 +1,7 @@
 /*
  * engine.h - Core definitions for the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -148,6 +148,9 @@ struct __tagILExecEngine
 #ifdef IL_CONFIG_APPDOMAINS
 	/* linked list of application domains */
 	ILExecProcess  *firstProcess;
+
+	/* Id for the latest application domain that joined the engine */
+	ILInt32			lastId;
 #endif
 };
 
@@ -334,6 +337,8 @@ struct _tagILExecProcess
 #endif
 
 #ifdef IL_CONFIG_APPDOMAINS
+	/* Id of the application domain */
+	ILInt32			id;
 
 	/* sibling app domains */
 	ILExecProcess	*prevProcess;

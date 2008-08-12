@@ -1,7 +1,7 @@
 /*
  * process.c - Manage processes within the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * Contributions by Thong Nguyen (tum@veridicus.com)
  *
@@ -62,6 +62,7 @@ static void ILExecProcessJoinEngine(ILExecProcess *process,
 	}
 
 #ifdef IL_CONFIG_APPDOMAINS
+	process->id = ++(engine->lastId);
 	process->nextProcess = engine->firstProcess;
 	process->prevProcess = 0;
 	if(engine->firstProcess)
@@ -146,6 +147,14 @@ static void _ILExecProcessUnloadInternal(ILExecProcess *process)
 	ILExecThread *thread;
 	ILQueueEntry *joinQueue;
 	int count = 0;
+
+#ifdef PROCESS_DEBUG
+#ifndef REDUCED_STDIO
+	fprintf(stderr, "Start unloading process : %p\n", (void *)process);	
+#else
+	printf("Start unloading process : %p\n", (void *)process);	
+#endif
+#endif
 
 	joinQueue = ILQueueCreate();
 
@@ -242,9 +251,9 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 {
 #ifdef PROCESS_DEBUG
 #ifndef REDUCED_STDIO
-	fprintf(stderr, "DestroyProcess : %p\n", (void *)process);	
+	fprintf(stderr, "Start destroying process : %p\n", (void *)process);	
 #else
-	printf("DestroyProcess : %p\n", (void *)process);	
+	printf("Start destroying process : %p\n", (void *)process);	
 #endif
 #endif
 	/* Mark the process as dead in the finalization context. */
@@ -266,6 +275,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 	if(process->debugger)
 	{
 		ILDebuggerDestroy(process->debugger);
+		process->debugger = 0;
 	}
 #endif
 
@@ -273,12 +283,14 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 	if (process->coder)
 	{
 		ILCoderDestroy(process->coder);
+		process->coder = 0;
 	}
 
 	/* Destroy the metadata lock */
 	if(process->metadataLock)
 	{
 		ILRWLockDestroy(process->metadataLock);
+		process->metadataLock = 0;
 	}
 
 	/* Destroy the image loading context */
@@ -286,6 +298,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 	{
 		/* and destroy the context */
 		ILContextDestroy(process->context);
+		process->context = 0;
 	}
 
 	if (process->internHash)
@@ -293,6 +306,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 		/* Destroy the main part of the intern'ed hash table.
 		The rest will be cleaned up by the garbage collector */
 		ILGCFreePersistent(process->internHash);
+		process->internHash = 0;
 	}
 
 	if (process->reflectionHash)
@@ -300,6 +314,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 		/* Destroy the main part of the reflection hash table.
 		The rest will be cleaned up by the garbage collector */
 		ILGCFreePersistent(process->reflectionHash);
+		process->reflectionHash = 0;
 	}
 
 #ifdef IL_CONFIG_PINVOKE
@@ -317,6 +332,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 			ILFree(loaded);
 			loaded = nextLoaded;
 		}
+		process->loadedModules = 0;
 	}
 #endif
 
@@ -341,6 +357,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 			ILFree(watch);
 			watch = nextWatch;
 		}
+		process->debugWatchList = 0;
 	}
 #endif
 
@@ -348,6 +365,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 	{
 		/* Destroy the random seed pool */
 		ILMutexDestroy(process->randomLock);
+		process->randomLock = 0;
 	}
 
 	if (process->randomPool)
@@ -361,6 +379,7 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
 	{
 		/* Destroy the object lock */
 		ILMutexDestroy(process->lock);
+		process->lock = 0;
 	}
 
 	/* free the friendly name if available */
@@ -377,11 +396,19 @@ static void _ILExecProcessDestroyInternal(ILExecProcess *process,
  */
 static void _ILExecProcessFinalizer(void *block, void *data)
 {
-	ILExecProcess *process = (ILExecProcess *)block;
+	ILExecProcess *process = (ILExecProcess *)GetObjectFromGcBase(block);
 
 	_ILExecProcessDestroyInternal(process, 1);
 }
 #endif
+
+/*
+ * Thread func for unloading a process from a new thread.
+ */
+static void _ILExecProcessUnloadFunc(void *process)
+{
+	_ILExecProcessUnloadInternal((ILExecProcess *)process);
+}
 
 /*
  * Create the ILExecProcess without creating the coder.
@@ -389,19 +416,20 @@ static void _ILExecProcessFinalizer(void *block, void *data)
  */
 static ILExecProcess *_ILExecProcessCreateInternal(void)
 {
+	void *processBase;
 	ILExecProcess *process;
 
 	/* Create the process record */
 #ifdef IL_CONFIG_APPDOMAINS
-	if((process = (ILExecProcess *)ILGCAlloc
-						(sizeof(ILExecProcess))) == 0)
+	if((processBase = ILGCAlloc
 #else
-	if((process = (ILExecProcess *)ILGCAllocPersistent
-						(sizeof(ILExecProcess))) == 0)
+	if((processBase = ILGCAllocPersistent
 #endif
+						(sizeof(ILExecProcess) + IL_OBJECT_HEADER_SIZE)) == 0)
 	{
 		return 0;
 	}
+	process = (ILExecProcess *)GetObjectFromGcBase(processBase);
 	/* Initialize the fields */
 	process->lock = 0;
 	process->state = _IL_PROCESS_STATE_CREATED;
@@ -494,7 +522,7 @@ static ILExecProcess *_ILExecProcessCreateInternal(void)
 	}
 
 #ifdef IL_CONFIG_APPDOMAINS
-	ILGCRegisterFinalizer(process, _ILExecProcessFinalizer, 0);
+	ILGCRegisterFinalizer(GetObjectGcBase(process), _ILExecProcessFinalizer, 0);
 #endif
 
 	/* Return the process record to the caller */
@@ -621,7 +649,7 @@ ILExecProcess *ILExecProcessCreateNull(void)
  */
 void ILExecProcessUnload(ILExecProcess *process)
 {
-	ILExecThread *thread = ILExecThreadCurrent();
+	ILExecThread *execThread = ILExecThreadCurrent();
 
 	if(!process)
 	{
@@ -634,34 +662,24 @@ void ILExecProcessUnload(ILExecProcess *process)
 		return;
 	}
 
-	if(!thread)
+	if(!execThread || execThread->process != process)
 	{
-		/* Unload was called from an unmanaged thread */
-		ILThread *self = ILThreadSelf();
-
-		thread = ILThreadRegisterForManagedExecution(0, self);
-
-		if(thread)
-		{
-			_ILExecProcessUnloadInternal(process);
-			ILThreadUnregisterForManagedExecution(self);
-		}
+		/* Unload was called from an unmanaged thread or
+		   a managed thread in a different domain */
+		_ILExecProcessUnloadInternal(process);
 		return;
 	}
 
-	if(thread->process != process)
+	/* We have to run the unload from different thread */
+	if(ILHasThreads())
 	{
-		/* We can invoke the unload directly */
-		_ILExecProcessUnloadInternal(process);
-	}
-	else
-	{
-		/* We have to run the unload from different thread */
-		if(ILHasThreads())
-		{
-			/* TODO */
+		ILThread *thread;
 
+		if(!(thread = ILThreadCreate(_ILExecProcessUnloadFunc, process)))
+		{
+			return;
 		}
+		ILThreadStart(thread);
 	}
 }
 
@@ -752,7 +770,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 #ifndef IL_CONFIG_APPDOMAINS
 	/* Free the process block itself */
-	ILGCFreePersistent(process);
+	ILGCFreePersistent(GetObjectGcBase(process));
 #endif
 }
 

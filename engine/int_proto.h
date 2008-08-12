@@ -34,24 +34,25 @@ extern ILBool _IL_Enum_IsEnumValue(ILExecThread * _thread, ILObject * enumType, 
 extern ILObject * _IL_Enum_EnumValueOr(ILExecThread * _thread, ILObject * value1, ILObject * value2);
 extern ILObject * _IL_Enum_EnumLongToObject(ILExecThread * _thread, ILObject * enumType, ILInt64 value);
 
-extern void _IL_AppDomain_AppendPrivatePathsInternal(ILExecThread * _thread, ILNativeInt appDomain, System_Array * paths);
-extern void _IL_AppDomain_ClearPrivatePathInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern void _IL_AppDomain_ClearShadowCopyPathInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern void _IL_AppDomain_CreateAppDomain(ILExecThread * _thread, ILNativeInt * appDomain);
-extern void _IL_AppDomain_CurrentAppDomain(ILExecThread * _thread, ILNativeInt * appDomain);
-extern ILString * _IL_AppDomain_GetBaseDirectoryInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern ILString * _IL_AppDomain_GetFriendlyNameInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern ILString * _IL_AppDomain_GetRelativeSearchPathInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern ILBool _IL_AppDomain_GetShadowCopyFilesInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern ILBool _IL_AppDomain_IsDefaultAppDomainInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern void _IL_AppDomain_SetBaseDirectoryInternal(ILExecThread * _thread, ILNativeInt appDomain, ILString * baseDirectory);
-extern void _IL_AppDomain_SetFriendlyNameInternal(ILExecThread * _thread, ILNativeInt appDomain, ILString * friendlyName);
-extern void _IL_AppDomain_SetRelativeSearchPathInternal(ILExecThread * _thread, ILNativeInt appDomain, ILString * appRelativePath);
-extern void _IL_AppDomain_SetShadowCopyFilesInternal(ILExecThread * _thread, ILNativeInt appDomain, ILBool shadowCopyFiles);
-extern void _IL_AppDomain_SetShadowCopyPathInternal(ILExecThread * _thread, ILNativeInt appDomain, System_Array * paths);
-extern void _IL_AppDomain_UnloadAppDomain(ILExecThread * _thread, ILNativeInt appDomain);
-extern System_Array * _IL_AppDomain_GetAssembliesInternal(ILExecThread * _thread, ILNativeInt appDomain);
-extern ILBool _IL_AppDomain_IsFinalizingForUnloadInternal(ILExecThread * _thread, ILNativeInt appDomain);
+extern void _IL_AppDomain_AppendPrivatePathsInternal(ILExecThread * _thread, ILObject * appDomain, System_Array * paths);
+extern void _IL_AppDomain_ClearPrivatePathInternal(ILExecThread * _thread, ILObject * appDomain);
+extern void _IL_AppDomain_ClearShadowCopyPathInternal(ILExecThread * _thread, ILObject * appDomain);
+extern void _IL_AppDomain_CreateAppDomain(ILExecThread * _thread, ILObject * * appDomain);
+extern void _IL_AppDomain_CurrentAppDomain(ILExecThread * _thread, ILObject * * appDomain);
+extern ILString * _IL_AppDomain_GetBaseDirectoryInternal(ILExecThread * _thread, ILObject * appDomain);
+extern ILInt32 _IL_AppDomain_GetIdInternal(ILExecThread * _thread, ILObject * appDomain);
+extern ILString * _IL_AppDomain_GetFriendlyNameInternal(ILExecThread * _thread, ILObject * appDomain);
+extern ILString * _IL_AppDomain_GetRelativeSearchPathInternal(ILExecThread * _thread, ILObject * appDomain);
+extern ILBool _IL_AppDomain_GetShadowCopyFilesInternal(ILExecThread * _thread, ILObject * appDomain);
+extern ILBool _IL_AppDomain_IsDefaultAppDomainInternal(ILExecThread * _thread, ILObject * appDomain);
+extern void _IL_AppDomain_SetBaseDirectoryInternal(ILExecThread * _thread, ILObject * appDomain, ILString * baseDirectory);
+extern void _IL_AppDomain_SetFriendlyNameInternal(ILExecThread * _thread, ILObject * appDomain, ILString * friendlyName);
+extern void _IL_AppDomain_SetRelativeSearchPathInternal(ILExecThread * _thread, ILObject * appDomain, ILString * appRelativePath);
+extern void _IL_AppDomain_SetShadowCopyFilesInternal(ILExecThread * _thread, ILObject * appDomain, ILBool shadowCopyFiles);
+extern void _IL_AppDomain_SetShadowCopyPathInternal(ILExecThread * _thread, ILObject * appDomain, System_Array * paths);
+extern void _IL_AppDomain_UnloadAppDomain(ILExecThread * _thread, ILObject * appDomain);
+extern System_Array * _IL_AppDomain_GetAssembliesInternal(ILExecThread * _thread, ILObject * appDomain);
+extern ILBool _IL_AppDomain_IsFinalizingForUnloadInternal(ILExecThread * _thread, ILObject * appDomain);
 
 extern ILObject * _IL_Delegate_CreateBlankDelegate(ILExecThread * _thread, ILObject * type, ILObject * method);
 
@@ -173,8 +174,8 @@ extern void _IL_Buffer_Copy(ILExecThread * _thread, ILObject * src, ILInt32 srcO
 extern ILUInt8 _IL_Buffer_GetElement(ILExecThread * _thread, ILObject * array, ILInt32 index);
 extern void _IL_Buffer_SetElement(ILExecThread * _thread, ILObject * array, ILInt32 index, ILUInt8 value);
 
-extern void _IL_AppDomainSetup_GetPrivateBinPaths(ILExecThread * _thread, ILNativeInt appDomain, System_Array * * paths);
-extern void _IL_AppDomainSetup_SetPrivateBinPaths(ILExecThread * _thread, ILNativeInt appDomain, System_Array * paths);
+extern void _IL_AppDomainSetup_GetPrivateBinPaths(ILExecThread * _thread, ILObject * appDomain, System_Array * * paths);
+extern void _IL_AppDomainSetup_SetPrivateBinPaths(ILExecThread * _thread, ILObject * appDomain, System_Array * paths);
 
 extern ILObject * _IL_MethodBase_GetMethodFromHandle(ILExecThread * _thread, void * handle);
 extern ILObject * _IL_MethodBase_GetCurrentMethod(ILExecThread * _thread);

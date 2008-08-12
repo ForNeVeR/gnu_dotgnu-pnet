@@ -1,3 +1,32 @@
+2008-08-12  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.c (ILExecDeinit): Unregister the current thread for
+	managed execution before unloading the processes.
+	(ILExecEngineCreate): Initialize the new lastId member.
+	(ILExecEngineDestroy): Don't destroy the processes but let the gc
+	do it except it's built without multiple appdomain support.
+
+	* engine/engine.h: Add member lastId to the ILExecEngine. Add member id
+	to the ILExecProcess.
+
+	* engine/int_table.c, engine/int_proto.h: Regenerated.
+
+	* engine/lib_appdomain.c: Replace ILNativeInt appdomain by
+	ILObject *appDomain in all function prototypes.
+	(_IL_AppDomain_GetIdInternal): Added to implement the AppDomain.Id
+	property.
+
+	* engine/process.c (ILExecProcessJoinEngine): Fill the new id property.
+	(_ILExecProcessCreateInternal): Allocate the process block including the
+	ILObjectHeader even if that's not used by now.
+	(_ILExecProcessDestroyInternal): Set the destroyed member references to 0.
+	(_ILExecProcessUnloadFunc): Added thread func to run the unloading from a
+	different thread.
+	(ILExecProcessUnload): Implement unloading the process from a different
+	thread if the current thread is in the process to be unloaded.
+	(ILExecProcessDestroy): Handle the additional object header when
+	deallocating the process block.
+
 2008-08-10  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.c (ILExecDeInit): Reset the console mode to normal here

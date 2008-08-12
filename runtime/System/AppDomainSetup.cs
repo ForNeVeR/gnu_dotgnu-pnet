@@ -36,7 +36,7 @@ using System.Text;
 public sealed class AppDomainSetup : IAppDomainSetup
 {
 	// Internal state.
-	private IntPtr appDomain; // pointer to the ILExecProcess
+	private Object appDomain; // pointer to the ILExecProcess
 	private String applicationBase;
 	private String applicationName;
 	private String cachePath;
@@ -54,20 +54,20 @@ public sealed class AppDomainSetup : IAppDomainSetup
 
 	// Get an array with the private paths of the appDomain
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void GetPrivateBinPaths(IntPtr appDomain, ref String[] paths);
+	extern private static void GetPrivateBinPaths(Object appDomain, ref String[] paths);
 
 	// Set the private paths of the appDomain
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void SetPrivateBinPaths(IntPtr appDomain, String[] paths);
+	extern private static void SetPrivateBinPaths(Object appDomain, String[] paths);
 
 
 	// Constructor.
 	public AppDomainSetup()
 			{
-				appDomain = IntPtr.Zero;
+				appDomain = null;
 			}
 
-	internal AppDomainSetup(IntPtr appDomain)
+	internal AppDomainSetup(Object appDomain)
 			{
 				this.appDomain = appDomain;
 			}
@@ -156,7 +156,7 @@ public sealed class AppDomainSetup : IAppDomainSetup
 			{
 				get
 				{
-					if (appDomain == IntPtr.Zero)
+					if (appDomain == null)
 					{
 						return privateBinPath;
 					}
@@ -187,7 +187,7 @@ public sealed class AppDomainSetup : IAppDomainSetup
 				}
 				set
 				{
-					if (appDomain == IntPtr.Zero)
+					if (appDomain == null)
 					{
 						privateBinPath = value;
 					}

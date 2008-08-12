@@ -1,7 +1,7 @@
 /*
  * AppDomain.cs - Implementation of the "System.AppDomain" class.
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,8 +49,11 @@ public sealed class AppDomain
 #endif
 {
 	// Internal state.
-	private static int nextDomainID = 0;
-	private IntPtr appDomain;  // Pointer to the ILExecProcess this AppDomain represents
+	// Pointer to the ILExecProcess this AppDomain represents
+	// This is an IntPtr but has to be an object reference to be
+	// scanned by the gc to prevent the appdomain from being destroyed.
+	// and deallocated while an AppDomain referencing it still exists.
+	private Object appDomain;
 	internal int domainID;
 #if !ECMA_COMPAT
 	private Evidence evidence;
@@ -66,72 +69,77 @@ public sealed class AppDomain
 	// InternalCalls
 	// Append the Paths to the private paths for the appDomain
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void AppendPrivatePathsInternal(IntPtr appDomain, String[] paths);
+	extern private static void AppendPrivatePathsInternal(Object appDomain, String[] paths);
 
 	// Clear the search paths for private assemblies
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void ClearPrivatePathInternal(IntPtr appDomain);
+	extern private static void ClearPrivatePathInternal(Object appDomain);
 
 	// Clear the paths which assemblies should be shadow copied
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void ClearShadowCopyPathInternal(IntPtr appDomain);
+	extern private static void ClearShadowCopyPathInternal(Object appDomain);
 
 	// Create a new instance of ILExecProcess
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void CreateAppDomain(ref IntPtr appDomain);
+	extern private static void CreateAppDomain(ref Object appDomain);
 
 	// Get the current instance of ILExecProcess
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void CurrentAppDomain(ref IntPtr appDomain);
+	extern private static void CurrentAppDomain(ref Object appDomain);
 
 	// Get the base directory for this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static String GetBaseDirectoryInternal(IntPtr appDomain);
+	extern private static String GetBaseDirectoryInternal(Object appDomain);
+
+	// Get the id of this application domain.
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static int GetIdInternal(Object appDomain);
 
 	// Get the friendly name associated with this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static String GetFriendlyNameInternal(IntPtr appDomain);
+	extern private static String GetFriendlyNameInternal(Object appDomain);
 
 	// Get the search path relative to the application base for this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static String GetRelativeSearchPathInternal(IntPtr appDomain);
+	extern private static String GetRelativeSearchPathInternal(Object appDomain);
 
 	// Get the flag if files should be shadow copied.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static bool GetShadowCopyFilesInternal(IntPtr appDomain);
+	extern private static bool GetShadowCopyFilesInternal(Object appDomain);
 
 	// Check if this is the default AppDomain
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static bool IsDefaultAppDomainInternal(IntPtr appDomain);
+	extern private static bool IsDefaultAppDomainInternal(Object appDomain);
 
 	// Set the base directory for this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void SetBaseDirectoryInternal(IntPtr appDomain, String baseDirectory);
+	extern private static void SetBaseDirectoryInternal(Object appDomain, String baseDirectory);
 
 	// Set the friendly name associated with this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void SetFriendlyNameInternal(IntPtr appDomain, String friendlyName);
+	extern private static void SetFriendlyNameInternal(Object appDomain, String friendlyName);
 
 	// Set the search path relative to the application base for this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void SetRelativeSearchPathInternal(IntPtr appDomain, String appRelativePath);
+	extern private static void SetRelativeSearchPathInternal(Object appDomain, String appRelativePath);
 
 	// Set the flag if files should be shadow copied.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void SetShadowCopyFilesInternal(IntPtr appDomain, bool shadowCopyFiles);
+	extern private static void SetShadowCopyFilesInternal(Object appDomain, bool shadowCopyFiles);
 
 	// Set the paths which assemblies should be shadow copied for the appDomain
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void SetShadowCopyPathInternal(IntPtr appDomain, String[] paths);
+	extern private static void SetShadowCopyPathInternal(Object appDomain, String[] paths);
 
 	// Unload the instance of ILExecProcess
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static void UnloadAppDomain(IntPtr appDomain);
+	extern private static void UnloadAppDomain(Object appDomain);
 
 
 	// Constructor for the CurrentDomain
-	private AppDomain(IntPtr appDomain)
+	private AppDomain(Object appDomain)
 	{
+		domainID = GetIdInternal(appDomain);
 		this.appDomain = appDomain;
 #if !ECMA_COMPAT
 				setup = new AppDomainSetup(appDomain);
@@ -141,16 +149,13 @@ public sealed class AppDomain
 	}
 
 	// Construct a new AppDomain instance.
-	private AppDomain(String name, IntPtr appDomain)
+	private AppDomain(String name, Object appDomain)
 			{
 				if(name == null)
 				{
 					throw new ArgumentNullException("name");
 				}
-				lock(typeof(AppDomain))
-				{
-					domainID = ++nextDomainID;
-				}
+				domainID = GetIdInternal(appDomain);
 				this.appDomain = appDomain;
 				SetFriendlyNameInternal(appDomain, name);
 #if !ECMA_COMPAT
@@ -159,7 +164,7 @@ public sealed class AppDomain
 #endif
 			}
 #if !ECMA_COMPAT
-	private AppDomain(String name, Evidence evidence, AppDomainSetup setup, IntPtr appDomain)
+	private AppDomain(String name, Evidence evidence, AppDomainSetup setup, Object appDomain)
 			{
 				if(name == null)
 				{
@@ -167,6 +172,7 @@ public sealed class AppDomain
 				}
 				this.appDomain = appDomain;
 				SetFriendlyNameInternal(appDomain, name);
+				domainID = GetIdInternal(appDomain);
 				this.evidence = evidence;
 				this.setup = setup;
 				this.items = new Hashtable();
@@ -176,7 +182,7 @@ public sealed class AppDomain
 	// Create a new application domain with a specified name.
 	public static AppDomain CreateDomain(String friendlyName)
 			{
-				IntPtr appDomain;
+				Object appDomain;
 
 				CreateAppDomain(ref appDomain);
 				return new AppDomain(friendlyName, appDomain);
@@ -185,7 +191,7 @@ public sealed class AppDomain
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo)
 			{
-				IntPtr appDomain;
+				Object appDomain;
 
 				CreateAppDomain(ref appDomain);
 				return new AppDomain(friendlyName, securityInfo,
@@ -196,7 +202,7 @@ public sealed class AppDomain
 										 Evidence securityInfo,
 										 AppDomainSetup info)
 			{
-				IntPtr appDomain;
+				Object appDomain;
 
 				CreateAppDomain(ref appDomain);
 				return new AppDomain(friendlyName, securityInfo, info, appDomain);
@@ -207,7 +213,7 @@ public sealed class AppDomain
 										 String appRelativeSearchPath,
 										 bool shadowCopyFiles)
 			{
-				IntPtr appDomain;
+				Object appDomain;
 
 				CreateAppDomain(ref appDomain);
 				SetBaseDirectoryInternal(appDomain, appBasePath);
@@ -312,11 +318,15 @@ public sealed class AppDomain
 			{
 				get
 				{
+					if(currentDomain != null)
+					{
+						return currentDomain;
+					}
 					lock(typeof(AppDomain))
 					{
 						if(currentDomain == null)
 						{
-							IntPtr domain = IntPtr.Zero;
+							Object domain = null;
 							CurrentAppDomain(ref domain);
 							currentDomain = new AppDomain(domain);
 						}
@@ -709,7 +719,7 @@ public sealed class AppDomain
 
 	// Get a list of all assemblies in this application domain.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static Assembly[] GetAssembliesInternal(IntPtr appDomain);
+	extern private static Assembly[] GetAssembliesInternal(Object appDomain);
 
 	// Get a list of all assemblies in this application domain.
 	public Assembly[] GetAssemblies()
@@ -744,7 +754,7 @@ public sealed class AppDomain
 
 	// Determine if this domain is running finalizers prior to unload.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern private static bool IsFinalizingForUnloadInternal(IntPtr appDomain);
+	extern private static bool IsFinalizingForUnloadInternal(Object appDomain);
 
 	// Determine if this domain is running finalizers prior to unload.
 	public bool IsFinalizingForUnload()

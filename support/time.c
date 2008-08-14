@@ -134,8 +134,8 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 		return 0;
 	}
 
-	timeValue.secs = ((ILInt64)(tv.tv_sec));
-	timeValue.nsecs = (ILUInt32)(tv.tv_usec * 1000);
+	timeValue->secs = ((ILInt64)(tv.tv_sec));
+	timeValue->nsecs = (ILUInt32)(tv.tv_usec * 1000);
 
 	return 1;
 

@@ -1,3 +1,8 @@
+2008-08-14  Klaus Treichel  <ktreichel@web.de>
+
+	* support/time.c (ILGetSinceRebootTime): Fix assignments to the members of
+	timevalue for FreeBSD.
+ 
 2008-08-12  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.c (ILExecDeinit): Unregister the current thread for

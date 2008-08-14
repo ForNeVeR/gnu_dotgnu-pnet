@@ -121,7 +121,8 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 
 	return 1;
 #elif defined(__FreeBSD__)
-	int len, mib[2];	
+	size_t len;
+	int mib[2];
 	struct timeval tv;
 
 	mib[0] = CTL_KERN;

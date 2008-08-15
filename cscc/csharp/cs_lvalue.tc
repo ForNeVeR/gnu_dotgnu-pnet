@@ -642,7 +642,7 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 			}
 
 			/* Replace the node with either the object expression or "this" */
-			if(expr)
+			if(expr && !yyisa(expr, ILNode_This))
 			{
 				*parent = ILNode_MarkType_create(expr, CSSemGetType(*exprSem));
 			}
@@ -651,8 +651,16 @@ static CSSemValue SemToLRValue(ILNode *node, ILGenInfo *info, ILNode **parent,
 				thisType = CurrentClassType(info);
 				if(thisType)
 				{
-					*parent = ILNode_MarkType_create
-						(ILNode_This_create(), thisType);
+					if(expr && yyisa(expr, ILNode_This))
+					{
+						*parent = ILNode_MarkType_create
+							(expr, thisType);
+					}
+					else
+					{
+						*parent = ILNode_MarkType_create
+							(ILNode_This_create(), thisType);
+					}
 				}
 				else
 				{
@@ -1500,6 +1508,7 @@ ILNode_SemAnalysis(ILNode_BaseElement)
 			CSItemCandidateError((ILNode *)node, 0, 0,
 							     CSSemGetGroup(indexers), args, numArgs);
 			CSEvalFreeArguments(args);
+			CSSemSetType(value, ILType_Int32);
 			return value;
 		}
 
@@ -1515,6 +1524,7 @@ ILNode_SemAnalysis(ILNode_BaseElement)
 								     CSSemGetGroup(indexers),
 									 args, numArgs);
 				CSEvalFreeArguments(args);
+				CSSemSetType(value, ILType_Int32);
 				return value;
 			}
 		}

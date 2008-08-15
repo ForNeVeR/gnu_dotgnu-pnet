@@ -305,9 +305,63 @@ int CSSignatureIdentical(ILType *sig1, ILType *sig2)
 }
 
 /*
+ * Check if the member is implemented by the sealed class and
+ * replace the member with the sealed implementation.
+ */
+static void CheckForSealedImplementation(CSMemberLookupInfo *results,
+										 ILClass *classInfo,
+										 ILClass *accessedFrom)
+{
+	CSMemberLookupIter iter;
+	CSMemberInfo *member;
+
+	/* Resolve the class to its actual image */
+	classInfo = ILClassResolve(classInfo);
+
+	if(!classInfo || !ILClass_IsSealed(classInfo))
+	{
+		/* The class is not sealed so we are done */
+		return;
+	}
+
+	/* If the list is empty, then we are done too */
+	if(!(results->num))
+	{
+		return;
+	}
+
+	MemberIterInit(&iter, results);
+	while((member = MemberIterNext(&iter)) != 0)
+	{
+		if((member->kind == IL_META_MEMBERKIND_METHOD) &&
+		   (member->owner != classInfo) &&
+		   (ILMethod_IsVirtual(member->member) ||
+		    ILMethod_IsAbstract(member->member)))
+		{
+			ILMember *memberInfo;
+
+			memberInfo = ILClassNextMemberMatch(classInfo, 0,
+												IL_META_MEMBERKIND_METHOD,
+												ILMember_Name(member->member),
+												ILMember_Signature(member->member));
+
+			if(memberInfo)
+			{
+				if(ILMemberAccessible(memberInfo, accessedFrom))
+				{
+					member->owner = classInfo;
+					member->member = ILToProgramItem(memberInfo);
+				}
+			}
+		}
+	}
+}
+
+/*
  * Trim a list of members to remove unneeded elements.
  */
-static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
+static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList,
+						  ILClass *info, ILClass *accessedFrom)
 {
 	CSMemberLookupIter iter;
 	CSMemberInfo *firstMember;
@@ -422,6 +476,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 				return CS_SEMKIND_AMBIGUOUS;
 			}
 		}
+		CheckForSealedImplementation(results, info, accessedFrom);
 		return CS_SEMKIND_METHOD_GROUP;
 	}
 	else if(results->num == 1)
@@ -431,6 +486,7 @@ static int TrimMemberList(CSMemberLookupInfo *results, int isIndexerList)
 		{
 			case CS_MEMBERKIND_TYPE:
 			{
+				CheckForSealedImplementation(results, info, accessedFrom);
 				return CS_SEMKIND_TYPE;
 			}
 			/* Not reached */
@@ -511,7 +567,7 @@ static int MemberLookup(ILGenInfo *genInfo, ILClass *info,
 	}
 
 	/* Trim the list and determine the kind for the result */
-	return TrimMemberList(results, 0);
+	return TrimMemberList(results, 0, info, accessedFrom);
 }
 
 /*
@@ -605,7 +661,7 @@ static int IndexerLookup(ILGenInfo *genInfo, ILClass *info,
 	}
 
 	/* Trim the list and determine the kind for the result */
-	return TrimMemberList(results, 1);
+	return TrimMemberList(results, 1, info, accessedFrom);
 }
 
 /*

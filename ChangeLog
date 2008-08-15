@@ -1,3 +1,21 @@
+2008-08-15  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_lookup.c (CheckForSealedImplementation): Add function to
+	check if a virtual method is implemented by the type on which the method
+	is called and thy type is sealed. If that's the case replace the method
+	in the CSMemberLookupInfo with the sealed implementation.
+	This is done to avoid boxing of value types if they implement the method
+	to call. This can be done with a non virtual call then.
+	(TrimMemberList): Call CheckForSealedImplementation if the
+	resulting CSMemberLookupInfo consists of one or more methods.
+
+	* cscc/csharp/cs_lvalue.tc (SemToLRValue): Fix a bug with the this type
+	on a method invocation with base acces. The parent type was used as
+	this type instead of the actual type which caused wrong code to be
+	generated if the this type is a value type.
+	(ILNode_SemAnalysis(ILNode_BaseElement)): Fix two bugs with returning an
+	uninitialized value.
+
 2008-08-14  Klaus Treichel  <ktreichel@web.de>
 
 	* support/time.c (ILGetSinceRebootTime): Fix assignments to the members

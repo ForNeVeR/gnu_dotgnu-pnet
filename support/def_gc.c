@@ -54,6 +54,7 @@ static int initialized = 0;
 static void *heapMemory = 0;
 static unsigned long heapSize = 0;
 static unsigned long heapPosn = 0;
+static int collectionCount = 0;
 
 /*
  * Initialize the thread locking objects needed to control
@@ -185,17 +186,33 @@ void ILGCMarkNoPointers(void *start, unsigned long size)
 
 void ILGCCollect(void)
 {
-	/* Nothing to do here */
+	/* We don't care about threads here because it's a fake value anyways. */
+	collectionCount++;
+}
+
+int ILGCFullCollection(int timeout)
+{
+	/* We don't care about threads here because it's a fake value anyways. */
+	collectionCount++;
+
+	return 1;
+}
+
+int ILGCCollectionCount(void)
+{
+	return collectionCount;
 }
 
 int ILGCInvokeFinalizers(int timeout)
 {
 	/* Nothing to do here because we don't do finalization */
+	return 1;
 }
 
 int ILGCDisableFinalizers(int timeout)
 {
 	/* Nothing to do here because we don't do finalization */
+	return 1;
 }
 
 void ILGCEnableFinalizers(void)

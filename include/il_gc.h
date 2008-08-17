@@ -85,12 +85,28 @@ void ILGCMarkNoPointers(void *start, unsigned long size);
 void ILGCCollect(void);
 
 /*
+ * Perform full garbage collection.
+ * The difference to ILGCCollect is that collections will be done until
+ * either the timeout expired or the last collection caused no finalizers
+ * to be executed.
+ * Returns 1 if the collection completed successfully or 0 if timeout expired.
+ */
+int ILGCFullCollection(int timeout);
+
+/*
+ * Get the number of collections done so far.
+ */
+int ILGCCollectionCount(void);
+
+/*
  * Invoke the pending finalizers and wait for them to complete.
+ * Returns 1 if finalizers have completed or 0 if timeout expired.
  */
 int ILGCInvokeFinalizers(int timeout);
 
 /*
  * Temporarily disable finalizers that are called during allocation.
+ * Returns 1 if finalizers have been disabled or 0 if timeout expired.
  */
 int ILGCDisableFinalizers(int timeout);
 

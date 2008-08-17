@@ -622,9 +622,18 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_vp(void (*fn)(), void *rvalue, void **avalue)
+static void marshal_vpi(void (*fn)(), void *rvalue, void **avalue)
 {
-	(*(void (*)(void *))fn)(*((void * *)(avalue[0])));
+	(*(void (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
+}
+
+#endif
+
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_ip(void (*fn)(), void *rvalue, void **avalue)
+{
+	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *))fn)(*((void * *)(avalue[0])));
 }
 
 #endif
@@ -638,15 +647,24 @@ static void marshal_lpb(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
+#if !defined(HAVE_LIBFFI)
+
+static void marshal_vp(void (*fn)(), void *rvalue, void **avalue)
+{
+	(*(void (*)(void *))fn)(*((void * *)(avalue[0])));
+}
+
+#endif
+
 #ifndef _IL_GC_suppressed
 
 IL_METHOD_BEGIN(GC_Methods)
-	IL_METHOD("KeepAlive", "(oSystem.Object;)V", _IL_GC_KeepAlive, marshal_vpp)
-	IL_METHOD("ReRegisterForFinalize", "(oSystem.Object;)V", _IL_GC_ReRegisterForFinalize, marshal_vpp)
-	IL_METHOD("SuppressFinalize", "(oSystem.Object;)V", _IL_GC_SuppressFinalize, marshal_vpp)
-	IL_METHOD("WaitForPendingFinalizers", "()V", _IL_GC_WaitForPendingFinalizers, marshal_vp)
-	IL_METHOD("Collect", "()V", _IL_GC_Collect, marshal_vp)
-	IL_METHOD("GetTotalMemory", "(Z)l", _IL_GC_GetTotalMemory, marshal_lpb)
+	IL_METHOD("CollectInternal", "(i)V", _IL_GC_CollectInternal, marshal_vpi)
+	IL_METHOD("CollectionCountInternal", "()i", _IL_GC_CollectionCountInternal, marshal_ip)
+	IL_METHOD("GetTotalMemoryInternal", "(Z)l", _IL_GC_GetTotalMemoryInternal, marshal_lpb)
+	IL_METHOD("ReRegisterForFinalizeInternal", "(oSystem.Object;)V", _IL_GC_ReRegisterForFinalizeInternal, marshal_vpp)
+	IL_METHOD("SuppressFinalizeInternal", "(oSystem.Object;)V", _IL_GC_SuppressFinalizeInternal, marshal_vpp)
+	IL_METHOD("WaitForPendingFinalizersInternal", "()V", _IL_GC_WaitForPendingFinalizersInternal, marshal_vp)
 IL_METHOD_END
 
 #endif
@@ -1664,15 +1682,6 @@ static void marshal_pppipp(void (*fn)(), void *rvalue, void **avalue)
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_ip(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *))fn)(*((void * *)(avalue[0])));
-}
-
-#endif
-
 #ifndef _IL_StackFrame_suppressed
 
 IL_METHOD_BEGIN(StackFrame_Methods)
@@ -1947,15 +1956,6 @@ IL_METHOD_END
 static void marshal_bppi(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, void *, ILInt32))fn)(*((void * *)(avalue[0])), *((void * *)(avalue[1])), *((ILInt32 *)(avalue[2])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_vpi(void (*fn)(), void *rvalue, void **avalue)
-{
-	(*(void (*)(void *, ILInt32))fn)(*((void * *)(avalue[0])), *((ILInt32 *)(avalue[1])));
 }
 
 #endif

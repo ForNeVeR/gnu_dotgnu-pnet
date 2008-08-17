@@ -27,20 +27,9 @@ extern	"C" {
 #endif
 
 /*
- * public static void KeepAlive(Object obj);
+ * public static void ReRegisterForFinalizeInternal(Object obj);
  */
-void _IL_GC_KeepAlive(ILExecThread *_thread, ILObject *obj)
-{
-	/* This internalcall exists purely to ensure that the object
-	   stays alive until this method is called, by keeping it
-	   somewhere on the current thread's stack.  In other words,
-	   once this method is called, we have nothing to do */
-}
-
-/*
- * public static void ReRegisterForFinalize(Object obj);
- */
-void _IL_GC_ReRegisterForFinalize(ILExecThread *_thread, ILObject *obj)
+void _IL_GC_ReRegisterForFinalizeInternal(ILExecThread *_thread, ILObject *obj)
 {
 	if(obj)
 	{
@@ -59,9 +48,9 @@ void _IL_GC_ReRegisterForFinalize(ILExecThread *_thread, ILObject *obj)
 }
 
 /*
- * public static void SuppressFinalize(Object obj);
+ * public static void SuppressFinalizeInternal(Object obj);
  */
-void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
+void _IL_GC_SuppressFinalizeInternal(ILExecThread *_thread, ILObject *obj)
 {
 	if(obj)
 	{
@@ -75,26 +64,34 @@ void _IL_GC_SuppressFinalize(ILExecThread *_thread, ILObject *obj)
 }
 
 /*
- * public static void WaitForPendingFinalizers();
+ * public static void WaitForPendingFinalizersInternal();
  */
-void _IL_GC_WaitForPendingFinalizers(ILExecThread *_thread)
+void _IL_GC_WaitForPendingFinalizersInternal(ILExecThread *_thread)
 {	
 	_ILExecThreadHandleWaitResult(_thread, ILGCInvokeFinalizers(-1));
 }
 
 /*
- * public static void Collect();
+ * public static void CollectInternal(int collectionMode);
  */
-void _IL_GC_Collect(ILExecThread *_thread)
+void _IL_GC_CollectInternal(ILExecThread *_thread, ILInt32 collectionMode)
 {
 	ILGCCollect();
 }
 
 /*
- * public static long GetTotalMemory();
+ * public static int CollectionCountInternal();
  */
-ILInt64 _IL_GC_GetTotalMemory(ILExecThread *_thread,
-							  ILBool forceFullCollection)
+ILInt32 _IL_GC_CollectionCountInternal(ILExecThread *_thread)
+{
+	return ILGCCollectionCount();
+}
+
+/*
+ * public static long GetTotalMemoryInternal(bool forceFullCollection);
+ */
+ILInt64 _IL_GC_GetTotalMemoryInternal(ILExecThread *_thread,
+									  ILBool forceFullCollection)
 {
 	if(forceFullCollection)
 	{

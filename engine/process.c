@@ -175,10 +175,6 @@ static void _ILExecProcessUnloadInternal(ILExecProcess *process)
 
 	/* From this point on, no threads can be created inside or enter the AppDomain */
 
-	/* Clear 4K of stack space in case it contains some stray pointers 
-	   that may still be picked up by not so accurate collectors */
-	ILThreadClearStack(4096);
-
 	/* Walk all the threads, collecting CLR thread pointers since they are GC
 	   managed and stable */
 
@@ -226,11 +222,13 @@ static void _ILExecProcessUnloadInternal(ILExecProcess *process)
 	
 	process->state = _IL_PROCESS_STATE_RUNNING_FINALIZERS;
 
+	/* Clear 4K of stack space in case it contains some stray pointers 
+	   that may still be picked up by not so accurate collectors */
+	ILThreadClearStack(4096);
+
 	/* Invoke the finalizers -- hopefully finalizes all objects left in the
 	   process being destroyed.  Objects left lingering are orphans */
-	ILGCCollect();
-
-	ILGCInvokeFinalizers(30000);
+	ILGCFullCollection(1000);
 
 	if (process->engine)
 	{
@@ -743,7 +741,7 @@ void ILExecProcessDestroy(ILExecProcess *process)
 
 	/* Disable finalizers to ensure no finalizers are running until we 
 	   reenable them */
-	if (ILGCDisableFinalizers(10000) != 0)
+	if (ILGCDisableFinalizers(10000) == 0)
 	{
 		/* Finalizers are taking too long.  Abandon unloading of this process */
 		return;

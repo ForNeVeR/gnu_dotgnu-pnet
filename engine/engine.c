@@ -198,6 +198,12 @@ void ILExecEngineDestroy(ILExecEngine *engine)
 		ILExecProcessUnload(defaultProcess);
 	}
 
+	/* Clear some of the current thread's stack */
+	ILThreadClearStack(4000);
+
+	/* Do a final full collection */
+	ILGCFullCollection(1000);
+
 #ifndef IL_CONFIG_APPDOMAINS
 	if(defaultProcess)
 	{

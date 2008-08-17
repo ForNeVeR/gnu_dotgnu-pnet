@@ -116,12 +116,12 @@ extern void _IL_Decimal_ctor_d(ILExecThread * _thread, ILDecimal * _this, ILDoub
 extern ILFloat _IL_Decimal_ToSingle(ILExecThread * _thread, ILDecimal * value);
 extern ILDouble _IL_Decimal_ToDouble(ILExecThread * _thread, ILDecimal * value);
 
-extern void _IL_GC_KeepAlive(ILExecThread * _thread, ILObject * obj);
-extern void _IL_GC_ReRegisterForFinalize(ILExecThread * _thread, ILObject * obj);
-extern void _IL_GC_SuppressFinalize(ILExecThread * _thread, ILObject * obj);
-extern void _IL_GC_WaitForPendingFinalizers(ILExecThread * _thread);
-extern void _IL_GC_Collect(ILExecThread * _thread);
-extern ILInt64 _IL_GC_GetTotalMemory(ILExecThread * _thread, ILBool forceFullCollection);
+extern void _IL_GC_CollectInternal(ILExecThread * _thread, ILInt32 collectionMode);
+extern ILInt32 _IL_GC_CollectionCountInternal(ILExecThread * _thread);
+extern ILInt64 _IL_GC_GetTotalMemoryInternal(ILExecThread * _thread, ILBool forceFullCollection);
+extern void _IL_GC_ReRegisterForFinalizeInternal(ILExecThread * _thread, ILObject * obj);
+extern void _IL_GC_SuppressFinalizeInternal(ILExecThread * _thread, ILObject * obj);
+extern void _IL_GC_WaitForPendingFinalizersInternal(ILExecThread * _thread);
 
 extern ILObject * _IL_Type_GetTypeFromHandle(ILExecThread * _thread, void * handle);
 extern void _IL_Type_GetTypeHandle(ILExecThread * _thread, void * _result, ILObject * obj);

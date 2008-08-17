@@ -1,3 +1,44 @@
+2008-08-17  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.c (ILExecEngineDestroy): Clear some of the thread's stack
+	and do a final collection after unloading all processes.
+
+	* engine/int_table.c, engine/int_proto.h: Regenerated.
+
+	* engine/lib_gc.c: Append Internal to the names of the internalcalls.
+	(_IL_GC_CollectionCountInternal): Added
+	
+	* engine/process.c (_ILExecProcessUnloadInternal): Move clearing the
+	thread's stack just before the collection is done.
+	Use the new function ILGCFullCollection instead of ILGCCollect.
+	(ILExecProcessDestroy): Change check of returnvalue from
+	ILGCDisableFinalizers to == 0 to be consistent with the other functions.
+
+	* include/il_gc.h (ILGCFullCollection, ILGCCollectionCount): Add
+	prototypes for the new functions.
+
+	* support/def_gc.c (ILGCCollect): Increment the internal fake collection
+	counter.
+	(ILGCFullCollection): Added.
+	(ILGCCollectionCount): likewise
+	(ILGCInvokeFinalizers, ILGCDisableFinalizers): Add returning 1.
+
+	* support/hb_gc.c: Add the static value _FinalizingCount and the
+	declaration of GC_bytes_found.
+	Replace the %d in GC_TRACE with %p for printing the thread.
+	(_FinalizerThreadFunc): Increment _FinalizingCount before executing the
+	finalizers and clear the thread's stack after all finalizers are executed.
+	(ILGCInit): Set GC_no_dls to 1 to prevent scanning of data segments of
+	loaded shared libraries.
+	(ILGCDeinit): Call ILGCFullCollection instead of GCCollect for the final
+	collection.
+	(ILGCFullCollection): Add function to perform collections as long as
+	anything is done (finalizers executed or memory reclaimed).
+	(ILGCCollectionCount): Added to return the total number of collections
+	executed.
+	(ILGCInvokeFinalizers, ILGCDisableFinalizers): Swap the returnvalues to
+	be consistent with the rest of the code.
+
 2008-08-15  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_lookup.c (CheckForSealedImplementation): Add function to

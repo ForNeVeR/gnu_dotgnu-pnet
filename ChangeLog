@@ -1,3 +1,17 @@
+2008-08-17  Klaus Treichel  <ktreichel@web.de>
+
+	* resources/en_US/runtime/Arg.txt: Add Arg_NotNullName=Argument.
+
+	* runtime/System/ArgumentNullException.cs: Add text for a named argument.
+
+	* runtime/System/GC.cs: Add Internal to the names of the internal calls.
+	(CollectionCount): Add Framework 2.0 method plus the corresponding
+	internal call.
+	(Collect): Add non ECMA Framework 2.0 versions with different arguments.
+
+	* runtime/System/GCCollectionMode.cs: Add new non ECMA Framework 2.0
+	enumeration.
+
 2008-08-12  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/AppDomain.c, runtime/System/AppDomain.c: Replace the

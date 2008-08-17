@@ -28,12 +28,13 @@ public class ArgumentNullException : ArgumentException
 {
 	// Standard error message for null exceptions.
 	private static String preloadedMessage = _("Arg_NotNull");
+	private static String preloadedNameMessage = _("Arg_NotNullName");
 
 	// Constructors.
 	public ArgumentNullException()
 		: base(preloadedMessage) {}
 	public ArgumentNullException(String paramName)
-		: base(preloadedMessage, paramName) {}
+		: base(preloadedNameMessage, paramName) {}
 	public ArgumentNullException(String paramName, String msg)
 		: base(msg, paramName) {}
 #if CONFIG_SERIALIZATION

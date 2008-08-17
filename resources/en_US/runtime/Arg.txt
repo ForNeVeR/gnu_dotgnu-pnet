@@ -45,6 +45,7 @@ Arg_UnknownTypeCode=Unknown type code
 Arg_InvalidHexStyle=Invalid hexadecimal number style
 Arg_DecBitCtor=Invalid bit array supplied to Decimal constructor
 Arg_NotNull=Argument cannot be null
+Arg_NotNullName=Argument {0} cannot be null
 Arg_OutOfRange=Argument is out of range
 Arg_OutOfRangeValue=Argument value: {0}
 Arg_DateTimeRange=DateTime value is out of range

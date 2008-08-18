@@ -108,7 +108,7 @@ static volatile int _FinalizersRunningSynchronously = 0;
  * This is a internal global variable with the number of reclaimed bytes
  * after a garbage collection.
  */
-extern signed_word GC_bytes_found;
+extern GC_signed_word GC_bytes_found;
 
 /*
  *	Main entry point for the finalizer thread.

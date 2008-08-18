@@ -5,6 +5,9 @@
 	being compiled multiple times if called from different threads at the
 	same time (race).
 
+	* support/hb_gc.c: Change the type of GC_bytes_found from signed_word to
+	GC_signed_word.
+
 2008-08-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.c (ILExecEngineDestroy): Clear some of the thread's stack

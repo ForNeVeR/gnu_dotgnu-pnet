@@ -2115,6 +2115,18 @@ static void *_ILJitOnDemandDriver(ILJitFunction func)
 		return entry_point;
 	}
 
+	/* Check if the function is compiled now */
+	if(jit_function_is_compiled(func))
+	{
+		if(jit_function_compile_entry(func, &entry_point))
+		{
+			/* Unlock the metadata. */
+			METADATA_UNLOCK(process);
+
+			return entry_point;
+		}
+	}
+
 	/* Set the function info in the jit coder. */
 	jitCoder->jitFunction = func;
 	ILCCtorMgr_SetCurrentMethod(&(jitCoder->cctorMgr), method);

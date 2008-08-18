@@ -1,3 +1,10 @@
+2008-08-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c (_ILJitOnDemandDriver): Add check if the current function
+	is compiled after holding the metadata lock to prevent the function from
+	being compiled multiple times if called from different threads at the
+	same time (race).
+
 2008-08-17  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.c (ILExecEngineDestroy): Clear some of the thread's stack

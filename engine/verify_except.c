@@ -124,7 +124,7 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 		/* Exit the sync lock before throwing to the calling method */
 		isStatic = ILMethod_IsStatic(method);
 		PUSH_SYNC_OBJECT();
-		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
 	}
 
 	ILCoderThrow(coder, 0);
@@ -238,7 +238,7 @@ case IL_OP_THROW:
 			if (isSynchronized)
 			{
 				PUSH_SYNC_OBJECT();
-				ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+				ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
 			}
 
 			ILCoderThrow(coder, 0);

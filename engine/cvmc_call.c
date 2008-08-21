@@ -237,7 +237,7 @@ static void CVMCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 		return 1;
 
 static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
-								   ILMethod *methodInfo)
+								   ILMethod *methodInfo, ILInt32 elementSize)
 {
 	/* Determine what to do for the inlineable method type */
 	switch(inlineType)
@@ -278,7 +278,7 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
 		{
 			/* The string length is at a fixed offset from the pointer */
 			CVM_OUT_BYTE(COP_IREAD_FIELD,
-						 (unsigned)&(((System_String *)0)->length));
+						 (unsigned)(ILNativeUInt)&(((System_String *)0)->length));
 			return 1;
 		}
 		/* Not reached */
@@ -410,7 +410,31 @@ static int CVMCoder_CallInlineable(ILCoder *coder, int inlineType,
 			return 1;
 		}
 		/* Not reached */
-		
+
+		case IL_INLINEMETHOD_ARRAY_COPY_AAI4:
+		{
+			CVMP_OUT_WORD(COP_PREFIX_SARRAY_COPY_AAI4, elementSize);
+			CVM_ADJUST(-3);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ARRAY_COPY_AI4AI4I4:
+		{
+			CVMP_OUT_WORD(COP_PREFIX_SARRAY_COPY_AI4AI4I4, elementSize);
+			CVM_ADJUST(-5);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ARRAY_CLEAR_AI4I4:
+		{
+			CVMP_OUT_WORD(COP_PREFIX_SARRAY_CLEAR_AI4I4, elementSize);
+			CVM_ADJUST(-3);
+			return 1;
+		}
+		/* Not reached */
+
 		/*
 		 * Cases for Math class inlines.
 		 */

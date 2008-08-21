@@ -581,7 +581,7 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 	if (isStatic) \
 	{ \
 		ILCoderPushToken(coder, (ILProgramItem *)ILMethod_Owner(method)); \
-		ILCoderCallInlineable(coder, IL_INLINEMETHOD_TYPE_FROM_HANDLE, 0); \
+		ILCoderCallInlineable(coder, IL_INLINEMETHOD_TYPE_FROM_HANDLE, 0, 0); \
 	} \
 	else \
 	{ \
@@ -1060,7 +1060,7 @@ restart:
 	if (isSynchronized)
 	{
 		PUSH_SYNC_OBJECT();
-		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_ENTER, 0);
+		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_ENTER, 0, 0);
 	}
 
 	while(len > 0)

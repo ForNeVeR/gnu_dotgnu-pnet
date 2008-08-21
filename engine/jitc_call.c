@@ -1186,7 +1186,7 @@ static void JITCoder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 }
 
 static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
-								   ILMethod *methodInfo)
+								   ILMethod *methodInfo, ILInt32 elementSize)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
@@ -1684,6 +1684,103 @@ static int JITCoder_CallInlineable(ILCoder *coder, int inlineType,
 											   _IL_JIT_TYPE_DOUBLE);
 			value = jit_insn_tanh(jitCoder->jitFunction, value);
 			_ILJitStackPushValue(jitCoder, value);
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ARRAY_COPY_AAI4:
+		{
+			_ILJitStackItemNew(stackItem1);
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem3);
+			ILJitValue args[5];
+
+			_ILJitStackPop(jitCoder, stackItem1);
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem3);
+			args[0] = _ILJitCoderGetThread(jitCoder);
+			args[1] = _ILJitStackItemValue(stackItem3);
+			args[2] = _ILJitStackItemValue(stackItem2);
+			args[3] = _ILJitStackItemValue(stackItem1);
+			args[4] = jit_value_create_nint_constant(jitCoder->jitFunction,
+													 _IL_JIT_TYPE_INT32,
+													 elementSize);
+
+			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
+			jit_insn_call_native(jitCoder->jitFunction,
+								 "ILSArrayCopy_AAI4",
+								 ILSArrayCopy_AAI4,
+								 _ILJitSignature_ILSArrayCopy_AAI4,
+								 args, 5, 0);
+			_ILJitEndNativeCall(jitCoder->jitFunction, args[0]);
+
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ARRAY_COPY_AI4AI4I4:
+		{
+			_ILJitStackItemNew(stackItem1);
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem3);
+			_ILJitStackItemNew(stackItem4);
+			_ILJitStackItemNew(stackItem5);
+			ILJitValue args[7];
+
+			_ILJitStackPop(jitCoder, stackItem1);
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem3);
+			_ILJitStackPop(jitCoder, stackItem4);
+			_ILJitStackPop(jitCoder, stackItem5);
+			args[0] = _ILJitCoderGetThread(jitCoder);
+			args[1] = _ILJitStackItemValue(stackItem5);
+			args[2] = _ILJitStackItemValue(stackItem4);
+			args[3] = _ILJitStackItemValue(stackItem3);
+			args[4] = _ILJitStackItemValue(stackItem2);
+			args[5] = _ILJitStackItemValue(stackItem1);
+			args[6] = jit_value_create_nint_constant(jitCoder->jitFunction,
+													 _IL_JIT_TYPE_INT32,
+													 elementSize);
+
+			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
+			jit_insn_call_native(jitCoder->jitFunction,
+								 "ILSArrayCopy_AI4AI4I4",
+								 ILSArrayCopy_AI4AI4I4,
+								 _ILJitSignature_ILSArrayCopy_AI4AI4I4,
+								 args, 7, 0);
+			_ILJitEndNativeCall(jitCoder->jitFunction, args[0]);
+
+			return 1;
+		}
+		/* Not reached */
+
+		case IL_INLINEMETHOD_ARRAY_CLEAR_AI4I4:
+		{
+			_ILJitStackItemNew(stackItem1);
+			_ILJitStackItemNew(stackItem2);
+			_ILJitStackItemNew(stackItem3);
+			ILJitValue args[5];
+
+			_ILJitStackPop(jitCoder, stackItem1);
+			_ILJitStackPop(jitCoder, stackItem2);
+			_ILJitStackPop(jitCoder, stackItem3);
+
+			args[0] = _ILJitCoderGetThread(jitCoder);
+			args[1] = _ILJitStackItemValue(stackItem3);
+			args[2] = _ILJitStackItemValue(stackItem2);
+			args[3] = _ILJitStackItemValue(stackItem1);
+			args[4] = jit_value_create_nint_constant(jitCoder->jitFunction,
+													 _IL_JIT_TYPE_INT32,
+													 elementSize);
+
+			_ILJitBeginNativeCall(jitCoder->jitFunction, args[0]);
+			jit_insn_call_native(jitCoder->jitFunction,
+								 "ILSArrayClear_AI4I4",
+								 ILSArrayClear_AI4I4,
+								 _ILJitSignature_ILSArrayClear_AI4I4,
+								 args, 5, 0);
+			_ILJitEndNativeCall(jitCoder->jitFunction, args[0]);
+
 			return 1;
 		}
 		/* Not reached */

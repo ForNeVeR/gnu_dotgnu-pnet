@@ -325,6 +325,29 @@ static ILJitType _ILJitSignature_MarshalCustomToObject = 0;
 static ILJitType _ILJitSignature_ILInterlockedIncrement = 0;
 
 /*
+ * ILInt32 ILSArrayCopy_AAI4(ILExecThread *thread, System_Array *array1,
+ *							 System_Array *array2, ILInt32 length,
+ *							 ILInt32 elementSize)
+ */
+static ILJitType _ILJitSignature_ILSArrayCopy_AAI4 = 0;
+
+/*
+ * ILInt32 ILSArrayCopy_AI4AI4I4(ILExecThread *thread,
+ *								 System_Array *array1, ILInt32 index1,
+ *								 System_Array *array2, ILInt32 index2,
+ *								 ILInt32 length,
+ *								 ILInt32 elementSize)
+ */
+static ILJitType _ILJitSignature_ILSArrayCopy_AI4AI4I4 = 0;
+
+/*
+ * ILInt32 ILSArrayClear_AI4I4(ILExecThread *thread, System_Array *array,
+ *							   ILInt32 index, ILInt32 length,
+ *							   ILInt32 elementSize)
+ */
+static ILJitType _ILJitSignature_ILSArrayClear_AI4I4 = 0;
+
+/*
  * void ILJitTraceIn(ILExecThread *thread, ILMethod *method)
  * void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
  */
@@ -2215,7 +2238,7 @@ static void *_ILJitOnDemandDriver(ILJitFunction func)
 int ILJitInit()
 {
 	ILJitType	returnType;
-	ILJitType	args[4];
+	ILJitType	args[7];
 
 	/* Initialize libjit */
 	jit_init();
@@ -2517,7 +2540,7 @@ int ILJitInit()
 	args[2] = _IL_JIT_TYPE_VPTR;
 	args[3] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_VPTR;
-	if(!(_ILJitSignature_MarshalCustomToObject = 
+	if(!(_ILJitSignature_MarshalCustomToObject =
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 4, 1)))
 	{
 		return 0;
@@ -2525,8 +2548,46 @@ int ILJitInit()
 
 	args[0] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_INT32;
-	if(!(_ILJitSignature_ILInterlockedIncrement = 
+	if(!(_ILJitSignature_ILInterlockedIncrement =
 		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_VPTR;
+	args[3] = _IL_JIT_TYPE_INT32;
+	args[4] = _IL_JIT_TYPE_INT32;
+	returnType = _IL_JIT_TYPE_INT32;
+	if(!(_ILJitSignature_ILSArrayCopy_AAI4 =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 5, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_INT32;
+	args[3] = _IL_JIT_TYPE_VPTR;
+	args[4] = _IL_JIT_TYPE_INT32;
+	args[5] = _IL_JIT_TYPE_INT32;
+	args[6] = _IL_JIT_TYPE_INT32;
+	returnType = _IL_JIT_TYPE_INT32;
+	if(!(_ILJitSignature_ILSArrayCopy_AI4AI4I4 =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 7, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	args[2] = _IL_JIT_TYPE_INT32;
+	args[3] = _IL_JIT_TYPE_INT32;
+	args[4] = _IL_JIT_TYPE_INT32;
+	returnType = _IL_JIT_TYPE_INT32;
+	if(!(_ILJitSignature_ILSArrayClear_AI4I4 =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 5, 1)))
 	{
 		return 0;
 	}

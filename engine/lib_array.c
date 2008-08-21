@@ -2557,6 +2557,227 @@ int _ILIsSArray(System_Array *array)
 	}
 }
 
+/*
+ * Validate the arguments for a copy with array, array, length arguments.
+ */
+static int ValidateCopyArgs_AAI4(ILExecThread *thread,
+								 System_Array *array1,
+								 System_Array *array2,
+								 ILInt32 length)
+{
+	if(!array1)
+	{
+		ILExecThreadThrowArgNull(thread, "sourceArray");
+		return 0;
+	}
+	if(!array2)
+	{
+		ILExecThreadThrowArgNull(thread, "destinationArray");
+		return 0;
+	}
+	if(length < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "length", "Arg_InvalidArrayIndex");
+		return 0;
+	}
+	if(array1 == array2)
+	{
+		/* We have nothing to do here but check the length anyways */
+		if(length > ArrayLength(array1))
+		{
+			ILExecThreadThrowSystem(thread, "System.ArgumentException",
+									"Arg_InvalidArrayRange");
+			return 0;
+		}
+	}
+	else
+	{
+		if((length > ArrayLength(array1)) || (length > ArrayLength(array2)))
+		{
+			ILExecThreadThrowSystem(thread, "System.ArgumentException",
+									"Arg_InvalidArrayRange");
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/*
+ * Validate the arguments for a copy with array, array, length arguments.
+ */
+static int ValidateCopyArgs_AI4AI4I4(ILExecThread *thread,
+									 System_Array *array1,
+									 ILInt32 index1,
+									 System_Array *array2,
+									 ILInt32 index2,
+									 ILInt32 length)
+{
+	if(!array1)
+	{
+		ILExecThreadThrowArgNull(thread, "sourceArray");
+		return 0;
+	}
+	if(!array2)
+	{
+		ILExecThreadThrowArgNull(thread, "destinationArray");
+		return 0;
+	}
+	if(length < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "length", "Arg_InvalidArrayIndex");
+		return 0;
+	}
+	if(index1 < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "sourceIndex", "Arg_InvalidArrayIndex");
+		return 0;
+	}
+	if(index2 < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "destinationIndex", "Arg_InvalidArrayIndex");
+		return 0;
+	}
+	if(array1 == array2)
+	{
+		/* We have nothing to do here but check the length anyways */
+		if((index1 + length) > ArrayLength(array1))
+		{
+			ILExecThreadThrowSystem(thread, "System.ArgumentException",
+									"Arg_InvalidArrayRange");
+			return 0;
+		}
+	}
+	else
+	{
+		if(((index1 + length) > ArrayLength(array1)) ||
+		   ((index2 + length) > ArrayLength(array2)))
+		{
+			ILExecThreadThrowSystem(thread, "System.ArgumentException",
+									"Arg_InvalidArrayRange");
+			return 0;
+		}
+	}
+	return 1;
+}
+
+/*
+ * Validate the arguments for a copy with array, array, length arguments.
+ */
+static int ValidateClearArgs_AI4I4(ILExecThread *thread,
+								   System_Array *array,
+								   ILInt32 index,
+								   ILInt32 length)
+{
+	if(!array)
+	{
+		ILExecThreadThrowArgNull(thread, "array");
+		return 0;
+	}
+	if(index < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "index", "Arg_InvalidArrayIndex");
+		return 0;
+	}
+	if(length < 0)
+	{
+		ILExecThreadThrowArgRange(thread, "length", "Arg_InvalidArrayIndex");
+		return 0;
+	}
+	if((index + length) > ArrayLength(array))
+	{
+		ILExecThreadThrowSystem(thread, "System.ArgumentException",
+								"Arg_InvalidArrayRange");
+		return 0;
+	}
+	return 1;
+}
+
+/*
+ * Internal versions for Array.Copy(System.Array, System.Array, int) where the
+ * types of the arrays are known at verification time, the element types
+ * are known to be assignment compatible and the sizes of the elements are the
+ * same so that copying can be done with memcpy or memmove.
+ */
+ILInt32 ILSArrayCopy_AAI4(ILExecThread *thread,
+						  System_Array *array1,
+						  System_Array *array2,
+						  ILInt32 length,
+						  ILInt32 elementSize)
+{
+	if(ValidateCopyArgs_AAI4(thread, array1, array2, length))
+	{
+		if(array1 != array2)
+		{
+			void *base1 = ArrayToBuffer(array1);
+			void *base2 = ArrayToBuffer(array2);
+
+			ILMemCpy(base2, base1, length * elementSize);
+		}
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Function for Array.Copy(System.Array, int, System.Array, int, int) where the
+ * types of the arrays are known at verification time, the element types
+ * are known to be assignment compatible and the sizes of the elements are the
+ * same so that copying can be done with memcpy or memmove.
+ */
+ILInt32 ILSArrayCopy_AI4AI4I4(ILExecThread *thread,
+							  System_Array *array1,
+							  ILInt32 index1,
+							  System_Array *array2,
+							  ILInt32 index2,
+							  ILInt32 length,
+							  ILInt32 elementSize)
+{
+	if(ValidateCopyArgs_AI4AI4I4(thread, array1, index1, array2, index2, length))
+	{
+		ILInt8 *base1 = ArrayToBuffer(array1);
+		ILInt8 *base2 = ArrayToBuffer(array2);
+
+		if((array1 != array2) || ((index1 + length) < index2) ||
+								  (index1 > (index2 + length)))
+		{
+			/* Arrays are not the same or the ranges do not overlap */
+			ILMemCpy(&(base2[index2 * elementSize]),
+					 &(base1[index1 * elementSize]),
+					 length * elementSize);
+		}
+		else
+		{
+			/* Ranges overlap */
+			ILMemMove(&(base2[index2 * elementSize]),
+					  &(base1[index1 * elementSize]),
+					  length * elementSize);
+		}
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Function for Array.Clear(System.Array, int, int) where the type of the
+ * array is known at verification time and it is zero based one dimensional.
+ */
+ILInt32 ILSArrayClear_AI4I4(ILExecThread *thread,
+							System_Array *array,
+							ILInt32 index,
+							ILInt32 length,
+							ILInt32 elementSize)
+{
+	if(ValidateClearArgs_AI4I4(thread, array, index, length))
+	{
+		ILInt8 *base = ArrayToBuffer(array);
+
+		ILMemZero(&(base[index * elementSize]),
+				  length * elementSize);
+		return 1;
+	}
+	return 0;
+}
+
 #ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 
 int _ILIsMArray(System_Array *array)

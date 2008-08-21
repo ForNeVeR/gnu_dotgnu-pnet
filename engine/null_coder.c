@@ -307,7 +307,7 @@ static void Coder_CallInterface(ILCoder *coder, ILCoderMethodInfo *info,
 {
 }
 static int Coder_CallInlineable(ILCoder *coder, int inlineType,
-								ILMethod *methodInfo)
+								ILMethod *methodInfo, ILInt32 elementSize)
 {
 	return 0;
 }

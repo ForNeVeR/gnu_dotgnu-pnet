@@ -39,6 +39,35 @@
 #define V_INLINE_FIELD_STORE (2)
 #define V_INLINE_CONST_LOAD  (3)
 
+#define TYPE_IS_I1(type) \
+	(((type) == ILType_Boolean) || ((type) == ILType_Int8) || \
+	((type) == ILType_UInt8))
+
+#define TYPE_IS_I2(type) \
+	(((type) == ILType_Char) || ((type) == ILType_Int16) || \
+	((type) == ILType_UInt16))
+
+#ifdef IL_NATIVE_INT64
+#define TYPE_IS_I4(type) \
+	(((type) == ILType_Int32) || ((type) == ILType_UInt32))
+
+#define TYPE_IS_I8(type) \
+	(((type) == ILType_Int) || ((type) == ILType_Int64) || \
+	((type) == ILType_UInt64))
+#else /* !IL_NATIVE_INT64 */
+#define TYPE_IS_I4(type) \
+	(((type) == ILType_Int) || ((type) == ILType_Int32) || \
+	((type) == ILType_UInt32))
+
+#define TYPE_IS_I8(type) \
+	(((type) == ILType_Int64) || ((type) == ILType_UInt64))
+#endif  /* !IL_NATIVE_INT64 */
+
+/*
+ * Offsets to add to the base inline method to get the final inline method.
+ */
+#define ARRAY_INLINE_OFFSET_VECTORS	(0)
+
 static int TryInlineLoad(ILExecProcess *process, ILMethod *method, int numParams, 
 							   ILMethodCode *code, unsigned *inlineOpcode, 
 							   unsigned char **inlinePc, ILField **field)
@@ -1259,6 +1288,15 @@ static InlineMethodInfo const InlineMethods[] = {
 
 	{"Char", "System", "IsWhiteSpace", "(c)Z", IL_INLINEMETHOD_IS_WHITE_SPACE},
 
+	{"Array", "System", "Copy", "(oSystem.Array;oSystem.Array;i)V",
+	 IL_INLINEMETHOD_ARRAY_COPY_AAI4},
+
+	{"Array", "System", "Copy", "(oSystem.Array;ioSystem.Array;ii)V",
+	 IL_INLINEMETHOD_ARRAY_COPY_AI4AI4I4},
+
+	{"Array", "System", "Clear", "(oSystem.Array;ii)V",
+	 IL_INLINEMETHOD_ARRAY_CLEAR_AI4I4},
+
 	{"Math", "System", "Abs", "(i)i", IL_INLINEMETHOD_ABS_I4},
 	{"Math", "System", "Max", "(ii)i", IL_INLINEMETHOD_MAX_I4},
 	{"Math", "System", "Min", "(ii)i", IL_INLINEMETHOD_MIN_I4},
@@ -1380,6 +1418,167 @@ static int GetInlineMethodType(ILMethod *method)
 }
 
 /*
+ * Check if two items on the stack are arraytypes and the elements are
+ * assigncompatible for arrayelements.
+ * Array1 is the source and array2 the destination array.
+ */
+static int GetArrayCopyHandler(ILExecProcess *process,
+							   ILMethod *method,
+							   ILEngineStackItem *array1,
+							   ILEngineStackItem *array2,
+							   ILInt32 *elementSize)
+{
+	ILType *arrayType1;
+	ILType *arrayType2;
+
+	arrayType1 = array1->typeInfo;
+	arrayType2 = array2->typeInfo;
+
+	/* Check if the arrays are simple one dimensional arrays with a zero
+	  lower bound */
+	if(ILType_IsSimpleArray(arrayType1) && ILType_IsSimpleArray(arrayType2))
+	{
+		ILType *elemType1;
+		ILType *elemType2;
+
+		elemType1 = ILTypeGetEnumType(ILType_ElemType(arrayType1));
+		elemType2 = ILType_ElemType(arrayType2);
+
+		if(ILType_IsPrimitive(elemType1) && ILType_IsPrimitive(elemType2))
+		{
+			/* Arrays are of primitive types */
+			if(TYPE_IS_I1(elemType1) && TYPE_IS_I1(elemType2))
+			{
+				*elementSize = sizeof(ILInt8);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(TYPE_IS_I2(elemType1) && TYPE_IS_I2(elemType2))
+			{
+				*elementSize = sizeof(ILInt16);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(TYPE_IS_I4(elemType1) && TYPE_IS_I4(elemType2))
+			{
+				*elementSize = sizeof(ILInt32);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(TYPE_IS_I8(elemType1) && TYPE_IS_I8(elemType2))
+			{
+				*elementSize = sizeof(ILInt64);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if((elemType1 == ILType_Float32) && (elemType2 == ILType_Float32))
+			{
+				*elementSize = sizeof(ILFloat);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if((elemType1 == ILType_Float64) && (elemType2 == ILType_Float64))
+			{
+				*elementSize = sizeof(ILDouble);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if((elemType1 == ILType_Float) && (elemType2 == ILType_Float))
+			{
+				*elementSize = sizeof(ILNativeFloat);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+		}
+		else if(ILType_IsValueType(elemType1) && ILType_IsValueType(elemType2))
+		{
+			/* For value types the types must be identical */
+			if(elemType1 == elemType2)
+			{
+				*elementSize = _ILSizeOfTypeLocked(process, elemType1);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+		}
+		else if(ILType_IsClass(elemType1) && ILType_IsClass(elemType2))
+		{
+			if(ILTypeAssignCompatibleNonBoxing(ILProgramItem_Image(method),
+											   elemType1, elemType2))
+			{
+				*elementSize = sizeof(ILNativeInt);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+		}
+
+	}
+
+	return -1;
+}
+
+static int GetArrayClearHandler(ILExecProcess *process,
+								ILMethod *method,
+								ILEngineStackItem *array,
+								ILInt32 *elementSize)
+{
+	ILType *arrayType;
+
+	arrayType = array->typeInfo;
+
+	/* Check if the array is a simple one dimensional array with a zero
+	  lower bound */
+	if(ILType_IsSimpleArray(arrayType))
+	{
+		ILType *elemType;
+
+		elemType = ILTypeGetEnumType(ILType_ElemType(arrayType));
+
+		if(ILType_IsPrimitive(elemType))
+		{
+			/* Arrays are of primitive types */
+			if(TYPE_IS_I1(elemType))
+			{
+				*elementSize = sizeof(ILInt8);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(TYPE_IS_I2(elemType))
+			{
+				*elementSize = sizeof(ILInt16);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(TYPE_IS_I4(elemType))
+			{
+				*elementSize = sizeof(ILInt32);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(TYPE_IS_I8(elemType))
+			{
+				*elementSize = sizeof(ILInt64);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(elemType == ILType_Float32)
+			{
+				*elementSize = sizeof(ILFloat);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(elemType == ILType_Float64)
+			{
+				*elementSize = sizeof(ILDouble);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+			else if(elemType == ILType_Float)
+			{
+				*elementSize = sizeof(ILNativeFloat);
+				return ARRAY_INLINE_OFFSET_VECTORS;
+			}
+		}
+		else if(ILType_IsValueType(elemType))
+		{
+			*elementSize = _ILSizeOfTypeLocked(process, elemType);
+			return ARRAY_INLINE_OFFSET_VECTORS;
+		}
+		else if(ILType_IsClass(elemType))
+		{
+			*elementSize = sizeof(ILNativeInt);
+			return ARRAY_INLINE_OFFSET_VECTORS;
+		}
+	}
+
+	return -1;
+}
+
+/*
  * Set return type information within a stack item.
  */
 static void SetReturnType(ILEngineStackItem *item, ILType *returnType)
@@ -1475,11 +1674,85 @@ callNonvirtualFromVirtual:
 				if((coderFlags & (IL_CODER_FLAG_IR_DUMP 
 									| IL_CODER_FLAG_METHOD_PROFILE 
 									| IL_CODER_FLAG_METHOD_TRACE)) == 0)
-				{	
+				{
+					ILInt32 elementSize = 0;
+
 					inlineType = GetInlineMethodType(methodInfo);
 
+					switch(inlineType)
+					{
+						case IL_INLINEMETHOD_ARRAY_COPY_AAI4:
+						{
+							/* Check if the types of the arrays are known */
+							int inlineOffset;
+
+							inlineOffset = GetArrayCopyHandler(
+										_ILExecThreadProcess(thread),
+										method,
+										&(stack[stackSize - numParams]),
+										&(stack[stackSize - numParams + 1]),
+										&elementSize);
+
+							if(inlineOffset >= 0)
+							{
+								inlineType += inlineOffset;
+							}
+							else
+							{
+								inlineType = -1;
+							}
+						}
+						break;
+
+						case IL_INLINEMETHOD_ARRAY_COPY_AI4AI4I4:
+						{
+							/* Check if the types of the arrays are known */
+							int inlineOffset;
+
+							inlineOffset = GetArrayCopyHandler(
+										_ILExecThreadProcess(thread),
+										method,
+										&(stack[stackSize - numParams]),
+										&(stack[stackSize - numParams + 2]),
+										&elementSize);
+
+							if(inlineOffset >= 0)
+							{
+								inlineType += inlineOffset;
+							}
+							else
+							{
+								inlineType = -1;
+							}
+						}
+						break;
+
+						case IL_INLINEMETHOD_ARRAY_CLEAR_AI4I4:
+						{
+							/* Check if the types of the arrays are known */
+							int inlineOffset;
+
+							inlineOffset = GetArrayClearHandler(
+										_ILExecThreadProcess(thread),
+										method,
+										&(stack[stackSize - numParams]),
+										&elementSize);
+
+							if(inlineOffset >= 0)
+							{
+								inlineType += inlineOffset;
+							}
+							else
+							{
+								inlineType = -1;
+							}
+						}
+						break;
+					}
+
 				 	if (inlineType != -1
-				 		&& ILCoderCallInlineable(coder, inlineType, methodInfo))
+				 		&& ILCoderCallInlineable(coder, inlineType,
+												 methodInfo, elementSize))
 				 	{
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 						if (coderFlags & IL_CODER_FLAG_STATS)
@@ -1976,7 +2249,7 @@ case IL_OP_RET:
 		if (isSynchronized)
 		{
 			PUSH_SYNC_OBJECT();
-			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
 		}
 
 		/* Notify the coder of the return instruction */
@@ -1990,7 +2263,7 @@ case IL_OP_RET:
 		if (isSynchronized)
 		{
 			PUSH_SYNC_OBJECT();
-			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0);
+			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
 		}
 
 		/* Notify the coder of a non-value return instruction */

@@ -147,6 +147,10 @@ typedef struct
 #define	IL_INLINEMETHOD_ABS_I4				46
 #define	IL_INLINEMETHOD_ABS_R4				47
 #define	IL_INLINEMETHOD_ABS_R8				48
+#define IL_INLINEMETHOD_ARRAY_COPY_AAI4		49
+#define IL_INLINEMETHOD_ARRAY_COPY_AI4AI4I4	50
+#define IL_INLINEMETHOD_ARRAY_CLEAR_AI4I4	51
+
 /*
  * Return values for "ILCoderFinish".
  */
@@ -627,7 +631,8 @@ struct _tagILCoderClass
 	 * Call an inlineable method.  Returns zero if the coder
 	 * cannot inline the method.
 	 */
-	int (*callInlineable)(ILCoder *coder, int inlineType, ILMethod *methodInfo);
+	int (*callInlineable)(ILCoder *coder, int inlineType,
+						  ILMethod *methodInfo, ILInt32 elementSize);
 
 	/*
 	 * Jump to a method with the same signature as the current method.
@@ -1056,9 +1061,10 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->callInterface))((coder), (info), \
 												    (returnItem), \
 													(methodInfo)))
-#define	ILCoderCallInlineable(coder,inlineType,methodInfo) \
+#define	ILCoderCallInlineable(coder,inlineType,methodInfo,elementSize) \
 			((*((coder)->classInfo->callInlineable))((coder), (inlineType), \
-													 (methodInfo)))
+													 (methodInfo), \
+													 (elementSize)))
 #define	ILCoderJumpMethod(coder,methodInfo) \
 			((*((coder)->classInfo->jumpMethod))((coder), (methodInfo)))
 #define	ILCoderReturnInsn(coder,engineType,returnType) \

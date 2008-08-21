@@ -577,14 +577,21 @@ extern	"C" {
 #define COP_PREFIX_UNROLL_STACK_RETURN		0x8C
 
 /*
-* Replace a word in the stack.
-*/
+ * Replace a word in the stack.
+ */
 #define COP_PREFIX_REPL_WORD_N			0x8D
 
 /*
-* Used to called an instance of a virtual generic method.
-*/
+ * Used to called an instance of a virtual generic method.
+ */
 #define COP_PREFIX_CALL_VIRTGEN			0x8E
+
+/*
+ * Some inlined array functions
+ */
+#define COP_PREFIX_SARRAY_COPY_AAI4		0x8F
+#define COP_PREFIX_SARRAY_COPY_AI4AI4I4	0x90
+#define COP_PREFIX_SARRAY_CLEAR_AI4I4	0x91
 
 /*
  * Definition of a CVM stack word which can hold

@@ -219,6 +219,44 @@ int _ILIsSArray(System_Array *array);
  */
 ILObject *_ILCloneSArray(ILExecThread *thread, System_Array *array);
 
+/*
+ * Fuction for the engine for Array.Copy(System.Array, System.Array, Int32)
+ * where the arrays are known to be one dimensional zero based, elemment types
+ * are assignment compatible and of the same size so that copying can be one
+ * with memcpy.
+ * Return 0 if an exception was thrown and 1 if successfull.
+ */
+ILInt32 ILSArrayCopy_AAI4(ILExecThread *thread,
+						  System_Array *array1,
+						  System_Array *array2,
+						  ILInt32 length,
+						  ILInt32 elementSize);
+
+
+/*
+ * Function for Array.Copy(System.Array, int, System.Array, int, int) where the
+ * types of the arrays are known at verification time, the element types
+ * are known to be assignment compatible and the sizes of the elements are the
+ * same so that copying can be done with memcpy or memmove.
+ */
+ILInt32 ILSArrayCopy_AI4AI4I4(ILExecThread *thread,
+							  System_Array *array1,
+							  ILInt32 index1,
+							  System_Array *array2,
+							  ILInt32 index2,
+							  ILInt32 length,
+							  ILInt32 elementSize);
+
+/*
+ * Function for Array.Clear(System.Array, int, int) where the type of the
+ * array is known at verification time and it is zero based one dimensional.
+ */
+ILInt32 ILSArrayClear_AI4I4(ILExecThread *thread,
+							System_Array *array,
+							ILInt32 index,
+							ILInt32 length,
+							ILInt32 elementSize);
+
 #ifdef IL_CONFIG_NON_VECTOR_ARRAYS
 
 /*

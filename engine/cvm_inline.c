@@ -532,6 +532,113 @@ VMCASE(COP_PREFIX_IS_WHITE_SPACE):
 VMBREAK(COP_PREFIX_IS_WHITE_SPACE);
 
 /**
+ * <opcode name="copy_AAi4" group="Inline methods">
+ *   <operation>copy elements from one vector to an other</operation>
+ *
+ *   <format>prefix<fsep/>copy_AAi4</format>
+ *   <dformat>{copy_AAi4}</dformat>
+ *
+ *   <form name="copy_AAi4" code="COP_PREFIX_SARRAY_COPY_AAI4"/>
+ *
+ *   <before>..., src, dest, length</before>
+ *   <after>..., </after>
+ *
+ *   <description>The <i>src</i>, <i>dest</i> and <i>length</i>are 
+ *   popped from the stack as the types <code>ptr</code>, <code>ptr</code>
+ *   and <code>int32</code> respectively. <i>Length</i> elements are copied
+ *   from <i>dest</i> to <i>src</i> starting at index 0.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>Array.Copy(src, dest, length)</code> method where the elements
+ *   of the arrays can be determined at verification time.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SARRAY_COPY_AAI4):
+{
+	COPY_STATE_TO_THREAD();
+	ILSArrayCopy_AAI4(thread,
+					  (System_Array *)stacktop[-3].ptrValue,
+					  (System_Array *)stacktop[-2].ptrValue,
+					  stacktop[-1].intValue, CVM_ARG_WORD);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, -3);
+}
+VMBREAK(COP_PREFIX_SARRAY_COPY_AAI4);
+
+/**
+ * <opcode name="copy_Ai4Ai4i4" group="Inline methods">
+ *   <operation>copy elements from one vector to an other</operation>
+ *
+ *   <format>prefix<fsep/>copy_Ai4Ai4i4</format>
+ *   <dformat>{copy_Ai4Ai4i4}</dformat>
+ *
+ *   <form name="copy_Ai4Ai4i4" code="COP_PREFIX_SARRAY_COPY_AI4AI4I4"/>
+ *
+ *   <before>..., src, srcIndex, dest, destIndex, length</before>
+ *   <after>..., </after>
+ *
+ *   <description>The <i>src</i>, <i>srcIndex</i>, <i>dest</i>,
+ *   <i>destIndex</i> and <i>length</i> are popped from the stack as the
+ *   types <code>ptr</code>, <code>int32</code>, <code>ptr</code>,
+ *   <code>int32</code> and <code>int32</code> respectively.
+ *   <i>Length</i> elements are copied from <i>dest</i> starting at
+ *   <i>destIndex</i> to <i>src</i> starting at <i>srcIndex</i>.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>Array.Copy(src, srcIndex, dest, destIndex, length)</code> method
+ *   where the elements of the arrays can be determined at verification time.
+ *   </notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SARRAY_COPY_AI4AI4I4):
+{
+	COPY_STATE_TO_THREAD();
+	ILSArrayCopy_AI4AI4I4(thread,
+						  (System_Array *)stacktop[-5].ptrValue,
+						  stacktop[-4].intValue,
+						  (System_Array *)stacktop[-3].ptrValue,
+						  stacktop[-2].intValue,
+						  stacktop[-1].intValue, CVM_ARG_WORD);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, -5);
+}
+VMBREAK(COP_PREFIX_SARRAY_COPY_AI4AI4I4);
+
+/**
+ * <opcode name="clear_Ai4I4" group="Inline methods">
+ *   <operation>clear elements in a vector</operation>
+ *
+ *   <format>prefix<fsep/>clear_Ai4I4</format>
+ *   <dformat>{clear_Ai4I4}</dformat>
+ *
+ *   <form name="clear_Ai4I4" code="COP_PREFIX_SARRAY_CLEAR_AI4I4"/>
+ *
+ *   <before>..., array, index, length</before>
+ *   <after>..., </after>
+ *
+ *   <description>The <i>array</i>, <i>index</i> and <i>length</i>are 
+ *   popped from the stack as the types <code>ptr</code>, <code>int32</code>
+ *   and <code>int32</code> respectively. <i>Length</i> elements are cleared
+ *   (set to 0) in <i>array</i> starting at <i>index</i>.</description>
+ *
+ *   <notes>This instruction is used to inline calls to the
+ *   <code>Array.Clear(array, index, length)</code> method where the element
+ *   of the array can be determined at verification time.</notes>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_SARRAY_CLEAR_AI4I4):
+{
+	COPY_STATE_TO_THREAD();
+	ILSArrayClear_AI4I4(thread,
+						(System_Array *)stacktop[-3].ptrValue,
+						stacktop[-2].intValue,
+						stacktop[-1].intValue, CVM_ARG_WORD);
+	RESTORE_STATE_FROM_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_WORD, -3);
+}
+VMBREAK(COP_PREFIX_SARRAY_CLEAR_AI4I4);
+
+/**
  * <opcode name="abs_i4" group="Inline methods">
  *   <operation>Compute the absolute value of an int</operation>
  *

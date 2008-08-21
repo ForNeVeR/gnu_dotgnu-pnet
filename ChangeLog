@@ -1,3 +1,44 @@
+2008-08-21  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.h: Add opcodes for inlining array copy and clear for vectors
+	where the elements can be verified at code generation time.
+
+	* engine/cvm_inline.c: Implement the new opcodes.
+
+	* engine/cvmc_call.c (CVMCoder_CallInlineable): Add the new argument
+	elementSize. Add codegeneration for the new opcodes.
+
+	* engine/jitc.c (ILJitInit): Create the signatures for the new array
+	functions.
+
+	* engine(jitc_call.c (JITCoder_CallInlineable): Add the new argument
+	elementSize. Add codegeneration for calling the new inlined functions.
+
+	* engine/lib_array.c (ValidateCopyArgs_AAI4, ValidateCopyArgs_AI4AI4I4,
+	ValidateClearArgs_AI4I4, ILSArrayCopy_AAI4, ILSArrayCopy_AI4AI4I4,
+	ILSArrayClear_AI4I4): Add functions to support Array.Copy and Array.Clear
+	for vectors where the elements have been verified during verification
+	time.
+
+	* engine/lib_defs.h (ILSArrayCopy_AAI4, ILSArrayCopy_AI4AI4I4,
+	ILSArrayClear_AI4I4): Add prototypes.
+
+	* engine/null_coder.c (Coder_CallInlineable):  Add the new argument
+	elementSize.
+
+	* engine/verify.c (PUSH_SYNC_OBJECT, _ILVerify): Add the new argument
+	elementSize to the calls of ILCoderCallInlineable with the value 0.
+
+	* engine/verify_except.c (OutputExceptionTable, IL_OP_THROW): likewise.
+
+	* engine/verify_call.c (IL_OP_RET): likewise.
+	(IL_OP_CALL): Handle the new inlines for Array.Copy and Array.Clear.
+	(GetArrayCopyHandler, GetArrayClearHandler): Add support functions to
+	verify array types.
+
+	* include/il_coder.h: Add the new inline functions for Array.Copy and
+	Array.Clear. Add argument elementSize to ILCoderCallInlineable.
+
 2008-08-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c (_ILJitOnDemandDriver): Add check if the current function

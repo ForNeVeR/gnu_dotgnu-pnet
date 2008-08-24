@@ -670,6 +670,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	unsigned int tryInlineOpcode;
 	unsigned char *tryInlinePc;
 	ILType *constraintType;
+	ILUInt32 optimizationLevel;
 #ifdef IL_CONFIG_DEBUG_LINES
 	int haveDebug = ILDebugPresent(ILProgramItem_Image(method));
 #else
@@ -698,6 +699,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	}
 
 	coderFlags = ILCoderGetFlags(coder);
+	optimizationLevel = ILCoderGetOptimizationLevel(coder);
 	isStatic = ILMethod_IsStatic(method);
 	isSynchronized = ILMethod_IsSynchronized(method);
 
@@ -718,6 +720,11 @@ restart:
 	if(!ILCoderSetup(coder, start, method, code))
 	{
 		VERIFY_MEMORY_ERROR();
+	}
+
+	if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
+	{
+		ILCoderProfileStart(coder);
 	}
 
 	/* Allocate the jump target mask */
@@ -1166,7 +1173,7 @@ restart:
 	/* Output the exception handler table, if necessary */
 	if(exceptions != 0 || isSynchronized)
 	{
-		OutputExceptionTable(coder, method, exceptions, hasRethrow);
+		OutputExceptionTable(coder, method, exceptions, hasRethrow, coderFlags);
 	}
 
 	/* Finish processing using the coder */

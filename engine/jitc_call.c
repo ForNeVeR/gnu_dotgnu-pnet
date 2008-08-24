@@ -512,14 +512,6 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 		ILJitValue thread = _ILJitCoderGetThread(jitCoder);
 
-	#ifndef IL_CONFIG_REDUCE_CODE
-		/* Emit the code to increase the call count of the method if profiling is enabled. */
-		if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
-		{
-			_ILJitProfileIncreaseMethodCallCount(jitCoder, methodInfo);
-		}
-	#endif
-
 		/* Call the engine function directly with the supplied args. */
 		/* Queue the cctor to run. */
 		ILCCtorMgr_OnCallMethod(&(jitCoder->cctorMgr), methodInfo);
@@ -538,7 +530,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 												   0,
 												   &callSignature);
 	#endif
-		returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
+		returnValue = _ILJitCallInternal(jitCoder, thread,
 										 methodInfo,
 										 fnInfo.func, methodName,
 										 jitParams,
@@ -595,13 +587,6 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 		ILPInvoke *pinv = ILPInvokeFind(methodInfo);
 		if(pinv && ((ILJitMethodInfo*)(methodInfo->userData))->fnInfo.func)
 		{
-		#ifndef IL_CONFIG_REDUCE_CODE
-			/* Emit the code to increase the call count of the method if profiling is enabled. */
-			if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
-			{
-				_ILJitProfileIncreaseMethodCallCount(jitCoder, methodInfo);
-			}
-		#endif
 			returnValue = _ILJitInlinePinvoke(jitCoder, methodInfo, jitParams);
 		}
 		else
@@ -858,7 +843,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 													   0,
 													   &callSignature);
 		#endif
-			returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
+			returnValue = _ILJitCallInternal(jitCoder, thread,
 											 methodInfo,
 											 fnInfo.func, methodName,
 											 jitParams,
@@ -876,7 +861,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 													   1,
 													   &callSignature);
 
-			returnValue = _ILJitCallInternal(jitCoder->jitFunction, thread,
+			returnValue = _ILJitCallInternal(jitCoder, thread,
 											 methodInfo,
 											 fnInfo.func, methodName,
 											 jitParams, argCount + 1);

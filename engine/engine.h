@@ -902,6 +902,30 @@ ILString *_ILStringInternFromConstant(ILExecThread *thread, void *data,
  */
 ILInt32 _ILStringToBuffer(ILExecThread *thread, ILString *str, ILUInt16 **buf);
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+/*
+ * Dump the profiling information for the given methods.
+ * A NULL method marks the end of the list.
+ * Returns 1 if profiling information was dumped otherwise 0.
+ */
+int _ILProfilingDump(FILE *stream, ILMethod **methods);
+#ifdef ENHANCED_PROFILER
+/*
+ * Get the start profiling timestamp.
+ */
+void _ILProfilingStart(ILCurrTime *timestamp);
+
+/*
+ * End profiling for the method given and add the difference between the
+ * timestamp given and the current time to the total execution time of
+ * the method.
+ * Increase the execution counter here too so that the number of executions
+ * and spent time in the method matches.
+ */
+void _ILProfilingEnd(ILMethod *method, ILCurrTime *startTimestamp);
+#endif /* ENHANCED_PROFILER */
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
+
 #ifndef REDUCED_STDIO
 
 /*

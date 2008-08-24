@@ -1,3 +1,62 @@
+2008-08-24  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvmc.c (CVMCoder_SetOptimizationLevel,
+	CVMCoder_GetOptimizationLevel): Add new functions for managing the
+	optimization level.
+	(CVMCoder_Create): Initialize the optimizationLevel.
+
+	* engine/engine.h: Add prototypes for the new profiling functions
+	_ILProfilingDump, _ILProfilingStart and _ILProfilingEnd.
+
+	* engine/ilrun.c (main): Add new option -O to set the optimization level
+	for the coder.
+
+	* engine/jitc.c (ILJitInit): Create the jit types and signatures needed
+	for enhanced profiling.
+	(JITCoder_SetOptimizationLevel,  JITCoder_GetOptimizationLevel): Add new
+	coder functions.
+	(_ILJitCallInternal): Add emitting profiling information for the internal
+	call.
+	(_ILJitCompileInternal): Intitialize members needed in the the jitCoder.
+
+	* engine/jitc_call.c (JITCoder_CallMethod): Remove increasing the call
+	count of the called method.
+
+	* engine/jitc_pinvoke.c (_ILJitCompilePinvoke): Add initialization of
+	more coder members needed by profiling.
+	(_ILJitInlinePinvoke): Add emitting profiling information.
+
+	* engine/jitc_profile.c: Add support for enhanced profiling.
+
+	* engine/jitc_setup.c (JITCoder_Setup): Remove increasing the call count
+	of the current method. Initialize the new members for enhanced profiling.
+
+	* engine/lib_profiling.c (_ILProfilingStart, _ILProfilingEnd): Add new
+	functions for enhanced profiling support.
+	(_ILProfilingDump): Move the common code for dumping profiling information
+	from the coders to here.
+
+	* engine/null_coder.c (Coder_ProfileStart, Coder_ProfileEnd,
+	Coder_SetOptimizationLevel, Coder_GetOptimizationLevel): Add the stubs
+	for the new coder members.
+
+	* engine/verify.c (_ILVerify): Get the optimization level used by the
+	coder. Add call to ILCoderProfileStart after the call to ILCoderSetup.
+	Pass coderFlags to OutputExceptionTable.
+
+	* engine/verify_call.c (IL_OP_CALL): Enable inlining if the optimization
+	level used is > 0 instead of checking the coder flags.
+	(IL_OP_RET): Add call to ILCoderProfileEnd before calling
+	ILCoderReturnInsn.
+
+	* engine/verify_except.c (OutputExceptionTable): Add call to
+	ILCoderProfileEnd before rethowing the exception to the caller.
+	(IL_OP_THROW): likewise.
+
+	* include/il_coder.h: Add some comments to the coder flags.
+	Add the new coder members: profileStart, profileEnd, setOptimizationLevel
+	and getOptimizationLevel.
+
 2008-08-21  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.h: Add opcodes for inlining array copy and clear for vectors

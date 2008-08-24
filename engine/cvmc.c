@@ -84,6 +84,7 @@ struct _tagILCVMCoder
 	int				labelOutOfMemory;
 	unsigned char  *switchStart;
 	int				debugEnabled;
+	ILUInt32		optimizationLevel;
 #ifdef IL_DEBUGGER
 	/* Flag if current method can be debugged */
 	int markBreakpoints;
@@ -192,6 +193,7 @@ static ILCoder *CVMCoder_Create(ILExecProcess *process, ILUInt32 size,
 	coder->switchStart = 0;
 	coder->debugEnabled = 0;
 	coder->flags = 0;
+	coder->optimizationLevel = 1;
 	coder->nativeArgPosn = 0;
 	coder->nativeArgHeight = 0;
 	coder->process = process;
@@ -324,6 +326,35 @@ static void *CVMCoder_HandleLockedMethod(ILCoder *_coder, ILMethod *method)
 }
 
 /*
+ * Start profiling of the current method.
+ */
+static void CVMCoder_ProfilingStart(ILCoder *_coder)
+{
+	/* TODO */
+}
+
+/*
+ * End profiling of the current method.
+ */
+static void CVMCoder_ProfilingEnd(ILCoder *_coder)
+{
+	/* TODO */
+}
+
+static void	CVMCoder_SetOptimizationLevel(ILCoder *_coder,
+										  ILUInt32 optimizationLevel)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	coder->optimizationLevel = optimizationLevel;
+}
+
+static ILUInt32 CVMCoder_GetOptimizationLevel(ILCoder *_coder)
+{
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	return coder->optimizationLevel;
+}
+
+/*
  * Get a block of method cache memory for use in code unrolling.
  */
 int _ILCVMStartUnrollBlock(ILCoder *_coder, int align, ILCachePosn *posn)
@@ -428,8 +459,6 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 {
 	ILCache *cache = ((ILCVMCoder *)(process->coder))->cache;
 	ILMethod **list;
-	ILMethod **temp;
-	ILMethod *method;
 	int haveCounts;
 
 	/* Get the list of all translated methods from the cache */
@@ -439,49 +468,8 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 		return 0;
 	}
 
-	/* Sort the method list into decreasing order of count */
-	if(list[0] != 0 && list[1] != 0)
-	{
-		ILMethod **outer;
-		ILMethod **inner;
-		for(outer = list; outer[1] != 0; ++outer)
-		{
-			for(inner = outer + 1; inner[0] != 0; ++inner)
-			{
-				if(outer[0]->count < inner[0]->count)
-				{
-					method = outer[0];
-					outer[0] = inner[0];
-					inner[0] = method;
-				}
-			}
-		}
-	}
-
-	/* Print the method information */
-	haveCounts = 0;
-	temp = list;
-#ifdef ENHANCED_PROFILER
-	printf ("Count\tTotal time\tAverage time\tMethod\n");
-#endif
-	while((method = *temp++) != 0)
-	{
-		if(!(method->count))
-		{
-			continue;
-		}
-#ifdef ENHANCED_PROFILER
-		printf("%lu\t%lu\t%lu\t", (unsigned long)(method->count),
-			(unsigned long)(method->time), (unsigned long)(method->time) / (unsigned long)(method->count));
-#else
- 		printf("%lu\t", (unsigned long)(method->count));
-#endif
-		ILDumpMethodType(stdout, ILProgramItem_Image(method),
-						 ILMethod_Signature(method), 0,
-						 ILMethod_Owner(method), ILMethod_Name(method), 0);
-		putc('\n', stdout);
-		haveCounts = 1;
-	}
+	/* Dump the profiling information */
+	haveCounts = _ILProfilingDump(stream, list);
 
 	/* Clean up and exit */
 	ILFree(list);
@@ -624,6 +612,10 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_RunCCtors,
 	CVMCoder_RunCCtor,
 	CVMCoder_HandleLockedMethod,
+	CVMCoder_ProfilingStart,
+	CVMCoder_ProfilingEnd,
+	CVMCoder_SetOptimizationLevel,
+	CVMCoder_GetOptimizationLevel,
 	"sentinel"
 };
 

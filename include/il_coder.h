@@ -161,11 +161,11 @@ typedef struct
 /* 
  * Profiling flags
  */
+#define IL_CODER_FLAG_IR_DUMP		 1
+#define IL_CODER_FLAG_METHOD_PROFILE 2	/* emit profiling code */
+#define IL_CODER_FLAG_METHOD_TRACE	 4	/* emit trace code */
+#define IL_CODER_FLAG_STATS			 8	/* print code generation informaton */
 
-#define IL_CODER_FLAG_IR_DUMP 1
-#define IL_CODER_FLAG_METHOD_PROFILE 2
-#define IL_CODER_FLAG_METHOD_TRACE 4
-#define IL_CODER_FLAG_STATS 8
 /*
  * Coder class definition.
  */
@@ -857,6 +857,26 @@ struct _tagILCoderClass
 	void *(*handleLockedMethod)(ILCoder *coder, ILMethod *method);
 
 	/*
+	 * Start profiling of the current method.
+	 */
+	void (*profileStart)(ILCoder *coder);
+
+	/*
+	 * End profiling of the current method.
+	 */
+	void (*profileEnd)(ILCoder *coder);
+
+	/*
+	 * Set the optimization level to be used by the coder.
+	 */
+	void (*setOptimizationLevel)(ILCoder *coder, ILUInt32 optimizationLevel);
+
+	/*
+	 * Get the optimization level to be used by the coder.
+	 */
+	ILUInt32 (*getOptimizationLevel)(ILCoder *coder);
+
+	/*
 	 * Sentinel string to catch missing methods in class tables.
 	 */
 	const char *sentinel;
@@ -1150,6 +1170,14 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->runCCtor))((coder), (classInfo)))
 #define ILCoderHandleLockedMethod(coder,method) \
 			(*((coder)->classInfo->handleLockedMethod))((coder), (method))
+#define ILCoderProfileStart(coder) \
+			(*((coder)->classInfo->profileStart))((coder))
+#define ILCoderProfileEnd(coder) \
+			(*((coder)->classInfo->profileEnd))((coder))
+#define ILCoderSetOptimizationLevel(coder, optimizationLevel) \
+			(*((coder)->classInfo->setOptimizationLevel))((coder), (optimizationLevel))
+#define ILCoderGetOptimizationLevel(coder) \
+			(*((coder)->classInfo->getOptimizationLevel))((coder))
 
 #ifdef	__cplusplus
 };

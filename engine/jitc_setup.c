@@ -62,14 +62,6 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	}
 #endif
 
-#ifndef IL_CONFIG_REDUCE_CODE
-	/* Emit the code to increase the call count of the method if profiling is enabled. */
-	if(coder->flags & IL_CODER_FLAG_METHOD_PROFILE)
-	{
-		_ILJitProfileIncreaseMethodCallCount(coder, method);
-	}
-#endif
-
 #ifdef IL_DEBUGGER
 	/* Check if this method can be debugged */
 	debugger = ILDebuggerFromProcess(coder->process);
@@ -107,6 +99,12 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	/* Reset the cached thread. */
 	coder->thread = 0;
 #endif
+
+#ifdef ENHANCED_PROFILER
+	/* Reset the timestamps */
+	coder->profileTimestamp = 0;
+	coder->inlineTimestamp = 0;
+#endif /* ENHANCED_PROFILER */
 
 	/* Ensure that the evaluation stack can hold at least the methods maxStack */
 	/* items. */

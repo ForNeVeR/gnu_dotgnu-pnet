@@ -1671,9 +1671,7 @@ case IL_OP_CALL:
 
 callNonvirtualFromVirtual:
 								
-				if((coderFlags & (IL_CODER_FLAG_IR_DUMP 
-									| IL_CODER_FLAG_METHOD_PROFILE 
-									| IL_CODER_FLAG_METHOD_TRACE)) == 0)
+				if(optimizationLevel > 0)
 				{
 					ILInt32 elementSize = 0;
 
@@ -2252,6 +2250,12 @@ case IL_OP_RET:
 			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
 		}
 
+		/* Notify the coder to emit profiling for method end */
+		if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
+		{
+			ILCoderProfileEnd(coder);
+		}
+
 		/* Notify the coder of the return instruction */
 		ILCoderReturnInsn(coder, stack[stackSize - 1].engineType, returnType);
 
@@ -2264,6 +2268,12 @@ case IL_OP_RET:
 		{
 			PUSH_SYNC_OBJECT();
 			ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
+		}
+
+		/* Notify the coder to emit profiling for method end */
+		if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
+		{
+			ILCoderProfileEnd(coder);
 		}
 
 		/* Notify the coder of a non-value return instruction */

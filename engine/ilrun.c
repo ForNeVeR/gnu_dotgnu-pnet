@@ -85,6 +85,10 @@ static ILCmdLineOption const options[] = {
 	{"--ignore-load-errors", 'i', 0,
 		"--ignore-load-errors    or -i",
 		"Ignore metadata errors when loading (discouraged)."},
+	{"-O", 'O', 1, 0, 0},
+	{"--optimization-level", 'O', 1,
+		"--optimization-level level	or -O level",
+		"Set optimization level (0 = no optimizations)."},
 #if defined(linux) || defined(__linux) || defined(__linux__)
 	{"--register", 'r', 0,
 		"--register [fullpath]",
@@ -175,6 +179,8 @@ int main(int argc, char *argv[])
 	int ilprogramLen;
 	int flags=0;
 	int loadFlags = 0;
+	int optimizationLeve = 0;
+	int setOptimizationLevel = 0;
 #ifndef IL_CONFIG_REDUCE_CODE
 	int dumpInsnProfile = 0;
 	int dumpVarProfile = 0;
@@ -267,6 +273,16 @@ int main(int argc, char *argv[])
 			}
 			break;
 
+			case 'O':
+			{
+				if(param && *param >= '0' && *param <= '9')
+				{
+					optimizationLeve = (*param - '0');
+					setOptimizationLevel = 1;
+				}
+			}
+			break;
+
 		#ifndef IL_CONFIG_REDUCE_CODE
 			case 'I':
 			{
@@ -291,7 +307,7 @@ int main(int argc, char *argv[])
 			
 			case 'Z':
 			{
-				flags |= IL_CODER_FLAG_STATS;				
+				flags |= IL_CODER_FLAG_STATS;
 			}
 			break;
 
@@ -436,6 +452,10 @@ int main(int argc, char *argv[])
 
 	ILExecProcessSetCoderFlags(process,flags);
 	ILExecProcessSetLoadFlags(process, loadFlags, loadFlags);
+	if(setOptimizationLevel)
+	{
+		ILCoderSetOptimizationLevel(process->coder, optimizationLeve);
+	}
 
 	/* Set the list of directories to use for path searching */
 	if(numLibraryDirs > 0)

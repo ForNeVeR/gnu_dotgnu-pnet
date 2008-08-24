@@ -153,6 +153,15 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size);
 static ILObject *_ILJitAllocTyped(ILClass *classInfo);
 #endif	/* IL_USE_TYPED_ALLOCATION */
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#ifdef ENHANCED_PROFILER
+/*
+ * Type for the ILCurrTime used by profiling.
+ */
+static ILJitType _ILJitTypeCurrTime = 0;
+#endif /* ENHANCED_PROFILER */
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
+
 /*
  * Definition of signatures of internal functions used by jitted code.
  * They have to be kept in sync with the corresponding engine funcions.
@@ -347,6 +356,20 @@ static ILJitType _ILJitSignature_ILSArrayCopy_AI4AI4I4 = 0;
  */
 static ILJitType _ILJitSignature_ILSArrayClear_AI4I4 = 0;
 
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#ifdef ENHANCED_PROFILER
+/*
+ * void _ILProfilingStart(ILCurrTime *timestamp)
+ */
+static ILJitType _ILJitSignature_ILProfilingStart = 0;
+
+/*
+ * void _ILProfilingEnd(ILMethod *method, ILCurrTime *startTimestamp)
+ */
+static ILJitType _ILJitSignature_ILProfilingEnd = 0;
+#endif /* ENHANCED_PROFILER */
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
+
 /*
  * void ILJitTraceIn(ILExecThread *thread, ILMethod *method)
  * void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
@@ -384,6 +407,7 @@ typedef struct _tagILJITCoder ILJITCoder;
 #include "jitc_call.c"
 #include "jitc_delegate.c"
 #include "jitc_math.c"
+#include "jitc_profile.c"
 #undef	IL_JITC_DECLARATIONS
 
 /*
@@ -461,6 +485,7 @@ struct _tagILJITCoder
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
+#include "jitc_profile.c"
 #undef	IL_JITC_CODER_INSTANCE
 
 	/* The current jitted function. */
@@ -473,6 +498,9 @@ struct _tagILJITCoder
 
 	/* The manager for running the required cctors. */
 	ILCCtorMgr		cctorMgr;
+
+	/* The optimization level used by the coder */
+	ILUInt32		optimizationLevel;
 
 #ifndef IL_JIT_THREAD_IN_SIGNATURE
 	/* cache for the current thread. */
@@ -2285,6 +2313,18 @@ int ILJitInit()
 									_IL_ALIGN_FOR_TYPE(void_p));
 	_ILJitTypesInitBase(&_ILJitType_TYPEDREF, _ILJitTypedRef);
 
+#ifndef IL_CONFIG_REDUCE_CODE
+#ifdef ENHANCED_PROFILER
+	if(!(_ILJitTypeCurrTime = jit_type_create_struct(0, 0, 0)))
+	{
+		return 0;
+	}
+	jit_type_set_size_and_alignment(_ILJitTypeCurrTime,
+									sizeof(ILCurrTime),
+									_IL_ALIGN_FOR_TYPE(void_p));
+#endif /* ENHANCED_PROFILER */
+#endif /* !IL_CONFIG_REDUCE_CODE */
+
 	/* Initialize the native method signatures. */
 	returnType = _IL_JIT_TYPE_VPTR;
 	if(!(_ILJitSignature_ILExecThreadCurrent = 
@@ -2593,6 +2633,27 @@ int ILJitInit()
 	}
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#ifdef ENHANCED_PROFILER
+	args[0] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILProfilingStart =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 1, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_VPTR;
+	returnType = _IL_JIT_TYPE_VOID;
+	if(!(_ILJitSignature_ILProfilingEnd =
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+#endif /* ENHANCED_PROFILER */
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_VOID;
@@ -2626,6 +2687,7 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 	}
 	coder->debugEnabled = 0;
 	coder->flags = 0;
+	coder->optimizationLevel = 1;
 
 	/* Intialize the pool for the method infos. */
 	ILMemPoolInit(&(coder->methodPool), sizeof(ILJitMethodInfo), 100);
@@ -2649,10 +2711,11 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 #endif
 
 #define IL_JITC_CODER_INIT
-	#include "jitc_inline.c"
-	#include "jitc_locals.c"
-	#include "jitc_stack.c"
-	#include "jitc_labels.c"
+#include "jitc_inline.c"
+#include "jitc_locals.c"
+#include "jitc_stack.c"
+#include "jitc_labels.c"
+#include "jitc_profile.c"
 #undef IL_JITC_CODER_INIT
 
 	/* Ready to go */
@@ -2881,6 +2944,7 @@ static void JITCoder_Destroy(ILCoder *_coder)
 #include "jitc_locals.c"
 #include "jitc_stack.c"
 #include "jitc_labels.c"
+#include "jitc_profile.c"
 #undef IL_JITC_CODER_DESTROY
 
 	if(coder->context)
@@ -2971,6 +3035,21 @@ static void *JITCoder_HandleLockedMethod(ILCoder *coder, ILMethod *method)
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
 	return ILCCtorMgr_HandleLockedMethod(&(jitCoder->cctorMgr), method);
+}
+
+static void	JITCoder_SetOptimizationLevel(ILCoder *coder,
+										  ILUInt32 optimizationLevel)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	jitCoder->optimizationLevel = optimizationLevel;
+}
+
+static ILUInt32 JITCoder_GetOptimizationLevel(ILCoder *coder)
+{
+	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
+
+	return jitCoder->optimizationLevel;
 }
 
 #ifdef IL_CONFIG_PINVOKE
@@ -3128,7 +3207,7 @@ static int _ILJitFunctionIsInternal(ILJITCoder *coder, ILMethod *method,
 /*
  * Generate the code to call an internal function.
  */
-static ILJitValue _ILJitCallInternal(ILJitFunction func,
+static ILJitValue _ILJitCallInternal(ILJITCoder *jitCoder,
 									 ILJitValue thread,
 									 ILMethod *method,
 									 void *nativeFunction,
@@ -3203,8 +3282,9 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 		{
 			++totalParams;
 			jitParamTypes[1] = _IL_JIT_TYPE_VPTR;
-			returnValue = jit_value_create(func, returnType);
-			jitParams[1] = jit_insn_address_of(func, returnValue);
+			returnValue = jit_value_create(jitCoder->jitFunction, returnType);
+			jitParams[1] = jit_insn_address_of(jitCoder->jitFunction,
+											   returnValue);
 			returnType = _IL_JIT_TYPE_VOID;
 			hasStructReturn = 1;
 			++param;
@@ -3222,22 +3302,24 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 			{
 				jitParamTypes[param] = _IL_JIT_TYPE_VPTR;
 			#ifdef IL_JIT_THREAD_IN_SIGNATURE
-				jitParams[param] = jit_insn_address_of(func, args[current - 1]);
+				jitParams[param] = jit_insn_address_of(jitCoder->jitFunction,
+													   args[current - 1]);
 			#else
-				jitParams[param] = jit_insn_address_of(func, args[current]);
+				jitParams[param] = jit_insn_address_of(jitCoder->jitFunction,
+													   args[current]);
 			#endif
 			}
 			else
 			{
 				jitParamTypes[param] = paramType;
 			#ifdef IL_JIT_THREAD_IN_SIGNATURE
-				args[current - 1] = _ILJitValueConvertImplicit(func,
-															  args[current - 1],
-															  paramType);
+				args[current - 1] = _ILJitValueConvertImplicit(jitCoder->jitFunction,
+															   args[current - 1],
+															   paramType);
 				jitParams[param] = args[current - 1];
 		
 			#else
-				args[current] = _ILJitValueConvertImplicit(func,
+				args[current] = _ILJitValueConvertImplicit(jitCoder->jitFunction,
 														   args[current],
 														   paramType);
 				jitParams[param] = args[current];
@@ -3250,23 +3332,44 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 												  jitParamTypes,
 												  totalParams, 1);
 
-		_ILJitSetMethodInThread(func, thread, method);
-		_ILJitBeginNativeCall(func, thread);
+		_ILJitSetMethodInThread(jitCoder->jitFunction, thread, method);
+		_ILJitBeginNativeCall(jitCoder->jitFunction, thread);
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+		/*
+		 * Emit the code to start profiling of the method if profiling
+		 * is enabled
+		 */
+		if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
+		{
+			_ILJitProfileStart(jitCoder, method);
+		}
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
 		if(!hasStructReturn)
 		{
-			returnValue = jit_insn_call_native(func, methodName, nativeFunction,
+			returnValue = jit_insn_call_native(jitCoder->jitFunction,
+											   methodName, nativeFunction,
 											   callSignature,
 											   jitParams, totalParams, 0);
 		}
 		else
 		{
-			jit_insn_call_native(func, methodName, nativeFunction,
-							 	 callSignature,
+			jit_insn_call_native(jitCoder->jitFunction, methodName,
+								 nativeFunction, callSignature,
 							 	 jitParams, totalParams, 0);
 		}
 		jit_type_free(callSignature);
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+		/*
+		 * Emit the code to end profiling of the method if profiling
+		 * is enabled
+		 */
+		if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
+		{
+			_ILJitProfileEnd(jitCoder, method);
+		}
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
 	}
-	_ILJitEndNativeCall(func, thread);
+	_ILJitEndNativeCall(jitCoder->jitFunction, thread);
 
 	return returnValue;
 }
@@ -3277,10 +3380,8 @@ static ILJitValue _ILJitCallInternal(ILJitFunction func,
 static int _ILJitCompileInternal(ILJitFunction func)
 {
 	ILMethod *method = (ILMethod *)jit_function_get_meta(func, IL_JIT_META_METHOD);
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	ILClassPrivate *classPrivate = (ILClassPrivate *)(ILMethod_Owner(method)->userData);
 	ILJITCoder *jitCoder = (ILJITCoder *)(classPrivate->process->coder);
-#endif
 	ILJitMethodInfo *jitMethodInfo = (ILJitMethodInfo *)(method->userData);
 	ILJitType signature = jit_function_get_signature(func);
 	unsigned int numParams = jit_type_num_params(signature);
@@ -3295,6 +3396,20 @@ static int _ILJitCompileInternal(ILJitFunction func)
 	ILJitValue jitParams[numParams];
 #endif
 
+	/* Set the current function in the coder */
+	jitCoder->jitFunction = func;
+
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+	/* Reset the cached thread. */
+	jitCoder->thread = 0;
+#endif
+
+#ifdef ENHANCED_PROFILER
+	/* Reset the timestamps */
+	jitCoder->profileTimestamp = 0;
+	jitCoder->inlineTimestamp = 0;
+#endif /* ENHANCED_PROFILER */
+
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS) && defined(_IL_JIT_ENABLE_DEBUG)
 	methodName = _ILJitFunctionGetMethodName(func);
 	if(jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -3308,29 +3423,29 @@ static int _ILJitCompileInternal(ILJitFunction func)
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	for(current = 1; current < numParams; ++current)
 	{
-		if(!(paramValue = jit_value_get_param(func, current)))
+		if(!(paramValue = jit_value_get_param(jitCoder->jitFunction, current)))
 		{
 			return JIT_RESULT_OUT_OF_MEMORY;
 		}
 		jitParams[current - 1] = paramValue;
 	}
-	returnValue = _ILJitCallInternal(func, thread, method,
-					 				jitMethodInfo->fnInfo.func, methodName,
+	returnValue = _ILJitCallInternal(jitCoder, thread, method,
+					 				 jitMethodInfo->fnInfo.func, methodName,
 									 jitParams, numParams - 1);
 #else
 	for(current = 0; current < numParams; ++current)
 	{
-		if(!(paramValue = jit_value_get_param(func, current)))
+		if(!(paramValue = jit_value_get_param(jitCoder->jitFunction, current)))
 		{
 			return JIT_RESULT_OUT_OF_MEMORY;
 		}
 		jitParams[current] = paramValue;
 	}
-	returnValue = _ILJitCallInternal(func, thread, method,
-					 				jitMethodInfo->fnInfo.func, methodName,
+	returnValue = _ILJitCallInternal(jitCoder, thread, method,
+									 jitMethodInfo->fnInfo.func, methodName,
 									 jitParams, numParams);
 #endif
-	jit_insn_return(func, returnValue);	
+	jit_insn_return(jitCoder->jitFunction, returnValue);
 
 	return JIT_RESULT_OK;
 }
@@ -3374,7 +3489,6 @@ static int _ILJitMethodIsAbstract(ILMethod *method)
 	return 0;
 }
 
-#include "jitc_profile.c"
 #include "jitc_pinvoke.c"
 
 /*
@@ -4614,7 +4728,6 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 	int haveCounts = 0;
 	ILMethod *method;
 	ILMethod **methods;
-	ILMethod **temp;
 
 	/* Get the number of created and called functions */
 	function = jit_function_next(coder->context, 0);
@@ -4655,56 +4768,41 @@ int _ILDumpMethodProfile(FILE *stream, ILExecProcess *process)
 	/* Mark the end of the list. */
 	methods[current] = 0;
 
-	/* Sort the method list into decreasing order of count */
-	if(methods[0] != 0 && methods[1] != 0)
-	{
-		ILMethod **outer;
-		ILMethod **inner;
-		for(outer = methods; outer[1] != 0; ++outer)
-		{
-			for(inner = outer + 1; inner[0] != 0; ++inner)
-			{
-				if(outer[0]->count < inner[0]->count)
-				{
-					method = outer[0];
-					outer[0] = inner[0];
-					inner[0] = method;
-				}
-			}
-		}
-	}
-
-	/* Print the method information */
-	temp = methods;
-#ifdef ENHANCED_PROFILER
-	printf ("Count\tTotal time\tAverage time\tMethod\n");
-#endif
-	while((method = *temp++) != 0)
-	{
-		if(!(method->count))
-		{
-			continue;
-		}
-#ifdef ENHANCED_PROFILER
-		printf("%lu\t%lu\t%lu\t", (unsigned long)(method->count),
-			(unsigned long)(method->time), (unsigned long)(method->time) / (unsigned long)(method->count));
-#else
- 		printf("%lu\t", (unsigned long)(method->count));
-#endif
-		ILDumpMethodType(stdout, ILProgramItem_Image(method),
-						 ILMethod_Signature(method), 0,
-						 ILMethod_Owner(method), ILMethod_Name(method), 0);
-		putc('\n', stdout);
-		haveCounts = 1;
-	}
+	/* Dump the profiling information */
+	haveCounts = _ILProfilingDump(stream, methods);
 
 	/* Clean up and exit */
-
 	ILFree(methods);
 	return haveCounts;
 }
 
-#endif /* !IL_CONFIG_REDUCE_CODE */
+static void ILJitTraceIn(ILExecThread *thread, ILMethod *method)
+{
+	/* TODO: nesting level */
+	ILMutexLock(globalTraceMutex);
+	fputs("Entering ", stdout);
+	ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method),
+					 ILMethod_Name(method), method);
+	putc('\n',stdout);
+	fflush(stdout);
+	ILMutexUnlock(globalTraceMutex);
+}
+
+static void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
+{
+	/* TODO: nesting level */
+	ILMutexLock(globalTraceMutex);
+	fputs("Leaving ", stdout);
+	ILDumpMethodType(stdout, ILProgramItem_Image(method),
+					 ILMethod_Signature(method), 0,
+					 ILMethod_Owner(method),
+					 ILMethod_Name(method), method);
+	putc('\n',stdout);
+	fflush(stdout);
+	ILMutexUnlock(globalTraceMutex);
+}
 
 #ifdef _IL_JIT_ENABLE_DEBUG
 
@@ -4744,8 +4842,8 @@ char *ILJitPrintMethod(void *pc)
 	jit_function_t fn;
 	void *handler = 0;
 	ILMethod *method;
-	char *methodName;
-	char *className;
+	const char *methodName;
+	const char *className;
 	char *result;
 
 	thread = ILExecThreadCurrent();
@@ -4928,37 +5026,7 @@ void ILJitBacktrace(void *frame, void *pc, int numFrames)
 
 #endif /* _IL_JIT_ENABLE_DEBUG */
 
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-
-static void ILJitTraceIn(ILExecThread *thread, ILMethod *method)
-{
-	/* TODO: nesting level */
-	ILMutexLock(globalTraceMutex);
-	fputs("Entering ", stdout);
-	ILDumpMethodType(stdout, ILProgramItem_Image(method),
-					 ILMethod_Signature(method), 0,
-					 ILMethod_Owner(method),
-					 ILMethod_Name(method), method);
-	putc('\n',stdout);
-	fflush(stdout);
-	ILMutexUnlock(globalTraceMutex);
-}
-
-static void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
-{
-	/* TODO: nesting level */
-	ILMutexLock(globalTraceMutex);
-	fputs("Leaving ", stdout);
-	ILDumpMethodType(stdout, ILProgramItem_Image(method),
-					 ILMethod_Signature(method), 0,
-					 ILMethod_Owner(method),
-					 ILMethod_Name(method), method);
-	putc('\n',stdout);
-	fflush(stdout);
-	ILMutexUnlock(globalTraceMutex);
-}
-
-#endif
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
 
 #define	IL_JITC_FUNCTIONS
 #include "jitc_arith.c"
@@ -4973,6 +5041,7 @@ static void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
 #include "jitc_call.c"
 #include "jitc_delegate.c"
 #include "jitc_math.c"
+#include "jitc_profile.c"
 #undef	IL_JITC_FUNCTIONS
 
 /*
@@ -4992,6 +5061,7 @@ static void ILJitTraceOut(ILExecThread *thread, ILMethod *method)
 #include "jitc_conv.c"
 #include "jitc_obj.c"
 #include "jitc_call.c"
+#include "jitc_profile.c"
 #undef	IL_JITC_CODE
 
 /*
@@ -5110,6 +5180,10 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_RunCCtors,
 	JITCoder_RunCCtor,
 	JITCoder_HandleLockedMethod,
+	JITCoder_ProfilingStart,
+	JITCoder_ProfilingEnd,
+	JITCoder_SetOptimizationLevel,
+	JITCoder_GetOptimizationLevel,
 	"sentinel"
 };
 #ifdef	__cplusplus

@@ -440,7 +440,20 @@ static void *Coder_HandleLockedMethod(ILCoder *coder, ILMethod *method)
 {
 	return 0;
 }
-
+static void Coder_ProfileStart(ILCoder *coder)
+{
+}
+static void Coder_ProfileEnd(ILCoder *coder)
+{
+}
+static void	Coder_SetOptimizationLevel(ILCoder *coder,
+									   ILUInt32 optimizationLevel)
+{
+}
+static ILUInt32 Coder_GetOptimizationLevel(ILCoder *coder)
+{
+	return 0;
+}
 /*
  * Null coder class and instance.
  */
@@ -556,6 +569,10 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_RunCCtors,
 	Coder_RunCCtor,
 	Coder_HandleLockedMethod,
+	Coder_ProfileStart,
+	Coder_ProfileEnd,
+	Coder_SetOptimizationLevel,
+	Coder_GetOptimizationLevel,
 	"sentinel"
 };
 ILCoder _ILNullCoder = {&_ILNullCoderClass};

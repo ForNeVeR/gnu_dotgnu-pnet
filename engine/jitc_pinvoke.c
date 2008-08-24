@@ -112,6 +112,17 @@ static int _ILJitCompilePinvoke(jit_function_t func)
 	/* Setup the needed stuff in the jitCoder. */
 	jitCoder->jitFunction = func;
 
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+	/* Reset the cached thread. */
+	jitCoder->thread = 0;
+#endif
+
+#ifdef ENHANCED_PROFILER
+	/* Reset the timestamps */
+	jitCoder->profileTimestamp = 0;
+	jitCoder->inlineTimestamp = 0;
+#endif /* ENHANCED_PROFILER */
+
 	/* Check if the method to invoke was found on this system. */
 	if(_ILJitPinvokeError(jitMethodInfo->fnInfo))
 	{
@@ -470,6 +481,18 @@ static ILJitValue _ILJitInlinePinvoke(ILJITCoder *jitCoder, ILMethod *method, IL
 	ILJitType jitParamTypes[numParams + 1];
 	ILJitValue jitParams[numParams + 1];
 	ILUInt32 param = 0;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	/*
+	 * Emit the code to start profiling of the method if profiling
+	 * is enabled
+	 */
+	if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
+	{
+		_ILJitProfileStart(jitCoder, method);
+	}
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
+
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	for(current = 1; current < numParams; ++current)
 #else
@@ -501,7 +524,7 @@ static ILJitValue _ILJitInlinePinvoke(ILJITCoder *jitCoder, ILMethod *method, IL
 		else if(ILTypeIsStringClass(valueType))
 		{
 			 ILJitValue args[2];
-			 args[0] = _ILJitFunctionGetThread(func);
+			 args[0] = _ILJitCoderGetThread(jitCoder);
 			 args[1] = tempParams[current];
 	  	 	 switch(marshalType)
 			 {
@@ -682,6 +705,16 @@ static ILJitValue _ILJitInlinePinvoke(ILJITCoder *jitCoder, ILMethod *method, IL
 		}
 		++param;
 	}
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+	/*
+	 * Emit the code to start profiling of the method if profiling
+	 * is enabled
+	 */
+	if(jitCoder->flags & IL_CODER_FLAG_METHOD_PROFILE)
+	{
+		_ILJitProfileEnd(jitCoder, method);
+	}
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
 #endif
 	if(returnType==jit_type_void)return 0;
 	else return(returnValue);

@@ -30,7 +30,8 @@
  * attempt to match the exception against the rules.
  */
 static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
-								 ILException *exceptions, int hasRethrow)
+								 ILException *exceptions, int hasRethrow,
+								 int coderFlags)
 {
 	ILUInt32 offset;
 	ILUInt32 end;
@@ -125,6 +126,12 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 		isStatic = ILMethod_IsStatic(method);
 		PUSH_SYNC_OBJECT();
 		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
+	}
+
+	/* Notify the coder to emit profiling for method end */
+	if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
+	{
+		ILCoderProfileEnd(coder);
 	}
 
 	ILCoderThrow(coder, 0);
@@ -239,6 +246,12 @@ case IL_OP_THROW:
 			{
 				PUSH_SYNC_OBJECT();
 				ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
+			}
+
+			/* Notify the coder to emit profiling for method end */
+			if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
+			{
+				ILCoderProfileEnd(coder);
 			}
 
 			ILCoderThrow(coder, 0);

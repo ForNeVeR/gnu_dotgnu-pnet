@@ -1,3 +1,6 @@
+2008-08-25  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+	* engine/lib_profiling.c: format profiling outputs with tabs.
+	
 2008-08-24  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvmc.c (CVMCoder_SetOptimizationLevel,

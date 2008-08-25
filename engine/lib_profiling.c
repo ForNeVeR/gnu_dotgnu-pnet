@@ -79,9 +79,9 @@ int _ILProfilingDump(FILE *stream, ILMethod **methods)
 	/* Print the method information */
 	temp = methods;
 #ifdef ENHANCED_PROFILER
-	printf ("Count      Total time Average time Method\n");
+	printf ("Count\tTotal time\tAverage time\tMethod\n");
 #else
-	printf ("Count      Method\n");
+	printf ("Count\tMethod\n");
 #endif
 	while((method = *temp++) != 0)
 	{
@@ -90,10 +90,10 @@ int _ILProfilingDump(FILE *stream, ILMethod **methods)
 			continue;
 		}
 #ifdef ENHANCED_PROFILER
-		printf("%-11lu%-11lu%-13lu", (unsigned long)(method->count),
+		printf("%lu\t%lu\t%lu\t", (unsigned long)(method->count),
 			(unsigned long)(method->time), (unsigned long)(method->time) / (unsigned long)(method->count));
 #else
- 		printf("%-11lu", (unsigned long)(method->count));
+ 		printf("%lu\t", (unsigned long)(method->count));
 #endif
 		ILDumpMethodType(stdout, ILProgramItem_Image(method),
 						 ILMethod_Signature(method), 0,

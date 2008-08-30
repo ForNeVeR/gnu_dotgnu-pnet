@@ -13,14 +13,16 @@
  * modified is included with the above copyright notice.
  */
  
-/* USE OF THIS FILE IS NOT RECOMMENDED unless GC_all_interior_pointers	*/
-/* is not set, or the collector has been built with			*/
-/* -DDONT_ADD_BYTE_AT_END, or the specified size includes a pointerfree	*/
-/* word at the end.  In the standard collector configuration,		*/
-/* the final word of each object may not be scanned.			*/
+/* WARNING:								*/
+/* Note that for these routines, it is the clients responsibility to	*/
+/* add the extra byte at the end to deal with one-past-the-end pointers.*/
+/* In the standard collector configuration, the collector assumes that	*/
+/* such a byte has been added, and hence does not trace the last word	*/
+/* in the resulting object.						*/
+/* This is not an issue if the collector is compiled with 		*/
+/* -DDONT_ADD_BYTE_AT_END, or if GC_all_interior_pointers is not set.	*/
 /* This interface is most useful for compilers that generate C.		*/
-/* It is also used internally for thread-local allocation, in which	*/
-/* case, the size is suitably adjusted by the caller.			*/
+/* It is also used internally for thread-local allocation.		*/
 /* Manual use is hereby discouraged.					*/
 
 #include "gc.h"
@@ -45,6 +47,8 @@
 /* directly using gmalloc before putting multiple objects into the	*/
 /* tiny_fl entry.  If num_direct is zero, then the free lists may also	*/
 /* be initialized to (void *)0.						*/
+/* Note that we use the zeroth free list to hold objects 1 granule in	*/
+/* size that are used to satisfy size 0 allocation requests.		*/
 /* We rely on much of this hopefully getting optimized away in the	*/
 /* num_direct = 0 case.							*/
 /* Particularly if granules is constant, this should generate a small	*/
@@ -52,20 +56,20 @@
 # define GC_FAST_MALLOC_GRANS(result,granules,tiny_fl,num_direct,\
 			      kind,default_expr,init) \
 { \
-    if (GC_EXPECT(granules >= GC_TINY_FREELISTS,0)) { \
-        result = default_expr; \
+    if (GC_EXPECT((granules) >= GC_TINY_FREELISTS,0)) { \
+        result = (default_expr); \
     } else { \
-	void **my_fl = tiny_fl + granules; \
+	void **my_fl = (tiny_fl) + (granules); \
         void *my_entry=*my_fl; \
 	void *next; \
  \
 	while (GC_EXPECT((GC_word)my_entry \
-				<= num_direct + GC_TINY_FREELISTS + 1, 0)) { \
+			<= (num_direct) + GC_TINY_FREELISTS + 1, 0)) { \
 	    /* Entry contains counter or NULL */ \
-	    if ((GC_word)my_entry - 1 < num_direct) { \
+	    if ((GC_word)my_entry - 1 < (num_direct)) { \
 		/* Small counter value, not NULL */ \
-                *my_fl = (char *)my_entry + granules + 1; \
-                result = default_expr; \
+                *my_fl = (char *)my_entry + (granules) + 1; \
+                result = (default_expr); \
 		goto out; \
             } else { \
 		/* Large counter or NULL */ \
@@ -74,7 +78,7 @@
 				       kind, my_fl); \
 		my_entry = *my_fl; \
                 if (my_entry == 0) { \
-		    result = GC_oom_fn(granules*GC_GRANULE_BYTES); \
+		    result = GC_oom_fn((granules)*GC_GRANULE_BYTES); \
 		    goto out; \
 		} \
 	    } \
@@ -84,7 +88,7 @@
         *my_fl = next; \
 	init; \
         PREFETCH_FOR_WRITE(next); \
-        GC_ASSERT(GC_size(result) >= granules*GC_GRANULE_BYTES); \
+        GC_ASSERT(GC_size(result) >= (granules)*GC_GRANULE_BYTES); \
         GC_ASSERT((kind) == PTRFREE || ((GC_word *)result)[1] == 0); \
       out: ; \
    } \
@@ -113,7 +117,7 @@
     size_t grans = GC_WORDS_TO_WHOLE_GRANULES(n); \
     GC_FAST_MALLOC_GRANS(result, grans, tiny_fl, 0, \
 			 PTRFREE, GC_malloc_atomic(grans*GC_GRANULE_BYTES), \
-			 /* no initialization */); \
+			 (void)0 /* no initialization */); \
 }
 
 

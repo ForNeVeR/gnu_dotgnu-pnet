@@ -17,12 +17,12 @@ dnl Process this file with autoconf to produce configure.
 # Initialization
 # ==============
 
-AC_INIT(gc,7.1,Hans.Boehm@hp.com) 
+AC_INIT(gc,7.2alpha1,Hans.Boehm@hp.com) 
     ## version must conform to [0-9]+[.][0-9]+(alpha[0-9]+)?
 AC_CONFIG_SRCDIR(gcj_mlc.c)
 AC_CANONICAL_TARGET 
 AC_PREREQ(2.53)
-AC_REVISION($Revision: 1.2 $)
+AC_REVISION($Revision: 1.3 $)
 GC_SET_VERSION
 AM_INIT_AUTOMAKE([foreign dist-bzip2 subdir-objects nostdinc])
 AM_MAINTAINER_MODE
@@ -187,9 +187,9 @@ case "$THREADS" in
     ;;
  win32)
     AC_DEFINE(GC_WIN32_THREADS)
+    win32_threads=true
     dnl Wine getenv may not return NULL for missing entry
     AC_DEFINE(NO_GETENV)
-	win32_threads=true
     ;;
  dgux386)
     THREADS=dgux386
@@ -406,11 +406,14 @@ case "$host" in
  sparc-*-netbsd*)
     machdep="mach_dep.lo sparc_netbsd_mach_dep.lo"
     ;;
+ sparc64-*-netbsd*)
+    machdep="mach_dep.lo sparc_mach_dep.lo"
+    ;;
  sparc-sun-solaris2.3)
     machdep="mach_dep.lo sparc_mach_dep.lo"
     AC_DEFINE(SUNOS53_SHARED_LIB)
     ;;
- sparc*-sun-solaris2.*)
+ sparc*-sun-solaris2*)
     machdep="mach_dep.lo sparc_mach_dep.lo"
     ;;
  ia64-*-*)

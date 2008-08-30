@@ -229,6 +229,9 @@
 # if defined(__cris__) || defined(CRIS)
 #   include "atomic_ops/sysdeps/gcc/cris.h"
 # endif
+# if defined(__mips__)
+#   include "atomic_ops/sysdeps/gcc/mips.h"
+# endif /* __mips__ */
 #endif /* __GNUC__ && !AO_USE_PTHREAD_DEFS */
 
 #if defined(__INTEL_COMPILER) && !defined(AO_USE_PTHREAD_DEFS)
@@ -275,10 +278,10 @@
 /* The most common way to clear a test-and-set location		*/
 /* at the end of a critical section.				*/
 #if AO_AO_TS_T && !defined(AO_CLEAR)
-# define AO_CLEAR(addr) AO_store_release((AO_TS_t *)addr, AO_TS_CLEAR)
+# define AO_CLEAR(addr) AO_store_release((AO_TS_t *)(addr), AO_TS_CLEAR)
 #endif
 #if AO_CHAR_TS_T && !defined(AO_CLEAR)
-# define AO_CLEAR(addr) AO_char_store_release((AO_TS_t *)addr, AO_TS_CLEAR)
+# define AO_CLEAR(addr) AO_char_store_release((AO_TS_t *)(addr), AO_TS_CLEAR)
 #endif
 
 /*

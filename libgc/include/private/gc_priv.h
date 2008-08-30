@@ -75,9 +75,13 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 #if __GNUC__ >= 3
 # define EXPECT(expr, outcome) __builtin_expect(expr,outcome)
   /* Equivalent to (expr), but predict that usually (expr)==outcome. */
-# define INLINE inline
 #else
 # define EXPECT(expr, outcome) (expr)
+#endif /* __GNUC__ */
+
+#if __GNUC__ >= 3
+# define INLINE inline
+#else
 # define INLINE
 #endif /* __GNUC__ */
 
@@ -781,7 +785,7 @@ struct hblk {
 
 # define HBLK_IS_FREE(hdr) (((hdr) -> hb_flags & FREE_BLK) != 0)
 
-# define OBJ_SZ_TO_BLOCKS(sz) divHBLKSZ(sz + HBLKSIZE-1)
+# define OBJ_SZ_TO_BLOCKS(sz) divHBLKSZ((sz) + HBLKSIZE-1)
     /* Size of block (in units of HBLKSIZE) needed to hold objects of	*/
     /* given sz (in bytes).						*/
 
@@ -1952,7 +1956,7 @@ void GC_err_puts(const char *s);
    This code works correctly (ugliness is to avoid "unused var" warnings) */
 # define GC_STATIC_ASSERT(expr) do { if (0) { char j[(expr)? 1 : -1]; j[0]='\0'; j[0]=j[0]; } } while(0)
 #else
-# define GC_STATIC_ASSERT(expr) sizeof(char[(expr)? 1 : -1])
+# define GC_STATIC_ASSERT(expr) (void)sizeof(char[(expr)? 1 : -1])
 #endif
 
 # if defined(PARALLEL_MARK) || defined(THREAD_LOCAL_ALLOC)

@@ -264,8 +264,8 @@ HOSTCFLAGS=$(CFLAGS)
 #   may help performance on recent Linux installations.  (It failed for
 #   me on RedHat 8, but appears to work on RedHat 9.)
 # -DPARALLEL_MARK allows the marker to run in multiple threads.  Recommended
-#   for multiprocessors.  Currently requires Linux on X86 or IA64, though
-#   support for other Posix platforms should be fairly easy to add,
+#   for multiprocessors.  Currently works only on some pthreads platforms,
+#   though support for other platforms should be fairly easy to add,
 #   if the thread implementation is otherwise supported.
 # -DNO_GETENV prevents the collector from looking at environment variables.
 #   These may otherwise alter its configuration, or turn off GC altogether.
@@ -320,6 +320,14 @@ HOSTCFLAGS=$(CFLAGS)
 #   since it will scan inactive but cached NPTL thread stacks completely.
 # -DNO_PROC_STAT Causes the collector to avoid relying on Linux'
 #   /proc/self/stat.
+# -DNO_GETCONTEXT Causes the collector to not assume the existence of
+#   the getcontext() function on linux-like platforms.  This currently
+#   happens implicitly on Darwin, Hurd, or ARM or MIPS hardware.
+#   It is explicitly needed for some old versions of FreeBSD.
+# -DSTATIC=static Causes various GC_ symbols that could logically be
+#   declared static to be declared.  Reduces the number of visible symbols,
+#   which is probably cleaner, but may make some kinds of debugging and
+#   profiling harder.
 #
 
 CXXFLAGS= $(CFLAGS) 

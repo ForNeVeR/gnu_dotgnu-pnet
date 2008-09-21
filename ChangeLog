@@ -1,3 +1,15 @@
+2008-09-21  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/jitc.c (ILJitGetVtablePointer): Add function to get the jit
+	vtable entry for an ILMethod.
+
+	* engine/jitc.h (ILJitGetVtablePointer): Add prototype.
+
+	* engine/layout.c (LayoutClass): Move layout of the static class members
+	to the end so that the vtable is complete at that point.
+	Create virtual jit functions now during overriding the ancestors.
+	Create non virtual jit functions after the vtable is complete.
+
 2008-08-30  Klaus Treichel  <ktreichel@web.de>
 
 	* libgc/allchblk.c, libgc/alloc.c, libgc/backgraph.c, libgc/bdw-gc.pc.in,

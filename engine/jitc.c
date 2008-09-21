@@ -4315,6 +4315,19 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 }
 
 /*
+ * Get a pointer for a method suitable for a vtable.
+ * Returns 0 on error.
+ */
+void *ILJitGetVtablePointer(ILCoder *_coder, ILMethod *method)
+{
+	if(!ILJitFunctionCreate(_coder, method))
+	{
+		return  0;
+	}
+	return jit_function_to_vtable_pointer(ILJitFunctionFromILMethod(method));
+}
+
+/*
  * Create all jitMethods for the given class.
  * Returns 0 on error.
  */

@@ -167,6 +167,12 @@ int ILJitFunctionCreateFromAncestor(ILCoder *_coder, ILMethod *method,
 int ILJitCreateFunctionsForClass(ILCoder *_coder, ILClass *info);
 
 /*
+ * Get a pointer for a method suitable for a vtable.
+ * Returns 0 on error.
+ */
+void *ILJitGetVtablePointer(ILCoder *_coder, ILMethod *method);
+
+/*
  * Get the ILJitFunction for an ILMethod.
  * Returns 0 if the jit function stub isn't created yet.
  */

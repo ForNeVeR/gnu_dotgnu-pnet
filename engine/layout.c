@@ -1372,11 +1372,12 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 				(layout->nativeSize % layout->nativeAlignment);
 	}
 
-	/* Record the object size information for this class */
+	/* Record the object instance size information for this class */
 	classPrivate->size = layout->size;
 	classPrivate->alignment = layout->alignment;
 	classPrivate->nativeSize = layout->nativeSize;
 	classPrivate->nativeAlignment = layout->nativeAlignment;
+	classPrivate->managedInstance = layout->managedInstance;
 #ifdef IL_USE_JIT
 	if(!ILJitTypeCreate(classPrivate, process))
 	{
@@ -1393,6 +1394,156 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		return 0;
 	}
 #endif	/* IL_USE_TYPED_ALLOCATION */
+
+	/* Allocate vtable slots to the virtual methods in this class */
+	method = 0;
+	explicitSize = layout->vtableSize;
+	while((method = (ILMethod *)ILClassNextMemberByKind
+				(info, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		/* Skip this method if it isn't virtual */
+		if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0)
+		{
+			continue;
+		}
+
+		/* Is this the finalize method? */
+		if(method->member.name[0] == 'F' &&
+		   !strcmp(method->member.name + 1, "inalize") &&
+		   method->member.signature->un.method__.retType__ == ILType_Void &&
+		   method->member.signature->num__ == 0)
+		{
+			/* Determine if the finalizer is non-trivial */
+			if(!ILMethodGetCode(method, &code) ||
+			   code.codeLen != 1 ||
+			   ((unsigned char *)(code.code))[0] != IL_OP_RET)
+			{
+				layout->hasFinalizer = 1;
+			}
+		}
+
+		/* Do we need a new slot for this method? */
+		if((method->member.attributes & IL_META_METHODDEF_NEW_SLOT) != 0)
+		{
+			/* Allocate a vtable slot */
+			method->index = layout->vtableSize;
+			++(layout->vtableSize);
+			/* Initialize the metod vtable if this is a generic method */
+			if(!ILMethodSetVirtualAncestor(method, (ILMethod *)0))
+			{
+				info->userData = 0;
+				return 0;
+			}
+		}
+		else
+		{
+			/* Find the method in an ancestor class that this one overrides */
+			ancestor = FindVirtualAncestor(info, parent, method);
+			if(!ILMethodSetVirtualAncestor(method, ancestor))
+			{
+				info->userData = 0;
+				return 0;
+			}
+			if(ancestor)
+			{
+				/* Use the same index as the ancestor */
+				method->index = ancestor->index;
+			#ifdef IL_USE_JIT
+				if(isJitCoder)
+				{
+					if(!ILJitFunctionCreateFromAncestor(process->coder,
+														method,
+														ancestor))
+					{
+						info->userData = 0;
+						return 0;
+					}
+				}
+			#endif
+			}
+			else
+			{
+				/* No ancestor, so allocate a new slot.  This case is
+				   quite rare and will typically only happen with code
+				   that has been loaded from a Java .class file, or
+				   where the ancestor method is not accessible due to
+				   permission issues */
+				method->member.attributes |= IL_META_METHODDEF_NEW_SLOT;
+				method->index = layout->vtableSize;
+				++(layout->vtableSize);
+			}
+		}
+	}
+
+	/* If the vtable has grown too big, then bail out */
+	if(layout->vtableSize > (ILUInt32)65535)
+	{
+		info->userData = 0;
+		return 0;
+	}
+
+	/* Allocate the vtable and copy the parent's vtable into it */
+	if((vtable = (ILMethod **)
+			ILMemStackAllocItem(&(info->programItem.image->memStack),
+						        layout->vtableSize * sizeof(ILMethod *))) == 0)
+	{
+		info->userData = 0;
+		return 0;
+	}
+#ifdef IL_USE_JIT
+	if((jitVtable = (void **)
+			ILMemStackAllocItem(&(info->programItem.image->memStack),
+						        layout->vtableSize * sizeof(void *))) == 0)
+	{
+		info->userData = 0;
+		return 0;
+	}
+#endif
+	if(explicitSize > 0)
+	{
+		ILMemCpy(vtable, layout->vtable, explicitSize * sizeof(ILMethod *));
+	#ifdef IL_USE_JIT
+		ILMemCpy(jitVtable, layout->jitVtable, explicitSize * sizeof(void *));
+	#endif
+	}
+
+	/* Record the rest of the layout information for this class */
+	classPrivate->vtableSize = layout->vtableSize;
+	classPrivate->vtable = vtable;
+	classPrivate->hasFinalizer = layout->hasFinalizer;
+#ifdef IL_USE_JIT
+	classPrivate->jitVtable = jitVtable;
+#endif
+
+	/* Override the vtable slots with this class's method implementations */
+	method = 0;
+	while((method = (ILMethod *)ILClassNextMemberByKind
+				(info, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
+	{
+		if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) != 0)
+		{
+			vtable[method->index] = method;
+		#ifdef IL_USE_JIT
+			/* NOTE: Here still exists the slight possibility that a type is
+			   layouted whose parent type's vtable is not complete yet.
+			   Maybe we'll have to loop over the whole vtable again to build the 
+			   jitvtable */
+			jitVtable[method->index] = ILJitGetVtablePointer(process->coder, method);
+		#endif
+		}
+	}
+
+#ifdef IL_USE_JIT
+	if(isJitCoder)
+	{
+		if(!ILJitCreateFunctionsForClass(process->coder, info))
+		{
+			ILJitTypesDestroy(&(classPrivate->jitTypes));
+			info->userData = 0;
+			return 0;
+		}
+	}
+#endif
 
 	/* Allocate the static fields.  We must do this after the
 	   regular fields because some of the statics may be instances
@@ -1454,143 +1605,9 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		}
 	}
 
-	/* Allocate vtable slots to the virtual methods in this class */
-	method = 0;
-	explicitSize = layout->vtableSize;
-	while((method = (ILMethod *)ILClassNextMemberByKind
-				(info, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
-	{
-		/* Skip this method if it isn't virtual */
-		if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) == 0)
-		{
-			continue;
-		}
-
-		/* Is this the finalize method? */
-		if(method->member.name[0] == 'F' &&
-		   !strcmp(method->member.name + 1, "inalize") &&
-		   method->member.signature->un.method__.retType__ == ILType_Void &&
-		   method->member.signature->num__ == 0)
-		{
-			/* Determine if the finalizer is non-trivial */
-			if(!ILMethodGetCode(method, &code) ||
-			   code.codeLen != 1 ||
-			   ((unsigned char *)(code.code))[0] != IL_OP_RET)
-			{
-				layout->hasFinalizer = 1;
-			}
-		}
-
-		/* Do we need a new slot for this method? */
-		if((method->member.attributes & IL_META_METHODDEF_NEW_SLOT) != 0)
-		{
-			/* Allocate a vtable slot */
-			method->index = layout->vtableSize;
-			++(layout->vtableSize);
-			/* Initialize the metod vtable if this is a generic method */
-			if(!ILMethodSetVirtualAncestor(method, ancestor))
-			{
-				info->userData = 0;
-				return 0;
-			}
-		}
-		else
-		{
-			/* Find the method in an ancestor class that this one overrides */
-			ancestor = FindVirtualAncestor(info, parent, method);
-			if(!ILMethodSetVirtualAncestor(method, ancestor))
-			{
-				info->userData = 0;
-				return 0;
-			}
-			if(ancestor)
-			{
-				/* Use the same index as the ancestor */
-				method->index = ancestor->index;
-			#ifdef IL_USE_JIT
-				if(isJitCoder)
-				{
-					if(!ILJitFunctionCreateFromAncestor(process->coder,
-														method,
-														ancestor))
-					{
-						info->userData = 0;
-						return 0;
-					}
-				}
-			#endif
-			}
-			else
-			{
-				/* No ancestor, so allocate a new slot.  This case is
-				   quite rare and will typically only happen with code
-				   that has been loaded from a Java .class file, or
-				   where the ancestor method is not accessible due to
-				   permission issues */
-				method->member.attributes |= IL_META_METHODDEF_NEW_SLOT;
-				method->index = layout->vtableSize;
-				++(layout->vtableSize);
-			}
-		}
-	}
-
-	/* If the vtable has grown too big, then bail out */
-	if(layout->vtableSize > (ILUInt32)65535)
-	{
-		info->userData = 0;
-		return 0;
-	}
-
-#ifdef IL_USE_JIT
-	if(isJitCoder)
-	{
-		if(!ILJitCreateFunctionsForClass(process->coder, info))
-		{
-			ILJitTypesDestroy(&(classPrivate->jitTypes));
-			info->userData = 0;
-			return 0;
-		}
-	}
-#endif
-
-	/* Allocate the vtable and copy the parent's vtable into it */
-	if((vtable = (ILMethod **)
-			ILMemStackAllocItem(&(info->programItem.image->memStack),
-						        layout->vtableSize * sizeof(ILMethod *))) == 0)
-	{
-		info->userData = 0;
-		return 0;
-	}
-#ifdef IL_USE_JIT
-	if((jitVtable = (void **)
-			ILMemStackAllocItem(&(info->programItem.image->memStack),
-						        layout->vtableSize * sizeof(void *))) == 0)
-	{
-		info->userData = 0;
-		return 0;
-	}
-#endif
-	if(explicitSize > 0)
-	{
-		ILMemCpy(vtable, layout->vtable, explicitSize * sizeof(ILMethod *));
-	#ifdef IL_USE_JIT
-		ILMemCpy(jitVtable, layout->jitVtable, explicitSize * sizeof(ILMethod *));
-	#endif
-	}
-
-	/* Override the vtable slots with this class's method implementations */
-	method = 0;
-	while((method = (ILMethod *)ILClassNextMemberByKind
-				(info, (ILMember *)method, IL_META_MEMBERKIND_METHOD)) != 0)
-	{
-		if((method->member.attributes & IL_META_METHODDEF_VIRTUAL) != 0)
-		{
-			vtable[method->index] = method;
-		#ifdef IL_USE_JIT
-			jitVtable[method->index] = jit_function_to_vtable_pointer(ILJitFunctionFromILMethod(method));
-		#endif
-		}
-	}
+	/* Record the static layout information for this class */
+	classPrivate->staticSize = layout->staticSize;
+	classPrivate->managedStatic = layout->managedStatic;
 
 	/* Compute the interface tables for this class */
 	if((info->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK) !=
@@ -1613,15 +1630,8 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	}
 
 	/* Record the rest of the layout information for this class */
-	classPrivate->staticSize = layout->staticSize;
-	classPrivate->vtableSize = layout->vtableSize;
-	classPrivate->vtable = vtable;
-	classPrivate->hasFinalizer = layout->hasFinalizer;
-	classPrivate->managedInstance = layout->managedInstance;
-	classPrivate->managedStatic = layout->managedStatic;
 	layout->vtable = vtable;
 #ifdef IL_USE_JIT
-	classPrivate->jitVtable = jitVtable;
 	layout->jitVtable = jitVtable;
 #endif
 

@@ -1,7 +1,7 @@
 /*
- * TestSystem.cs - Tests for the "System" namespace.
+ * SuiteDiagnostics.cs - Tests for the "System.Diagnostics" namespace.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,25 +21,16 @@
 using CSUnit;
 using System;
 
-public class TestSystem
+public class SuiteDiagnostics
 {
 
 	public static TestSuite Suite()
 			{
-				TestSuite fullSuite, suite;
-				fullSuite = new TestSuite("System Assembly Tests");
-
-				suite = new TestSuite("Uri Tests");
-				suite.AddTests(typeof(TestUri));
-				fullSuite.AddTest(suite);
-
-				suite = new TestSuite("Network Tests");
-				suite.AddTests(typeof(TestIPAddress));
-				suite.AddTests(typeof(TestWebHeaderCollection));
-				suite.AddTest(SuiteDiagnostics.Suite());
-				fullSuite.AddTest(suite);
-
-				return fullSuite;
+				TestSuite suite = new TestSuite("Diagnostics Tests");
+#if CONFIG_FRAMEWORK_2_0 && CONFIG_EXTENDED_DIAGNOSTICS
+				suite.AddTests(typeof(TestStopwatch));
+#endif // CONFIG_FRAMEWORK_2_0 && CONFIG_EXTENDED_DIAGNOSTICS
+				return suite;
 			}
 
-}; // class TestSystem
+}; // class SuiteDiagnostics

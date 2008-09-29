@@ -1,3 +1,14 @@
+2008-09-29  Klaus Treichel  <ktreichel@web.de>
+
+	* System/Diagnostics/Stopwatch.cs: Add Stopwatch class.
+
+	* tests/System/Diagnostics/SuiteDiagnostics.cs,
+	tests/System/Diagnostics/TestStopwatch.cs: Add some tests for the
+	Stopwatch class.
+
+	* tests/System/SuiteSystem.cs: Add the new tests for System.Diagnostics to
+	the suite.
+
 2008-08-17  Klaus Treichel  <ktreichel@web.de>
 
 	* resources/en_US/runtime/Arg.txt: Add Arg_NotNullName=Argument.

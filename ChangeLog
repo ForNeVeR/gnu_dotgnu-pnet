@@ -1,3 +1,26 @@
+2008-09-29  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.h (_ILProfilingStart, _ILProfilingEnd): Change the
+	profiling timestamp to the performance counter.
+
+	* engine/jitc.c: Remove the now obsolete jit type for ILCurrTime.
+
+	* engine/jitc_profile.c (_ILJitProfileStart, _ILJitProfileEnd): Replace the
+	timestamp with the performance counter.
+
+	* engine/lib_profiling (_ILProfilingStart, _ILProfilingEnd): Use the new
+	functions in support/time.c now to get the performance counter.
+
+	* image/progam.h: Change the profile time counter from ILUInt32 to ILUInt64
+	to be able to hold a performance counter.
+
+	* include/il_system.h (ILGetLocalTime, ILGetPerformanceCounterFrequency,
+	ILGetPerformanceCounter): Add prototypes.
+
+	* support/time.c (ILGetLocalTime): Add function to retrieve the local time.
+	(ILGetPerformanceCounterFrequency, ILGetPerformanceCounter): Add functions
+	for performance counter access.
+
 2008-09-21  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/jitc.c (ILJitGetVtablePointer): Add function to get the jit

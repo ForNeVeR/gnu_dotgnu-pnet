@@ -92,7 +92,7 @@ static void _ILJitProfileStart(ILJITCoder *jitCoder, ILMethod *method)
 	if(!jitCoder->inlineTimestamp)
 	{
 		if(!(jitCoder->inlineTimestamp = jit_value_create(jitCoder->jitFunction,
-														  _ILJitTypeCurrTime)))
+														  _IL_JIT_TYPE_INT64)))
 		{
 			return;
 		} 
@@ -178,7 +178,7 @@ static void JITCoder_ProfilingStart(ILCoder *coder)
 	if(!jitCoder->profileTimestamp)
 	{
 		if(!(jitCoder->profileTimestamp = jit_value_create(jitCoder->jitFunction,
-														   _ILJitTypeCurrTime)))
+														   _IL_JIT_TYPE_INT64)))
 		{
 			return;
 		} 

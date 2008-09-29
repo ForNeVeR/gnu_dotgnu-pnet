@@ -119,14 +119,25 @@ int ILDeleteFile(const char *filename);
    Use "ILFree" to free the path later */
 int ILFileExists(const char *filename, char **newExePath);
 
-/* Get the current time in nanoseconds since 12:00am Jan 1, 0001 */
+/* 
+ * Internal representation of a time in nanoseconds since 12:00am Jan 1, 0001
+ */
 typedef struct
 {
 	ILInt64			secs;
 	ILUInt32		nsecs;
 
 } ILCurrTime;
+
+/*
+ * Get the current UTC time relative to Jan 01, 0001
+ */
 void ILGetCurrTime(ILCurrTime *timeValue);
+
+/*
+ * Get the current local time relative to Jan 01, 0001
+ */
+void ILGetLocalTime(ILCurrTime *timeValue);
 
 /* Get the current time in nanoseconds since the system was rebooted.
    If it isn't possible to get the since-reboot time, this returns zero */
@@ -140,6 +151,14 @@ ILInt64 ILCLIToUnixTime(ILInt64 timeValue);
 
 /* Convert a time_t time to a DateTime time */
 ILInt64 ILUnixToCLITime(ILInt64 timeValue);
+
+/* Get the frequency of the perfornamce counter.
+   If no high res counter/timer is available zero is returned. */
+ILBool ILGetPerformanceCounterFrequency(ILInt64 *frequency);
+
+/* Get the current performance counter,
+   If no high res counter/timer is available zero is returned. */
+ILBool ILGetPerformanceCounter(ILInt64 *counter);
 
 /* Get platform directory pathname information */
 typedef struct

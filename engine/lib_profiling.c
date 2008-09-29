@@ -106,12 +106,30 @@ int _ILProfilingDump(FILE *stream, ILMethod **methods)
 }
 
 #ifdef ENHANCED_PROFILER
+static ILInt64 GetCurrentTime()
+{
+	ILCurrTime timeValue;
+
+	ILGetLocalTime(&timeValue);
+
+	return (timeValue.secs * (ILInt64)10000000) +
+				(ILInt64)(timeValue.nsecs / (ILUInt32)100);
+}
+
 /*
  * Get the start profiling timestamp.
  */
-void _ILProfilingStart(ILCurrTime *timestamp)
+void _ILProfilingStart(ILInt64 *start)
 {
-	ILGetSinceRebootTime(timestamp);
+	if(!start)
+	{
+		return;
+	}
+
+	if(!ILGetPerformanceCounter(start))
+	{
+		*start = GetCurrentTime();
+	}
 }
 
 /*
@@ -121,35 +139,21 @@ void _ILProfilingStart(ILCurrTime *timestamp)
  * Increase the execution counter here too so that the number of executions
  * and spent time in the method matches.
  */
-void _ILProfilingEnd(ILMethod *method, ILCurrTime *startTimestamp)
+void _ILProfilingEnd(ILMethod *method, ILInt64 *start)
 {
-	ILCurrTime timestamp;
-	ILInt64 seconds;
-	ILUInt32 nanoSeconds;
-	ILUInt32 timeDiff;
+	ILInt64 end;
 
-	if(!method || !startTimestamp)
+	if(!method || !start)
 	{
 		return;
 	}
 
-	ILGetSinceRebootTime(&timestamp);
-
-	if(timestamp.nsecs < startTimestamp->nsecs)
+	if(!ILGetPerformanceCounter(&end))
 	{
-		seconds = timestamp.secs - startTimestamp->secs - 1;
-		nanoSeconds = (timestamp.nsecs + 1000000000) - startTimestamp->nsecs;
-	}
-	else
-	{
-		seconds = timestamp.secs - startTimestamp->secs;
-		nanoSeconds = timestamp.nsecs - startTimestamp->nsecs;
+		end = GetCurrentTime();
 	}
 
-	/* calculate the timedifference in microseconds */
-	timeDiff = (seconds * 1000000) + (nanoSeconds / 1000);
-
-	method->time += timeDiff;
+	method->time += (end - *start);	
 	++method->count;
 }
 #endif /* ENHANCED_PROFILER */

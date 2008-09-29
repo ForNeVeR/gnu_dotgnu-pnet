@@ -384,7 +384,7 @@ struct _tagILMethod
 	ILUInt32		index;				/* Data added by the runtime engine */
 	ILUInt32		count;				/* Profile count for the engine */
 #ifdef ENHANCED_PROFILER
-	ILUInt32		time;				/* Profile time counter for the engine */
+	ILUInt64		time;				/* Profile time counter for the engine */
 #endif
 };
 

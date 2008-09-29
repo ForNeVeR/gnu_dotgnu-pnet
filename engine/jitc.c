@@ -153,15 +153,6 @@ static ILObject *_ILJitAllocAtomic(ILClass *classInfo, ILUInt32 size);
 static ILObject *_ILJitAllocTyped(ILClass *classInfo);
 #endif	/* IL_USE_TYPED_ALLOCATION */
 
-#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
-#ifdef ENHANCED_PROFILER
-/*
- * Type for the ILCurrTime used by profiling.
- */
-static ILJitType _ILJitTypeCurrTime = 0;
-#endif /* ENHANCED_PROFILER */
-#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
-
 /*
  * Definition of signatures of internal functions used by jitted code.
  * They have to be kept in sync with the corresponding engine funcions.
@@ -2312,18 +2303,6 @@ int ILJitInit()
 									sizeof(ILTypedRef),
 									_IL_ALIGN_FOR_TYPE(void_p));
 	_ILJitTypesInitBase(&_ILJitType_TYPEDREF, _ILJitTypedRef);
-
-#ifndef IL_CONFIG_REDUCE_CODE
-#ifdef ENHANCED_PROFILER
-	if(!(_ILJitTypeCurrTime = jit_type_create_struct(0, 0, 0)))
-	{
-		return 0;
-	}
-	jit_type_set_size_and_alignment(_ILJitTypeCurrTime,
-									sizeof(ILCurrTime),
-									_IL_ALIGN_FOR_TYPE(void_p));
-#endif /* ENHANCED_PROFILER */
-#endif /* !IL_CONFIG_REDUCE_CODE */
 
 	/* Initialize the native method signatures. */
 	returnType = _IL_JIT_TYPE_VPTR;

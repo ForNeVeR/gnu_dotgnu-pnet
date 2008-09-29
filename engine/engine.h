@@ -911,18 +911,18 @@ ILInt32 _ILStringToBuffer(ILExecThread *thread, ILString *str, ILUInt16 **buf);
 int _ILProfilingDump(FILE *stream, ILMethod **methods);
 #ifdef ENHANCED_PROFILER
 /*
- * Get the start profiling timestamp.
+ * Get the start profiling performance counter.
  */
-void _ILProfilingStart(ILCurrTime *timestamp);
+void _ILProfilingStart(ILInt64 *start);
 
 /*
  * End profiling for the method given and add the difference between the
- * timestamp given and the current time to the total execution time of
- * the method.
+ * performance counter given and the current performance counter to the total
+ * execution time of the method.
  * Increase the execution counter here too so that the number of executions
  * and spent time in the method matches.
  */
-void _ILProfilingEnd(ILMethod *method, ILCurrTime *startTimestamp);
+void _ILProfilingEnd(ILMethod *method, ILInt64 *start);
 #endif /* ENHANCED_PROFILER */
 #endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
 

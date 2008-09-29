@@ -2,7 +2,7 @@
  * time.c - Get the current system time.
  *
  * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
- * Copyright (C) 2004  Free Software Foundation
+ * Copyright (C) 2004, 2008  Free Software Foundation
  *
  * Contributions from Thong Nguyen (tum@veridicus.com)
  *
@@ -79,6 +79,9 @@ extern	"C" {
  */
 #define	PALM_EPOCH_ADJUST	((ILInt64)60052752000LL)
 
+/*
+ * Get the current UTC time relative to Jan 01, 0001
+ */
 void ILGetCurrTime(ILCurrTime *timeValue)
 {
 #ifdef HAVE_GETTIMEOFDAY
@@ -207,6 +210,84 @@ ILInt64 ILCLIToUnixTime(ILInt64 timeValue)
 ILInt64 ILUnixToCLITime(ILInt64 timeValue)
 {
 	return (timeValue + EPOCH_ADJUST) * (ILInt64)10000000;
+}
+
+/*
+ * Get the current local time relative to Jan 01, 0001
+ */
+void ILGetLocalTime(ILCurrTime *timeValue)
+{
+	ILGetCurrTime(timeValue);
+
+	timeValue->secs -= (ILInt64)(ILGetTimeZoneAdjust());
+}
+
+ILBool ILGetPerformanceCounterFrequency(ILInt64 *frequency)
+{
+	if(!frequency)
+	{
+		return (ILBool)0;
+	}
+	else
+	{
+#ifdef IL_WIN32_PLATFORM
+		LARGE_INTEGER freq;
+
+		if(QueryPerformanceFrequency(&freq))
+		{
+			*frequency = (ILInt64)(freq.QuadPart);
+			return (ILBool)1;
+		}
+#elif defined(HAVE_CLOCK_GETTIME) && \
+	  (defined(CLOCK_PROCESS_CPUTIME_ID) || defined(CLOCK_MONOTONIC))
+		*frequency = 1000000000L;
+		return (ILBool)1;
+#endif
+	}
+	*frequency = 10000000L;
+	return (ILBool)0;
+}
+
+ILBool ILGetPerformanceCounter(ILInt64 *counter)
+{
+	if(!counter)
+	{
+		return (ILBool)0;
+	}
+	else
+	{
+#ifdef IL_WIN32_PLATFORM
+		LARGE_INTEGER ctr;
+
+		if(QueryPerformanceCounter(&ctr))
+		{
+			*counter = (ILInt64)(ctr.QuadPart);
+			return (ILBool)1;
+		}
+#elif defined(HAVE_CLOCK_GETTIME) && \
+	  (defined(CLOCK_PROCESS_CPUTIME_ID) || defined(CLOCK_MONOTONIC))
+		struct timespec tp;
+		/*
+		 * i'd prefer to use CLOCK_PROCESS_CPUTIME_ID in first place
+		 * but the resolution of this timer is too low on some systems.
+		 */
+#if defined(CLOCK_MONOTONIC)
+		if(clock_gettime(CLOCK_MONOTONIC, &tp) != 0)
+		{
+			return (ILBool)0;
+		}
+#else
+		if(clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &tp) != 0)
+		{
+			return (ILBool)0;
+		}
+#endif
+		*counter = ((tp.tv_sec * 1000000000L) + (ILInt64)tp.tv_nsec);
+		return (ILBool)1;
+#endif
+	}
+	/* TODO: return the local time if we get here */
+	return (ILBool)0;
 }
 
 #ifdef	__cplusplus

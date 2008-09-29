@@ -594,8 +594,8 @@ extern ILInt32 _IL_TimeMethods_GetUpTime(ILExecThread * _thread);
 
 extern void _IL_CryptoMethods_GenerateRandom(ILExecThread * _thread, System_Array * buf, ILInt32 offset, ILInt32 count);
 extern ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread * _thread, ILInt32 algorithm);
-extern void _IL_CryptoMethods_HashReset(ILExecThread * _thread, ILNativeInt state);
 extern void _IL_CryptoMethods_HashFree(ILExecThread * _thread, ILNativeInt state);
+extern void _IL_CryptoMethods_HashReset(ILExecThread * _thread, ILNativeInt state);
 extern void _IL_CryptoMethods_HashUpdate(ILExecThread * _thread, ILNativeInt state, System_Array * buffer, ILInt32 offset, ILInt32 count);
 extern void _IL_CryptoMethods_HashFinal(ILExecThread * _thread, ILNativeInt state, System_Array * hash);
 extern void _IL_CryptoMethods_Decrypt(ILExecThread * _thread, ILNativeInt state, System_Array * inBuffer, ILInt32 inOffset, System_Array * outBuffer, ILInt32 outOffset);
@@ -659,6 +659,9 @@ extern ILBool _IL_FileMethods_CheckHandleAccess(ILExecThread * _thread, ILNative
 extern ILInt32 _IL_FileMethods_Copy(ILExecThread * _thread, ILString * src, ILString * dest);
 
 extern void _IL_BlockingOperation_ThreadSigAbort(ILExecThread * _thread, ILObject * thread);
+
+extern ILBool _IL_Stopwatch_GetPerformanceFrequency(ILExecThread * _thread, ILInt64 * frequency);
+extern ILInt64 _IL_Stopwatch_GetPerformanceCounter(ILExecThread * _thread);
 
 extern void _IL_Process_CloseProcess(ILExecThread * _thread, ILNativeInt processHandle, ILInt32 processID);
 extern ILInt32 _IL_Process_GetHandleCount(ILExecThread * _thread, ILNativeInt processHandle);

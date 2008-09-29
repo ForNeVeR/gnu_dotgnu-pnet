@@ -3,6 +3,8 @@
 	* engine/engine.h (_ILProfilingStart, _ILProfilingEnd): Change the
 	profiling timestamp to the performance counter.
 
+	* engine/int_proto.h, engine/int_table.c: regenerate
+
 	* engine/jitc.c: Remove the now obsolete jit type for ILCurrTime.
 
 	* engine/jitc_profile.c (_ILJitProfileStart, _ILJitProfileEnd): Replace the
@@ -10,6 +12,10 @@
 
 	* engine/lib_profiling (_ILProfilingStart, _ILProfilingEnd): Use the new
 	functions in support/time.c now to get the performance counter.
+
+	* engine/lib_time.c (_IL_Stopwatch_GetPerformanceFrequency,
+	_IL_Stopwatch_GetPerformanceCounter): Add internal support functions for
+	the System.Diagnostics.Stopwatch class.
 
 	* image/progam.h: Change the profile time counter from ILUInt32 to ILUInt64
 	to be able to hold a performance counter.

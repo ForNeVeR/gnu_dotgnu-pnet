@@ -2703,8 +2703,8 @@ static void marshal_bppipi(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(CryptoMethods_Methods)
 	IL_METHOD("GenerateRandom", "([Bii)V", _IL_CryptoMethods_GenerateRandom, marshal_vppii)
 	IL_METHOD("HashNew", "(i)j", _IL_CryptoMethods_HashNew, marshal_jpi)
-	IL_METHOD("HashReset", "(j)V", _IL_CryptoMethods_HashReset, marshal_vpj)
 	IL_METHOD("HashFree", "(j)V", _IL_CryptoMethods_HashFree, marshal_vpj)
+	IL_METHOD("HashReset", "(j)V", _IL_CryptoMethods_HashReset, marshal_vpj)
 	IL_METHOD("HashUpdate", "(j[Bii)V", _IL_CryptoMethods_HashUpdate, marshal_vpjpii)
 	IL_METHOD("HashFinal", "(j[B)V", _IL_CryptoMethods_HashFinal, marshal_vpjp)
 	IL_METHOD("Decrypt", "(j[Bi[Bi)V", _IL_CryptoMethods_Decrypt, marshal_vpjpipi)
@@ -2858,6 +2858,15 @@ IL_METHOD_END
 
 IL_METHOD_BEGIN(BlockingOperation_Methods)
 	IL_METHOD("ThreadSigAbort", "(oSystem.Threading.Thread;)V", _IL_BlockingOperation_ThreadSigAbort, marshal_vpp)
+IL_METHOD_END
+
+#endif
+
+#ifndef _IL_Stopwatch_suppressed
+
+IL_METHOD_BEGIN(Stopwatch_Methods)
+	IL_METHOD("GetPerformanceFrequency", "(&l)Z", _IL_Stopwatch_GetPerformanceFrequency, marshal_bpp)
+	IL_METHOD("GetPerformanceCounter", "()l", _IL_Stopwatch_GetPerformanceCounter, marshal_lp)
 IL_METHOD_END
 
 #endif
@@ -3354,6 +3363,9 @@ static InternalClassInfo const internalClassTable[] = {
 #endif
 #ifndef _IL_Stdio_suppressed
 	{"Stdio", "Platform", Stdio_Methods},
+#endif
+#ifndef _IL_Stopwatch_suppressed
+	{"Stopwatch", "System.Diagnostics", Stopwatch_Methods},
 #endif
 #ifndef _IL_String_suppressed
 	{"String", "System", String_Methods},

@@ -131,6 +131,29 @@ ILBool _IL_TimeMethods_GetDaylightRules(ILExecThread *_thread,
 	return 0;
 }
 
+/*
+ * private static bool GetPerformanceFrequency(out long frequency)
+ */
+ILBool _IL_Stopwatch_GetPerformanceFrequency(ILExecThread *_thread,
+											   ILInt64 *frequency)
+{
+	return ILGetPerformanceCounterFrequency(frequency);
+}
+
+/*
+ * private static long GetPerformanceCounter()
+ */
+ILInt64 _IL_Stopwatch_GetPerformanceCounter(ILExecThread *_thread)
+{
+	ILInt64 counter;
+
+	if(ILGetPerformanceCounter(&counter))
+	{
+		return counter;
+	}
+	return _IL_TimeMethods_GetCurrentTime(_thread);
+}
+
 #ifdef	__cplusplus
 };
 #endif

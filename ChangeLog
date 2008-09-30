@@ -1,3 +1,8 @@
+2008-09-30  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/System/Diagnostics/TestStopwatch.cs (TestStopwatchCCtor): Check
+	if Frequency is != 0 if high resolution is available.
+
 2008-09-29  Klaus Treichel  <ktreichel@web.de>
 
 	* System/Diagnostics/Stopwatch.cs: Add Stopwatch class.

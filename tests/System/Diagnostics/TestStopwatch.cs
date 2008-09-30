@@ -53,7 +53,7 @@ public class TestStopwatch : TestCase
 
 				if(isHighResolution)
 				{
-					Assert("Frequency >= 10000000", Stopwatch.Frequency >= 10000000);
+					Assert("Frequency != 0", Stopwatch.Frequency != 0);
 				}
 				else
 				{

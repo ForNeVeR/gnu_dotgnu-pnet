@@ -20,6 +20,8 @@
 	* engine/engine.h: Change profileTime in the call frame to ILInt64 to
 	hold a performance counter now.
 
+	* image/lib_attrs.c (MarshalAsAttribute): Fix a compiler warning.
+
 2008-09-29  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h (_ILProfilingStart, _ILProfilingEnd): Change the

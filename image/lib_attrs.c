@@ -675,8 +675,8 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 		case IL_META_NATIVETYPE_CUSTOMMARSHALER:
 		{
 			/* Custom marshalling directive */
-			blob = (char *)ILMalloc(IL_META_COMPRESS_MAX_SIZE * 2 + 3 +
-								    marshalTypeLen + marshalCookieLen);
+			blob = (unsigned char *)ILMalloc(IL_META_COMPRESS_MAX_SIZE * 2 +
+								     3 + marshalTypeLen + marshalCookieLen);
 			if(!blob)
 			{
 				return 0;

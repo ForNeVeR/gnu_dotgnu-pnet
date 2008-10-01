@@ -387,7 +387,7 @@ typedef struct _tagILCallFrame
 	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
 	void           *permissions;	/* Permissions for this stack frame */
 #ifdef ENHANCED_PROFILER
-	struct timeval	profileTime;
+	ILInt64			profileTime;	/* Preformance counter for profiling */
 #endif
 } ILCallFrame;
 #define	IL_INVALID_PC		((unsigned char *)(ILNativeInt)(-1))

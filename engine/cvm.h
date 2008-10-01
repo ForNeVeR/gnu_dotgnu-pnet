@@ -1,7 +1,7 @@
 /*
  * cvm.h - Definitions for the "Converted Virtual Machine".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -592,6 +592,13 @@ extern	"C" {
 #define COP_PREFIX_SARRAY_COPY_AAI4		0x8F
 #define COP_PREFIX_SARRAY_COPY_AI4AI4I4	0x90
 #define COP_PREFIX_SARRAY_CLEAR_AI4I4	0x91
+
+/*
+ * Enhanced method profiling.
+ */
+#define COP_PREFIX_PROFILE_START		0x92
+#define COP_PREFIX_PROFILE_END			0x93
+
 
 /*
  * Definition of a CVM stack word which can hold

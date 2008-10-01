@@ -1,7 +1,7 @@
 /*
  * cvmc.c - Coder implementation for CVM output.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -328,17 +328,25 @@ static void *CVMCoder_HandleLockedMethod(ILCoder *_coder, ILMethod *method)
 /*
  * Start profiling of the current method.
  */
-static void CVMCoder_ProfilingStart(ILCoder *_coder)
+static void CVMCoder_ProfileStart(ILCoder *_coder)
 {
-	/* TODO */
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+#ifdef ENHANCED_PROFILER
+	CVMP_OUT_NONE(COP_PREFIX_PROFILE_START);
+#else
+	CVMP_OUT_NONE(COP_PREFIX_PROFILE_COUNT);
+#endif
 }
 
 /*
  * End profiling of the current method.
  */
-static void CVMCoder_ProfilingEnd(ILCoder *_coder)
+static void CVMCoder_ProfileEnd(ILCoder *_coder)
 {
-	/* TODO */
+#ifdef ENHANCED_PROFILER
+	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	CVMP_OUT_NONE(COP_PREFIX_PROFILE_END);
+#endif
 }
 
 static void	CVMCoder_SetOptimizationLevel(ILCoder *_coder,
@@ -612,8 +620,8 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_RunCCtors,
 	CVMCoder_RunCCtor,
 	CVMCoder_HandleLockedMethod,
-	CVMCoder_ProfilingStart,
-	CVMCoder_ProfilingEnd,
+	CVMCoder_ProfileStart,
+	CVMCoder_ProfileEnd,
 	CVMCoder_SetOptimizationLevel,
 	CVMCoder_GetOptimizationLevel,
 	"sentinel"

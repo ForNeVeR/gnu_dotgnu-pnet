@@ -1,7 +1,7 @@
 /*
  * cvm_call.c - Opcodes for performing calls to other methods.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,49 +58,6 @@
 				((void (*)())(fn), (void *)(rvalue), (void **)(avalue))
 #define	FFI_RAW_CALL(cif,fn,rvalue,avalue)
 #endif
-
-
-#ifdef ENHANCED_PROFILER
-/* Macros for simple profiling support.
- *
- * These macros get called whenever a function gets called and when it is left,
- * respectivly. They record the time a function needed to execute INCLUDING
- * CHILD FUNCTIONS. It's very dumb and simple but better than no time profiling
- * at all ;-)
- */
-#define DO_PROFILE_START() \
-	if ((thread->profilingEnabled) && (callFrame) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0)) \
-	{ \
-		gettimeofday (&callFrame->profileTime, 0); \
-	}
-
-#define DO_PROFILE_STOP() \
-	if ((thread->profilingEnabled) && (callFrame) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0)) \
-	{ \
-		struct timeval endTime; \
-		time_t seconds; \
-		suseconds_t micros; \
-		\
-		gettimeofday (&endTime, 0); \
-		\
- 		if (endTime.tv_usec < callFrame->profileTime.tv_usec) \
-		{ \
-			seconds = endTime.tv_sec - callFrame->profileTime.tv_sec - 1; \
-			micros = (suseconds_t) ((1000000 + endTime.tv_usec) - callFrame->profileTime.tv_usec); \
-		} \
-		else \
-		{ \
-			seconds = endTime.tv_sec - callFrame->profileTime.tv_sec; \
-			micros = endTime.tv_usec - callFrame->profileTime.tv_usec; \
-		} \
-		\
-		method->time += micros + (seconds * 1000000); \
-	}
-#else /* ENHANCED_PROFILER */
-#define DO_PROFILE_START()
-#define DO_PROFILE_STOP()
-#endif /* ENHANCED_PROFILER */
-
 
 /*
  * Allocate a new call frame.
@@ -655,7 +612,6 @@ VMCASE(COP_CALL):
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Pass control to the new method */
 		pc = (unsigned char *)(methodToCall->userData);
@@ -689,7 +645,6 @@ VMCASE(COP_CALL):
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -747,7 +702,6 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Pass control to the new method */
 		pc = ((unsigned char *)(methodToCall->userData)) - CVM_CTOR_OFFSET;
@@ -780,7 +734,6 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -993,7 +946,6 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->frame = frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
-			DO_PROFILE_START();
 
 			/* Pass control to the new method */
 			pc = (unsigned char *)(methodToCall->userData);
@@ -1027,7 +979,6 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
-			DO_PROFILE_START();
 
 			/* Restore the state information and jump to the new method */
 			RESTORE_STATE_FROM_THREAD();
@@ -1127,7 +1078,6 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->frame = frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
-			DO_PROFILE_START();
 
 			/* Pass control to the new method */
 			pc = (unsigned char *)(methodToCall->userData);
@@ -1161,7 +1111,6 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
-			DO_PROFILE_START();
 
 			/* Restore the state information and jump to the new method */
 			RESTORE_STATE_FROM_THREAD();
@@ -1245,8 +1194,6 @@ popFrame:
 	
 	callFrame = &(thread->frameStack[--(thread->numFrames)]);
 
-	DO_PROFILE_STOP();
-	
 	methodToCall = callFrame->method;
 	pc = callFrame->pc;
 	thread->exceptHeight = callFrame->exceptHeight;
@@ -1545,7 +1492,6 @@ VMCASE(COP_CALLI):
 		callFrame->frame = frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Pass control to the new method */
 		pc = (unsigned char *)(methodToCall->userData);
@@ -1579,7 +1525,6 @@ VMCASE(COP_CALLI):
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -1639,7 +1584,6 @@ case COP_CALL_VIRTUAL:
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -1707,7 +1651,6 @@ case COP_CALL_INTERFACE:
 		callFrame->frame = thread->frame;
 		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
-		DO_PROFILE_START();
 
 		/* Restore the state information and jump to the new method */
 		RESTORE_STATE_FROM_THREAD();
@@ -1967,7 +1910,6 @@ VMCASE(COP_PREFIX_CALL_VIRTGEN):
 			callFrame->frame = frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
-			DO_PROFILE_START();
 
 			/* Pass control to the new method */
 			pc = (unsigned char *)(methodToCall->userData);
@@ -2001,7 +1943,6 @@ VMCASE(COP_PREFIX_CALL_VIRTGEN):
 			callFrame->frame = thread->frame;
 			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
-			DO_PROFILE_START();
 
 			/* Restore the state information and jump to the new method */
 			RESTORE_STATE_FROM_THREAD();
@@ -2182,18 +2123,9 @@ VMBREAK(COP_PREFIX_PACK_VARARGS);
  */
 VMCASE(COP_PREFIX_PROFILE_COUNT):
 {
-#ifdef ENHANCED_PROFILER
-	/* If the enhanced profiler is selected then don't count when
-	 * profiling is disabled
-	 * (e.g. via DotGNU.Misc.Profiling.StopProfiling())
-	 */
-	if ((thread->profilingEnabled) && ((ILCoderGetFlags (thread->process->coder) & IL_CODER_FLAG_METHOD_PROFILE) != 0))
-	{
-#endif
-		ILInterlockedIncrement(&method->count);
-#ifdef ENHANCED_PROFILER
-	}
-#endif
+	BEGIN_NATIVE_CALL();	
+	ILInterlockedIncrement(&method->count);
+	END_NATIVE_CALL();
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,0);
 }
 VMBREAK(COP_PREFIX_PROFILE_COUNT);
@@ -2326,6 +2258,69 @@ VMCASE(COP_PREFIX_TRACE_OUT):
 }
 VMBREAK(COP_PREFIX_TRACE_OUT);
 
+/**
+ *<opcode name="profile_start" group="Profiling Instructions">
+ *	<operation>Record the start performance counter for the current method
+ *             invokation</operation>
+ *
+ * 	<format>profile_start</format>
+ * 	<dformat>{profile_start}</dformat>
+ *
+ * 	<form name="profile_start" code="COP_PREFIX_PROFILE_START"/>
+ *
+ *  <description>This instruction records the start performance counter for
+ *  the current method invokation. It is inserted at the beginning of the
+ *  method's code by the CVM coder if the engine is built with enhanced
+ *  profiling support and profiling is enabled.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_PROFILE_START):
+{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#ifdef ENHANCED_PROFILER
+	if(callFrame)
+	{
+		BEGIN_NATIVE_CALL();
+		_ILProfilingStart(&(callFrame->profileTime));
+		END_NATIVE_CALL();
+	}
+#endif /* ENHANCED_PROFILER */
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,0);
+}
+VMBREAK(COP_PREFIX_PROFILE_START);
 
+/**
+ *<opcode name="profile_end" group="Profiling Instructions">
+ *	<operation>Record the time spend in the method and increase the number of
+ *             invokations for the method</operation>
+ *
+ * 	<format>profile_end</format>
+ * 	<dformat>{profile_end}</dformat>
+ *
+ * 	<form name="profile_end" code="COP_PREFIX_PROFILE_END"/>
+ *
+ *  <description>This instruction retrieves the end performance counter for
+ *  the current method invokation. It adds the difference between start and
+ *  end to the total time spend in the method and increases the number of
+ *  invokations of the method by one if the engine is built with enhanced
+ *  profiling support and profiling is enabled for the current thread.</description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_PROFILE_END):
+{
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+#ifdef ENHANCED_PROFILER
+	if(thread->profilingEnabled && callFrame)
+	{
+		BEGIN_NATIVE_CALL();
+		_ILProfilingEnd(method, &(callFrame->profileTime));
+		END_NATIVE_CALL();
+	}
+#endif /* ENHANCED_PROFILER */
+#endif /* !IL_CONFIG_REDUCE_CODE && !IL_WITHOUT_TOOLS */
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,0);
+}
+VMBREAK(COP_PREFIX_PROFILE_END);
 
 #endif /* IL_CVM_PREFIX */

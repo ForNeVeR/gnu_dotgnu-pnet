@@ -1,3 +1,25 @@
+2008-10-01  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.h (COP_PREFIX_PROFILE_START, COP_PREFIX_PROFILE_END): Add
+	two new opcodes for enhanced profiling support.
+
+	* engine/cvm_call.c (DO_PROFILING_START, DO_PROFILING_STOP): Remove the
+	now obsolete macros for enhanced profiling.
+	(COP_PREFIX_PROFILE_START, COP_PREFIX_PROFILE_END): Add processing of the
+	two new opcodes for enhanced profiling.
+	(COP_PREFIX_PROFILE_COUNT): Wrap the native call in BEGIN_NATIVE_CALL and
+	END_NATIVE_CALL.
+
+	* engine/cvmc.c (CVMCoder_ProfileStart, CVMCoder_ProfileEnd): Implement
+	the new enhanced profiling functions of the coder.
+
+	* engine/cvmc_setup.c (CVMEntryGen): Remove emitting
+	COP_PREFIX_PROFILE_COUNT here as this is done by _ILVerify now by calling
+	ProfileStart now.
+
+	* engine/engine.h: Change profileTime in the call frame to ILInt64 to
+	hold a performance counter now.
+
 2008-09-29  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h (_ILProfilingStart, _ILProfilingEnd): Change the

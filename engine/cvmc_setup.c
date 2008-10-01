@@ -1,7 +1,7 @@
 /*
  * cvmc_setup.c - Coder implementation for CVM method entry setup.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -333,12 +333,6 @@ static int CVMEntryGen(CVMEntryContext *ctx, ILCVMCoder *coder,
 	   up at the end of the method with the maximum height */
 	coder->stackCheck = CVM_POSN();
 	CVM_OUT_CKHEIGHT();
-
-	/* Output the CVM code to do the profiling of the methods*/
-	if((coder->flags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
-	{
-		CVMP_OUT_NONE(COP_PREFIX_PROFILE_COUNT);
-	}
 
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 	if(((ILCVMCoder*)coder)->flags & IL_CODER_FLAG_METHOD_TRACE)

@@ -1,3 +1,8 @@
+2008-10-02  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_grammar.y: Fix some shift/reduce conflicts and the
+	bison warning about OptSpecificCatchClauses.
+
 2008-10-01  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.h (COP_PREFIX_PROFILE_START, COP_PREFIX_PROFILE_END): Add

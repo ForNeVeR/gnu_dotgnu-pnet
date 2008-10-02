@@ -2,7 +2,7 @@
 /*
  * cs_grammar.y - Input file for yacc that defines the syntax of C#.
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1211,7 +1211,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		ForInitializer ForInitializerInner ForCondition
 %type <node>		ForIterator ForeachExpression ExpressionStatementList
 %type <node>		JumpStatement TryStatement CatchClauses LineStatement
-%type <node>		OptSpecificCatchClauses SpecificCatchClauses
+%type <node>		SpecificCatchClauses
 %type <node>		SpecificCatchClause OptGeneralCatchClause
 %type <node>		GeneralCatchClause FinallyClause LockStatement
 %type <node>		UsingStatement ResourceAcquisition FixedStatement
@@ -1271,13 +1271,14 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <constraint>  TypeParameterConstraints
 %type <node>		TypeParameterConstraintsClause
 %type <nodeList>	TypeParameterConstraintsClauses
+%type <nodeList>	OptTypeParameterConstraintsClauses
 %type <classHeader>	ClassHeader InterfaceHeader StructHeader
 %type <memberHeader> MethodHeader DelegateHeader InterfaceMethodHeader
 %type <indexer>		IndexerDeclarator
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 30
+%expect 21
 
 %start CompilationUnit
 %%
@@ -2850,23 +2851,10 @@ CatchClauses
 				}
 				$$ = $1;
 			}
-	| OptSpecificCatchClauses GeneralCatchClause	{
-				if($1)
-				{
-					ILNode_List_Add($1, $2);
-					$$ = $1;
-				}
-				else
-				{
-					$$ = ILNode_CatchClauses_create();
-					ILNode_List_Add($$, $2);
-				}
+	| GeneralCatchClause	{
+				$$ = ILNode_CatchClauses_create();
+				ILNode_List_Add($$, $1);
 			}
-	;
-
-OptSpecificCatchClauses
-	: /* empty */				{ $$ = 0; }
-	| SpecificCatchClauses		{ $$ = $1; }
 	;
 
 SpecificCatchClauses
@@ -2887,12 +2875,7 @@ SpecificCatchClause
 	;
 
 CatchNameInfo
-	: /* nothing */ {
-				$$.type=ILNode_Identifier_create("Exception");
-				$$.id = 0;
-				$$.idNode = 0;
-			}
-	| '(' Type Identifier ')' {
+	: '(' Type Identifier ')' {
 				$$.type = $2;
 				$$.id = ILQualIdentName($3, 0);
 				$$.idNode = $3;
@@ -3191,7 +3174,7 @@ ClassHeader
 				$$.typeFormals = 0;
 			}
 	| OptAttributes OptModifiers OptPartial CLASS GenericIdentifierStart
-			TypeFormals ClassBase TypeParameterConstraintsClauses {
+			TypeFormals ClassBase OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;
@@ -3350,9 +3333,13 @@ TypeFormalList
 			}
 	;
 
-TypeParameterConstraintsClauses
+OptTypeParameterConstraintsClauses
 	: /* EMPTY */						{ $$ = 0; }
-	| TypeParameterConstraintsClause	{ $$ = (ILNode_List *)MakeList(0, $1); }
+	| TypeParameterConstraintsClauses	{ $$ = $1; }
+	;
+
+TypeParameterConstraintsClauses
+	: TypeParameterConstraintsClause	{ $$ = (ILNode_List *)MakeList(0, $1); }
 	| TypeParameterConstraintsClauses TypeParameterConstraintsClause	{
 				 		$$ = (ILNode_List *)MakeList((ILNode *)$1, $2);
 					}
@@ -3596,7 +3583,7 @@ MethodHeader
 				$$.typeFormals = 0;
 			}
 	| OptAttributes OptModifiers Type NonGenericQualifiedIdentifier '<' TypeFormals
-			'(' OptFormalParameterList ')' TypeParameterConstraintsClauses {
+			'(' OptFormalParameterList ')' OptTypeParameterConstraintsClauses {
 				$$.attributes = $1;
 				$$.modifiers = $2;
 				$$.type = $3;
@@ -4296,7 +4283,7 @@ StructHeader
 				$$.typeFormals = 0;
 			}
 	| OptAttributes OptModifiers OptPartial STRUCT GenericIdentifierStart
-			TypeFormals StructInterfaces TypeParameterConstraintsClauses {
+			TypeFormals StructInterfaces OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;
@@ -4400,7 +4387,7 @@ InterfaceHeader
 				$$.typeFormals = 0;
 			}
 	| OptAttributes OptModifiers OptPartial INTERFACE GenericIdentifierStart
-			TypeFormals InterfaceBase TypeParameterConstraintsClauses {
+			TypeFormals InterfaceBase OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;
@@ -4514,7 +4501,7 @@ InterfaceMethodHeader
 				$$.typeFormals = 0;
 			}
 	| OptAttributes OptNew Type GenericIdentifierStart TypeFormals
-			'(' OptFormalParameterList ')' TypeParameterConstraintsClauses {
+			'(' OptFormalParameterList ')' OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;
@@ -4783,7 +4770,7 @@ DelegateHeader
 				$$.typeFormals = 0;
 			}
 	| OptAttributes OptModifiers DELEGATE Type GenericIdentifierStart TypeFormals
-				'(' OptFormalParameterList ')' TypeParameterConstraintsClauses {
+				'(' OptFormalParameterList ')' OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1;
 				$$.modifiers = $2;

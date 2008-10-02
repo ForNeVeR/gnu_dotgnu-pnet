@@ -1,8 +1,8 @@
 /*
- * ICollection.cs - Implementation of the
- *		"System.Collections.Generic.ICollection" class.
+ * IList_1.cs - Implementation of the
+ *		"System.Collections.Generic.IList<T>" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,22 +22,17 @@
 namespace System.Collections.Generic
 {
 
-#if CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
-using System.Runtime.InteropServices;
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
-[CLSCompliant(false)]
-public interface ICollection<T> : IEnumerable<T>
+public interface IList<T> : ICollection<T>
 {
+	int IndexOf(T value);
+	void Insert(int index, T value);
+	void RemoveAt(int index);
+	T this[int index] { get; set; }
 
-	void   CopyTo(T[] array, int arrayIndex);
-	int    Count { get; }
+}; // interface IList<T>
 
-}; // interface ICollection<T>
-
-#endif // CONFIG_GENERICS
+#endif //  CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
 }; // namespace System.Collections.Generic

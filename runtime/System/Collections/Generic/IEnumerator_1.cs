@@ -1,8 +1,8 @@
 /*
- * IList.cs - Implementation of the
- *		"System.Collections.Generic.IList" class.
+ * IEnumerator_1.cs - Implementation of the
+ *		"System.Collections.Generic.IEnumerator<T>" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003 2007  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,29 +22,14 @@
 namespace System.Collections.Generic
 {
 
-#if CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0
 
-using System.Runtime.InteropServices;
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
-[CLSCompliant(false)]
-public interface IList<T> : ICollection<T>
+public interface IEnumerator<T> : IDisposable, IEnumerator
 {
-	int Add(T item);
-	void Clear();
-	bool Contains(T item);
-	int IndexOf(T item);
-	void Insert(int index, T item);
-	void Remove(T item);
-	void RemoveAt(int index);
-	bool IsFixedSize { get; }
-	bool IsReadOnly { get; }
-	T this[int index] { get; set; }
+	new T Current { get; }
 
-}; // interface IList<T>
+}; // interface IEnumerator<T>
 
-#endif // CONFIG_GENERICS
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Collections.Generic

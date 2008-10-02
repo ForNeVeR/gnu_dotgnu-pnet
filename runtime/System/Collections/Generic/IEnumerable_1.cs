@@ -1,8 +1,8 @@
 /*
- * IComparable.cs - Implementation of the
- *		"System.Collections.Generic.IComparable" class.
+ * IEnumerable_1.cs - Implementation of the
+ *		"System.Collections.Generic.IEnumerable<T>" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,20 +22,14 @@
 namespace System.Collections.Generic
 {
 
-#if CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0 
 
-using System.Runtime.InteropServices;
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
-[CLSCompliant(false)]
-public interface IComparable<T>
+public interface IEnumerable<T> : IEnumerable
 {
-	int CompareTo(T other);
+	new IEnumerator<T> GetEnumerator();
 
-}; // interface IComparable<T>
+}; // interface IEnumerable<T>
 
-#endif // CONFIG_GENERICS
+#endif // CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
 }; // namespace System.Collections.Generic

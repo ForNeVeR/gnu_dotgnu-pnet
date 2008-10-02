@@ -1,3 +1,29 @@
+2008-10-02  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Collections/Generic/ICollection.cs,
+	runtime/System/Collections/Generic/IComparable.cs,
+	runtime/System/Collections/Generic/IComparer.cs,
+	runtime/System/Collections/Generic/IEnumerable.cs,
+	runtime/System/Collections/Generic/IEnumerator.cs,
+	runtime/System/Collections/Generic/IList.cs,
+	runtime/System/Collections/Generic/KeyValuePair.cs: Remove the files to
+	replace them by the files matching the naming convention for files
+	containing generic classes.
+
+	* runtime/System/Collections/Generic/ICollection_1.cs,
+	runtime/System/Collections/Generic/IComparer_1.cs,
+	runtime/System/Collections/Generic/IEnumerable_1.cs,
+	runtime/System/Collections/Generic/IEnumerator_1.cs,
+	runtime/System/Collections/Generic/IEqualityComparer_1.cs,
+	runtime/System/Collections/Generic/IList_1.cs,
+	runtime/System/Collections/Generic/KeyValuePair_2.cs: Readd the files
+	with the correct names and enable build of the classes that cscc is
+	able to build correctly by now.
+
+	* runtime/System/Collections/Generic/KeyNotFoundException.cs: Added.
+
+	* runtime/System/DateTimeKind.cs: Add non ECMA 2.0 enumeration.
+
 2008-09-30  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/System/Diagnostics/TestStopwatch.cs (TestStopwatchCCtor): Check

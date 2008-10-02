@@ -1,8 +1,7 @@
 /*
- * IEnumerator.cs - Implementation of the
- *		"System.Collections.Generic.IEnumerator" class.
+ * DateTimeKind.cs - Implementation of the "System.DateTimeKind" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,24 +18,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Collections.Generic
+namespace System
 {
 
-#if CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0 && !ECMA_COMPAT
 
 using System.Runtime.InteropServices;
 
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
-[CLSCompliant(false)]
-public interface IEnumerator<T>
+// [Serializable]
+// [ComVisible(true)]
+public enum DateTimeKind
 {
-	bool MoveNext();
-	T Current { get; }
 
-}; // interface IEnumerator<T>
+	Unspecified	= 0,
+	Utc			= 1,
+	Local		= 2
 
-#endif // CONFIG_GENERICS
+}; // enum DateTimeKind
 
-}; // namespace System.Collections.Generic
+#endif // CONFIG_FRAMEWORK_2_0  && !ECMA_COMPAT
+
+}; // namespace System

@@ -1,8 +1,8 @@
 /*
- * IEnumerable.cs - Implementation of the
- *		"System.Collections.Generic.IEnumerable" class.
+ * ICollection_1.cs - Implementation of the
+ *		"System.Collections.Generic.ICollection<T>" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,20 +22,20 @@
 namespace System.Collections.Generic
 {
 
-#if CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
-using System.Runtime.InteropServices;
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
-[CLSCompliant(false)]
-public interface IEnumerable<T>
+public interface ICollection<T> : IEnumerable<T>
 {
-	IEnumerator<T> GetEnumerator();
+	void   Add(T item);
+	void   Clear();
+	bool   Contains(T item);
+	void   CopyTo(T[] array, int index);
+	bool   Remove(T item);
+	int    Count { get; }
+	bool   IsReadOnly { get; }
 
-}; // interface IEnumerable<T>
+}; // interface ICollection<T>
 
-#endif // CONFIG_GENERICS
+#endif // CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
 }; // namespace System.Collections.Generic

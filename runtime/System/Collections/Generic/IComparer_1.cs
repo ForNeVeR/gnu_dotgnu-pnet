@@ -1,8 +1,8 @@
 /*
- * KeyValuePair.cs - Implementation of the
- *		"System.Collections.Generic.KeyValuePair" class.
+ * IComparer.cs - Implementation of the
+ *		"System.Collections.Generic.IComparer" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,53 +22,14 @@
 namespace System.Collections.Generic
 {
 
-#if CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0
 
-using System.Runtime.InteropServices;
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
-[CLSCompliant(false)]
-public struct KeyValuePair<K,V>
+public interface IComparer<T>
 {
-	// Internal state.
-	private K key;
-	private V value;
+	int Compare(T x, T y);
 
-	// Constructor.
-	public KeyValuePair(K key, V value)
-			{
-				this.key = key;
-				this.value = value;
-			}
+}; // interface IComparer<T>
 
-	// Properties.
-	public K Key
-			{
-				get
-				{
-					return key;
-				}
-				set
-				{
-					key = value;
-				}
-			}
-	public V Value
-			{
-				get
-				{
-					return this.value;
-				}
-				set
-				{
-					this.value = value;
-				}
-			}
-
-}; // struct KeyValuePair<K,V>
-
-#endif // CONFIG_GENERICS
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Collections.Generic

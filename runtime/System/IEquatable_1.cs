@@ -21,9 +21,8 @@
 namespace System
 {
 
-#if CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0
 
-[CLSCompliant(true)]
 public interface IEquatable<T>
 {
 
@@ -31,6 +30,6 @@ public interface IEquatable<T>
 
 }; // interface IEquatable
 
-#endif // CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System

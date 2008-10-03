@@ -1,7 +1,7 @@
 /*
  * Predicate_1.cs - Implementation of the "System.Predicate<T>" delegate.
  *
- * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2007, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,10 @@
 namespace System
 {
 
-#if CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0
 
-[CLSCompliant(true)]
 public delegate Boolean Predicate<T>(T obj);
 
-#endif // CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System

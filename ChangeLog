@@ -1,3 +1,10 @@
+2008-10-03  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Action_1.cs, runtime/System/Comparision_1.cs,
+	runtime/System/Converter_2.cs, runtime/System/IComparable_1.cs,
+	runtime/System/IEquatable_1.cs, runtime/System/Predicate_1.cs: Include
+	these generic ECMA classes in build with CONFIG_FRAMEWORK_2_0.
+
 2008-10-02  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Collections/Generic/ICollection.cs,

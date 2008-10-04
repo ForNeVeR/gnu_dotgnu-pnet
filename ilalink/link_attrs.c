@@ -126,7 +126,7 @@ int _ILLinkerConvertDebug(ILLinker *linker, ILProgramItem *oldItem,
 	ILDebugContext *dbg;
 	ILDebugIter iter;
 	ILMetaDataRead reader;
-	char buf[1024];
+	unsigned char buf[1024];
 	unsigned long len;
 	const char *name;
 	unsigned long nameIndex;

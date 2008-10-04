@@ -1,3 +1,20 @@
+2008-10-04  Klaus Treichel  <ktreichel@web.de>
+
+	* ilalink/link_generics.c (_ILLinkerConvertGenerics): Add new file
+	with the consolidated generics stuff. Add copying primary, secondary
+	and ctor constraints and the attributes for the generic parameters.
+
+	* ilalink/linker.h (_ILLinkerConvertGenerics): Add prototype.
+
+	* ilalink/link_class.c (ConvertClass),
+	ilalink/link_method.c (_ILLinkerConvertMethod): Use the new common
+	function instead of having the code duplicated.
+
+	* ilalink/Makefile.am: Add link_generics.c to the sources.
+
+	* ilalink/link_attrs.c (_ILLinkerConvertDebug): Fix some compiler
+	warnings.
+
 2008-10-02  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_grammar.y: Fix some shift/reduce conflicts and the

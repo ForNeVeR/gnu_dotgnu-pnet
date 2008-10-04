@@ -600,12 +600,6 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 	ILException *exceptions;
 	ILUInt32 numParams;
 	char *newName = 0;
-	ILUInt32 genericNum;
-	ILGenericPar *genPar;
-	ILGenericPar *newGenPar;
-	ILGenericConstraint *genConstr;
-	ILProgramItem *constraint;
-	ILTypeSpec *spec;
 
 	/* Rename the method if it is within the "<Module>" class and private */
 	if(ILMethod_IsPrivate(method) && ILMethod_IsStatic(method) &&
@@ -829,53 +823,14 @@ int _ILLinkerConvertMethod(ILLinker *linker, ILMethod *method,
 		}
 	}
 
+#if IL_VERSION_MAJOR > 1
 	/* Convert the generic parameters, if any */
-	genericNum = 0;
-	while((genPar = ILGenericParGetFromOwner
-				(ILToProgramItem(method), genericNum)) != 0)
+	if(!_ILLinkerConvertGenerics(linker, ILToProgramItem(method),
+							     ILToProgramItem(newMethod)))
 	{
-		newGenPar = ILGenericParCreate(linker->image, 0,
-									   ILToProgramItem(newMethod), genericNum);
-		if(!newGenPar)
-		{
-			_ILLinkerOutOfMemory(linker);
-			return 0;
-		}
-		if(!ILGenericParSetName(newGenPar, ILGenericPar_Name(genPar)))
-		{
-			_ILLinkerOutOfMemory(linker);
-			return 0;
-		}
-		genConstr = ILGenericParNextConstraint(genPar, 0);
-		if(genConstr)
-		{
-			while (genConstr)
-			{
-				constraint = ILConstraint_Type(genConstr);
-				spec = ILProgramItemToTypeSpec(constraint);
-				if(spec)
-				{
-					constraint = ILToProgramItem
-						(_ILLinkerConvertTypeSpec(linker, ILTypeSpec_Type(spec)));
-				}
-				else
-				{
-					constraint = ILToProgramItem
-						(_ILLinkerConvertClassRef(linker, (ILClass *)constraint));
-				}
-				if(!constraint)
-				{
-					return 0;
-				}
-				if (!ILGenericParAddConstraint(newGenPar, 0, constraint))
-				{
-					return 0;
-				}
-				genConstr = ILGenericParNextConstraint(genPar, genConstr);
-			}
-		}
-		++genericNum;
+		return 0;
 	}
+#endif
 
 	/* Get the method's code.  If there is no code, then we are done */
 	if(!ILMethodGetCode(method, &code))

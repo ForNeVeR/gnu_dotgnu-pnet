@@ -379,6 +379,14 @@ void _ILLinkerCreateAttribute(ILLinker *linker, ILProgramItem *item,
 							  ILType *arg1Type, ILType *arg2Type,
 							  void *data, int len);
 
+#if IL_VERSION_MAJOR > 1
+/*
+ * Copy the generic parameters for one program item to an other one.
+ */
+int _ILLinkerConvertGenerics(ILLinker *linker, ILProgramItem *oldItem,
+						     ILProgramItem *newItem);
+#endif /* IL_VERSION_MAJOR > 1 */
+
 #ifdef	__cplusplus
 };
 #endif

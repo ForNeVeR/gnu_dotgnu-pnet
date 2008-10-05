@@ -22,7 +22,7 @@
 namespace System.Collections.Generic
 {
 
-#if CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
+#if CONFIG_FRAMEWORK_2_0
 
 public interface ICollection<T> : IEnumerable<T>
 {
@@ -36,6 +36,6 @@ public interface ICollection<T> : IEnumerable<T>
 
 }; // interface ICollection<T>
 
-#endif // CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
+#endif // CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Collections.Generic

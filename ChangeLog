@@ -1,3 +1,12 @@
+2008-10-05  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Nullable.cs, runtime/System/Nullable_1.cs: Add support
+	for nullable structs.
+
+	* runtime/System/Collections/Generic/ICollection_1.cs,
+	runtime/System/Collections/Generic/IList_1.cs: Build these interfaces now
+	too with CONFIG_FRAMEWORK_2_0.
+
 2008-10-03  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Action_1.cs, runtime/System/Comparision_1.cs,

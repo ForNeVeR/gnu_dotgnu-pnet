@@ -1322,7 +1322,7 @@ cleanup:
 static int LocateJarDirectory(ILImage *image, unsigned char **start,
 							  unsigned long *length)
 {
-	unsigned char *data = image->data;
+	unsigned char *data = (unsigned char *)image->data;
 	unsigned long posn;
 	unsigned long count;
 	unsigned long found;
@@ -1446,7 +1446,7 @@ static int LoadJarClasses(ILImage *image, int flags,
 			}
 
 			/* Validate the local file header */
-			data = image->data + filePosn;
+			data = (unsigned char *)image->data + filePosn;
 			if((filePosn + 30) > image->len ||
 			   data[0] != (unsigned char)'P' ||
 			   data[1] != (unsigned char)'K' ||

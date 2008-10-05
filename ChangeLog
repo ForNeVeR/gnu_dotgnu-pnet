@@ -1,3 +1,23 @@
+2008-10-05  Klaus Treichel  <ktreichel@web.de>
+
+	* ilalink/link_method.c (_ILLinkerConvertMemberRef): Use
+	ILTypeSpecGetClassWrapper instead of ILTypeSpecGetClassRef to avoid
+	creating a synthetic class here.
+
+	* ilalink/link_type.c (ConvertClassRef): Handle synthetic classes that
+	are actually TypeSpecs and create a wrapper class for them after the
+	TypeSpec is imported in the current image.
+
+	* image/debug_reader.c (ILDebugGetString): Fix a compiler warning.
+
+	* image/java_loader.c (LocateJarDirectory, LoadJarClasses): Fix compiler
+	warnings.
+
+	* image/meta_build.c (Load_InterfaceImpl): Handle generic interface
+	implementations.
+
+	* image/pecoff_loader.c (ImageLoad): Fix a compiler warning.
+
 2008-10-04  Klaus Treichel  <ktreichel@web.de>
 
 	* ilalink/link_generics.c (_ILLinkerConvertGenerics): Add new file

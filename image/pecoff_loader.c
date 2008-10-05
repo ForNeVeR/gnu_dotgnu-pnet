@@ -810,7 +810,7 @@ static int ImageLoad(ILInputContext *ctx, const char *filename,
 	}
 
 	/* Find the IL runtime header, read it, and validate it */
-	runtimeHdr = data + base;
+	runtimeHdr = (unsigned char *)data + base;
 	size = (maxAddress - minAddress) - base;
 	if(runtimeHdrSize)
 	{

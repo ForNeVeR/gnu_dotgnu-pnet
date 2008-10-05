@@ -140,7 +140,7 @@ const char *ILDebugGetString(ILDebugContext *dbg, unsigned long offset)
 {
 	if(offset < dbg->stringsLen)
 	{
-		return dbg->strings + offset;
+		return (const char *)dbg->strings + offset;
 	}
 	else
 	{

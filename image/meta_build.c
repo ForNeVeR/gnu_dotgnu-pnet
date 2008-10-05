@@ -2025,7 +2025,11 @@ static int Load_InterfaceImpl(ILImage *image, ILUInt32 *values,
 							  void *userData)
 {
 	ILClass *info;
+	ILProgramItem *item;
 	ILClass *interface;
+#if IL_VERSION_MAJOR > 1
+	ILTypeSpec *spec;
+#endif
 
 	/* Get the type that is implementing the interface */
 	info = ILClass_FromToken(image, values[IL_OFFSET_INTERFACE_TYPE]);
@@ -2036,11 +2040,21 @@ static int Load_InterfaceImpl(ILImage *image, ILUInt32 *values,
 	}
 
 	/* Get the interface type */
-	interface = ILClass_FromToken(image, values[IL_OFFSET_INTERFACE_INTERFACE]);
-	if(interface)
+	item = ILProgramItem_FromToken(image, values[IL_OFFSET_INTERFACE_INTERFACE]);
+	if(!item)
 	{
-		/* Resolve TypeSpec's into ILClass structures */
-		interface = ILProgramItemToClass((ILProgramItem *)interface);
+		META_VAL_ERROR("invalid interface token");
+		return IL_LOADERR_BAD_META;
+	}
+#if IL_VERSION_MAJOR > 1
+	if((spec = ILProgramItemToTypeSpec(item)))
+	{
+		interface = ILTypeSpecGetClassWrapper(spec);
+	}
+	else
+#endif
+	{
+		interface = ILProgramItemToClass(item);
 	}
 	if(!interface)
 	{
@@ -2048,15 +2062,6 @@ static int Load_InterfaceImpl(ILImage *image, ILUInt32 *values,
 		return IL_LOADERR_BAD_META;
 	}
 
-#if 0	/* TODO - properly recognise generic interfaces */
-	/* The second class must be an interface */
-	if(!ILClass_IsInterface(interface) && !ILClassIsRef(interface))
-	{
-		META_VAL_ERROR("interface type is not an interface");
-		return IL_LOADERR_BAD_META;
-	}
-#endif
-	
 	/* Add the "implements" clause to the class */
 	if(!ILClassAddImplements(info, interface, token))
 	{

@@ -44,6 +44,7 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 	ILProgramItem *scope;
 	ILAssembly *assem;
 	ILLibrary *library;
+	ILType *synType;
 	const char *name;
 	const char *namespace;
 	char *newName = 0;
@@ -91,6 +92,26 @@ static int ConvertClassRef(ILLinker *linker, ILClass *classInfo,
 			*resultInfo = newClass;
 			return CONVERT_REF_LOCAL;
 		}
+	}
+	else if((synType = ILClass_SynType(classInfo)) != 0)
+	{
+		/* Import the synthetic type as a typespec in the current image */
+		ILTypeSpec *spec;
+		
+		spec = _ILLinkerConvertTypeSpec(linker, synType);
+		if(!spec)
+		{
+			return CONVERT_REF_MEMORY;
+		}
+
+		newClass = ILTypeSpecGetClassWrapper(spec);
+		if(!newClass)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return CONVERT_REF_MEMORY;
+		}
+		*resultInfo = newClass;
+		return CONVERT_REF_LOCAL;
 	}
 	else if(ILClassIsRef(classInfo))
 	{

@@ -3355,14 +3355,29 @@ TypeParameterConstraintsClause
 	;
 
 TypeParameterConstraints
-	: PrimaryConstraint					{ $$.constraint = $1; $$.typeConstraints = 0; }
+	: PrimaryConstraint					{
+						$$.constraint = $1;
+						if($1 == IL_META_GENPARAM_VALUETYPE_CONST)
+						{
+							$$.constraint |= IL_META_GENPARAM_CTOR_CONST;
+						}
+						$$.typeConstraints = 0;
+					}
 	| SecondaryConstraints				{ $$.constraint = 0; $$.typeConstraints = $1; }
 	| ConstructorConstraint				{ $$.constraint = $1; $$.typeConstraints = 0; }
 	| PrimaryConstraint ',' SecondaryConstraints	{
 						$$.constraint = $1;
+						if($1 == IL_META_GENPARAM_VALUETYPE_CONST)
+						{
+							$$.constraint |= IL_META_GENPARAM_CTOR_CONST;
+						}
 						$$.typeConstraints = $3;
 					}
 	| PrimaryConstraint ',' ConstructorConstraint	{
+						if($1 == IL_META_GENPARAM_VALUETYPE_CONST)
+						{
+							CCError(_("new() can't be used together with struct because new() is implied by struct"));
+						}
 						$$.constraint = ($1 | $3);
 						$$.typeConstraints = 0;
 					}
@@ -3371,10 +3386,13 @@ TypeParameterConstraints
 						$$.typeConstraints = $1;
 					}
 	| PrimaryConstraint ',' SecondaryConstraints ',' ConstructorConstraint	{
+						if($1 == IL_META_GENPARAM_VALUETYPE_CONST)
+						{
+							CCError(_("new() can't be used together with struct because new() is implied by struct"));
+						}
 						$$.constraint = ($1 | $5);
 						$$.typeConstraints = $3;
 					}
-
 	;
 
 SecondaryConstraints

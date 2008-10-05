@@ -1,8 +1,13 @@
 2008-10-05  Klaus Treichel  <ktreichel@web.de>
 
+	* cscc/csharp/cs_grammar.y: Handle the implied constructor constraint
+	with the struct constraint propperly.
+
 	* ilalink/link_method.c (_ILLinkerConvertMemberRef): Use
 	ILTypeSpecGetClassWrapper instead of ILTypeSpecGetClassRef to avoid
 	creating a synthetic class here.
+	Revert this one for now because it raises a problem with multidimensional
+	arrays.
 
 	* ilalink/link_type.c (ConvertClassRef): Handle synthetic classes that
 	are actually TypeSpecs and create a wrapper class for them after the

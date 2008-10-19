@@ -23,16 +23,20 @@
  * be replaced with real l-value nodes prior to code generation.
  */
 JavaGenValue(ILNode_Identifier),
-JavaGenValue(ILNode_QualIdent)
+JavaGenValue(ILNode_QualIdent),
+JavaGenValue(ILNode_GenericQualIdent)
 {
 	return ILMachineType_Void;
 }
 JavaGenDiscard(ILNode_Identifier),
 JavaGenDiscard(ILNode_QualIdent),
+JavaGenDiscard(ILNode_GenericQualIdent),
 JavaGenThen(ILNode_Identifier),
 JavaGenThen(ILNode_QualIdent),
+JavaGenThen(ILNode_GenericQualIdent),
 JavaGenElse(ILNode_Identifier),
-JavaGenElse(ILNode_QualIdent)
+JavaGenElse(ILNode_QualIdent),
+JavaGenElse(ILNode_GenericQualIdent)
 {
 }
 

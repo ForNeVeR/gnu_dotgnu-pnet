@@ -521,7 +521,14 @@ struct _tagILSwitchValue
 %node ILNode_QualIdent ILNode =
 {
 	ILNode *left;
-	ILNode *right;
+	const char *name;
+}
+%node ILNode_GenericQualIdent ILNode =
+{
+	ILNode *left;
+	const char *name;
+	ILUInt32	numTypeArgs;
+	ILNode	   *typeArgs;
 }
 %node ILNode_LocalVar ILNode_LValue =
 {

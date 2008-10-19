@@ -2423,7 +2423,7 @@ Enumerator
 QualifiedIdentifier
 	: AnyIdentifier		{ $$ = ILQualIdentSimple($1); }
 	| QualifiedIdentifier '.' AnyIdentifier	{
-				$$ = ILNode_QualIdent_create($1, ILQualIdentSimple($3));
+				$$ = ILNode_QualIdent_create($1, $3);
 			}
 	;
 
@@ -3460,7 +3460,7 @@ UsingDeclaration
 TypeOrNamespaceDesignator
 	: AnyIdentifier		{ $$ = ILQualIdentSimple($1); }
 	| TypeOrNamespaceDesignator COLON_COLON_OP AnyIdentifier	{
-				$$ = ILNode_QualIdent_create($1, ILQualIdentSimple($3));
+				$$ = ILNode_QualIdent_create($1, $3);
 			}
 	;
 

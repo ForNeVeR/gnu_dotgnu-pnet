@@ -454,23 +454,35 @@ static void ModifyAttrName(ILNode *node,int force)
 {
 	const char *name;
 	int namelen;
-	ILNode_Identifier *ident;
 	
 	if(yyisa(node,ILNode_QualIdent))
 	{
-		ModifyAttrName(((ILNode_QualIdent*)node)->right, force);
+		name = ((ILNode_QualIdent *)node)->name;
+	}
+	else if(yyisa(node,ILNode_Identifier))
+	{
+		name = ((ILNode_Identifier*)node)->name;
+	}
+	else
+	{
 		return;
 	}
-	
-	ident = (ILNode_Identifier*) node;
-	
-	name = ident->name;
+
 	namelen = strlen(name);
 	if(force || (namelen < 9 || strcmp(name + namelen - 9, "Attribute") != 0))
 	{
-		ident->name = ILInternAppendedString
+		name = ILInternAppendedString
 			(ILInternString(name, namelen),
 			 ILInternString("Attribute", 9)).string;
+
+		if(yyisa(node,ILNode_QualIdent))
+		{
+			((ILNode_QualIdent *)node)->name = name;
+		}
+		else if(yyisa(node,ILNode_Identifier))
+		{
+			((ILNode_Identifier*)node)->name = name;
+		}
 	}
 }
 
@@ -544,9 +556,8 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 							else 
 							{
 								return ILNode_QualIdent_create(prefixName,
-									ILQualIdentSimple(
 									ILInternString(evalValue.un.strValue.str,
-										evalValue.un.strValue.len).string));
+										evalValue.un.strValue.len).string);
 							}
 						}
 					}
@@ -558,8 +569,9 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 		return ILQualIdentSimple(ILInternString("Item", 4).string);
 	else 
 		return ILNode_QualIdent_create(prefixName,
-						ILQualIdentSimple(ILInternString("Item",4).string));
+									ILInternString("Item",4).string);
 }
+
 /*
  * Adjust the name of a property to include a "get_" or "set_" prefix.
  */
@@ -580,7 +592,9 @@ static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
 	{
 		/* Qualified name: add the prefix to the second component */
 		node = ILNode_QualIdent_create(((ILNode_QualIdent *)name)->left,
-			AdjustPropertyName(((ILNode_QualIdent *)name)->right, prefix));
+					(ILInternAppendedString
+						(ILInternString(prefix, strlen(prefix)),
+						 ILInternString(((ILNode_QualIdent *)name)->name, -1)).string));
 		CloneLine(node, name);
 		return node;
 	}
@@ -920,7 +934,6 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 	} opName;
 	struct
 	{
-		ILNode		   *type;
 		ILNode		   *ident;
 		ILNode		   *params;
 
@@ -962,11 +975,43 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 	{
 		ILNode		   *attributes;
 		ILUInt32		modifiers;
+	}				attributesAndModifiers;
+	struct
+	{
+		ILNode		   *attributes;
+		ILUInt32		modifiers;
+		ILUInt32		partial;
+	}				typeHeader;
+	struct
+	{
+		ILNode		   *attributes;
+		ILUInt32		modifiers;
 		ILUInt32		partial;
 		ILNode		   *identifier;
 		ILNode		   *classBase;
 		ILNode_GenericTypeParameters *typeFormals;
 	}					classHeader;
+	struct
+	{
+		ILNode		   *attributes;
+		ILUInt32		modifiers;
+		ILNode		   *type;
+	}				memberHeaderStart;
+	struct
+	{
+		ILNode		   *attributes;
+		ILUInt32		modifiers;
+		ILNode		   *type;
+		ILNode		   *identifier;
+	}				nonGenericMethodAndPropertyHeaderStart;
+	struct
+	{
+		ILNode		   *attributes;
+		ILUInt32		modifiers;
+		ILNode		   *type;
+		ILNode		   *identifier;
+		ILNode_GenericTypeParameters *typeFormals;
+	}				genericMethodHeaderStart;
 	struct
 	{
 		ILNode		   *attributes;
@@ -1142,7 +1187,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <count>		DimensionSeparators DimensionSeparatorList
 %type <count>		RankSpecifier
 %type <arrayRanks>	RankSpecifiers 
-%type <mask>		OptModifiers Modifiers Modifier
+%type <mask>		Modifiers Modifier
 %type <partial>		OptPartial
 
 %type <node>		Identifier GenericIdentifierStart
@@ -1219,6 +1264,9 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		InnerEmbeddedStatement InnerExpressionStatement
 %type <node>		YieldStatement DefaultValueExpression
 
+%type <memberHeaderStart> MemberHeaderStart
+%type <nonGenericMethodAndPropertyHeaderStart> NonGenericMethodAndPropertyHeaderStart
+%type <genericMethodHeaderStart> GenericMethodHeaderStart
 %type <node>		ConstantDeclaration ConstantDeclarators ConstantDeclarator
 %type <node>		FieldDeclaration FieldDeclarators FieldDeclarator
 %type <varInit>		VariableDeclarators VariableDeclarator
@@ -1259,6 +1307,8 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		OptAttributes AttributeSections AttributeSection
 %type <node>		AttributeList Attribute AttributeArguments
 %type <node>		NonOptAttributes
+%type <attributesAndModifiers> OptAttributesAndModifiers AttributesAndModifiers
+%type <typeHeader>	OptTypeDeclarationHeader
 %type <node>		PositionalArgumentList PositionalArgument NamedArgumentList
 %type <node>		NamedArgument AttributeArgumentExpression
 %type <node>		OptArrayInitializer ArrayInitializer
@@ -1436,15 +1486,15 @@ IDENTIFIER
 	| SET					{ $$ = ILInternString("set", 3).string; }
 	| ADD					{ $$ = ILInternString("add", 3).string; }
 	| REMOVE				{ $$ = ILInternString("remove", 6).string; }
-	| WHERE					{ $$ = ILInternString("where", 5).string; }
 	| PARTIAL				{ $$ = ILInternString("partial", 7).string; }
+	| WHERE					{ $$ = ILInternString("where", 5).string; }
 	| YIELD					{ $$ = ILInternString("yield", 5).string; }
 	;
 
 QualifiedIdentifier
 	: NonGenericQualifiedIdentifier		{ $$ = $1; }
 	| GenericQualifiedIdentifier			{
-				MakeQuaternary(GenericReference,
+				MakeQuaternary(GenericQualIdent,
 							   $1.parent,
 							   $1.memberName.identifier,
 							   $1.memberName.numTypeArgs,
@@ -1456,7 +1506,7 @@ QualifiedIdentifier
  * A qualified identifier without a generic reference at the last part
  */
 SimpleQualifiedIdentifier
-	: QualifiedIdentifierMemberAccessStart Identifier	{
+	: QualifiedIdentifierMemberAccessStart IDENTIFIER	{
 				$$.parent = $1;
 				$$.memberName.identifier = $2;
 				$$.memberName.numTypeArgs = 0;
@@ -1476,7 +1526,7 @@ GenericQualifiedIdentifier
 GenericQualifiedIdentifierStart
 	: GenericIdentifierStart			{
 				$$.parent = 0;
-				$$.memberName.identifier = $1;
+				$$.memberName.identifier = ILQualIdentGetName($1);
 				$$.memberName.numTypeArgs = 0;
 				$$.memberName.typeArgs = 0;
 			}
@@ -1502,7 +1552,7 @@ QualifiedIdentifierMemberAccessStart
 				 $$ = $1;
 			}
 	| GenericQualifiedIdentifier '.'	{
-				MakeQuaternary(GenericReference,
+				MakeQuaternary(GenericQualIdent,
 							   $1.parent,
 							   $1.memberName.identifier,
 							   $1.memberName.numTypeArgs,
@@ -3126,11 +3176,6 @@ AttributeArgumentExpression
  * Modifiers.
  */
 
-OptModifiers
-	: /* empty */			{ $$ = 0; }
-	| Modifiers				{ $$ = $1; }
-	;
-
 Modifiers
 	: Modifier				{ $$ = $1; }
 	| Modifiers Modifier	{
@@ -3161,36 +3206,61 @@ Modifier
 	| VOLATILE		{ $$ = CS_MODIFIER_VOLATILE; }
 	;
 
+OptAttributesAndModifiers
+	: /* empty */ 		{ $$.attributes = 0; $$.modifiers = 0; }
+	| AttributesAndModifiers		{
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+			}
+	;
+
+AttributesAndModifiers
+	: NonOptAttributes		{ $$.attributes = $1; $$.modifiers = 0; }
+	| Modifiers				{ $$.attributes = 0; $$.modifiers = $1; }
+	| NonOptAttributes Modifiers	{
+				$$.attributes = $1;
+				$$.modifiers = $2;
+			}
+	;
+
+OptTypeDeclarationHeader
+	: OptAttributesAndModifiers OptPartial	{
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $2;
+			}
+	;
+
 /*
  * Class declarations.
  */
 ClassHeader
-	: OptAttributes OptModifiers OptPartial CLASS Identifier ClassBase	{
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $6;
+	: OptTypeDeclarationHeader CLASS Identifier ClassBase	{
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $4;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers OptPartial CLASS GenericIdentifierStart
+	| OptTypeDeclarationHeader CLASS GenericIdentifierStart
 			TypeFormals ClassBase OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $7;
-				$$.typeFormals = $6;
-				MergeGenericConstraints($6, $8);
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $5;
+				$$.typeFormals = $4;
+				MergeGenericConstraints($4, $6);
 #else	/* IL_VERSION_MAJOR == 1 */
-				CCErrorOnLine(yygetfilename($5), yygetlinenum($5),
+				CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 							  "generics are not supported in this version");
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $7;
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $5;
 				$$.typeFormals = 0;
 #endif	/* IL_VERSION_MAJOR == 1 */
 			}
@@ -3297,19 +3367,28 @@ TypeFormals
 				$$ = (ILNode_GenericTypeParameters *)
 						ILNode_GenericTypeParameters_create($1.count, $1.list);
 			}
+	| error '>'		{
+				/*
+				 * This production recovers from errors in the typeformals
+				 * of a "for" statement.
+				 */
+				$$ = (ILNode_GenericTypeParameters *)
+						ILNode_GenericTypeParameters_create(0, 0);
+				yyerrok;
+			}
 	;
 
 TypeFormalList
-	: Identifier					{
+	: IDENTIFIER					{
 				$$.count = 1;
 				$$.list = (ILNode_List *)MakeList(0,
 						(ILNode *)ILNode_GenericTypeParameter_create(0,
-													 ILQualIdentName($1, 0),
+													 $1,
 													 0, 0));
 			}
-	| TypeFormalList ',' Identifier	{
+	| TypeFormalList ',' IDENTIFIER	{
 				/* Check for duplicates in the list */
-				const char *name = ILQualIdentName($3, 0);
+				const char *name = $3;
 				ILNode_ListIter iter;
 				ILNode_GenericTypeParameter *node;
 				ILNode_ListIter_Init(&iter, $1.list);
@@ -3317,7 +3396,7 @@ TypeFormalList
 				{
 					if(!strcmp(node->name, name))
 					{
-						CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						CCErrorOnLine(yygetfilename($1.list), yygetlinenum($1.list),
 						  "`%s' declared multiple times in generic parameters",
 						  name);
 						break;
@@ -3515,13 +3594,53 @@ OptPartial
 	;
 
 /*
+ * Members
+ */
+MemberHeaderStart
+	: OptAttributesAndModifiers Type	{
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $2;
+			}
+	;
+
+NonGenericMethodAndPropertyHeaderStart
+	: MemberHeaderStart NonGenericQualifiedIdentifier	{
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $1.type;
+				$$.identifier = $2;
+			}
+	;
+
+GenericMethodHeaderStart
+	: MemberHeaderStart GenericQualifiedIdentifier		{
+				ILNode_GenericTypeParameters *typeFormals;
+				/*
+				 * We have to convert the TypeActuals for the last part
+				 * to TypeFormals here.
+				 */
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $1.type;
+				typeFormals = TypeActualsToTypeFormals((ILNode *)($2.memberName.typeArgs));
+				$$.identifier =	ILNode_GenericQualIdent_create(
+									$2.parent,
+									$2.memberName.identifier,
+									$2.memberName.numTypeArgs,
+									(ILNode *)typeFormals);
+				$$.typeFormals = typeFormals;
+			}
+	;
+
+/*
  * Constants.
  */
 
 ConstantDeclaration
-	: OptAttributes OptModifiers CONST Type ConstantDeclarators ';' {
-				ILUInt32 attrs = CSModifiersToConstAttrs($4, $2);
-				$$ = ILNode_FieldDeclaration_create($1, attrs, $4, $5);
+	: OptAttributesAndModifiers CONST Type ConstantDeclarators ';' {
+				ILUInt32 attrs = CSModifiersToConstAttrs($3, $1.modifiers);
+				$$ = ILNode_FieldDeclaration_create($1.attributes, attrs, $3, $4);
 			}
 	;
 
@@ -3547,22 +3666,22 @@ ConstantDeclarator
  */
 
 FieldDeclaration
-	: OptAttributes OptModifiers Type FieldDeclarators ';'	{
-				ILUInt32 attrs = CSModifiersToFieldAttrs($3, $2);
+	: MemberHeaderStart FieldDeclarators ';'	{
+				ILUInt32 attrs = CSModifiersToFieldAttrs($1.type, $1.modifiers);
 			#if IL_VERSION_MAJOR > 1
 				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
 				{
-					if(!($2 & CS_MODIFIER_STATIC))
+					if(!($1.modifiers & CS_MODIFIER_STATIC))
 					{
 						CCError(_("only static fields are allowed in static classes"));
 					}
-					if($2 & CS_MODIFIER_PROTECTED)
+					if($1.modifiers & CS_MODIFIER_PROTECTED)
 					{
 						CCError(_("no protected or protected internal fields are allowed in static classes"));
 					}
 				}
 			#endif	/* IL_VERSION_MAJOR > 1 */
-				$$ = ILNode_FieldDeclaration_create($1, attrs, $3, $4);
+				$$ = ILNode_FieldDeclaration_create($1.attributes, attrs, $1.type, $2);
 			}
 	;
 
@@ -3591,28 +3710,28 @@ FieldDeclarator
  * Methods.
  */
 MethodHeader
-	: OptAttributes OptModifiers Type NonGenericQualifiedIdentifier
+	: NonGenericMethodAndPropertyHeaderStart
 			'(' OptFormalParameterList ')'	{
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.type = $3;
-				$$.args = (ILNode_List *)$6;
-				$$.identifier = $4;
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $1.type;
+				$$.args = (ILNode_List *)$3;
+				$$.identifier = $1.identifier;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers Type NonGenericQualifiedIdentifier '<' TypeFormals
+	| GenericMethodHeaderStart
 			'(' OptFormalParameterList ')' OptTypeParameterConstraintsClauses {
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.type = $3;
-				$$.args = (ILNode_List *)$8;
-				$$.identifier = $4;
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $1.type;
+				$$.args = (ILNode_List *)$3;
+				$$.identifier = $1.identifier;
 #if IL_VERSION_MAJOR > 1
-				$$.typeFormals = $6;
-				MergeGenericConstraints($6, $10);
+				$$.typeFormals = $1.typeFormals;
+				MergeGenericConstraints($1.typeFormals, $5);
 #else	/* IL_VERSION_MAJOR == 1 */
 				$$.typeFormals = 0;
-				CCErrorOnLine(yygetfilename($4), yygetlinenum($4),
+				CCErrorOnLine(yygetfilename($1.identifier), yygetlinenum($1.identifier),
 							  "generics are not supported in this version");
 #endif	/* IL_VERSION_MAJOR == 1 */
 			}
@@ -3693,30 +3812,30 @@ ParameterModifier
  */
 
 PropertyDeclaration
-	: OptAttributes OptModifiers Type QualifiedIdentifier
+	: NonGenericMethodAndPropertyHeaderStart
 			StartAccessorBlock AccessorBlock	{
 				ILUInt32 attrs;
 
 			#if IL_VERSION_MAJOR > 1
 				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
 				{
-					if(!($2 & CS_MODIFIER_STATIC))
+					if(!($1.modifiers & CS_MODIFIER_STATIC))
 					{
 						CCError(_("only static properties are allowed in static classes"));
 					}
-					if($2 & CS_MODIFIER_PROTECTED)
+					if($1.modifiers & CS_MODIFIER_PROTECTED)
 					{
 						CCError(_("no protected or protected internal properties are allowed in static classes"));
 					}
 				}
 			#endif	/* IL_VERSION_MAJOR > 1 */
 				/* Create the property declaration */
-				attrs = CSModifiersToPropertyAttrs($3, $2);
-				$$ = ILNode_PropertyDeclaration_create($1,
-								   attrs, $3, $4, 0, $6.item1, $6.item2,
-								   (($6.item1 ? 1 : 0) |
-								    ($6.item2 ? 2 : 0)));
-				CloneLine($$, $4);
+				attrs = CSModifiersToPropertyAttrs($1.type, $1.modifiers);
+				$$ = ILNode_PropertyDeclaration_create($1.attributes,
+								   attrs, $1.type, $1.identifier, 0, $3.item1, $3.item2,
+								   (($3.item1 ? 1 : 0) |
+								    ($3.item2 ? 2 : 0)));
+				CloneLine($$, $1.identifier);
 
 				/* Create the property method declarations */
 				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
@@ -3797,22 +3916,22 @@ EventDeclaration
 	;
 
 EventFieldDeclaration
-	: OptAttributes OptModifiers EVENT Type EventDeclarators ';'	{
-				ILUInt32 attrs = CSModifiersToEventAttrs($4, $2);
+	: OptAttributesAndModifiers EVENT Type EventDeclarators ';'	{
+				ILUInt32 attrs = CSModifiersToEventAttrs($3, $1.modifiers);
 			#if IL_VERSION_MAJOR > 1
 				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
 				{
-					if(!($2 & CS_MODIFIER_STATIC))
+					if(!($1.modifiers & CS_MODIFIER_STATIC))
 					{
 						CCError(_("only static events are allowed in static classes"));
 					}
-					if($2 & CS_MODIFIER_PROTECTED)
+					if($1.modifiers & CS_MODIFIER_PROTECTED)
 					{
 						CCError(_("no protected or protected internal events are allowed in static classes"));
 					}
 				}
 			#endif	/* IL_VERSION_MAJOR > 1 */
-				$$ = ILNode_EventDeclaration_create($1, attrs, $4, $5);
+				$$ = ILNode_EventDeclaration_create($1.attributes, attrs, $3, $4);
 				CreateEventMethods((ILNode_EventDeclaration *)($$));
 			}
 	;
@@ -3841,15 +3960,15 @@ EventDeclarator
 	;
 
 EventPropertyDeclaration
-	: OptAttributes OptModifiers EVENT Type QualifiedIdentifier
+	: OptAttributesAndModifiers EVENT Type QualifiedIdentifier
 			StartAccessorBlock EventAccessorBlock	{
-				ILUInt32 attrs = CSModifiersToEventAttrs($4, $2);
+				ILUInt32 attrs = CSModifiersToEventAttrs($3, $1.modifiers);
 				$$ = ILNode_EventDeclaration_create
-					($1, attrs, $4, 
+					($1.attributes, attrs, $3, 
 						ILNode_EventDeclarator_create
-							(ILNode_FieldDeclarator_create($5, 0),
-							 $7.item1, $7.item2));
-				CloneLine($$, $5);
+							(ILNode_FieldDeclarator_create($4, 0),
+							 $6.item1, $6.item2));
+				CloneLine($$, $4);
 				CreateEventMethods((ILNode_EventDeclaration *)($$));
 			}
 	;
@@ -3904,32 +4023,32 @@ RemoveAccessorDeclaration
  */
 
 IndexerDeclaration
-	: OptAttributes OptModifiers IndexerDeclarator
+	: MemberHeaderStart IndexerDeclarator
 			StartAccessorBlock AccessorBlock		{
-				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1,
-							$3.ident);
-				ILUInt32 attrs = CSModifiersToPropertyAttrs($3.type, $2);
+				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1.attributes,
+							$2.ident);
+				ILUInt32 attrs = CSModifiersToPropertyAttrs($1.type, $1.modifiers);
 
 			#if IL_VERSION_MAJOR > 1
 				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
 				{
-					if(!($2 & CS_MODIFIER_STATIC))
+					if(!($1.modifiers & CS_MODIFIER_STATIC))
 					{
 						CCError(_("only static indexers are allowed in static classes"));
 					}
-					if($2 & CS_MODIFIER_PROTECTED)
+					if($1.modifiers & CS_MODIFIER_PROTECTED)
 					{
 						CCError(_("no protected or protected internal indexers are allowed in static classes"));
 					}
 				}
 			#endif	/* IL_VERSION_MAJOR > 1 */
 
-				$$ = ILNode_PropertyDeclaration_create($1,
-								   attrs, $3.type, name, $3.params,
-								   $5.item1, $5.item2,
-								   (($5.item1 ? 1 : 0) |
-								    ($5.item2 ? 2 : 0)));
-				CloneLine($$, $3.ident);
+				$$ = ILNode_PropertyDeclaration_create($1.attributes,
+								   attrs, $1.type, name, $2.params,
+								   $4.item1, $4.item2,
+								   (($4.item1 ? 1 : 0) |
+								    ($4.item2 ? 2 : 0)));
+				CloneLine($$, $2.ident);
 
 				/* Create the property method declarations */
 				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
@@ -3937,15 +4056,13 @@ IndexerDeclaration
 	;
 
 IndexerDeclarator
-	: Type THIS FormalIndexParameters		{
-				$$.type = $1;
+	: THIS FormalIndexParameters		{
 				$$.ident = ILQualIdentSimple(NULL);
-				$$.params = $3;
+				$$.params = $2;
 			}
-	| Type QualifiedIdentifierMemberAccessStart THIS FormalIndexParameters	{
-				$$.type = $1;
-				$$.ident = $2;
-				$$.params = $4;
+	| QualifiedIdentifierMemberAccessStart THIS FormalIndexParameters	{
+				$$.ident = $1;
+				$$.params = $3;
 			}
 	;
 
@@ -3989,16 +4106,16 @@ OperatorDeclaration
 	;
 
 NormalOperatorDeclaration
-	: OptAttributes OptModifiers Type OPERATOR OverloadableOperator
+	: MemberHeaderStart OPERATOR OverloadableOperator
 			'(' Type Identifier ')'	Block {
 				ILUInt32 attrs;
 				ILNode *params;
 
 				/* Validate the name of the unary operator */
-				if($5.unary == 0)
+				if($3.unary == 0)
 				{
 					CCError("overloadable unary operator expected");
-					$5.unary = $5.binary;
+					$3.unary = $3.binary;
 				}
 
 			#if IL_VERSION_MAJOR > 1
@@ -4009,30 +4126,30 @@ NormalOperatorDeclaration
 			#endif	/* IL_VERSION_MAJOR > 1 */
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($3, $2);
+				attrs = CSModifiersToOperatorAttrs($1.type, $1.modifiers);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
-					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $5, $6));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $3,
-						 ILQualIdentSimple(ILInternString($5.unary, -1).string),
-						 0, params, $10);
-				CloneLine($$, $3);
+						($1.attributes, attrs, $1.type,
+						 ILQualIdentSimple(ILInternString($3.unary, -1).string),
+						 0, params, $8);
+				CloneLine($$, $1.type);
 			}
-	| OptAttributes OptModifiers Type OPERATOR OverloadableOperator
+	| MemberHeaderStart OPERATOR OverloadableOperator
 			'(' Type Identifier ',' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
 				/* Validate the name of the binary operator */
-				if($5.binary == 0)
+				if($3.binary == 0)
 				{
 					CCError("overloadable binary operator expected");
-					$5.binary = $5.unary;
+					$3.binary = $3.unary;
 				}
 
 			#if IL_VERSION_MAJOR > 1
@@ -4043,24 +4160,24 @@ NormalOperatorDeclaration
 			#endif	/* IL_VERSION_MAJOR > 1 */
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($3, $2);
+				attrs = CSModifiersToOperatorAttrs($1.type, $1.modifiers);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
 					ILNode_FormalParameter_create
-						(0, ILParamMod_empty, $7, $8));
+						(0, ILParamMod_empty, $5, $6));
 				ILNode_List_Add(params,
 					ILNode_FormalParameter_create
-						(0, ILParamMod_empty, $10, $11));
+						(0, ILParamMod_empty, $8, $9));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $3,
+						($1.attributes, attrs, $1.type,
 						 ILQualIdentSimple
-						 	(ILInternString($5.binary, -1).string),
-						 0, params, $13);
-				CloneLine($$, $3);
+						 	(ILInternString($3.binary, -1).string),
+						 0, params, $11);
+				CloneLine($$, $1.type);
 			}
 	;
 
@@ -4090,47 +4207,47 @@ OverloadableOperator
 	;
 
 ConversionOperatorDeclaration
-	: OptAttributes OptModifiers IMPLICIT OPERATOR Type
+	: OptAttributesAndModifiers IMPLICIT OPERATOR Type
 			'(' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($5, $2);
+				attrs = CSModifiersToOperatorAttrs($4, $1.modifiers);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
-					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $6, $7));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $5,
+						($1.attributes, attrs, $4,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Implicit", -1).string),
-						 0, params, $10);
-				CloneLine($$, $5);
+						 0, params, $9);
+				CloneLine($$, $4);
 			}
-	| OptAttributes OptModifiers EXPLICIT OPERATOR Type
+	| OptAttributesAndModifiers EXPLICIT OPERATOR Type
 			'(' Type Identifier ')' Block	{
 				ILUInt32 attrs;
 				ILNode *params;
 
 				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($5, $2);
+				attrs = CSModifiersToOperatorAttrs($4, $1.modifiers);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
-					ILNode_FormalParameter_create(0, ILParamMod_empty, $7, $8));
+					ILNode_FormalParameter_create(0, ILParamMod_empty, $6, $7));
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1, attrs, $5,
+						($1.attributes, attrs, $4,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Explicit", -1).string),
-						 0, params, $10);
-				CloneLine($$, $5);
+						 0, params, $9);
+				CloneLine($$, $4);
 			}
 	;
 
@@ -4139,18 +4256,18 @@ ConversionOperatorDeclaration
  */
 
 ConstructorDeclaration
-	: OptAttributes OptModifiers Identifier
+	: OptAttributesAndModifiers Identifier
 			'(' OptFormalParameterList ')' ConstructorInitializer MethodBody {
-				ILUInt32 attrs = CSModifiersToConstructorAttrs($3, $2);
+				ILUInt32 attrs = CSModifiersToConstructorAttrs($2, $1.modifiers);
 				ILNode *ctorName;
 				ILNode *cname;
-				ILNode *initializer = $7;
+				ILNode *initializer = $6;
 				ILNode *body;
 
 			#if IL_VERSION_MAJOR > 1
 				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
 				{
-					if(!($2 & CS_MODIFIER_STATIC))
+					if(!($1.modifiers & CS_MODIFIER_STATIC))
 					{
 						CCError(_("no instance constructors are allowed in static classes"));
 					}
@@ -4169,26 +4286,26 @@ ConstructorDeclaration
 								(ILInternString(".ctor", 5).string);
 					ClassNameCtorDefined();
 				}
-				ctorName = $3;
+				ctorName = $2;
 				if(!ClassNameSame(ctorName))
 				{
-					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+					CCErrorOnLine(yygetfilename($2), yygetlinenum($2),
 						"constructor name does not match class name");
 				}
-				if($8 && yykind($8) == yykindof(ILNode_NewScope))
+				if($7 && yykind($7) == yykindof(ILNode_NewScope))
 				{
 					/* Push the initializer into the body scope */
-					body = $8;
+					body = $7;
 					((ILNode_NewScope *)body)->stmt =
 						ILNode_Compound_CreateFrom
 							(initializer, ((ILNode_NewScope *)body)->stmt);
 				}
-				else if($8 || (attrs & CS_SPECIALATTR_EXTERN) == 0)
+				else if($7 || (attrs & CS_SPECIALATTR_EXTERN) == 0)
 				{
 					/* Non-scoped body: create a new scoped body */
 					body = ILNode_NewScope_create
-								(ILNode_Compound_CreateFrom(initializer, $8));
-					CCWarningOnLine(yygetfilename($3), yygetlinenum($3),
+								(ILNode_Compound_CreateFrom(initializer, $7));
+					CCWarningOnLine(yygetfilename($2), yygetlinenum($2),
 						"constructor without body should be declared 'extern'");
 				}
 				else
@@ -4198,9 +4315,9 @@ ConstructorDeclaration
 				}
 				if((attrs & IL_META_METHODDEF_STATIC) != 0)
 				{
-					if(!yyisa($5,ILNode_Empty))
+					if(!yyisa($4,ILNode_Empty))
 					{
-						CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
+						CCErrorOnLine(yygetfilename($2), yygetlinenum($2),
 								"Static constructors cannot have parameters");
 					}
 					$$.body = 0;
@@ -4209,8 +4326,8 @@ ConstructorDeclaration
 				else
 				{
 					$$.body = ILNode_MethodDeclaration_create
-						  ($1, attrs, 0 /* "void" */, cname, 0, $5, body);
-					CloneLine($$.body, $3);
+						  ($1.attributes, attrs, 0 /* "void" */, cname, 0, $4, body);
+					CloneLine($$.body, $2);
 					$$.staticCtors = 0;
 				}
 			}
@@ -4235,7 +4352,7 @@ ConstructorInitializer
 	;
 
 DestructorDeclaration
-	: OptAttributes OptModifiers '~' Identifier '(' ')' Block		{
+	: OptAttributesAndModifiers '~' Identifier '(' ')' Block		{
 				ILUInt32 attrs;
 				ILNode *dtorName;
 				ILNode *name;
@@ -4244,24 +4361,24 @@ DestructorDeclaration
 			#if IL_VERSION_MAJOR > 1
 				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
 				{
-					if(!($2 & CS_MODIFIER_STATIC))
+					if(!($1.modifiers & CS_MODIFIER_STATIC))
 					{
 						CCError(_("no destructors are allowed in static classes"));
 					}
 				}
 			#endif	/* IL_VERSION_MAJOR > 1 */
 
-				dtorName = $4;
+				dtorName = $3;
 
 				/* Validate the destructor name */
 				if(!ClassNameSame(dtorName))
 				{
-					CCErrorOnLine(yygetfilename($4), yygetlinenum($4),
+					CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 						"destructor name does not match class name");
 				}
 
 				/* Build the list of attributes needed on "Finalize" */
-				attrs = CSModifiersToDestructorAttrs($4,$2);
+				attrs = CSModifiersToDestructorAttrs($3, $1.modifiers);
 
 				/* Build the name of the "Finalize" method */
 				name = ILQualIdentSimple(ILInternString("Finalize", -1).string);
@@ -4276,15 +4393,15 @@ DestructorDeclaration
 							ILNode_InvocationExpression_create
 							(ILNode_BaseAccess_create(name), 0));
 				body = ILNode_Try_create
-							($7, 0, ILNode_FinallyClause_create(body));
+							($6, 0, ILNode_FinallyClause_create(body));
 
 				/* Construct the finalizer declaration */
 				$$ = ILNode_MethodDeclaration_create
-							($1, attrs, 0 /* void */,
+							($1.attributes, attrs, 0 /* void */,
 							 ILQualIdentSimple
 							 	(ILInternString("Finalize", -1).string),
 							 0, 0, body);
-				CloneLine($$, $4);
+				CloneLine($$, $3);
 			}
 	;
 
@@ -4292,32 +4409,32 @@ DestructorDeclaration
  * Structs.
  */
 StructHeader
-	: OptAttributes OptModifiers OptPartial STRUCT Identifier StructInterfaces	{
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $6;
+	: OptTypeDeclarationHeader STRUCT Identifier StructInterfaces	{
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $4;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers OptPartial STRUCT GenericIdentifierStart
+	| OptTypeDeclarationHeader STRUCT GenericIdentifierStart
 			TypeFormals StructInterfaces OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $7;
-				$$.typeFormals = $6;
-				MergeGenericConstraints($6, $8);
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $5;
+				$$.typeFormals = $4;
+				MergeGenericConstraints($4, $6);
 #else	/* IL_VERSION_MAJOR == 1 */
-				CCErrorOnLine(yygetfilename($5), yygetlinenum($5),
+				CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 							  "generics are not supported in this version");
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $7;
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $5;
 				$$.typeFormals = 0;
 #endif	/* IL_VERSION_MAJOR == 1 */
 			}
@@ -4396,32 +4513,32 @@ StructBody
  * Interfaces.
  */
 InterfaceHeader
-	: OptAttributes OptModifiers OptPartial INTERFACE Identifier InterfaceBase	{
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $6;
+	: OptTypeDeclarationHeader INTERFACE Identifier InterfaceBase	{
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $4;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers OptPartial INTERFACE GenericIdentifierStart
+	| OptTypeDeclarationHeader INTERFACE GenericIdentifierStart
 			TypeFormals InterfaceBase OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $7;
-				$$.typeFormals = $6;
-				MergeGenericConstraints($6, $8);
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $5;
+				$$.typeFormals = $4;
+				MergeGenericConstraints($4, $6);
 #else	/* IL_VERSION_MAJOR == 1 */
-				CCErrorOnLine(yygetfilename($5), yygetlinenum($5),
+				CCErrorOnLine(yygetfilename($3), yygetlinenum($3),
 							  "generics are not supported in this version");
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.partial = $3;
-				$$.identifier = $5;
-				$$.classBase = $7;
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.partial = $1.partial;
+				$$.identifier = $3;
+				$$.classBase = $5;
 				$$.typeFormals = 0;
 #endif	/* IL_VERSION_MAJOR == 1 */
 			}
@@ -4651,12 +4768,12 @@ InterfaceIndexerDeclaration
  */
 
 EnumDeclaration
-	: OptAttributes OptModifiers ENUM Identifier EnumBase {
+	: OptAttributesAndModifiers ENUM Identifier EnumBase {
 				/* Enter a new nesting level */
 				++NestingLevel;
 
 				/* Push the identifier onto the class name stack */
-				ClassNamePush($4, $2);
+				ClassNamePush($3, $1.modifiers);
 			}
 			EnumBody OptSemiColon	{
 				ILNode *baseList;
@@ -4665,7 +4782,7 @@ EnumDeclaration
 				ILUInt32 attrs;
 
 				/* Validate the modifiers */
-				attrs = CSModifiersToTypeAttrs($4, $2, (NestingLevel > 1));
+				attrs = CSModifiersToTypeAttrs($3, $1.modifiers, (NestingLevel > 1));
 
 				/* Add extra attributes that enums need */
 				attrs |= IL_META_TYPEDEF_SERIALIZABLE |
@@ -4679,7 +4796,7 @@ EnumDeclaration
 
 				/* Add an instance field called "value__" to the body,
 				   which is used to hold the enumerated value */
-				bodyList = $7;
+				bodyList = $6;
 				if(!bodyList)
 				{
 					bodyList = ILNode_List_create();
@@ -4688,26 +4805,26 @@ EnumDeclaration
 				ILNode_List_Add(fieldDecl,
 					ILNode_FieldDeclarator_create
 						(ILQualIdentSimple("value__"), 0));
-				MakeBinary(FieldDeclarator, $1, 0);
+				MakeBinary(FieldDeclarator, $1.attributes, 0);
 				ILNode_List_Add(bodyList,
 					ILNode_FieldDeclaration_create
 						(0, IL_META_FIELDDEF_PUBLIC |
 							IL_META_FIELDDEF_SPECIAL_NAME |
-							IL_META_FIELDDEF_RT_SPECIAL_NAME, $5, fieldDecl));
+							IL_META_FIELDDEF_RT_SPECIAL_NAME, $4, fieldDecl));
 
 				/* Create the class definition */
 				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
-							($1,					/* OptAttributes */
+							($1.attributes,					/* OptAttributes */
 							 attrs,					/* OptModifiers */
-							 ILQualIdentName($4, 0),/* Identifier */
+							 ILQualIdentName($3, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 0,						/* TypeFormals */
 							 baseList,				/* ClassBase */
 							 bodyList,				/* EnumBody */
 							 0);					/* StaticCtors */
-				CloneLine($$, $4);
+				CloneLine($$, $3);
 
 				/* Pop the class name stack */
 				ClassNamePop();
@@ -4778,33 +4895,33 @@ EnumMemberDeclaration
  * Delegates.
  */
 DelegateHeader
-	: OptAttributes OptModifiers DELEGATE Type Identifier
+	: OptAttributesAndModifiers DELEGATE Type Identifier
 				'(' OptFormalParameterList ')' {
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.type = $4;
-				$$.identifier = $5;
-				$$.args = (ILNode_List *)$7;
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $3;
+				$$.identifier = $4;
+				$$.args = (ILNode_List *)$6;
 				$$.typeFormals = 0;
 			}
-	| OptAttributes OptModifiers DELEGATE Type GenericIdentifierStart TypeFormals
+	| OptAttributesAndModifiers DELEGATE Type GenericIdentifierStart TypeFormals
 				'(' OptFormalParameterList ')' OptTypeParameterConstraintsClauses {
 #if IL_VERSION_MAJOR > 1
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.type = $4;
-				$$.identifier = $5;
-				$$.args = (ILNode_List *)$8;
-				$$.typeFormals = $6;
-				MergeGenericConstraints($6, $10);
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $3;
+				$$.identifier = $4;
+				$$.args = (ILNode_List *)$7;
+				$$.typeFormals = $5;
+				MergeGenericConstraints($5, $9);
 #else	/* IL_VERSION_MAJOR == 1 */
-				CCErrorOnLine(yygetfilename($5), yygetlinenum($5),
+				CCErrorOnLine(yygetfilename($4), yygetlinenum($4),
 							  "generics are not supported in this version");
-				$$.attributes = $1;
-				$$.modifiers = $2;
-				$$.type = $4;
-				$$.identifier = $5;
-				$$.args = (ILNode_List *)$8;
+				$$.attributes = $1.attributes;
+				$$.modifiers = $1.modifiers;
+				$$.type = $3;
+				$$.identifier = $4;
+				$$.args = (ILNode_List *)$7;
 				$$.typeFormals = 0;
 #endif	/* IL_VERSION_MAJOR == 1 */
 			}

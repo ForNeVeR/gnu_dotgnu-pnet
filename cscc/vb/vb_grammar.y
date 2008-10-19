@@ -837,13 +837,13 @@ IdentifierOrKeyword
 
 QualifiedIdentifier
 	: QualifiedIdentifier '.' IdentifierOrKeyword	{
-				$$ = ILNode_QualIdent_create($1, $3);
+				$$ = ILNode_QualIdent_create($1, ILQualIdentGetName($3));
 			}
 	| Identifier
 	;
 
 QualifiedIdentifier2
-	: QualifiedIdentifier2 '.' Identifier	{
+	: QualifiedIdentifier2 '.' IDENTIFIER	{
 				$$ = ILNode_QualIdent_create($1, $3);
 			}
 	| Identifier

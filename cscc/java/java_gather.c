@@ -468,7 +468,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		}
 		else if(yyisa(baseNode,ILNode_QualIdent))
 		{
-			baseName=ILQualIdentName(((ILNode_QualIdent*)baseNode)->right,0);
+			baseName=((ILNode_QualIdent*)baseNode)->name;
 		}
 		else
 		{

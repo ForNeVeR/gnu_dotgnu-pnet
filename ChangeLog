@@ -1,3 +1,60 @@
+2008-10-19  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_lvalue.tc (ILQualIdentGetName): Add function to get the name
+	component of an identifier node.
+	(ILQualIdentTwo, ILQualIdentName): Adjust for new layout of
+	ILNode_OualIdent.
+	(ILIsQualIdent): Adjust for new layout of ILNode_OualIdent and add
+	handling of ILNode_Generic_QualIdent.
+
+	* codegen/cg_nodes.tc: Replace the right node by a name in
+	ILNode_QualIdent. Add ILNode_GenericQualIdent.
+
+	* codegen/cg_scope.c (ResolveQualIdent, ILScopeResolveType): Adjust for
+	new layout of ILNode_OualIdent.
+
+	* codegen/jv_lvalue.tc: Add dummy operations for ILNode_GenericQualIdent.
+
+	* cscc/c/c_grammar.y: Adjust creation of an ILNode_QualIdent for the new
+	layout.
+
+	* cscc/c/c_lvalue.tc: Add dummy operation ILNode_CSemAnalysis for
+	ILNode_GenericQualIdent.
+
+	* cscc/c/c_name.tc: Add dummy operation ILNode_CName for
+	ILNode_GenericQualIdent.
+
+	* cscc/c/c_types.c (CTypeFromCSharp): Adjust for new layout of
+	ILNode_OualIdent.
+
+	* cscc/csharp/cs_attrs.c (ModifyAttrName): Adjust for new layout of
+	ILNode_OualIdent.
+
+	* cscc/csharp/cs_defs.tc: Remove now obsolete ILNode_GenericReference.
+
+	* cscc/csharp/cs_gather.c (GetFullAndBasicNames): Adjust for new layout of
+	ILNode_OualIdent and add dummy handling of ILNode_GenericQualIdent.
+	(CreateMethod, CreateProperty, CreateEventDecl): Replace
+	ILNode_GenericReference by ILNode_GenericQualIdent.
+
+	* cscc/csharp/cs_grammar.y: Adjust for new layout of ILNode_OualIdent.
+	Fix generic method declaration. Replace	ILNode_GenericReference by
+	ILNode_GenericQualIdent.
+
+	* cscc/csharp/cs_internal.h: Change the member identifier in
+	struct MemberName to const char *.
+
+	* cscc/csharp/cs_lvalue.tc: Adjust for new layout of ILNode_OualIdent and
+	add the operations ILNode_SemAnalysis and ILNode_SemAnalysisType for
+	ILNode_GenericQualIdent.
+
+	* cscc/csharp/cs_types.tc: Remove the operations ILNode_SemAnalysis and
+	ILNode_SemAnalysisType for ILNode_GenericReference.
+
+	* cscc/java/java_gather.c, cscc/java/java_grammar.y,
+	cscc/java/java_lvalue.tc, cscc/vb/vb_grammar.y: Adjust for new layout of
+	ILNode_OualIdent.
+
 2008-10-05  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_grammar.y: Handle the implied constructor constraint

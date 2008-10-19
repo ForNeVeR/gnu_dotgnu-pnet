@@ -2330,7 +2330,7 @@ ILType *CTypeFromCSharp(ILGenInfo *info, const char *assembly, ILNode *node)
 	}
 	else
 	{
-		name = ILQualIdentName(((ILNode_QualIdent *)node)->right, 0);
+		name = ((ILNode_QualIdent *)node)->name;
 		namespace = ILQualIdentName(((ILNode_QualIdent *)node)->left, 0);
 	}
 

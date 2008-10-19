@@ -695,7 +695,9 @@ Identifier
 
 QualifiedIdentifier
 	: Identifier	{ $$ = $1; }
-	| QualifiedIdentifier '.' Identifier	{ MakeBinary(QualIdent, $1, $3); }
+	| QualifiedIdentifier '.' IDENTIFIER	{
+		MakeBinary(QualIdent, $1, ILInternString($3, strlen($3)).string);
+	}
 	;
 
 QualifiedIdentifierList

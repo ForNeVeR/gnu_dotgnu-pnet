@@ -677,7 +677,7 @@ ILNode_JSemAnalysis(ILNode_QualIdent)
 	value = ILNode_JSemAnalysis(node->left, info, &(node->left));
 
 	/* Resolve the member */
-	name = ILQualIdentName(node->right, 0);
+	name = node->name;
 	value2 = JavaResolveMemberName(info, (ILNode *)node, value, name, 0);
 
 	/* Convert the result into an l-value or r-value and return it */

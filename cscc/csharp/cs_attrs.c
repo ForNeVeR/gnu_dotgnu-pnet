@@ -124,7 +124,7 @@ static ILNode *ModifyAttrName(ILNode *node)
 	{
 		newNode = ILNode_AttrQualIdent_create
 			(((ILNode_QualIdent *)node)->left,
-			 ((ILNode_QualIdent *)node)->right);
+			 ((ILNode_QualIdent *)node)->name);
 	}
 	else if(yyisa(node, ILNode_Identifier))
 	{

@@ -53,7 +53,7 @@ struct ArrayType
  */
 struct MemberName
 {
-	ILNode		   *identifier;
+	const char	   *identifier;
 	ILUInt32		numTypeArgs;
 	ILNode_List	   *typeArgs;
 };

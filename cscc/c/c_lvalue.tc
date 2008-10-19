@@ -29,6 +29,15 @@ ILNode_CSemAnalysis(ILNode_Identifier)
 }
 
 /*
+ * Perform semantic analysis for a generic qualified identifier.
+ */
+ILNode_CSemAnalysis(ILNode_GenericQualIdent)
+{
+	/* This is not used in C */
+	return CSemValueError;
+}
+
+/*
  * Perform semantic analysis for generic parameters.
  */
 ILNode_CSemAnalysis(ILNode_GenericTypeParameter),

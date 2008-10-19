@@ -84,30 +84,37 @@ static ILClass *NodeToClass(ILNode *node)
  */
 static const char *GetFullAndBasicNames(ILNode *name, const char **basicName)
 {
+	/*
+	 * TODO: This doesn't work with explicit implementations of 
+	 * generic interface methods.
+	 */
 	const char *result;
 	const char *basic;
 	const char *left;
+
 	if(yyisa(name, ILNode_Identifier))
 	{
-		result = ILQualIdentName(name, 0);
+		result = ILQualIdentGetName(name);
 		basic = result;
 	}
-	else if(yyisa(name, ILNode_GenericReference))
+	else if(yyisa(name, ILNode_GenericQualIdent))
 	{
 		char buffer[261];
 
-		left = GetFullAndBasicNames(((ILNode_GenericReference *)name)->left, 0);
-		result = ILQualIdentName(((ILNode_GenericReference *)name)->identifier, 0);
-		sprintf(buffer, "%s`%i", result, ((ILNode_GenericReference *)name)->numArgs);
-		result = ILQualIdentAppend(left, buffer);
+		result = ((ILNode_GenericQualIdent *)name)->name;
+		sprintf(buffer, "%s`%i", result, ((ILNode_GenericQualIdent *)name)->numTypeArgs);
+		if(((ILNode_GenericQualIdent *)name)->left)
+		{
+			left = GetFullAndBasicNames(((ILNode_GenericQualIdent *)name)->left, 0);
+			result = ILQualIdentAppend(left, buffer);
+		}
 		basic = result;
 	}
 	else if(yyisa(name, ILNode_QualIdent))
 	{
 		left = GetFullAndBasicNames(((ILNode_QualIdent *)name)->left, 0);
-		result = GetFullAndBasicNames
-			(((ILNode_QualIdent *)name)->right, &basic);
-		result = ILQualIdentAppend(left, result);
+		result = ILQualIdentAppend(left, ((ILNode_QualIdent *)name)->name);
+		basic = ((ILNode_QualIdent *)name)->name;
 	}
 	else
 	{
@@ -1337,7 +1344,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	interface = 0;
 	interfaceMember = 0;
 	if(yykind(method->name) == yykindof(ILNode_Identifier) ||
-	   yykind(method->name) == yykindof(ILNode_GenericReference))
+	   yykind(method->name) == yykindof(ILNode_GenericQualIdent))
 	{
 		/* Simple method name */
 		name = GetFullAndBasicNames(method->name, &basicName);
@@ -1854,7 +1861,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 
 	/* Get the name of the property */
 	if(yykind(property->name) == yykindof(ILNode_Identifier) ||
-	   yykind(property->name) == yykindof(ILNode_GenericReference))
+	   yykind(property->name) == yykindof(ILNode_GenericQualIdent))
 	{
 		/* Simple property name */
 		name = GetFullAndBasicNames(property->name, &basicName);
@@ -2124,7 +2131,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	/* Get the name of the event */
 	eventName = ((ILNode_FieldDeclarator *)(eventDecl->fieldDeclarator))->name;
 	if(yykind(eventName) == yykindof(ILNode_Identifier) ||
-	   yykind(eventName) == yykindof(ILNode_GenericReference))
+	   yykind(eventName) == yykindof(ILNode_GenericQualIdent))
 	{
 		/* Simple event name */
 		name = GetFullAndBasicNames(eventName, &basicName);

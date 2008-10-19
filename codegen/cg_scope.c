@@ -693,27 +693,21 @@ static ILScopeData *ResolveQualIdent(ILScope *scope, ILNode *identifier)
 	{
 		/* Qualified identifier */
 		ILNode_QualIdent *ident = (ILNode_QualIdent *)identifier;
-		ILNode_Identifier *right;
 		data = ResolveQualIdent(scope, ident->left);
 		if(!data)
 		{
 			return 0;
 		}
-		if(yykind(ident->right) != yykindof(ILNode_Identifier))
-		{
-			return 0;
-		}
-		right = (ILNode_Identifier *)(ident->right);
 		if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)
 		{
 			/* Search for the name within a namespace */
-			return ILScopeLookup((ILScope *)(data->data), right->name, 0);
+			return ILScopeLookup((ILScope *)(data->data), ident->name, 0);
 		}
 		else if(data->rbnode.kind == IL_SCOPE_IMPORTED_TYPE ||
 				data->rbnode.kind == IL_SCOPE_DECLARED_TYPE)
 		{
 			/* Search for a nested type */
-			return ILScopeLookup((ILScope *)(data->data), right->name, 0);
+			return ILScopeLookup((ILScope *)(data->data), ident->name, 0);
 		}
 		else
 		{
@@ -794,13 +788,11 @@ int ILScopeResolveType(ILScope *scope, ILNode *identifier,
 	{
 		ILNode_QualIdent *qident = (ILNode_QualIdent *)identifier;
 		if(qident->left != 0 &&
-		   yykind(qident->left) == yykindof(ILNode_Identifier) &&
-		   qident->right != 0 &&
-		   yykind(qident->right) == yykindof(ILNode_Identifier))
+		   yykind(qident->left) == yykindof(ILNode_Identifier))
 		{
 			*classInfo = ILClassLookup
 					(ILClassGlobalScope(scope->info->libImage),
-				     ((ILNode_Identifier *)(qident->right))->name,
+				     qident->name,
 				     ((ILNode_Identifier *)(qident->left))->name);
 			if((*classInfo) != 0)
 			{

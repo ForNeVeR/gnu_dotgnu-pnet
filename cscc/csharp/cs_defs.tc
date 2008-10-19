@@ -92,13 +92,6 @@
 	ILNode *left;
 	ILNode *right;
 }
-%node ILNode_GenericReference ILNode_Dummy =
-{
-	ILNode	   *left;
-	ILNode	   *identifier;
-	ILUInt32	numArgs;
-	ILNode	   *typeArguments;
-}
 %node ILNode_GenericConstraint ILNode_Dummy =
 {
 	const char  *name;

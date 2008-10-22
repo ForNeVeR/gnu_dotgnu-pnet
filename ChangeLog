@@ -34,8 +34,8 @@
 	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86.h,
 	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86_64.h,
 	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/hpc/hppa.h,
-	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/hpc/ia64.h: Include the
-	latest libgc changes.
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/hpc/ia64.h,
+	libgc/tests/test.c: Include the	latest libgc changes.
 
 2008-10-19  Klaus Treichel  <ktreichel@web.de>
 

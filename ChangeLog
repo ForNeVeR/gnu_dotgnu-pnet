@@ -1,3 +1,42 @@
+2008-10-22  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/ChangeLog, libgc/alloc.c, libgc/configure.ac,
+	libgc/darwin_stop_world.c, libgc/dbg_mlc.c, libgc/dyn_load.c,
+	libgc/finalize.c, libgc/gcj_mlc.c, libgc/mach_dep.c, libgc/mallocx.c,
+	libgc/mark_rts.c, libgc/misc.c, libgc/mkinstalldirs, libgc/os_dep.c,
+	libgc/pthread_stop_world.c, libgc/pthread_support.c, libgc/ptr_chck.c,
+	libgc/reclaim.c, libgc/thread_local_alloc.c, libgc/typd_mlc.c,
+	libgc/win32_threads.c, libgc/cord/cord.am, libgc/doc/README,
+	libgc/doc/README.DGUX386, libgc/doc/README.autoconf,
+	libgc/doc/debugging.html, libgc/doc/gcinterface.html,
+	libgc/doc/leak.html, libgc/doc/simple_example.html,
+	libgc/include/gc.h, libgc/include/gc_allocator.h,
+	libgc/include/gc_config_macros.h, libgc/include/gc_mark.h,
+	libgc/include/gc_typed.h, libgc/include/javaxfc.h,
+	libgc/include/new_gc_alloc.h, libgc/include/private/dbg_mlc.h,
+	libgc/include/private/gc_locks.h,, libgc/include/private/gc_pmark.h,
+	libgc/include/private/gc_priv.h, libgc/include/private/gcconfig.h,
+	libgc/libatomic_ops-1.2/ChangeLog,
+	libgc/libatomic_ops-1.2/src/atomic_ops.c,
+	libgc/libatomic_ops-1.2/src/atomic_ops.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops_stack.c,
+	libgc/libatomic_ops-1.2/src/atomic_ops_stack.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/aligned_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/all_aligned_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/all_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/char_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/int_aligned_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/int_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/short_aligned_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/short_atomic_load_store.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/arm.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/gcc/x86_64.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/hpc/hppa.h,
+	libgc/libatomic_ops-1.2/src/atomic_ops/sysdeps/hpc/ia64.h: Include the
+	latest libgc changes.
+
 2008-10-19  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_lvalue.tc (ILQualIdentGetName): Add function to get the name

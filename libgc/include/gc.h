@@ -129,7 +129,7 @@ GC_API int GC_set_finalize_on_demand(int);
 
 GC_API int GC_java_finalization;
 			/* Mark objects reachable from finalizable 	*/
-			/* objects in a separate postpass.  This makes	*/
+			/* objects in a separate post-pass.  This makes	*/
 			/* it a bit safer to use non-topologically-	*/
 			/* ordered finalization.  Default value is	*/
 			/* determined by JAVA_FINALIZATION macro.	*/
@@ -164,7 +164,7 @@ GC_API int GC_dont_expand;
 GC_API int GC_set_dont_expand(int);
 
 GC_API int GC_use_entire_heap;
-		/* Causes the nonincremental collector to use the	*/
+		/* Causes the non-incremental collector to use the	*/
 		/* entire heap before collecting.  This was the only 	*/
 		/* option for GC versions < 5.0.  This sometimes	*/
 		/* results in more large block fragmentation, since	*/
@@ -265,7 +265,7 @@ GC_API void GC_init(void);
 /*
  * general purpose allocation routines, with roughly malloc calling conv.
  * The atomic versions promise that no relevant pointers are contained
- * in the object.  The nonatomic versions guarantee that the new object
+ * in the object.  The non-atomic versions guarantee that the new object
  * is cleared.  GC_malloc_stubborn promises that no changes to the object
  * will occur after GC_end_stubborn_change has been called on the
  * result of GC_malloc_stubborn. GC_malloc_uncollectable allocates an object
@@ -301,9 +301,9 @@ GC_API void GC_free(void * object_addr);
  * The collector is implicitly informed of coming change when such
  * an object is first allocated.  The following routines inform the
  * collector that an object will no longer be changed, or that it will
- * once again be changed.  Only nonNIL pointer stores into the object
+ * once again be changed.  Only non-NULL pointer stores into the object
  * are considered to be changes.  The argument to GC_end_stubborn_change
- * must be exacly the value returned by GC_malloc_stubborn or passed to
+ * must be exactly the value returned by GC_malloc_stubborn or passed to
  * GC_change_stubborn.  (In the second case it may be an interior pointer
  * within 512 bytes of the beginning of the objects.)
  * There is a performance penalty for allowing more than
@@ -420,7 +420,7 @@ GC_API size_t GC_get_total_bytes(void);
 /* ineffective.								*/
 GC_API void GC_disable(void);
 
-/* Reenable garbage collection.  GC_disable() and GC_enable() calls 	*/
+/* Re-enable garbage collection.  GC_disable() and GC_enable() calls 	*/
 /* nest.  Garbage collection is enabled if the number of calls to both	*/
 /* both functions is equal.						*/
 GC_API void GC_enable(void);
@@ -428,7 +428,7 @@ GC_API void GC_enable(void);
 /* Enable incremental/generational collection.	*/
 /* Not advisable unless dirty bits are 		*/
 /* available or most heap objects are		*/
-/* pointerfree(atomic) or immutable.		*/
+/* pointer-free (atomic) or immutable.		*/
 /* Don't use in leak finding mode.		*/
 /* Ignored if GC_dont_gc is true.		*/
 /* Only the generational piece of this is	*/
@@ -627,7 +627,7 @@ GC_API void * GC_debug_realloc_replacement
 #   define GC_REGISTER_DISPLACEMENT(n) GC_register_displacement(n)
 # endif
 /* The following are included because they are often convenient, and	*/
-/* reduce the chance for a misspecifed size argument.  But calls may	*/
+/* reduce the chance for a misspecified size argument.  But calls may	*/
 /* expand to something syntactically incorrect if t is a complicated	*/
 /* type expression.  							*/
 # define GC_NEW(t) (t *)GC_MALLOC(sizeof (t))
@@ -677,7 +677,7 @@ GC_API void GC_debug_register_finalizer
 	/* a signal, the object may be left with no		*/
 	/* finalization, even if neither the old nor new	*/
 	/* finalizer were NULL.					*/
-	/* Obj should be the nonNULL starting address of an 	*/
+	/* Obj should be the non-NULL starting address of an 	*/
 	/* object allocated by GC_malloc or friends.		*/
 	/* Note that any garbage collectable object referenced	*/
 	/* by cd will be considered accessible until the	*/
@@ -781,7 +781,7 @@ GC_API int GC_general_register_disappearing_link (void * * link, void * obj);
 	/* cleared.						*/
 	/* This can be used to implement certain types of	*/
 	/* weak pointers.  Note however that this generally	*/
-	/* requires that thje allocation lock is held (see	*/
+	/* requires that the allocation lock is held (see	*/
 	/* GC_call_with_allock_lock() below) when the disguised	*/
 	/* pointer is accessed.  Otherwise a strong pointer	*/
 	/* could be recreated between the time the collector    */
@@ -927,8 +927,8 @@ GC_API void * GC_same_obj (void * p, void * q);
 /* the second argument is in units of bytes, not multiples of the	*/
 /* object size.  This should either be invoked from a macro, or the	*/
 /* call should be automatically generated.				*/
-GC_API void * GC_pre_incr (void * *p, size_t how_much);
-GC_API void * GC_post_incr (void * *p, size_t how_much);
+GC_API void * GC_pre_incr (void * *p, ptrdiff_t how_much);
+GC_API void * GC_post_incr (void * *p, ptrdiff_t how_much);
 
 /* Check that p is visible						*/
 /* to the collector as a possibly pointer containing location.		*/
@@ -954,37 +954,39 @@ GC_API void GC_dump(void);
 
 /* Safer, but slow, pointer addition.  Probably useful mainly with 	*/
 /* a preprocessor.  Useful only for heap pointers.			*/
-#ifdef GC_DEBUG
+/* Only the macros without trailing digits are meant to be used		*/
+/* by clients.  These are designed to model the available C pointer	*/
+/* arithmetic expressions.  						*/
+/* Even then, these are probably more useful as 			*/
+/* documentation than as part of the API.				*/
+/* Note that GC_PTR_ADD evaluates the first argument more than once.	*/
+#if defined(GC_DEBUG) && defined(__GNUC__)
 #   define GC_PTR_ADD3(x, n, type_of_result) \
 	((type_of_result)GC_same_obj((x)+(n), (x)))
 #   define GC_PRE_INCR3(x, n, type_of_result) \
-	((type_of_result)GC_pre_incr(&(x), (n)*sizeof(*x))
-#   define GC_POST_INCR2(x, type_of_result) \
-	((type_of_result)GC_post_incr(&(x), sizeof(*x))
-#   ifdef __GNUC__
-#       define GC_PTR_ADD(x, n) \
+	((type_of_result)GC_pre_incr((void **)(&(x)), (n)*sizeof(*x)))
+#   define GC_POST_INCR3(x, n, type_of_result) \
+	((type_of_result)GC_post_incr((void **)(&(x)), (n)*sizeof(*x)))
+#   define GC_PTR_ADD(x, n) \
 	    GC_PTR_ADD3(x, n, typeof(x))
-#       define GC_PRE_INCR(x, n) \
+#   define GC_PRE_INCR(x, n) \
 	    GC_PRE_INCR3(x, n, typeof(x))
-#       define GC_POST_INCR(x, n) \
-	    GC_POST_INCR3(x, typeof(x))
-#   else
+#   define GC_POST_INCR(x) \
+	    GC_POST_INCR3(x, 1, typeof(x))
+#   define GC_POST_DECR(x) \
+	    GC_POST_INCR3(x, -1, typeof(x))
+#else	/* !GC_DEBUG || !__GNUC__ */
 	/* We can't do this right without typeof, which ANSI	*/
-	/* decided was not sufficiently useful.  Repeatedly	*/
-	/* mentioning the arguments seems too dangerous to be	*/
-	/* useful.  So does not casting the result.		*/
-#   	define GC_PTR_ADD(x, n) ((x)+(n))
-#   endif
-#else	/* !GC_DEBUG */
-#   define GC_PTR_ADD3(x, n, type_of_result) ((x)+(n))
+	/* decided was not sufficiently useful.  Without it	*/
+	/* we resort to the non-debug version.			*/
+	/* FIXME: This should eventually support C++0x decltype */
 #   define GC_PTR_ADD(x, n) ((x)+(n))
-#   define GC_PRE_INCR3(x, n, type_of_result) ((x) += (n))
 #   define GC_PRE_INCR(x, n) ((x) += (n))
-#   define GC_POST_INCR2(x, n, type_of_result) ((x)++)
-#   define GC_POST_INCR(x, n) ((x)++)
+#   define GC_POST_INCR(x) ((x)++)
+#   define GC_POST_DECR(x) ((x)--)
 #endif
 
-/* Safer assignment of a pointer to a nonstack location.	*/
+/* Safer assignment of a pointer to a non-stack location.	*/
 #ifdef GC_DEBUG
 #   define GC_PTR_STORE(p, q) \
 	(*(void **)GC_is_visible(p) = GC_is_valid_displacement(q))

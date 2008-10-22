@@ -35,7 +35,7 @@
 # include <tchar.h>
 #endif
 
-#ifdef UNIX_LIKE
+#if defined(UNIX_LIKE) || defined(CYGWIN32)
 # include <fcntl.h>
 # include <sys/types.h>
 # include <sys/stat.h>
@@ -134,7 +134,7 @@ GC_oom_func GC_oom_fn = GC_default_oom_fn;
 /* but not too much bigger						*/
 /* and so that size_map contains relatively few distinct entries 	*/
 /* This was originally stolen from Russ Atkinson's Cedar		*/
-/* quantization alogrithm (but we precompute it).			*/ 
+/* quantization algorithm (but we precompute it).			*/ 
 STATIC void GC_init_size_map(void)
 {
     int i;
@@ -365,7 +365,7 @@ GC_API void * GC_base(void * p)
 
 
 /* Return the size of an object, given a pointer to its base.		*/
-/* (For small obects this also happens to work from interior pointers,	*/
+/* (For small objects this also happens to work from interior pointers,	*/
 /* but that shouldn't be relied upon.)					*/
 GC_API size_t GC_size(void * p)
 {
@@ -501,7 +501,7 @@ void GC_init_inner(void)
       if (0 != GETENV("GC_PRINT_VERBOSE_STATS")) {
         GC_print_stats = VERBOSE;
       } 
-#     if defined(UNIX_LIKE)
+#     if defined(UNIX_LIKE) || defined(CYGWIN32)
         {
 	  char * file_name = GETENV("GC_LOG_FILE");
           if (0 != file_name) {

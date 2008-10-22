@@ -21,7 +21,7 @@
  * guaranteed by the pthread standard, though it now does
  * very little of that.  It now also supports NPTL, and many
  * other Posix thread implementations.  We are trying to merge
- * all flavors of pthread dupport code into this file.
+ * all flavors of pthread support code into this file.
  */
  /* DG/UX ix86 support <takis@xfree86.org> */
 /*
@@ -1256,7 +1256,7 @@ volatile GC_bool GC_collecting = 0;
 /* yield by calling pthread_mutex_lock(); it never makes sense to	*/
 /* explicitly sleep.							*/
 
-#define LOCK_STATS
+/* #define LOCK_STATS */
 #ifdef LOCK_STATS
   unsigned long GC_spin_count = 0;
   unsigned long GC_block_count = 0;

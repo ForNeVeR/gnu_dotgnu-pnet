@@ -63,7 +63,7 @@
 #   include <signal.h>
 # endif
 
-#ifdef UNIX_LIKE
+#if defined(UNIX_LIKE) || defined(CYGWIN32)
 # include <fcntl.h>
 #endif
 
@@ -166,7 +166,7 @@ ssize_t GC_repeat_read(int fd, char *buf, size_t count)
 
 #ifdef THREADS
 /* Determine the length of a file by incrementally reading it into a 	*/
-/* This would be sily to use on a file supporting lseek, but Linux	*/
+/* This would be silly to use on a file supporting lseek, but Linux	*/
 /* /proc files usually do not.						*/
 STATIC size_t GC_get_file_len(int f)
 {
@@ -438,7 +438,7 @@ static ptr_t backing_store_base_from_proc(void)
     /* Some Linux distributions arrange to define __data_start.  Some	*/
     /* define data_start as a weak symbol.  The latter is technically	*/
     /* broken, since the user program may define data_start, in which	*/
-    /* case we lose.  Nonetheless, we try both, prefering __data_start.	*/
+    /* case we lose.  Nonetheless, we try both, preferring __data_start.*/
     /* We assume gcc-compatible pragmas.	*/
 #   pragma weak __data_start
     extern int __data_start[];
@@ -626,7 +626,8 @@ word GC_page_size;
  * With threads, GC_mark_roots needs to know how to do this.
  * Called with allocator lock held.
  */
-# if defined(MSWIN32) || defined(MSWINCE) || defined(CYGWIN32)
+# if defined(MSWIN32) || defined(MSWINCE) \
+       || (defined(CYGWIN32) && !defined(USE_MMAP))
 # define is_writable(prot) ((prot) == PAGE_READWRITE \
 			    || (prot) == PAGE_WRITECOPY \
 			    || (prot) == PAGE_EXECUTE_READWRITE \
@@ -800,7 +801,7 @@ ptr_t GC_get_main_stack_base(void)
 #       endif
     }
 
-    /* Return the first nonaddressible location > p (up) or 	*/
+    /* Return the first non-addressable location > p (up) or 	*/
     /* the smallest location q s.t. [q,p) is addressable (!up).	*/
     /* We assume that p (up) or p-1 (!up) is addressable.	*/
     /* Requires allocation lock.				*/
@@ -1004,7 +1005,7 @@ ptr_t GC_get_main_stack_base(void)
 
 #if !defined(BEOS) && !defined(AMIGA) && !defined(MSWIN32) \
     && !defined(MSWINCE) && !defined(OS2) && !defined(NOSYS) && !defined(ECOS) \
-    && !defined(CYGWIN32)
+    && (!defined(CYGWIN32) || defined(USE_MMAP))
 
 ptr_t GC_get_main_stack_base(void)
 {
@@ -1247,8 +1248,8 @@ void GC_register_data_segments(void)
   /* Unfortunately, we have to handle win32s very differently from NT, 	*/
   /* Since VirtualQuery has very different semantics.  In particular,	*/
   /* under win32s a VirtualQuery call on an unmapped page returns an	*/
-  /* invalid result.  Under NT, GC_register_data_segments is a noop and	*/
-  /* all real work is done by GC_register_dynamic_libraries.  Under	*/
+  /* invalid result.  Under NT, GC_register_data_segments is a no-op	*/
+  /* and all real work is done by GC_register_dynamic_libraries.  Under	*/
   /* win32s, we cannot find the data segments associated with dll's.	*/
   /* We register the main data segment here.				*/
   GC_bool GC_no_win32_dlls = FALSE;	 
@@ -2125,7 +2126,7 @@ PCR_ERes GC_push_thread_stack(PCR_Th_T *t, PCR_Any dummy)
 }
 
 /* Push the contents of an old object. We treat this as stack	*/
-/* data only becasue that makes it robust against mark stack	*/
+/* data only because that makes it robust against mark stack	*/
 /* overflow.							*/
 PCR_ERes GC_push_old_obj(void *p, size_t size, PCR_Any data)
 {
@@ -2368,7 +2369,7 @@ void GC_read_dirty(void)
 /* Is the HBLKSIZE sized page at h marked dirty in the local buffer?	*/
 /* If the actual page size is different, this returns TRUE if any	*/
 /* of the pages overlapping h are dirty.  This routine may err on the	*/
-/* side of labelling pages as dirty (and this implementation does).	*/
+/* side of labeling pages as dirty (and this implementation does).	*/
 /*ARGSUSED*/
 GC_bool GC_page_was_dirty(struct hblk *h)
 {
@@ -2426,7 +2427,7 @@ void GC_read_dirty(void)
 /* Is the HBLKSIZE sized page at h marked dirty in the local buffer?	*/
 /* If the actual page size is different, this returns TRUE if any	*/
 /* of the pages overlapping h are dirty.  This routine may err on the	*/
-/* side of labelling pages as dirty (and this implementation does).	*/
+/* side of labeling pages as dirty (and this implementation does).	*/
 GC_bool GC_page_was_dirty(struct hblk *h)
 {
     register word index;
@@ -2622,13 +2623,13 @@ STATIC GC_bool GC_old_segv_handler_used_si;
 #   include <errno.h>
 #   if defined(FREEBSD)
 #     define SIG_OK TRUE
-#     define CODE_OK (code == BUS_PAGE_FAULT)
+#     define CODE_OK (si -> si_code == BUS_PAGE_FAULT)
 #   elif defined(OSF1)
 #     define SIG_OK (sig == SIGSEGV)
-#     define CODE_OK (code == 2 /* experimentally determined */)
+#     define CODE_OK (si -> si_code == 2 /* experimentally determined */)
 #   elif defined(IRIX5)
 #     define SIG_OK (sig == SIGSEGV)
-#     define CODE_OK (code == EACCES)
+#     define CODE_OK (si -> si_code == EACCES)
 #   elif defined(HURD)
 #     define SIG_OK (sig == SIGBUS || sig == SIGSEGV) 	
 #     define CODE_OK  TRUE
@@ -2645,9 +2646,6 @@ STATIC GC_bool GC_old_segv_handler_used_si;
 		     || (si -> si_code == BUS_UNKNOWN) \
 		     || (si -> si_code == SEGV_UNKNOWN) \
 		     || (si -> si_code == BUS_OBJERR)
-#   elif defined(FREEBSD)
-#     define SIG_OK (sig == SIGBUS)
-#     define CODE_OK (si -> si_code == BUS_PAGE_FAULT)
 #   elif defined(SUNOS5SIGS)
 #     define SIG_OK (sig == SIGSEGV)
 #     define CODE_OK (si -> si_code == SEGV_ACCERR)
@@ -3136,7 +3134,7 @@ GC_bool GC_page_was_ever_dirty(struct hblk *h)
  */
  
 /*
- * This implementaion assumes a Solaris 2.X like /proc pseudo-file-system
+ * This implementation assumes a Solaris 2.X like /proc pseudo-file-system
  * from which we can read page modified bits.  This facility is far from
  * optimal (e.g. we would like to get the info for only some of the
  * address space), but it avoids intercepting system calls.
@@ -3573,7 +3571,7 @@ static void *GC_mprotect_thread(void *arg)
 }
 
 /* All this SIGBUS code shouldn't be necessary. All protection faults should
-   be going throught the mach exception handler. However, it seems a SIGBUS is
+   be going through the mach exception handler. However, it seems a SIGBUS is
    occasionally sent for some unknown reason. Even more odd, it seems to be
    meaningless and safe to ignore. */
 #ifdef BROKEN_EXCEPTION_HANDLING
@@ -3608,7 +3606,7 @@ void GC_dirty_init(void)
   exception_mask_t mask;
 
   if (GC_print_stats == VERBOSE)
-    GC_log_printf("Inititalizing mach/darwin mprotect virtual dirty bit "
+    GC_log_printf("Initializing mach/darwin mprotect virtual dirty bit "
 		  "implementation\n");
 # ifdef BROKEN_EXCEPTION_HANDLING
     WARN("Enabling workarounds for various darwin "
@@ -3815,7 +3813,7 @@ catch_exception_raise(mach_port_t exception_port, mach_port_t thread,
       /* Ugh... just like the SIGBUS problem above, it seems we get a bogus
 	 KERN_PROTECTION_FAILURE every once and a while. We wait till we get
 	 a bunch in a row before doing anything about it. If a "real" fault
-	 ever occurres it'll just keep faulting over and over and we'll hit
+	 ever occurs it'll just keep faulting over and over and we'll hit
 	 the limit pretty quickly. */
 #     ifdef BROKEN_EXCEPTION_HANDLING
         static char *last_fault;

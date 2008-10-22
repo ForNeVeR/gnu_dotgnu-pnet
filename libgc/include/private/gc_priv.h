@@ -123,7 +123,7 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 /*********************************/
 
 /* #define STUBBORN_ALLOC */
-		    /* Enable stubborm allocation, and thus a limited	*/
+		    /* Enable stubborn allocation, and thus a limited	*/
 		    /* form of incremental collection w/o dirty bits.	*/
 
 /* #define ALL_INTERIOR_POINTERS */
@@ -142,7 +142,7 @@ typedef char * ptr_t;	/* A generic pointer to which we can add	*/
 		    /* 2. This option makes it hard for the collector	*/
 		    /*    to allocate space that is not ``pointed to''  */
 		    /*    by integers, etc.  Under SunOS 4.X with a 	*/
-		    /*    statically linked libc, we empiricaly		*/
+		    /*    statically linked libc, we empirically	*/
 		    /*    observed that it would be difficult to 	*/
 		    /*	  allocate individual objects larger than 100K.	*/
 		    /* 	  Even if only smaller objects are allocated,	*/
@@ -990,7 +990,7 @@ struct _GC_arrays {
 # endif
 # ifdef LARGE_CONFIG
 #   if CPP_WORDSZ > 32
-#     define MAX_HEAP_SECTS 4096 	/* overflows at roughly 64 GB	   */
+#     define MAX_HEAP_SECTS 8192 	/* overflows at roughly 128 GB	   */
 #   else
 #     define MAX_HEAP_SECTS 768		/* Separately added heap sections. */
 #   endif
@@ -998,7 +998,11 @@ struct _GC_arrays {
 #   ifdef SMALL_CONFIG
 #     define MAX_HEAP_SECTS 128		/* Roughly 256MB (128*2048*1K)	*/
 #   else
-#     define MAX_HEAP_SECTS 384		/* Roughly 3GB			*/
+#     if CPP_WORDSZ > 32
+#       define MAX_HEAP_SECTS 1024	/* Roughly 8GB			 */
+#     else
+#       define MAX_HEAP_SECTS 512	/* Roughly 4GB			 */
+#     endif
 #   endif
 # endif
   struct HeapSect {
@@ -1017,7 +1021,7 @@ struct _GC_arrays {
 # endif
 # ifdef MSWINCE
     word _heap_lengths[MAX_HEAP_SECTS];
-    		/* Commited lengths of memory regions obtained from kernel. */
+    		/* Committed lengths of memory regions obtained from kernel. */
 # endif
   struct roots _static_roots[MAX_ROOT_SETS];
 # if !defined(MSWIN32) && !defined(MSWINCE)
@@ -1338,7 +1342,7 @@ GC_bool GC_mark_some(ptr_t cold_gc_frame);
 void GC_initiate_gc(void);
 				/* initiate collection.			*/
   				/* If the mark state is invalid, this	*/
-  				/* becomes full colleection.  Otherwise */
+  				/* becomes full collection.  Otherwise	*/
   				/* it's partial.			*/
 void GC_push_all(ptr_t bottom, ptr_t top);
 				/* Push everything in a range 		*/
@@ -1393,9 +1397,9 @@ extern void (*GC_push_other_roots)(void);
   			/* Push system or application specific roots	*/
   			/* onto the mark stack.  In some environments	*/
   			/* (e.g. threads environments) this is		*/
-  			/* predfined to be non-zero.  A client supplied */
-  			/* replacement should also call the original	*/
-  			/* function.					*/
+  			/* predefined to be non-zero.  A client		*/
+  			/* supplied replacement should also call the	*/
+  			/* original function.				*/
 extern void GC_push_gc_structures(void);
 			/* Push GC internal roots.  These are normally	*/
 			/* included in the static data segment, and 	*/
@@ -1871,7 +1875,7 @@ GC_bool GC_page_was_ever_dirty(struct hblk *h);
   			/* Could the page contain valid heap pointers?	*/
 void GC_remove_protection(struct hblk *h, word nblocks,
 			  GC_bool pointerfree);
-  			/* h is about to be writteni or allocated.  Ensure  */
+  			/* h is about to be written or allocated.  Ensure   */
 			/* that it's not write protected by the virtual	    */
 			/* dirty bit implementation.			    */
 			
@@ -2028,7 +2032,7 @@ void GC_err_puts(const char *s);
 /* were possible, and a couple of routines to facilitate	*/
 /* catching accesses to bad addresses when that's		*/
 /* possible/needed.						*/
-#ifdef UNIX_LIKE
+#if defined(UNIX_LIKE) || (defined(NEED_FIND_LIMIT) && defined(CYGWIN32))
 # include <setjmp.h>
 # if defined(SUNOS5SIGS) && !defined(FREEBSD)
 #  include <sys/siginfo.h>

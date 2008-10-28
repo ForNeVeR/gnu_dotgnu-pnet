@@ -159,12 +159,13 @@ void * GC_generic_malloc(size_t lb, int k)
         result = GC_generic_malloc_inner((word)lb, k);
 	UNLOCK();
     } else {
-	size_t lw;
+	size_t lg, lw;
 	size_t lb_rounded;
 	word n_blocks;
 	GC_bool init;
-	lw = ROUNDED_UP_WORDS(lb);
-	lb_rounded = WORDS_TO_BYTES(lw);
+	lg = ROUNDED_UP_GRANULES(lb);
+	lw = GRANULES_TO_WORDS(lg);
+	lb_rounded = GRANULES_TO_BYTES(lg);
 	n_blocks = OBJ_SZ_TO_BLOCKS(lb_rounded);
 	init = GC_obj_kinds[k].ok_init;
 	LOCK();
@@ -206,7 +207,7 @@ void * GC_generic_malloc(size_t lb, int k)
 #ifdef THREAD_LOCAL_ALLOC
   void * GC_core_malloc_atomic(size_t lb)
 #else
-  GC_API void * GC_malloc_atomic(size_t lb)
+  GC_API void * GC_CALL GC_malloc_atomic(size_t lb)
 #endif
 {
     void *op;
@@ -233,7 +234,7 @@ void * GC_generic_malloc(size_t lb, int k)
 
 /* provide a version of strdup() that uses the collector to allocate the
    copy of the string */
-GC_API char *GC_strdup(const char *s)
+GC_API char * GC_CALL GC_strdup(const char *s)
 {
   char *copy;
 
@@ -250,7 +251,7 @@ GC_API char *GC_strdup(const char *s)
 #ifdef THREAD_LOCAL_ALLOC
   void * GC_core_malloc(size_t lb)
 #else
-  GC_API void * GC_malloc(size_t lb)
+  GC_API void * GC_CALL GC_malloc(size_t lb)
 #endif
 {
     void *op;
@@ -386,7 +387,7 @@ void * calloc(size_t n, size_t lb)
 # endif /* REDIRECT_MALLOC */
 
 /* Explicitly deallocate an object p.				*/
-GC_API void GC_free(void * p)
+GC_API void GC_CALL GC_free(void * p)
 {
     struct hblk *h;
     hdr *hhdr;
@@ -404,8 +405,6 @@ GC_API void GC_free(void * p)
 #   endif
     h = HBLKPTR(p);
     hhdr = HDR(h);
-    sz = hhdr -> hb_sz;
-    ngranules = BYTES_TO_GRANULES(sz);
 #   if defined(REDIRECT_MALLOC) && \
 	(defined(GC_SOLARIS_THREADS) || defined(GC_LINUX_THREADS) \
 	 || defined(MSWIN32))
@@ -416,6 +415,8 @@ GC_API void GC_free(void * p)
 	if (0 == hhdr) return;
 #   endif
     GC_ASSERT(GC_base(p) == p);
+    sz = hhdr -> hb_sz;
+    ngranules = BYTES_TO_GRANULES(sz);
     knd = hhdr -> hb_obj_kind;
     ok = &GC_obj_kinds[knd];
     if (EXPECT((ngranules <= MAXOBJGRANULES), 1)) {

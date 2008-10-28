@@ -1,3 +1,23 @@
+2008-10-27  Klaus Treichel  <ktreichel@web.de>
+
+	* libgc/build_atomic_ops.sh, libgc/build_atomic_ops.sh.cygwin: Added
+
+	* libgc/configure_atomic_ops.sh: Removed
+
+	* libgc/ChangeLog, libgc/Makefile.am, libgc/Makefile.direct,
+	libgc/alloc.c, libgc/configure.ac, libgc/dbg_mlc.c, libgc/dyn_load.c,
+	libgc/finalize.c, libgc/gcj_mlc.c, libgc/mach_dep.c, libgc/malloc.c,
+	libgc/mallocx.c, libgc/mark.c, libgc/mark_rts.c, libgc/misc.c,
+	libgc/mkinstalldirs, libgc/obj_map.c, libgc/os_dep.c,
+	libgc/pthread_support.c, libgc/ptr_chck.c, libgc/stubborn.c,
+	libgc/thread_local_alloc.c, libgc/typd_mlc.c, libgc/win32_threads.c,
+	libgc/include/gc.h, libgc/include/gc_config_macros.h,
+	libgc/include/gc_cpp.h, libgc/include/gc_gcj.h, libgc/include/gc_mark.h,
+	libgc/include/gc_typed.h, libgc/include/javaxfc.h,
+	libgc/include/private/gc_locks.h, libgc/include/private/gc_priv.h,
+	libgc/include/private/thread_local_alloc.h, libgc/tests/test.c: Update to
+	bdwgc cvs till 2008-10-27.
+
 2008-10-22  Klaus Treichel  <ktreichel@web.de>
 
 	* libgc/ChangeLog, libgc/alloc.c, libgc/configure.ac,

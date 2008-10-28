@@ -142,7 +142,7 @@ static void add_roots_to_index(struct roots *p)
 
 word GC_root_size = 0;
 
-GC_API void GC_add_roots(void *b, void *e)
+GC_API void GC_CALL GC_add_roots(void *b, void *e)
 {
     DCL_LOCK_STATE;
     
@@ -242,7 +242,7 @@ void GC_add_roots_inner(ptr_t b, ptr_t e, GC_bool tmp)
 
 static GC_bool roots_were_cleared = FALSE;
 
-GC_API void GC_clear_roots (void)
+GC_API void GC_CALL GC_clear_roots (void)
 {
     DCL_LOCK_STATE;
     
@@ -303,7 +303,7 @@ STATIC void GC_remove_tmp_roots(void)
 #endif
 
 #if !defined(MSWIN32) && !defined(MSWINCE)
-GC_API void GC_remove_roots(void *b, void *e)
+GC_API void GC_CALL GC_remove_roots(void *b, void *e)
 {
     DCL_LOCK_STATE;
     
@@ -353,19 +353,13 @@ GC_bool GC_is_tmp_root(ptr_t p)
 
 ptr_t GC_approx_sp(void)
 {
-    volatile word dummy;
-
-    dummy = 42;	/* Force stack to grow if necessary.	Otherwise the	*/
+    volatile word sp;
+    sp = (word)&sp;
+		/* Also force stack to grow if necessary. Otherwise the	*/
     		/* later accesses might cause the kernel to think we're	*/
     		/* doing something wrong.				*/
-#   ifdef _MSC_VER
-#     pragma warning(disable:4172)
-#   endif
-	/* Ignore "function returns address of local variable" warning.	*/
-    return((ptr_t)(&dummy));
-#   ifdef _MSC_VER
-#     pragma warning(default:4172)
-#   endif
+
+    return((ptr_t)sp);
 }
 
 /*
@@ -406,7 +400,7 @@ STATIC struct exclusion * GC_next_exclusion(ptr_t start_addr)
     return GC_excl_table + low;
 }
 
-GC_API void GC_exclude_static_roots(void *start, void *finish)
+GC_API void GC_CALL GC_exclude_static_roots(void *start, void *finish)
 {
     struct exclusion * next;
     size_t next_index, i;

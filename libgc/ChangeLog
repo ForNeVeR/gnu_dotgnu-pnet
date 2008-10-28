@@ -1,3 +1,63 @@
+2008-10-27  Hans Boehm <Hans.Boehm@hp.com> (Really Ivan Maidansky)
+	* thread_local_alloc.c, include/private/thread_local_alloc.h:
+	Fix typos in comments.
+	* finalize.c: Declare mark_procs and GC_register_finalizer_inner
+	STATIC.
+	* malloc.c (GC_free): Move size calculation below assertion.
+
+2008-10-27  Hans Boehm <Hans.Boehm@hp.com>
+	* win32_threads.c (GC_get_stack_min, GC_may_be_in_stack):
+	Add one entry VirtualQuery cache, I_HOLD_LOCK assertions.
+	(GC_push_stack_for, GC_get_next_stack) : Hopefully fix WINCE support.
+
+2008-10-27  Hans Boehm <Hans.Boehm@hp.com> (Thanks to Klaus Treichel.)
+	* finalize.c (GC_general_register_disappearing_link): Add
+	assertion.
+	* malloc.c (GC_generic_malloc): Round lb to granules, not words.
+	* mallocx.c (GC_generic_malloc_ignore_off_page): Round lb to
+	granules, not words.
+
+2008-10-27  Hans Boehm <Hans.Boehm@hp.com> (Really Rex Dieter and
+	Petr Krajca)
+	* mach_dep.c (NO_GETCONTEXT): Define for sparc linux.
+	* configure.ac: Define mach_dep for sparc-linux.
+	* configure: Regenerate.
+
+2008-10-25  Hans Boehm <Hans.Boehm@hp.com> (Really Ivan Maidansky)
+	* mark_rts.c (GC_approx_sp): Use volatile to avoid common
+	warning.
+
+2008-10-25  Hans Boehm <Hans.Boehm@hp.com>
+	* dyn_load.c (GC_cond_add_roots): Fix GC_get_next_stack argument
+	order.
+
+2008-10-24  Hans Boehm <Hans.Boehm@hp.com> (Really Ivan Maidanski)
+	* alloc.c, dbg_mlc.c, dyn_load.c, finalize.c, gcj_mlc.c,
+	include/gc.h, include/gc_config_macros.h, include/gc_cpp.h,
+	include/gc_gcj.h, include/gc_mark.h, include/gc_typed.h,
+	include/javaxfc.h, include/private/gc_locks.h,
+	include/private/gc_priv.h, malloc.c, mallocx.c, mark.c, mark_rts.c,
+	misc.c, obj_map.c, os_dep.c, pthread_support.c, ptr_chck.c,
+	stubborn.c, tests/test.c, thread_local_alloc.c, typd_mlc.c
+	win32_threads.c: Add GC_CALL and GC_CALLBACK macro invocations.
+	* test.c: Remove some old K&R code.
+
+2008-10-24  Hans Boehm <Hans.Boehm@hp.com>
+	(Partially based loosely on patch from Ivan Maidanski)
+	* win32_threads.c (GC_may_be_in_stack): New.  (GC_Thread_Rep):
+	Add last_stack_min.  (GC_push_stack_for): Use last_stack_min.
+	(GC_get_next_stack): Add limit argument, use_last_stack_min.
+	(GC_suspend): make stack_base assignment conditional.
+	* dyn_load.c (win32 GC_cod_add_roots): Pass limit to
+	GC_get_next_stack.
+	* configure_atomic_ops.sh: Remove.
+	* build_atomic_ops.sh, build_atomic_ops.sh.cygwin, doc/README.win32,
+	Makefile.direct: Partially support build directories whose path
+	name contains blanks.
+	* Makefile.am: Support new files (build_atomic_ops.sh,
+	build_atomic_ops.sh.cygwin)
+	* Makefile.in: Regenerate.
+
 2008-10-21  Hans Boehm <Hans.Boehm@hp.com> (Really Ivan Maidanski)
 	* include/private/gc_locks.h, include/private/gc_pmark.h,
 	include/private/gc_priv.h, include/private/gcconfig.h,

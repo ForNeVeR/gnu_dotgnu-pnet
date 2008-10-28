@@ -382,7 +382,7 @@ GC_bool GC_register_main_static_data(void)
 
 /* A user-supplied routine that is called to determine if a DSO must
    be scanned by the gc.  */
-static int (*GC_has_static_roots)(const char *, void *, size_t);
+static int (GC_CALLBACK * GC_has_static_roots)(const char *, void *, size_t);
 
 static int GC_register_dynlib_callback(info, size, ptr)
      struct dl_phdr_info * info;
@@ -699,7 +699,9 @@ void GC_register_dynamic_libraries(void)
   extern GC_bool GC_is_heap_base (ptr_t p);
 
 # ifdef GC_WIN32_THREADS
-    extern void GC_get_next_stack(char *start, char **lo, char **hi);
+    extern void GC_get_next_stack(char *start, char * limit, char **lo,
+    				  char **hi);
+
     void GC_cond_add_roots(char *base, char * limit)
     {
       char * curr_base = base;
@@ -708,9 +710,10 @@ void GC_register_dynamic_libraries(void)
    
       if (base == limit) return;
       for(;;) {
-	  GC_get_next_stack(curr_base, &next_stack_lo, &next_stack_hi);
+	  GC_get_next_stack(curr_base, limit, &next_stack_lo, &next_stack_hi);
 	  if (next_stack_lo >= limit) break;
-	  GC_add_roots_inner(curr_base, next_stack_lo, TRUE);
+	  if (next_stack_lo > curr_base)
+	    GC_add_roots_inner(curr_base, next_stack_lo, TRUE);
 	  curr_base = next_stack_hi;
       }
       if (curr_base < limit) GC_add_roots_inner(curr_base, limit, TRUE);
@@ -1218,9 +1221,8 @@ GC_bool GC_register_main_static_data(void)
 }
 
 /* Register a routine to filter dynamic library registration.  */
-GC_API void
-GC_register_has_static_roots_callback
-  (int (*callback)(const char *, void *, size_t)) {
+GC_API void GC_CALL GC_register_has_static_roots_callback
+  (int (GC_CALLBACK * callback)(const char *, void *, size_t)) {
 # ifdef HAVE_DL_ITERATE_PHDR
     GC_has_static_roots = callback;
 # endif

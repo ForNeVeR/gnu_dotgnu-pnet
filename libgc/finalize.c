@@ -137,7 +137,7 @@ STATIC void GC_grow_table(struct hash_chain_entry ***table,
     *table = new_table;
 }
 
-GC_API int GC_register_disappearing_link(void * * link)
+GC_API int GC_CALL GC_register_disappearing_link(void * * link)
 {
     ptr_t base;
     
@@ -147,18 +147,20 @@ GC_API int GC_register_disappearing_link(void * * link)
     return(GC_general_register_disappearing_link(link, base));
 }
 
-GC_API int GC_general_register_disappearing_link(void * * link, void * obj)
+GC_API int GC_CALL GC_general_register_disappearing_link(void * * link,
+							void * obj)
 {
     struct disappearing_link *curr_dl;
     size_t index;
     struct disappearing_link * new_dl;
     DCL_LOCK_STATE;
     
-    if ((word)link & (ALIGNMENT-1))
+    if (((word)link & (ALIGNMENT-1)) || link == NULL)
     	ABORT("Bad arg to GC_general_register_disappearing_link");
 #   ifdef THREADS
     	LOCK();
 #   endif
+    GC_ASSERT(GC_base(obj) == obj);
     if (log_dl_table_size == -1
         || GC_dl_entries > ((word)1 << log_dl_table_size)) {
     	GC_grow_table((struct hash_chain_entry ***)(&dl_head),
@@ -206,7 +208,7 @@ GC_API int GC_general_register_disappearing_link(void * * link, void * obj)
     return(0);
 }
 
-GC_API int GC_unregister_disappearing_link(void * * link)
+GC_API int GC_CALL GC_unregister_disappearing_link(void * * link)
 {
     struct disappearing_link *curr_dl, *prev_dl;
     size_t index;
@@ -242,7 +244,7 @@ out:
 
 /* Possible finalization_marker procedures.  Note that mark stack	*/
 /* overflow is handled by the caller, and is not a disaster.		*/
-GC_API void GC_normal_finalize_mark_proc(ptr_t p)
+STATIC void GC_normal_finalize_mark_proc(ptr_t p)
 {
     hdr * hhdr = HDR(p);
     
@@ -253,7 +255,7 @@ GC_API void GC_normal_finalize_mark_proc(ptr_t p)
 /* This only pays very partial attention to the mark descriptor.	*/
 /* It does the right thing for normal and atomic objects, and treats	*/
 /* most others as normal.						*/
-GC_API void GC_ignore_self_finalize_mark_proc(ptr_t p)
+STATIC void GC_ignore_self_finalize_mark_proc(ptr_t p)
 {
     hdr * hhdr = HDR(p);
     word descr = hhdr -> hb_descr;
@@ -275,7 +277,7 @@ GC_API void GC_ignore_self_finalize_mark_proc(ptr_t p)
 }
 
 /*ARGSUSED*/
-GC_API void GC_null_finalize_mark_proc(ptr_t p)
+STATIC void GC_null_finalize_mark_proc(ptr_t p)
 {
 }
 
@@ -287,7 +289,7 @@ GC_API void GC_null_finalize_mark_proc(ptr_t p)
 /* behavior.  Objects registered in this way are not finalized		*/
 /* if they are reachable by other finalizable objects, eve if those	*/
 /* other objects specify no ordering.					*/
-GC_API void GC_unreachable_finalize_mark_proc(ptr_t p)
+STATIC void GC_unreachable_finalize_mark_proc(ptr_t p)
 {
     GC_normal_finalize_mark_proc(p);
 }
@@ -302,7 +304,7 @@ GC_API void GC_unreachable_finalize_mark_proc(ptr_t p)
 /* marking for finalization ordering.  Any objects marked	*/
 /* by that procedure will be guaranteed to not have been	*/
 /* finalized when this finalizer is invoked.			*/
-GC_API void GC_register_finalizer_inner(void * obj,
+STATIC void GC_register_finalizer_inner(void * obj,
 					GC_finalization_proc fn, void *cd,
 					GC_finalization_proc *ofn, void **ocd,
 					finalization_mark_proc mp)
@@ -421,7 +423,7 @@ GC_API void GC_register_finalizer_inner(void * obj,
 #   endif
 }
 
-GC_API void GC_register_finalizer(void * obj,
+GC_API void GC_CALL GC_register_finalizer(void * obj,
 				  GC_finalization_proc fn, void * cd,
 				  GC_finalization_proc *ofn, void ** ocd)
 {
@@ -429,7 +431,7 @@ GC_API void GC_register_finalizer(void * obj,
     				ocd, GC_normal_finalize_mark_proc);
 }
 
-GC_API void GC_register_finalizer_ignore_self(void * obj,
+GC_API void GC_CALL GC_register_finalizer_ignore_self(void * obj,
 			       GC_finalization_proc fn, void * cd,
 			       GC_finalization_proc *ofn, void ** ocd)
 {
@@ -437,7 +439,7 @@ GC_API void GC_register_finalizer_ignore_self(void * obj,
     				ocd, GC_ignore_self_finalize_mark_proc);
 }
 
-GC_API void GC_register_finalizer_no_order(void * obj,
+GC_API void GC_CALL GC_register_finalizer_no_order(void * obj,
 			       GC_finalization_proc fn, void * cd,
 			       GC_finalization_proc *ofn, void ** ocd)
 {
@@ -448,7 +450,7 @@ GC_API void GC_register_finalizer_no_order(void * obj,
 static GC_bool need_unreachable_finalization = FALSE;
 	/* Avoid the work if this isn't used.	*/
 
-GC_API void GC_register_finalizer_unreachable(void * obj,
+GC_API void GC_CALL GC_register_finalizer_unreachable(void * obj,
 			       GC_finalization_proc fn, void * cd,
 			       GC_finalization_proc *ofn, void ** ocd)
 {
@@ -713,7 +715,7 @@ STATIC void GC_enqueue_all_finalizers(void)
  * This routine is externally callable, so is called without 
  * the allocation lock. 
  */
-GC_API void GC_finalize_all(void)
+GC_API void GC_CALL GC_finalize_all(void)
 {
     DCL_LOCK_STATE;
 
@@ -731,14 +733,14 @@ GC_API void GC_finalize_all(void)
 /* Returns true if it is worth calling GC_invoke_finalizers. (Useful if	*/
 /* finalizers can only be called from some kind of `safe state' and	*/
 /* getting into that safe state is expensive.)				*/
-GC_API int GC_should_invoke_finalizers(void)
+GC_API int GC_CALL GC_should_invoke_finalizers(void)
 {
     return GC_finalize_now != 0;
 }
 
 /* Invoke finalizers for all objects that are ready to be finalized.	*/
 /* Should be called without allocation lock.				*/
-GC_API int GC_invoke_finalizers(void)
+GC_API int GC_CALL GC_invoke_finalizers(void)
 {
     struct finalizable_object * curr_fo;
     int count = 0;
@@ -833,7 +835,8 @@ void GC_notify_or_invoke_finalizers(void)
     }
 }
 
-GC_API void * GC_call_with_alloc_lock(GC_fn_type fn, void * client_data)
+GC_API void * GC_CALL GC_call_with_alloc_lock(GC_fn_type fn,
+					void * client_data)
 {
     void * result;
     DCL_LOCK_STATE;

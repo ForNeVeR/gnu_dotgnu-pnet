@@ -64,7 +64,7 @@ STATIC void * GC_generic_or_special_malloc(size_t lb, int knd)
 /* lb bytes.  The object may be (and quite likely will be) moved.     */
 /* The kind (e.g. atomic) is the same as that of the old.	      */
 /* Shrinking of large blocks is not implemented well.                 */
-GC_API void * GC_realloc(void * p, size_t lb)
+GC_API void * GC_CALL GC_realloc(void * p, size_t lb)
 {
     struct hblk * h;
     hdr * hhdr;
@@ -167,7 +167,7 @@ void * realloc(void * p, size_t lb)
 void * GC_generic_malloc_ignore_off_page(size_t lb, int k)
 {
     void *result;
-    size_t lw;
+    size_t lg, lw;
     size_t lb_rounded;
     word n_blocks;
     GC_bool init;
@@ -175,8 +175,9 @@ void * GC_generic_malloc_ignore_off_page(size_t lb, int k)
     
     if (SMALL_OBJ(lb))
         return(GC_generic_malloc((word)lb, k));
-    lw = ROUNDED_UP_WORDS(lb);
-    lb_rounded = WORDS_TO_BYTES(lw);
+    lg = ROUNDED_UP_GRANULES(lb);
+    lw = GRANULES_TO_WORDS(lg);
+    lb_rounded = GRANULES_TO_BYTES(lg);
     n_blocks = OBJ_SZ_TO_BLOCKS(lb_rounded);
     init = GC_obj_kinds[k].ok_init;
     if (GC_have_errors) GC_print_all_errors();
@@ -209,12 +210,12 @@ void * GC_generic_malloc_ignore_off_page(size_t lb, int k)
     }
 }
 
-GC_API void * GC_malloc_ignore_off_page(size_t lb)
+GC_API void * GC_CALL GC_malloc_ignore_off_page(size_t lb)
 {
     return((void *)GC_generic_malloc_ignore_off_page(lb, NORMAL));
 }
 
-GC_API void * GC_malloc_atomic_ignore_off_page(size_t lb)
+GC_API void * GC_CALL GC_malloc_atomic_ignore_off_page(size_t lb)
 {
     return((void *)GC_generic_malloc_ignore_off_page(lb, PTRFREE));
 }
@@ -419,7 +420,7 @@ DCL_LOCK_STATE;
     (void) GC_clear_stack(0);
 }
 
-GC_API void * GC_malloc_many(size_t lb)
+GC_API void * GC_CALL GC_malloc_many(size_t lb)
 {
     void *result;
     GC_generic_malloc_many(((lb + EXTRA_BYTES + GRANULE_BYTES-1)
@@ -433,7 +434,7 @@ GC_API void * GC_malloc_many(size_t lb)
 # endif
 
 /* Allocate lb bytes of pointerful, traced, but not collectable data */
-GC_API void * GC_malloc_uncollectable(size_t lb)
+GC_API void * GC_CALL GC_malloc_uncollectable(size_t lb)
 {
     void *op;
     void **opp;
@@ -521,7 +522,7 @@ void * GC_memalign(size_t align, size_t lb)
 /* Allocate lb bytes of pointerfree, untraced, uncollectable data 	*/
 /* This is normally roughly equivalent to the system malloc.		*/
 /* But it may be useful if malloc is redefined.				*/
-GC_API void * GC_malloc_atomic_uncollectable(size_t lb)
+GC_API void * GC_CALL GC_malloc_atomic_uncollectable(size_t lb)
 {
     void *op;
     void **opp;

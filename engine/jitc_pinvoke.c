@@ -2184,7 +2184,7 @@ void *ILJitDelegateGetClosure(ILObject *del, ILType *delType)
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 	jitInvokeTypes[1] = jit_type_void_ptr;
 #endif
-	delInvokeSignature = jit_type_create_signature(jit_abi_cdecl,
+	delInvokeSignature = jit_type_create_signature(IL_JIT_CALLCONV_DEFAULT,
 							returnType,
 							jitInvokeTypes,
 #ifdef IL_JIT_THREAD_IN_SIGNATURE

@@ -1,3 +1,9 @@
+2008-10-30  Kirill Kononenko  <krokas@aport.ru>
+
+	* engine/jitc_pinvoke.c (ILJitDelegateGetClosure): Use
+	IL_JIT_CALLCONV_DEFAULT abi instead of jit_abi_cdecl for invokation
+	of the delegate.
+
 2008-10-27  Klaus Treichel  <ktreichel@web.de>
 
 	* libgc/build_atomic_ops.sh, libgc/build_atomic_ops.sh.cygwin: Added

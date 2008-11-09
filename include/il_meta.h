@@ -1,7 +1,7 @@
 /*
  * il_meta.h - Definitions related to IL metadata.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -171,8 +171,8 @@ extern	"C" {
  */
 #define	IL_META_PARAMDEF_IN						0x0001
 #define	IL_META_PARAMDEF_OUT					0x0002
-#define	IL_META_PARAMDEF_OPTIONAL				0x0004
 #define	IL_META_PARAMDEF_RETVAL					0x0008
+#define	IL_META_PARAMDEF_OPTIONAL				0x0010
 #define	IL_META_PARAMDEF_RESERVED_MASK			0xF000
 #define	IL_META_PARAMDEF_HAS_DEFAULT			0x1000
 #define	IL_META_PARAMDEF_HAS_FIELD_MARSHAL		0x2000

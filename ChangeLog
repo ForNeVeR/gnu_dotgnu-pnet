@@ -1,3 +1,8 @@
+2008-11-09  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_meta.h: Set constant IL_META_PARAMDEF_OPTIONAL tp 0x10
+	instead of 0x04 to be ECMA compliant.
+
 2008-10-30  Kirill Kononenko  <krokas@aport.ru>
 
 	* engine/jitc_pinvoke.c (ILJitDelegateGetClosure): Use

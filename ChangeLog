@@ -1,3 +1,8 @@
+2008-11-11  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* engine/lib_string.c: small bugfix.
+	* support/unicode.c: fix comparing unicode strings.
+
 2008-11-09  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_meta.h: Set constant IL_META_PARAMDEF_OPTIONAL tp 0x10

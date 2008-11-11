@@ -437,7 +437,7 @@ ILInt32 _IL_String_Compare(ILExecThread *thread,
 	{
 		cmp = ILUnicodeStringCompareNoIgnoreCase(StringToBuffer(strA),
 						StringToBuffer(strB),
-						strB->length);
+						strA->length); 
 		if(cmp != 0)
 		{
 			return cmp;

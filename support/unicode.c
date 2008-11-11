@@ -168,7 +168,7 @@ unsigned ILUnicodeCharToUpper(unsigned ch)
 		return unicodeToUpper
 			[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
 	}
-	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_UPPER)
 	{
 		return unicodeToUpper
 			[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
@@ -201,7 +201,7 @@ unsigned ILUnicodeCharToLower(unsigned ch)
 		return unicodeToLower
 			[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
 	}
-	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+	else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_UPPER)
 	{
 		return unicodeToLower
 			[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
@@ -235,7 +235,7 @@ void ILUnicodeStringToUpper(unsigned short *dest, const unsigned short *src,
 			ch = unicodeToUpper
 				[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
 		}
-		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_UPPER)
 		{
 			ch = unicodeToUpper
 				[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
@@ -268,7 +268,7 @@ void ILUnicodeStringToLower(unsigned short *dest, const unsigned short *src,
 			ch = unicodeToLower
 				[ch - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
 		}
-		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_LOWER)
+		else if(ch >= UNICASE_RANGE3_LOWER && ch <= UNICASE_RANGE3_UPPER)
 		{
 			ch = unicodeToLower
 				[ch - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
@@ -303,7 +303,7 @@ int ILUnicodeStringCompareIgnoreCase(const unsigned short *str1,
 			ch1 = unicodeToLower
 				[ch1 - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
 		}
-		else if(ch1 >= UNICASE_RANGE3_LOWER && ch1 <= UNICASE_RANGE3_LOWER)
+		else if(ch1 >= UNICASE_RANGE3_LOWER && ch1 <= UNICASE_RANGE3_UPPER)
 		{
 			ch1 = unicodeToLower
 				[ch1 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
@@ -325,7 +325,7 @@ int ILUnicodeStringCompareIgnoreCase(const unsigned short *str1,
 			ch2 = unicodeToLower
 				[ch2 - UNICASE_RANGE2_LOWER + UNICASE_RANGE2_OFFSET];
 		}
-		else if(ch2 >= UNICASE_RANGE3_LOWER && ch2 <= UNICASE_RANGE3_LOWER)
+		else if(ch2 >= UNICASE_RANGE3_LOWER && ch2 <= UNICASE_RANGE3_UPPER)
 		{
 			ch2 = unicodeToLower
 				[ch2 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
@@ -390,7 +390,7 @@ int ILUnicodeStringCompareNoIgnoreCase(const unsigned short *str1,
 					uc1 = 1;
 				}
 			}
-			else if(ch1 >= UNICASE_RANGE3_LOWER && ch1 <= UNICASE_RANGE3_LOWER)
+			else if(ch1 >= UNICASE_RANGE3_LOWER && ch1 <= UNICASE_RANGE3_UPPER)
 			{
 				unsigned tc = unicodeToLower
 					[ch1 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];
@@ -430,7 +430,7 @@ int ILUnicodeStringCompareNoIgnoreCase(const unsigned short *str1,
 					uc2 = 1;
 				}
 			}
-			else if(ch2 >= UNICASE_RANGE3_LOWER && ch2 <= UNICASE_RANGE3_LOWER)
+			else if(ch2 >= UNICASE_RANGE3_LOWER && ch2 <= UNICASE_RANGE3_UPPER)
 			{
 				unsigned tc = unicodeToLower
 					[ch2 - UNICASE_RANGE3_LOWER + UNICASE_RANGE3_OFFSET];

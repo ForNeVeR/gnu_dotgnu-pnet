@@ -1,7 +1,7 @@
 /*
  * cg_resolve.c - Resolve methods, fields, operators, etc.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -163,7 +163,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 		}
 		else
 		{
-			classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
+			classInfo = (dontInherit ? 0 : ILClass_ParentClass(classInfo));
 		}
 	}
 
@@ -261,9 +261,9 @@ ILMethod *ILResolveConversionOperator(ILGenInfo *info, ILClass *classInfo,
  * Internal worker function for locating Properties.
  */
 static ILProperty *ResolveProperty(ILGenInfo *info, ILClass *classInfo,
-							   ILClass *callScope, const char *name,
-							   ILType *type, ILUInt32 attrs,
-							   int dontInherit)
+								   ILClass *callScope, const char *name,
+								   ILType *type, ILUInt32 attrs,
+								   int dontInherit)
 {
 	ILMember *member;
 	ILProperty *property;
@@ -319,7 +319,7 @@ static ILProperty *ResolveProperty(ILGenInfo *info, ILClass *classInfo,
 		}
 		else
 		{
-			classInfo = (dontInherit ? 0 : ILClass_Parent(classInfo));
+			classInfo = (dontInherit ? 0 : ILClass_ParentClass(classInfo));
 		}
 	}
 

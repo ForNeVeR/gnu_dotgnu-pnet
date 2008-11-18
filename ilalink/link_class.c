@@ -1,7 +1,7 @@
 /*
  * link_class.c - Convert classes and copy them to the final image.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,37 +25,47 @@ extern	"C" {
 #endif
 
 /*
- * Convert a class and copy it to a destination image.
+ * Copy a class declaration to the destination image.
  */
-static int ConvertClass(ILLinker *linker, ILClass *classInfo,
-						ILClass *nestedParent)
+static int CreateClass(ILLinker *linker, ILClass *classInfo,
+					   ILClass *nestedParent)
 {
 	ILProgramItem *scope;
+	ILProgramItem *parent;
 	ILClass *newClass;
-	ILClass *parent;
 	const char *name;
 	const char *namespace;
 	char *newName = 0;
 	int isModule = 0;
-	ILClassLayout *layout;
-	ILImplements *implements;
-	ILImplements *newImplements;
-	ILNestedInfo *nested;
-	ILMember *member;
 	ILLibraryFind find;
+	ILNestedInfo *nested;
 
-	/* Convert the parent class reference */
-	parent = ILClass_ParentRef(classInfo);
+	parent = ILClass_Parent(classInfo);
 	if(parent)
 	{
-		parent = _ILLinkerConvertClassRef(linker, parent);
-		if(!parent)
+		if(!ILProgramItemToTypeSpec(parent))
 		{
-			return 0;
+			/* Parent is a real class */
+			ILClass *parentClass;
+
+			parentClass = ILClass_ParentRef(classInfo);
+			if(!parentClass)
+			{
+				return 0;
+			}
+			parentClass = _ILLinkerConvertClassRef(linker, parentClass);
+			if(!parentClass)
+			{
+				return 0;
+			}
+			parent = ILToProgramItem(parentClass);
+		}
+		else
+		{
+			parent = 0;
 		}
 	}
 
-	/* Create a new class record within the output image */
 	if(nestedParent)
 	{
 		scope = (ILProgramItem *)nestedParent;
@@ -168,6 +178,110 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		ILClassSetAttrs(newClass, ~((ILUInt32)0), ILClass_Attrs(classInfo));
 	}
 
+	/* Record the new class in the original class */
+	ILClassSetUserData(classInfo, (void *)newClass);
+
+	/* Create the typedef records for the nested classes */
+	nested = 0;
+	while((nested = ILClassNextNested(classInfo, nested)) != 0)
+	{
+		if(!CreateClass(linker, ILNestedInfoGetChild(nested), newClass))
+		{
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+/*
+ * Convert the class parents and the implemented interfaces.
+ */
+static int ConvertClassParents(ILLinker *linker, ILClass *classInfo)
+{
+	ILClass *newClass;
+	ILProgramItem *parent;
+	ILImplements *implements;
+	ILImplements *newImplements;
+	ILNestedInfo *nested;
+
+	newClass = (ILClass *)ILClassGetUserData(classInfo);
+	if(!newClass)
+	{
+		return 0;
+	}
+
+	parent = ILClass_Parent(classInfo);
+	if(parent)
+	{
+		ILTypeSpec *parentSpec;
+
+		if((parentSpec = ILProgramItemToTypeSpec(parent)) != 0)
+		{
+			/* Parent is a TypSpec */
+			parent = _ILLinkerConvertProgramItemRef(linker, parent);
+			if(!parent)
+			{
+				return 0;
+			}
+			ILClassSetParent(newClass, parent);
+		}
+	}
+
+	/* Copy the interface list */
+	implements = 0;
+	while((implements = ILClassNextImplements(classInfo, implements)) != 0)
+	{
+		ILClass *interface;
+
+		interface = _ILLinkerConvertClassRef
+					(linker, ILImplementsGetInterface(implements));
+		if(!interface)
+		{
+			return 0;
+		}
+		newImplements = ILClassAddImplements(newClass, interface, 0);
+		if(!newImplements)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)implements,
+								  (ILProgramItem *)newImplements))
+		{
+			return 0;
+		}
+	}
+
+	/* Create the parents for the nested classes. */
+	nested = 0;
+	while((nested = ILClassNextNested(classInfo, nested)) != 0)
+	{
+		if(!ConvertClassParents(linker, ILNestedInfoGetChild(nested)))
+		{
+			return 0;
+		}
+	}
+
+	return 1;
+}
+
+/*
+ * Convert the class members and attributes.
+ */
+static int ConvertClassMembers(ILLinker *linker, ILClass *classInfo)
+{
+	ILClass *newClass;
+	ILClassLayout *layout;
+	ILMember *member;
+	ILNestedInfo *nested;
+
+	newClass = (ILClass *)ILClassGetUserData(classInfo);
+	if(!newClass)
+	{
+		return 0;
+	}
+
 	/* Convert the custom attributes */
 	if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)classInfo,
 							  (ILProgramItem *)newClass))
@@ -199,29 +313,6 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		if(!layout)
 		{
 			_ILLinkerOutOfMemory(linker);
-			return 0;
-		}
-	}
-
-	/* Copy the interface list */
-	implements = 0;
-	while((implements = ILClassNextImplements(classInfo, implements)) != 0)
-	{
-		parent = _ILLinkerConvertClassRef
-					(linker, ILImplementsGetInterface(implements));
-		if(!parent)
-		{
-			return 0;
-		}
-		newImplements = ILClassAddImplements(newClass, parent, 0);
-		if(!newImplements)
-		{
-			_ILLinkerOutOfMemory(linker);
-			return 0;
-		}
-		if(!_ILLinkerConvertAttrs(linker, (ILProgramItem *)implements,
-								  (ILProgramItem *)newImplements))
-		{
 			return 0;
 		}
 	}
@@ -288,17 +379,19 @@ static int ConvertClass(ILLinker *linker, ILClass *classInfo,
 		}
 	}
 
-	/* Convert the nested classes */
+	/* Create the members and attributes for the nested classes. */
 	nested = 0;
 	while((nested = ILClassNextNested(classInfo, nested)) != 0)
 	{
-		if(!ConvertClass(linker, ILNestedInfoGetChild(nested), newClass))
+		if(!ConvertClassMembers(linker, ILNestedInfoGetChild(nested)))
 		{
 			return 0;
 		}
 	}
 
-	/* Done */
+	/* Clear the userdata in the original class */
+	ILClassSetUserData(classInfo, 0);
+
 	return 1;
 }
 
@@ -313,7 +406,33 @@ int _ILLinkerConvertClasses(ILLinker *linker, ILImage *image)
 	{
 		if(ILClassGetNestedParent(classInfo) == 0)
 		{
-			if(!ConvertClass(linker, classInfo, 0))
+			if(!CreateClass(linker, classInfo, 0))
+			{
+				return 0;
+			}
+		}
+	}
+
+	/* Now set parents and interfaces in the new classes */
+	while((classInfo = (ILClass *)ILImageNextToken
+				(image, IL_META_TOKEN_TYPE_DEF, classInfo)) != 0)
+	{
+		if(ILClassGetNestedParent(classInfo) == 0)
+		{
+			if(!ConvertClassParents(linker, classInfo))
+			{
+				return 0;
+			}
+		}
+	}
+
+	/* Now copy members and attributes to the new classes */
+	while((classInfo = (ILClass *)ILImageNextToken
+				(image, IL_META_TOKEN_TYPE_DEF, classInfo)) != 0)
+	{
+		if(ILClassGetNestedParent(classInfo) == 0)
+		{
+			if(!ConvertClassMembers(linker, classInfo))
 			{
 				return 0;
 			}

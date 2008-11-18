@@ -1,7 +1,7 @@
 /*
  * java_loader.c - Load Java .class files and convert them into IL images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1164,7 +1164,8 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 
 	/* Convert the class from a reference into a definition */
 	ILClassCreate(ILClassGlobalScope(image), 0, classInfo->className->name,
-				  classInfo->className->namespace, otherClass);
+				  classInfo->className->namespace,
+				  ILToProgramItem(otherClass));
 	ILClassSetAttrs(classInfo, IL_MAX_UINT32, accessFlags);
 
 	/* Add the interfaces to the class */

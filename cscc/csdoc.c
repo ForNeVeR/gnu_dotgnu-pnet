@@ -1,7 +1,7 @@
 /*
  * csdoc.c - C# documentation extraction utility.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1313,7 +1313,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	fputs("<TypeSignature Language=\"ILASM\" Value=\".class ", stream);
 	ILDumpFlags(stream, ILClass_Attrs(classInfo), ILTypeDefinitionFlags, 0);
 	DumpString(defn->name, stream);
-	parent = ILClass_Parent(classInfo);
+	parent = ILClass_UnderlyingParentClass(classInfo);
 	if(parent)
 	{
 		fputs(" extends ", stream);

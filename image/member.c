@@ -1,7 +1,7 @@
 /*
  * member.c - Process class member information from an image file.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -306,7 +306,7 @@ ILMemberRef *ILMemberRefCreate(ILProgramItem *owner, ILToken token,
 		return 0;
 	}
 
-	if((spec = ILProgramItemToTypeSpec(owner)) != 0)
+	if((spec = _ILProgramItem_ToTypeSpec(owner)) != 0)
 	{
 		memberRef->member.owner = ILTypeSpecGetClassWrapper(spec);
 	}
@@ -408,8 +408,8 @@ ILMember *ILMemberCreateRef(ILMember *member, ILToken token)
 	ref = (ILMemberRef *)(MemberCreate(member->owner, token,
 									   IL_META_TOKEN_MEMBER_REF,
 									   member->name,
-						  			   IL_META_MEMBERKIND_REF, 0,
-						  			   sizeof(ILMemberRef)));
+									   IL_META_MEMBERKIND_REF, 0,
+									   sizeof(ILMemberRef)));
 	if(!ref)
 	{
 		return 0;
@@ -484,7 +484,8 @@ ILMember *ILMemberGetBase(ILMember *member)
 	ILMethod *underlying;
 	if(classInfo)
 	{
-		classInfo = ILClass_Parent(classInfo);
+		/* TODO */
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	while(classInfo != 0)
 	{
@@ -494,7 +495,7 @@ ILMember *ILMemberGetBase(ILMember *member)
 		{
 			if(!strcmp(ILMember_Name(testMember), ILMember_Name(member)) &&
 			   ILTypeIdentical(ILMember_Signature(testMember),
-			   				   ILMember_Signature(member)))
+							   ILMember_Signature(member)))
 			{
 				/* The member must be accessible from the original
 				   class to be considered a candidate.  This allows
@@ -511,7 +512,8 @@ ILMember *ILMemberGetBase(ILMember *member)
 				}
 			}
 		}
-		classInfo = ILClass_Parent(classInfo);
+		/* TODO */
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	return 0;
 }
@@ -1123,12 +1125,13 @@ ILMethod *ILMethodResolveCallSite(ILMethod *method)
 		{
 			if(!strcmp(testMethod->member.name, method->member.name) &&
 			   SentinelSigMatch(testMethod->member.signature,
-			   					method->member.signature))
+								method->member.signature))
 			{
 				return testMethod;
 			}
 		}
-		classInfo = ILClass_Parent(classInfo);
+		/* TODO */
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 
 	/* We could not find the resolved version */
@@ -1635,12 +1638,12 @@ ILMethodSem *ILMethodSemCreate(ILProgramItem *item, ILToken token,
 	}
 
 	/* Attach this record to the property or event */
-	if((property = ILProgramItemToProperty(item)) != 0)
+	if((property = _ILProgramItem_ToPropertyDef(item)) != 0)
 	{
 		sem->next = property->semantics;
 		property->semantics = sem;
 	}
-	else if((event = ILProgramItemToEvent(item)) != 0)
+	else if((event = _ILProgramItem_ToEventDef(item)) != 0)
 	{
 		sem->next = event->semantics;
 		event->semantics = sem;
@@ -1652,12 +1655,12 @@ ILMethodSem *ILMethodSemCreate(ILProgramItem *item, ILToken token,
 
 ILEvent *ILMethodSemGetEvent(ILMethodSem *sem)
 {
-	return ILProgramItemToEvent(sem->owner);
+	return _ILProgramItem_ToEventDef(sem->owner);
 }
 
 ILProperty *ILMethodSemGetProperty(ILMethodSem *sem)
 {
-	return ILProgramItemToProperty(sem->owner);
+	return _ILProgramItem_ToPropertyDef(sem->owner);
 }
 
 ILUInt32 ILMethodSemGetType(ILMethodSem *sem)
@@ -1675,11 +1678,11 @@ ILMethod *ILMethodSemGetByType(ILProgramItem *item, ILUInt32 type)
 	ILMethodSem *sem;
 	ILProperty *property;
 	ILEvent *event;
-	if((property = ILProgramItemToProperty(item)) != 0)
+	if((property = _ILProgramItem_ToPropertyDef(item)) != 0)
 	{
 		sem = property->semantics;
 	}
-	else if((event = ILProgramItemToEvent(item)) != 0)
+	else if((event = _ILProgramItem_ToEventDef(item)) != 0)
 	{
 		sem = event->semantics;
 	}

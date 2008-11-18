@@ -1,7 +1,7 @@
 /*
  * cs_attrs.c - Attribute handling.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@ static ILProgramItem *LookupAttrField(ILGenInfo *info, ILType *type,
 			/* Method, event, or something else that is not usable */
 			return 0;
 		}
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	return 0;
 }

@@ -1,7 +1,7 @@
 /*
  * class.c - Process class information from an image file.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -224,7 +224,7 @@ static void MoveNestedToEnd(ILClass *parent, ILClass *info)
  * with an image.
  */
 static ILClass *CreateClass(ILImage *image, const char *name,
-							const char *namespace, ILClass *parent,
+							const char *namespace, ILProgramItem *parent,
 							ILProgramItem *scope)
 {
 	ILClass *info;
@@ -247,7 +247,7 @@ static ILClass *CreateClass(ILImage *image, const char *name,
 #endif
 
 	/* Get the name of the scope if it is a nesting parent */
-	scopeClass = ILProgramItemToClass(scope);
+	scopeClass = _ILProgramItem_ToClass(scope);
 	if(scopeClass)
 	{
 		scopeName = scopeClass->className;
@@ -353,7 +353,7 @@ ILClass *ILClassCreateWrapper(ILProgramItem *scope, ILToken token,
 }
 
 ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
-					   const char *namespace, ILClass *parent)
+					   const char *namespace, ILProgramItem *parent)
 {
 	ILImage *image = scope->image;
 	ILClass *info;
@@ -361,7 +361,42 @@ ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
 	/* Import the parent class into this image */
 	if(parent)
 	{
-		parent = ILClassImport(image, parent);
+		ILClass *parentClass;
+		ILTypeSpec *parentSpec;
+
+		if((parentClass = _ILProgramItem_ToClass(parent)) != 0)
+		{
+			parentClass = ILClassImport(image, parentClass);
+			if(!parentClass)
+			{
+				return 0;
+			}
+			parent = ILToProgramItem(parentClass);
+		}
+		else if((parentSpec = _ILProgramItem_ToTypeSpec(parent)) != 0)
+		{
+			parentSpec = ILTypeSpecImport(image, parentSpec);
+			if(!parentSpec)
+			{
+				return 0;
+			}
+			parent = ILToProgramItem(parentSpec);
+		}
+		else if(parent->token == 0)
+		{
+			/* We have an unresolved ClassRef here or a synthetic class */
+			parentClass = ILClassImport(image, (ILClass *)parent);
+			if(!parentClass)
+			{
+				return 0;
+			}
+			parent = ILToProgramItem(parentClass);
+		}
+		else
+		{
+			/* Invalid parent program item type */
+			return 0;
+		}
 		if(!parent)
 		{
 			return 0;
@@ -596,22 +631,72 @@ int ILClassIsRef(ILClass *info)
 	return ((info->attributes & IL_META_TYPEDEF_REFERENCE) != 0);
 }
 
-ILClass *ILClassGetParent(ILClass *info)
+/*
+ * Get the parent of a class.
+ */
+static ILProgramItem *GetParent(ILClass *info)
 {
 	if(info->parent)
 	{
-		return (ILClass *)(_ILProgramItemResolve
-								(&(info->parent->programItem)));
+		return _ILProgramItemResolve(info->parent);
 	}
-	else
+	return 0;
+}
+
+/*
+ * Get the parent class of a class.
+ * If the parent is a TypeSpec then the main class of the TypeSpec is returned.
+ */
+static ILClass *GetUnderlyingParentClass(ILClass *info)
+{
+	if(!info || !info->parent)
 	{
 		return 0;
 	}
+	info = ILProgramItemToUnderlyingClass(info->parent);
+	if(info)
+	{
+		return ILClassResolve(info);
+	}
+	return 0;
 }
 
-void ILClassSetParent(ILClass *info, ILClass *parent)
+/*
+ * Get the parent class of a class.
+ * If the parent is a type spec then the synthetic class is returned.
+ */
+static ILClass *GetParentClass(ILClass *info)
+{
+	if(info && info->parent)
+	{
+		if((info = ILProgramItemToClass(info->parent)) != 0)
+		{
+			return ILClassResolve(info);
+		}
+	}
+	return 0;
+}
+
+ILProgramItem *ILClassGetParent(ILClass *info)
+{
+	return GetParent(info);
+}
+
+ILClass *ILClassGetUnderlyingParentClass(ILClass *info)
+{
+	return GetUnderlyingParentClass(info);
+}
+
+ILClass *ILClassGetParentClass(ILClass *info)
+{
+	return GetParentClass(info);
+}
+
+void ILClassSetParent(ILClass *info, ILProgramItem *parent)
 {
 	ILImage *image;
+	ILClass *parentClass;
+	ILTypeSpec *parentSpec;
 
 	if(!info || !parent || ILClassIsComplete(info))
 	{
@@ -619,16 +704,43 @@ void ILClassSetParent(ILClass *info, ILClass *parent)
 	}
 
 	image = ILClassToImage(info);
-	parent = ILClassImport(image, parent);
+
+	if((parentClass = _ILProgramItem_ToClass(parent)) != 0)
+	{
+		parentClass = ILClassImport(image, parentClass);
+		parent = ILToProgramItem(parentClass);
+	}
+	else if((parentSpec = _ILProgramItem_ToTypeSpec(parent)) != 0)
+	{
+		parentSpec = ILTypeSpecImport(image, parentSpec);
+		parent = ILToProgramItem(parentSpec);
+	}
+	else
+	{
+		/* Invalid parent */
+		return;
+	}
+
 	info->parent = parent;
 }
 
 ILClass *ILClassGetParentRef(ILClass *info)
 {
-	if(info->parent)
+	if(info && info->parent)
 	{
-		return (ILClass *)(_ILProgramItemResolveRef
-								(&(info->parent->programItem)));
+		ILProgramItem *item;
+		ILTypeSpec *spec;
+
+		item = info->parent;
+		if((info = _ILProgramItem_ToClass(item)) != 0)
+		{
+			return (ILClass *)_ILProgramItemResolveRef(item);
+		}
+		if((spec = _ILProgramItem_ToTypeSpec(item)) != 0)
+		{
+			return ILTypeSpecGetClassRef(spec);
+		}
+		return 0;
 	}
 	else
 	{
@@ -695,6 +807,7 @@ void _ILClassRemoveAllFromHash(ILImage *image)
 int ILClassIsValid(ILClass *info)
 {
 	ILImplements *implements;
+	ILProgramItem *item;
 	info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
 	while(info != 0)
 	{
@@ -711,10 +824,10 @@ int ILClassIsValid(ILClass *info)
 			}
 			implements = implements->nextInterface;
 		}
-		info = info->parent;
-		if(info != 0)
+		item = info->parent;
+		if(item != 0)
 		{
-			info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
+			item = _ILProgramItemResolve(item);
 		}
 	}
 	return 1;
@@ -930,7 +1043,7 @@ ILClass *ILClassLookupUnicode(ILProgramItem *scope,
 }
 
 ILClass *ILClassLookupGlobal(ILContext *context,
-					   		 const char *name, const char *namespace)
+							 const char *name, const char *namespace)
 {
 	ILClassKeyInfo key;
 	key.name = name;
@@ -1066,11 +1179,7 @@ int ILClassInheritsFrom(ILClass *info, ILClass *ancestor)
 		{
 			return 1;
 		}
-		info = info->parent;
-		if(info)
-		{
-			info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
-		}
+		info = GetParentClass(info);
 	}
 	return 0;
 }
@@ -1096,11 +1205,7 @@ static int ImplementsResolved(ILClass *info, ILClass *interface)
 			}
 			temp = temp->nextInterface;
 		}
-		info = info->parent;
-		if(info)
-		{
-			info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
-		}
+		info = GetParentClass(info);
 	}
 	return 0;
 }
@@ -1557,7 +1662,7 @@ static int InheritsFromValueType(ILClass *info)
 				return 1;
 			}
 		}
-		info = ILClass_ParentRef(info);
+		info = GetUnderlyingParentClass(info);
 	}
 	return 0;
 }
@@ -1983,7 +2088,7 @@ ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method)
 			{
 				break;
 			}
-			parent = ILClassGetParent(parent);
+			parent = GetParentClass(parent);
 		}
 	}
 
@@ -2008,7 +2113,7 @@ ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method)
 			/* We have a non-override method at this level */
 			break;
 		}
-		parent = ILClassGetParent(parent);
+		parent = GetParentClass(parent);
 	}
 done:
 
@@ -2030,7 +2135,7 @@ ILMethod *ILClassGetMethodImplForProxy(ILClass *info, ILMethod *method)
 
 	/* Start at the parent class and search for any public method that
 	   matches the specified signature */
-	parent = ILClassGetParent(info);
+	parent = GetParentClass(info);
 	result = 0;
 	while(parent != 0)
 	{
@@ -2041,7 +2146,7 @@ ILMethod *ILClassGetMethodImplForProxy(ILClass *info, ILMethod *method)
 			result = method2;
 			break;
 		}
-		parent = ILClassGetParent(parent);
+		parent = GetParentClass(parent);
 	}
 	return result;
 }

@@ -1,7 +1,7 @@
 /*
  * link_module.c - Module linking routines for C-style applications.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -309,7 +309,7 @@ void ILLinkerModuleCreate(ILLinker *linker)
 			}
 			linker->moduleClass = ILClassCreate
 				(ILClassGlobalScope(linker->image), 0,
-				 linker->moduleName, 0, parent);
+				 linker->moduleName, 0, ILToProgramItem(parent));
 			if(!(linker->moduleClass))
 			{
 				_ILLinkerOutOfMemory(linker);

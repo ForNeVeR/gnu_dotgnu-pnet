@@ -2,7 +2,7 @@
  * java_writer.c - Writes java images.
  *
  * Copyright (C) 2002  Sylvain Pasche
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -970,7 +970,7 @@ void WriteJavaClass(ILWriter *writer, ILClass *class)
 	OUT_UINT16(thisIndex);
 
 	/* parent class */
-	parentClass = ILClass_Parent(class);
+	parentClass = ILClass_ParentClass(class);
 	if(parentClass)
 	{
 		parentIndex = ILJavaSetClass(writer, class, parentClass);

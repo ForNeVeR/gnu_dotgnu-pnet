@@ -1,7 +1,7 @@
 /*
  * lib_type.c - Internalcall methods for "Type" and related classes.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -807,7 +807,7 @@ ILObject *_IL_ClrType_GetInterface(ILExecThread *thread,
 			return _ILGetClrType(thread, interfaceClassInfo);
 		}
 		/* Move up to the parent of this class */
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	return 0;
 #else
@@ -838,7 +838,7 @@ static ILInt32 GetMaxInterfaces(ILClass *classInfo)
 	}
 
 	// Traverse up into the parent class as well
-	count += GetMaxInterfaces(ILClassGetParent(classInfo));
+	count += GetMaxInterfaces(ILClass_ParentClass(classInfo));
 	return count;
 }
 
@@ -878,7 +878,7 @@ static ILInt32 FillWithInterfaces(ILExecThread *thread, ILClass *classInfo,
 	}
 
 	// Traverse up into the parent class as well
-	posn = FillWithInterfaces(thread, ILClassGetParent(classInfo), array, posn);
+	posn = FillWithInterfaces(thread, ILClass_ParentClass(classInfo), array, posn);
 	return posn;
 }
 
@@ -1065,7 +1065,7 @@ ILObject *_IL_ClrType_GetClrBaseType(ILExecThread *thread, ILObject *_this)
 	ILClass *classInfo = _ILGetClrClass(thread, _this);
 	if(classInfo)
 	{
-		ILClass *parent = ILClass_Parent(classInfo);
+		ILClass *parent = ILClass_ParentClass(classInfo);
 		if(parent)
 		{
 			return _ILGetClrType(thread, parent);
@@ -2319,7 +2319,7 @@ ILObject *_IL_ClrType_GetMemberImpl(ILExecThread *thread,
 		}
 
 		/* Move up the class hierarchy */
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	while(classInfo != 0 &&
 	      (bindingAttrs & (ILInt32)BF_DeclaredOnly) == 0);
@@ -2562,7 +2562,7 @@ ILObject *_IL_ClrType_GetMembersImpl(ILExecThread *thread,
 		}
 
 		/* Move up the class hierarchy */
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	while(classInfo != 0 &&
 	      (bindingAttrs & (ILInt32)BF_DeclaredOnly) == 0);
@@ -2657,7 +2657,7 @@ System_Array *_IL_FormatterServices_InternalGetSerializableMembers
 				++size;
 			}
 		}
-		info = ILClass_Parent(info);
+		info = ILClass_ParentClass(info);
 	}
 
 	/* Allocate an array to hold the serializable fields */
@@ -2685,7 +2685,7 @@ System_Array *_IL_FormatterServices_InternalGetSerializableMembers
 					(_thread, &(field->member.programItem));
 			}
 		}
-		info = ILClass_Parent(info);
+		info = ILClass_ParentClass(info);
 	}
 
 	/* Return the final array to the caller */

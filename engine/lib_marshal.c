@@ -1,7 +1,7 @@
 /*
  * lib_marshal.c - Internalcall methods for the Marshal class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -158,7 +158,7 @@ ILNativeInt _IL_Marshal_OffsetOfInternal(ILExecThread *_thread, ILObject *t,
 					return offset;
 				}
 			}
-			classInfo = ILClass_Parent(classInfo);
+			classInfo = ILClass_ParentClass(classInfo);
 		}
 		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 	}

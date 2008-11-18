@@ -1,7 +1,7 @@
 /*
  * c_types.c - Type representation for the C programming language.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -292,7 +292,7 @@ static ILType *CreateArray(ILGenInfo *info, ILType *elemType,
 	/* Create the class that corresponds to the array type */
 	classInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
 	classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							  name, 0, classInfo);
+							  name, 0, ILToProgramItem(classInfo));
 	if(!classInfo)
 	{
 		ILGenOutOfMemory(info);
@@ -584,7 +584,7 @@ ILType *CTypeDefineStructOrUnion(ILGenInfo *info, const char *name,
 	classInfo = ILType_ToValueType(type);
 	parent = ILType_ToClass(ILFindSystemType(info, "ValueType"));
 	classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							  ILClass_Name(classInfo), 0, parent);
+							  ILClass_Name(classInfo), 0, ILToProgramItem(parent));
 	if(!classInfo)
 	{
 		ILGenOutOfMemory(info);
@@ -669,7 +669,7 @@ ILType *CTypeDefineAnonStructOrUnion(ILGenInfo *info, ILType *parent,
 
 	/* Create the anonymous type */
 	parentInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
-	classInfo = ILClassCreate(scope, 0, newName, 0, parentInfo);
+	classInfo = ILClassCreate(scope, 0, newName, 0, ILToProgramItem(parentInfo));
 	if(!classInfo)
 	{
 		ILGenOutOfMemory(info);
@@ -700,7 +700,7 @@ ILType *CTypeDefineEnum(ILGenInfo *info, const char *name,
 	classInfo = ILType_ToValueType(type);
 	parent = ILType_ToClass(ILFindSystemType(info, "Enum"));
 	classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							  ILClass_Name(classInfo), 0, parent);
+							  ILClass_Name(classInfo), 0, ILToProgramItem(parent));
 	if(!classInfo)
 	{
 		ILGenOutOfMemory(info);
@@ -767,7 +767,7 @@ ILType *CTypeDefineAnonEnum(ILGenInfo *info, const char *funcName)
 	/* Create the anonymous type */
 	parent = ILType_ToClass(ILFindSystemType(info, "Enum"));
 	classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							  newName, 0, parent);
+							  newName, 0, ILToProgramItem(parent));
 	if(!classInfo)
 	{
 		ILGenOutOfMemory(info);
@@ -1487,7 +1487,7 @@ ILType *CTypeEndStruct(ILGenInfo *info, ILType *structType, int renameAnon)
 
 		/* Create a new type and clone the original structure into it */
 		newClass = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							     newName, 0, ILClass_ParentRef(classInfo));
+							     newName, 0, ILToProgramItem(ILClass_ParentRef(classInfo)));
 		if(!newClass)
 		{
 			ILGenOutOfMemory(info);
@@ -2914,7 +2914,7 @@ ILField *CTypeGetMeasureField(ILGenInfo *info, ILType *type)
 		/* Create the alignment measuring type for the first time */
 		classInfo = ILType_ToClass(ILFindSystemType(info, "ValueType"));
 		classInfo = ILClassCreate(ILClassGlobalScope(info->image), 0,
-							  	  name, 0, classInfo);
+							  	  name, 0, ILToProgramItem(classInfo));
 		if(!classInfo)
 		{
 			ILGenOutOfMemory(info);

@@ -1,7 +1,7 @@
 /*
  * ser_parse.c - Parse serialized attribute values.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -600,7 +600,8 @@ int ILSerializeReaderGetExtra(ILSerializeReader *reader,
 		{
 			break;
 		}
-		info = ILClassGetParent(info);
+		/* TODO */
+		info = ILClass_ParentClass(info);
 	}
 
 	/* The member must have public access and be an instance member.

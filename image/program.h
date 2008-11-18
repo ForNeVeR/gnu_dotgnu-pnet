@@ -1,7 +1,7 @@
 /*
  * program.h - Internal definitions related to program information.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -272,7 +272,7 @@ struct _tagILClass
 	ILProgramItem	programItem;		/* Parent class fields */
 	ILUInt32		attributes;			/* IL_META_TYPEDEF_xxx flags */
 	ILClassName    *className;			/* Name information for the class */
-	ILClass		   *parent;				/* Parent class */
+	ILProgramItem  *parent;				/* Parent item (TypeSpec or Class) */
 	ILImplements   *implements;			/* List of implemented interfaces */
 	ILMember	   *firstMember;		/* First member owned by the class */
 	ILMember	   *lastMember;			/* Last member owned by the class */
@@ -749,6 +749,108 @@ struct _tagILMethodSpec
  * Set the value of a MethodSpec type to an explicit blob index.
  */
 void _ILMethodSpecSetTypeIndex(ILMethodSpec *spec, ILUInt32 index);
+
+/*
+ * Some internal helper macros to convert a program item.
+ */
+#define _ILProgramItem_ToAssemblyDef(item) \
+	(ILAssembly *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_ASSEMBLY) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToAssemblyRef(item) \
+	(ILAssembly *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_ASSEMBLY_REF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToAttribute(item) \
+	(ILAttribute *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_ATTRIBUTE) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToExportedType(item) \
+	(ILClass *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_EXPORTED_TYPE) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToEventDef(item) \
+	(ILEvent *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_EVENT) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToFieldDef(item) \
+	(ILField *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_FIELD_DEF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToMemberRef(item) \
+	(ILMember *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MEMBER_REF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToMethodDef(item) \
+	(ILMethod *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_DEF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToMethodImpl(item) \
+	(ILOverride *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_METHOD_IMPL) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToModuleDef(item) \
+	(ILModule *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToModuleRef(item) \
+	(ILModule *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE_REF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToParamDef(item) \
+	(ILParameter *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_PARAM_DEF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToPropertyDef(item) \
+	(ILProperty *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_PROPERTY) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToTypeDef(item) \
+	(ILClass *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_DEF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToTypeRef(item) \
+	(ILClass *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_REF) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToTypeSpec(item) \
+	(ILTypeSpec *)((item) && \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_SPEC) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToAssembly(item) \
+	(ILAssembly *)((item) && \
+			((((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_ASSEMBLY) || \
+			(((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_ASSEMBLY_REF)) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToClass(item) \
+	(ILClass *)((item) && \
+			((((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_DEF) || \
+	        (((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_TYPE_REF) || \
+	        (((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_EXPORTED_TYPE)) ? \
+			(item) : 0)
+
+#define _ILProgramItem_ToModule(item) \
+	(ILModule *)((item) && \
+			((((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE) || \
+	        (((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE_REF)) ? \
+			(item) : 0)
 
 #ifdef	__cplusplus
 };

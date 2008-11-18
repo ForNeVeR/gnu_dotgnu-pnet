@@ -1,7 +1,7 @@
 /*
  * il_types.h - Type representation for IL images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -302,6 +302,11 @@ struct _tagILType
  * Create a reference type.  Returns NULL if out of memory.
  */
 ILType *ILTypeCreateRef(ILContext *context, int kind, ILType *refType);
+
+/*
+ * Import a type into an image. Returns NULL if out of memory.
+ */
+ILType * ILTypeImport(ILImage *image, ILType *type);
 
 /*
  * Create an array type.  Returns NULL if out of memory.

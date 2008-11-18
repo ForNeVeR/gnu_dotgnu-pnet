@@ -1,7 +1,7 @@
 /*
  * java_gather.c - Type gathering operations for Java
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2003  Gopal.V
  *
  * This program is free software; you can redistribute it and/or modify
@@ -578,7 +578,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	}
 
 	/* Create the class information block */
-	classInfo = ILClassCreate(nestedScope, 0, name, package, parent);
+	classInfo = ILClassCreate(nestedScope, 0, name, package, ILToProgramItem(parent));
 	if(!classInfo)
 	{
 		CCOutOfMemory();
@@ -682,7 +682,7 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 		}
 
 		/* Move up to the parent of this class */
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	return 0;
 }
@@ -738,7 +738,7 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 		}
 
 		/* Move up to the parent of this class */
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	return 0;
 }

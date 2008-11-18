@@ -1,7 +1,7 @@
 /*
  * generic_class.c - Functions related to generic class instances.
  *
- * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2007, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -109,13 +109,17 @@ static int ExpandInstantiations(ILImage *image, ILClass *classInfo,
 
 	/* Expand the parent class and interfaces */
 	if(origClass->parent)
-	{		
-		classInfo->parent = ILClassExpand
-			(image, ILClass_Parent(origClass), classParams, 0);
-		if(!(classInfo->parent))
+	{
+		ILClass *parentClass;
+
+		parentClass = ILClassExpand
+			(image, ILClass_ParentClass(origClass), classParams, 0);
+		if(!parentClass)
 		{
+			classInfo->parent = 0;
 			return 0;
 		}
+		classInfo->parent = ILToProgramItem(parentClass);
 	}
 	impl = 0;
 	while((impl = ILClassNextImplements(origClass, impl)) != 0)

@@ -1,7 +1,7 @@
 /*
  * link_type.c - Convert a type into a final image type.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -397,17 +397,6 @@ ILTypeSpec *_ILLinkerConvertTypeSpec(ILLinker *linker, ILType *type)
 		return 0;
 	}
 
-	/* Search for an existing TypeSpec with this signature */
-	spec = 0;
-	while((spec = (ILTypeSpec *)ILImageNextToken
-				(linker->image, IL_META_TOKEN_TYPE_SPEC, spec)) != 0)
-	{
-		if(ILTypeIdentical(ILTypeSpec_Type(spec), type))
-		{
-			return spec;
-		}
-	}
-
 	/* Create a new TypeSpec within the output image */
 	spec = ILTypeSpecCreate(linker->image, 0, type);
 	if(!spec)
@@ -415,6 +404,39 @@ ILTypeSpec *_ILLinkerConvertTypeSpec(ILLinker *linker, ILType *type)
 		_ILLinkerOutOfMemory(linker);
 	}
 	return spec;
+}
+
+static ILProgramItem *ConvertProgramItemRef(ILLinker *linker,
+											ILProgramItem *item)
+{
+	ILClass *info;
+	ILTypeSpec *spec;
+
+	if((spec = ILProgramItemToTypeSpec(item)) != 0)
+	{
+		spec = _ILLinkerConvertTypeSpec(linker, ILTypeSpec_Type(spec));
+		if(!spec)
+		{
+			return 0;
+		}
+		return ILToProgramItem(spec);
+	}
+	else if((info = ILProgramItemToClass(item)) != 0)
+	{
+		info = _ILLinkerConvertClassRef(linker, info);
+		if(!info)
+		{
+			return 0;
+		}
+		return ILToProgramItem(info);
+	}
+	return 0;
+}
+
+ILProgramItem *_ILLinkerConvertProgramItemRef(ILLinker *linker,
+											  ILProgramItem *item)
+{
+	return ConvertProgramItemRef(linker, item);
 }
 
 #ifdef	__cplusplus

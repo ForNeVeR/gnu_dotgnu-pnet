@@ -1,7 +1,7 @@
 /*
  * java_invoke.tc - Semantic analysis for Java method invocations 
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2003  Gopal.V
  *
  * This program is free software; you can redistribute it and/or modify
@@ -857,7 +857,7 @@ ILNode_JSemAnalysis(ILNode_BaseInit)
 	   bail out with an empty method group.  This tells
 	   "InvocationExpression" to ignore the call */
 	classInfo = ((ILNode_ClassDefn *)(info->currentClass))->classInfo;
-	parentInfo = (classInfo ? ILClass_Parent(classInfo) : 0);
+	parentInfo = (classInfo ? ILClass_ParentClass(classInfo) : 0);
 	if(!parentInfo)
 	{
 		JavaSemSetMethodGroup(value, 0);

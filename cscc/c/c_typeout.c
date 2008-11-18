@@ -1,7 +1,7 @@
 /*
  * c_typeout.c - Send types to an assembly output stream.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -218,7 +218,7 @@ static void OutputPendingClass(ILGenInfo *info, ILClass *classInfo,
 		fputs("beforefieldinit ", stream);
 	}
 	ILDumpIdentifier(stream, ILClass_Name(classInfo), 0, IL_DUMP_QUOTE_NAMES);
-	parent = ILClass_Parent(classInfo);
+	parent = ILClass_UnderlyingParentClass(classInfo);
 	if(parent)
 	{
 		fputs(" extends ", stream);

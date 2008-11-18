@@ -1,7 +1,7 @@
 /*
  * meta_build.c - Build metadata structures from a metadata index.
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2047,7 +2047,7 @@ static int Load_InterfaceImpl(ILImage *image, ILUInt32 *values,
 		return IL_LOADERR_BAD_META;
 	}
 #if IL_VERSION_MAJOR > 1
-	if((spec = ILProgramItemToTypeSpec(item)))
+	if((spec = _ILProgramItem_ToTypeSpec(item)))
 	{
 		interface = ILTypeSpecGetClassWrapper(spec);
 	}
@@ -2375,7 +2375,7 @@ static int Load_MethodAssociation(ILImage *image, ILUInt32 *values,
 	}
 
 	/* Create the method semantics block and attach it */
-	property = ILProgramItemToProperty(owner);
+	property = _ILProgramItem_ToPropertyDef(owner);
 	if(property != 0 &&
 	   values[IL_OFFSET_METHODSEM_SEMANTICS] == IL_META_METHODSEM_GETTER)
 	{
@@ -2427,7 +2427,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 	/* Parse the type signature */
 	if(values[IL_OFFSET_MEMBERREF_SIGNATURE_LEN] > 0 &&
 	   image->blobPool[values[IL_OFFSET_MEMBERREF_SIGNATURE]] ==
-	   		(char)IL_META_CALLCONV_FIELD)
+			(char)IL_META_CALLCONV_FIELD)
 	{
 		/* Refers to a field */
 		type = ILTypeFromFieldSig(image->context, image,
@@ -2495,11 +2495,11 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 				{
 					break;
 				}
-				currentInfo = ILClass_Parent(currentInfo);
+				currentInfo = ILClass_ParentClass(currentInfo);
 			}
 			if(member == 0 && ILType_IsComplex(type) &&
 			   ILType_Kind(type) == (IL_TYPE_COMPLEX_METHOD |
-			   						 IL_TYPE_COMPLEX_METHOD_SENTINEL))
+									 IL_TYPE_COMPLEX_METHOD_SENTINEL))
 			{
 				/* Create a local reference to a vararg call site */
 				method = ILMethodCreate(classInfo, token, name, 0);
@@ -2561,7 +2561,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 					/* Failed to resolve the class */
 					if(resolvedClass &&
 					   IsOnRedoList(image->context,
-					   			    &(resolvedClass->programItem)))
+								    &(resolvedClass->programItem)))
 					{
 						/* The TypeRef is on the redo list, so add
 						   the MemberRef to the redo list also */
@@ -2610,7 +2610,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 					{
 						break;
 					}
-					resolvedClass = ILClass_Parent(resolvedClass);
+					resolvedClass = ILClass_ParentClass(resolvedClass);
 				}
 				if(!resolvedMember)
 				{
@@ -2648,7 +2648,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 		}
 		break;
 
-	 	case IL_META_TOKEN_METHOD_DEF:
+		case IL_META_TOKEN_METHOD_DEF:
 		{
 			/* The parent refers to a local method: ignore the other info */
 			member = ILMember_FromToken
@@ -2656,7 +2656,7 @@ static int Load_MemberRef(ILImage *image, ILUInt32 *values,
 		}
 		break;
 
-	 	case IL_META_TOKEN_TYPE_SPEC:
+		case IL_META_TOKEN_TYPE_SPEC:
 		{
 			/* Refers to a type which is named using a signature */
 			spec = ILTypeSpec_FromToken
@@ -3291,7 +3291,7 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
 						void *userData)
 {
 	ILClass *info;
-	ILClass *parent;
+	ILProgramItem *parent;
 	const char *name;
 	const char *namespace;
 	int error;
@@ -3362,22 +3362,31 @@ static int Load_TypeDef(ILImage *image, ILUInt32 *values,
 	/* Locate the parent class */
 	if(values[IL_OFFSET_TYPEDEF_PARENT])
 	{
-		parent = ILClass_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
+		parent = ILProgramItem_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
 		if(parent)
 		{
-			/* Resolve TypeSpec's into ILClass structures */
-			parent = ILProgramItemToClass((ILProgramItem *)parent);
+			/* Nothing to do here */
 		}
 		else if((values[IL_OFFSET_TYPEDEF_PARENT] & IL_META_TOKEN_MASK)
 					== IL_META_TOKEN_TYPE_DEF)
 		{
 			/* The class inherits from a TypeDef we haven't seen yet */
+			ILClass *parentInfo;
+
 			error = LoadForwardTypeDef(image, values[IL_OFFSET_TYPEDEF_PARENT]);
 			if(error != 0)
 			{
 				return error;
 			}
-			parent = ILClass_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
+			parentInfo = ILClass_FromToken(image, values[IL_OFFSET_TYPEDEF_PARENT]);
+			if(parentInfo)
+			{
+				parent = ILToProgramItem(parentInfo);
+			}
+			else
+			{
+				parent = 0;
+			}
 		}
 		if(!parent)
 		{
@@ -3833,7 +3842,7 @@ static int RedoMemberRef(ILImage *image, ILMember *member)
 		{
 			break;
 		}
-		resolvedClass = ILClass_Parent(resolvedClass);
+		resolvedClass = ILClass_ParentClass(resolvedClass);
 	}
 	if(!resolvedMember)
 	{

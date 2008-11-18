@@ -1,7 +1,7 @@
 /*
  * pinvoke.c - Handle PInvoke and "internalcall" methods within the engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -110,7 +110,7 @@ static int PopulateStructFFI(ILExecProcess *process, ILClass *classInfo,
 	ffi_type *ffi;
 
 	/* Process the parent class first */
-	parent = ILClassGetParent(classInfo);
+	parent = ILClass_ParentClass(classInfo);
 	if(parent)
 	{
 		if(!PopulateStructFFI(process, parent, fieldTypes, posn))
@@ -182,7 +182,7 @@ static ffi_type *StructToFFI(ILExecProcess *process, ILClass *classInfo)
 					++numFields;
 				}
 			}
-			current = ILClassGetParent(current);
+			current = ILClass_ParentClass(current);
 		}
 		explicitSize = 0;
 		explicitAlignment = 0;

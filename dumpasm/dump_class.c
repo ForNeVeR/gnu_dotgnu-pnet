@@ -1,7 +1,7 @@
 /*
  * dump_class.c - Disassemble class information.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -447,7 +447,7 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 		if(ILClass_Parent(info))
 		{
 			fputs("\n    extends ", outstream);
-			DumpClassName(outstream, image, ILClass_Parent(info), flags, 1);
+			DumpClassName(outstream, image, ILClass_ParentClass(info), flags, 1);
 		}
 		first = 1;
 		impl = 0;

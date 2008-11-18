@@ -1,7 +1,7 @@
 /*
  * c_lvalue.tc - L-value node handling for C.
  *
- * Copyright (C) 2002, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2004, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -634,7 +634,7 @@ static CSemValue ResolveMember(ILGenInfo *info, ILType *type,
 					}
 				}
 			}
-			tempClass = ILClass_Parent(tempClass);
+			tempClass = ILClass_ParentClass(tempClass);
 		}
 	}
 
@@ -701,7 +701,7 @@ static CSemValue ResolveMember(ILGenInfo *info, ILType *type,
 				}
 			}
 		}
-		tempClass = ILClass_Parent(tempClass);
+		tempClass = ILClass_ParentClass(tempClass);
 	}
 
 	/* If we get here, then we were unable to find anything */

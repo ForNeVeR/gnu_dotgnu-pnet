@@ -1,7 +1,7 @@
 /*
  * il2doc.c - Convert an IL binary into XML documentation form.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1771,6 +1771,30 @@ static void PrintClassNameWithFlags(ILClass *classInfo, ILProgramItem *scope, in
 #define	PrintClassName(classInfo, scope)	PrintClassNameWithFlags((classInfo), (scope), 0)
 
 /*
+ * Print a ProgramItem that can be an ILClass or ILTypeSpec as used for
+ * baseclasses, implemented interfaces or parents of members in generic classes.
+ */
+static void PrintProgramItemWithFlags(ILProgramItem *item, ILProgramItem *scope, int flags)
+{
+	ILClass *classInfo;
+	ILTypeSpec *spec;
+
+	if((classInfo = ILProgramItemToClass(item)) != 0)
+	{
+		PrintClassNameWithFlags(classInfo, scope, flags);
+	}
+#if IL_VERSION_MAJOR > 1
+	else if((spec = ILProgramItemToTypeSpec(item)) != 0)
+	{
+		ILType *type;
+
+		type = ILTypeSpec_Type(spec);
+		PrintWithType(type, scope, flags);
+	}
+#endif
+}
+
+/*
  * Dump attribute information for a program item.
  */
 static void DumpAttributes(ILProgramItem *item)
@@ -1801,17 +1825,17 @@ static void DumpAttributes(ILProgramItem *item)
 /*
  * Dump base class information.
  */
-static void DumpBases(ILClass *classInfo, ILClass *baseClass,
+static void DumpBases(ILClass *classInfo, ILProgramItem *base,
 					  ILImplements *impl, const char *extends,
 					  const char *extendsNoBase,
 					  const char *implements,
 					  const char *implementsSeparator,
 					  int flags)
 {
-	if(baseClass)
+	if(base)
 	{
 		fputs(extends, stdout);
-		PrintClassNameWithFlags(baseClass, ILToProgramItem(classInfo), flags);
+		PrintProgramItemWithFlags(base, ILToProgramItem(classInfo), flags);
 		if(!impl)
 		{
 			return;
@@ -2731,7 +2755,7 @@ static void DumpEvent(ILEvent *event)
  */
 static int InheritsFrom(ILClass *classInfo, const char *name)
 {
-	classInfo = ILClass_Parent(classInfo);
+	classInfo = ILClass_UnderlyingParentClass(classInfo);
 	while(classInfo != 0)
 	{
 		if(!strcmp(ILClass_Name(classInfo), name) &&
@@ -2740,7 +2764,7 @@ static int InheritsFrom(ILClass *classInfo, const char *name)
 		{
 			return 1;
 		}
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_UnderlyingParentClass(classInfo);
 	}
 	return 0;
 }
@@ -2762,7 +2786,7 @@ static int NonPropertySpecial(const char *name)
 static void DumpClass(ILClass *classInfo)
 {
 	ILAssembly *assem;
-	ILClass *baseClass;
+	ILProgramItem *baseClass;
 	ILImplements *impl;
 	ILMember *member;
 	int isDelegate;
@@ -2865,7 +2889,7 @@ static void DumpClass(ILClass *classInfo)
 	if(baseClass)
 	{
 		fputs("<Base><BaseTypeName>", stdout);
-		PrintClassNameWithFlags(baseClass, ILToProgramItem(classInfo), DUMP_STYLE_CSHARP);
+		PrintProgramItemWithFlags(baseClass, ILToProgramItem(classInfo), DUMP_STYLE_CSHARP);
 		fputs("</BaseTypeName></Base>\n", stdout);
 	}
 	else

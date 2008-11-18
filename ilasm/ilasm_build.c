@@ -1,7 +1,7 @@
 /*
  * ilasm_build.c - Data structure building helper routines.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -390,7 +390,7 @@ void ILAsmAddGenericPars(ILProgramItem *owner, ILAsmParamInfo *genericParams)
 }
 
 void ILAsmBuildNewClass(const char *name, ILAsmParamInfo *genericParams,
-						ILClass *parent, ILUInt32 attrs)
+						ILProgramItem *parent, ILUInt32 attrs)
 {
 	ILClass *info;
 	char uniqueName[64];
@@ -402,7 +402,7 @@ void ILAsmBuildNewClass(const char *name, ILAsmParamInfo *genericParams,
 	   (strcmp(name, "Object") != 0 ||
 	    strcmp(namespace.string, "System") != 0))
 	{
-		parent = ILAsmSystemClass("Object");
+		parent = ILToProgramItem(ILAsmSystemClass("Object"));
 	}
 
 	/* Do we already have a class with this name? */

@@ -1,7 +1,7 @@
 /*
  * lib_emit.c - Internalcall methods for the "Reflection.Emit" classes.
  *
- * Copyright (C) 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1122,7 +1122,8 @@ ILNativeInt _IL_TypeBuilder_ClrTypeCreate(ILExecThread *_thread,
 		return 0;
 	}
 
-	if ((retval = ILClassCreate(scope, 0, typeName, nameSpace, baseClass)))
+	if ((retval = ILClassCreate(scope, 0, typeName, nameSpace,
+								ILToProgramItem(baseClass))))
 	{
 		ILClassSetAttrs(retval, (ILUInt32)-1, (ILUInt32)attr);
 	}
@@ -1289,7 +1290,7 @@ void _IL_TypeBuilder_ClrTypeSetParent(ILExecThread *_thread,
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
-	ILClassSetParent(class, parentClass);
+	ILClassSetParent(class, ILToProgramItem(parentClass));
 
 	IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 }

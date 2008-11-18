@@ -1,7 +1,7 @@
 /*
  * misc_token.c - Handle miscellaneous tokens within images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,6 +67,21 @@ ILTypeSpec *ILTypeSpecCreate(ILImage *image, ILToken token, ILType *type)
 
 	/* Return the TypeSpec information block to the caller */
 	return spec;
+}
+
+ILTypeSpec *ILTypeSpecImport(ILImage *image, ILTypeSpec *spec)
+{
+	ILType *type;
+
+	if(spec->programItem.image == image)
+	{
+		return spec;
+	}
+	if((type = ILTypeImport(image, ILTypeSpec_Type(spec))) == 0)
+	{
+		return 0;
+	}
+	return ILTypeSpecCreate(image, 0, type);
 }
 
 ILType *ILTypeSpecGetType(ILTypeSpec *spec)
@@ -210,15 +225,15 @@ ILConstant *ILConstantCreate(ILImage *image, ILToken token,
 
 	/* If the owner is a Field, Parameter, or Property, then
 	   set the "HAS_DEFAULT" flag within the definition */
-	if((field = ILProgramItemToField(owner)) != 0)
+	if((field = _ILProgramItem_ToFieldDef(owner)) != 0)
 	{
 		field->member.attributes |= IL_META_FIELDDEF_HAS_DEFAULT;
 	}
-	else if((param = ILProgramItemToParameter(owner)) != 0)
+	else if((param = _ILProgramItem_ToParamDef(owner)) != 0)
 	{
 		param->attributes |= IL_META_PARAMDEF_HAS_DEFAULT;
 	}
-	else if((property = ILProgramItemToProperty(owner)) != 0)
+	else if((property = _ILProgramItem_ToPropertyDef(owner)) != 0)
 	{
 		property->member.attributes |= IL_META_PROPDEF_HAS_DEFAULT;
 	}
@@ -363,21 +378,21 @@ ILConstant *ILConstantGetFromOwner(ILProgramItem *owner)
 
 	/* Filter out program items that obviously don't have a value,
 	   to avoid searching the constant table unnecessarily */
-	if((field = ILProgramItemToField(owner)) != 0)
+	if((field = _ILProgramItem_ToFieldDef(owner)) != 0)
 	{
 		if((field->member.attributes & IL_META_FIELDDEF_HAS_DEFAULT) == 0)
 		{
 			return 0;
 		}
 	}
-	else if((param = ILProgramItemToParameter(owner)) != 0)
+	else if((param = _ILProgramItem_ToParamDef(owner)) != 0)
 	{
 		if((param->attributes & IL_META_PARAMDEF_HAS_DEFAULT) == 0)
 		{
 			return 0;
 		}
 	}
-	else if((property = ILProgramItemToProperty(owner)) != 0)
+	else if((property = _ILProgramItem_ToPropertyDef(owner)) != 0)
 	{
 		if((property->member.attributes & IL_META_PROPDEF_HAS_DEFAULT) == 0)
 		{
@@ -538,11 +553,11 @@ ILFieldMarshal *ILFieldMarshalCreate(ILImage *image, ILToken token,
 
 	/* If the owner is a Field or Parameter, then set the
 	   "HAS_FIELD_MARSHAL" flag within the definition */
-	if((field = ILProgramItemToField(owner)) != 0)
+	if((field = _ILProgramItem_ToFieldDef(owner)) != 0)
 	{
 		field->member.attributes |= IL_META_FIELDDEF_HAS_FIELD_MARSHAL;
 	}
-	else if((param = ILProgramItemToParameter(owner)) != 0)
+	else if((param = _ILProgramItem_ToParamDef(owner)) != 0)
 	{
 		param->attributes |= IL_META_PARAMDEF_HAS_FIELD_MARSHAL;
 	}
@@ -591,14 +606,14 @@ ILFieldMarshal *ILFieldMarshalGetFromOwner(ILProgramItem *owner)
 	ILParameter *param;
 
 	/* Filter out members that obviously don't have marshal information */
-	if((field = ILProgramItemToField(owner)) != 0)
+	if((field = _ILProgramItem_ToFieldDef(owner)) != 0)
 	{
 		if((field->member.attributes & IL_META_FIELDDEF_HAS_FIELD_MARSHAL) == 0)
 		{
 			return 0;
 		}
 	}
-	else if((param = ILProgramItemToParameter(owner)) != 0)
+	else if((param = _ILProgramItem_ToParamDef(owner)) != 0)
 	{
 		if((param->attributes & IL_META_PARAMDEF_HAS_FIELD_MARSHAL) == 0)
 		{
@@ -711,11 +726,11 @@ ILDeclSecurity *ILDeclSecurityCreate(ILImage *image, ILToken token,
 
 	/* If the owner is a TypeDef or MethodDef, then set the
 	   "HAS_SECURITY" flag within the definition */
-	if((classInfo = ILProgramItemToClass(owner)) != 0)
+	if((classInfo = _ILProgramItem_ToTypeDef(owner)) != 0)
 	{
 		classInfo->attributes |= IL_META_TYPEDEF_HAS_SECURITY;
 	}
-	else if((method = ILProgramItemToMethod(owner)) != 0)
+	else if((method = _ILProgramItem_ToMethodDef(owner)) != 0)
 	{
 		method->member.attributes |= IL_META_METHODDEF_HAS_SECURITY;
 	}

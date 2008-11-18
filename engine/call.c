@@ -1,7 +1,7 @@
 /*
  * call.c - External interface for calling methods using the engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1291,7 +1291,7 @@ ILMethod *_ILLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
 			}
 			implements = implements->next;
 		}
-		parent = ILClassGetParent(searchClass->classInfo);
+		parent = ILClass_ParentClass(searchClass->classInfo);
 		if(!parent)
 		{
 			break;

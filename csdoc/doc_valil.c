@@ -1,7 +1,7 @@
 /*
  * doc_valil.c - Validate that an IL program implements a csdoc specification.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -447,7 +447,7 @@ static ILClass *ResolveClass(ILContext *context, const char *name, const char *n
  */
 static int IsDelegateType(ILClass *classInfo)
 {
-	ILClass *parent = ILClass_Parent(classInfo);
+	ILClass *parent = ILClass_UnderlyingParentClass(classInfo);
 	const char *name;
 	while(parent != 0)
 	{
@@ -460,7 +460,7 @@ static int IsDelegateType(ILClass *classInfo)
 				return 1;
 			}
 		}
-		parent = ILClass_Parent(parent);
+		parent = ILClass_UnderlyingParentClass(parent);
 	}
 	return 0;
 }
@@ -3128,7 +3128,7 @@ static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 	/* Validate the type flags */
 	if(type->typeAttrs != ILDocInvalidAttrs &&
 	   (ILClass_Attrs(classInfo) & VALID_TYPE_FLAGS) !=
-	   		(type->typeAttrs & VALID_TYPE_FLAGS))
+			(type->typeAttrs & VALID_TYPE_FLAGS))
 	{
 		PrintName(stream, type, 0);
 		if(xmlOutput)
@@ -3151,7 +3151,7 @@ static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 	}
 
 	/* Validate the base type */
-	parent = ILClass_Parent(classInfo);
+	parent = ILClass_ParentClass(classInfo);
 	if(!parent)
 	{
 		if(type->baseType)
@@ -3247,7 +3247,7 @@ static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 				}
 				ILFree(fullName);
 			}
-			tempClass = ILClass_Parent(tempClass);
+			tempClass = ILClass_ParentClass(tempClass);
 		}
 		if(!implemented)
 		{

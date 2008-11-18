@@ -1,7 +1,7 @@
 /*
  * verify_branch.c - Verify instructions related to branching.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -154,7 +154,7 @@ static ILType* TryCommonType(ILImage* image, ILType * type1, ILType *type2)
 
 	classInfo=ILClassFromType(image, 0, type2, 0);
 	
-	if((classInfo=ILClassGetParent(classInfo))!=NULL)
+	if((classInfo = ILClass_ParentClass(classInfo)) != NULL)
 	{
 		return TryCommonType(image, type1, ILClassToType(classInfo));
 	}

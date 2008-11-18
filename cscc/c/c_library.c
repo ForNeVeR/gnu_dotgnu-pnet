@@ -1,7 +1,7 @@
 /*
  * c_library.c - Register the builtin support library.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ static ILClass *CreateClass(ILGenInfo *info, ILProgramItem *scope,
 {
 	ILClass *classInfo;
 	ABORT_IF(classInfo, ILClassCreate
-				(scope, 0, name, "OpenSystem.C", parent));
+				(scope, 0, name, "OpenSystem.C", ILToProgramItem(parent)));
 	ILClassSetAttrs(classInfo, ~0,
 				    IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SEALED |

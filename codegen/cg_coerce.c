@@ -1,7 +1,7 @@
 /*
  * cg_coerce.c - Coercions and casts.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -701,7 +701,7 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				}
 			}
 		}
-		arg1Class = ILClass_Parent(arg1Class);
+		arg1Class = ILClass_ParentClass(arg1Class);
 	}
 
 	while(arg2Class != 0)
@@ -744,7 +744,7 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				}
 			}
 		}
-		arg2Class = ILClass_Parent(arg2Class);
+		arg2Class = ILClass_ParentClass(arg2Class);
 	}
 	
 	if(bestMember)
@@ -803,7 +803,7 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				}
 			}
 		}
-		arg1Class = ILClass_Parent(arg1Class);
+		arg1Class = ILClass_ParentClass(arg1Class);
 	}
 
 	while(arg2Class != 0)
@@ -844,7 +844,7 @@ static int GetIndirectConvertRules(ILGenInfo *info, ILType *fromType,
 				}
 			}
 		}
-		arg2Class = ILClass_Parent(arg2Class);
+		arg2Class = ILClass_ParentClass(arg2Class);
 	}
 
 	if(bestMember)

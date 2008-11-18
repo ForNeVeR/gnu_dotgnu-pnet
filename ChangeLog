@@ -1,3 +1,77 @@
+2008-11-18  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_program.h (ILClassCreate, ILClassSetParent): Change parameter
+	parent from	ILClass * to ILProgramItem *.
+	(ILClassGetParent): Change return value from ILClass * to
+	ILProgramItem *.
+	(ILProgramItemToUnderlyingClass, ILClassGetParentClass, ILTypeSpecImport):
+	Add new support	functions and the corresponding macros.
+
+	* include/il_types.c (ILTypeImport): Add new support function.
+
+	* codegen/cg_coerce.c, codegen/cg_library.c, codegen/cg_lvalue.tc,
+	codegen/cg_resolve.c, cscc/csdoc.c, cscc/c/c_invoke.tc,
+	cscc/c/c_library.c, cscc/c/c_lvalue.tc, cscc/c/c_typeout.c,
+	cscc/c/c_types.c, cscc/csharp/cs_attrs.c, cscc/csharp/cs_gather.c,
+	cscc/csharp/cs_invoke.tc, cscc/csharp/cs_lvalue.tc,
+	cscc/java/java_gather.c, cscc/java/java_invoke.tc,
+	cscc/java/java_lvalue.tc, csdoc/doc_valil.c, dumpasm/dump_class.c,
+	engine/call.c, engine/heap.c, engine/jitc.c, engine/layout.c,
+	engine/lib_array.c, engine/lib_emit.c, engine/lib_marshal.c,
+	engine/lib_reflect.c, engine/lib_type.c, engine/pinvoke.c,
+	engine/verify_branch.c,	ilalink/link_module.c, ilasm/ilasm_build.c,
+	ilasm/ilasm_build.h, ilasm/ilasm_grammar.y, image/generic_class.c,
+	image/member.c, image/meta_build.c, image/meta_types.c,
+	image/java_loader.c, image/java_writer.c, image/misc_token.c,
+	image/ser_parse.c, image/synthetic.c: Replace invokation of
+	ILClass_Parent with ILClass_ParentClass. Adjust the parent parameter
+	types. Use ILClass_UnderlyingParentClass instead of ILClass_Parent
+	where appropriate.
+
+	* ilalink/link_create.c, ilalink/link_library.c, ilalink/link_main.c,
+	image/meta_build.c, image/member.c: Fix some formatting.
+
+	* csdoc/il2doc.c (PrintProgramItemWithFlags): Add function to print a
+	class' parent.
+
+	* ilalink/link_class.c: Replace ConvertClass by three functions to do
+	the import of TypeDefs into the new image in three steps for avoiding
+	to create temporary TypeRefs for parents and implemented interfaces
+	and for being able to process TypeSpecs correctly for parents and
+	implemented interfaces.
+
+	* image/program.h: Change member parend of an ILClass record from
+	ILClass to ILProgramItem to be able to reflect the generrics structure
+	better. Add some internal helprt macros for converting an ILProgramItem
+	to the real program item in a safe way without having to do function
+	calls.
+
+	* image/class.c (CreateClass, ILClassCreate, ILClassSetParent): Change
+	parameter type of parent from ILClass * to ILProgramItem *.
+	(ILClassGetParent): Change return type from ILClass to ILProgramItem.
+	(ILClassGetUnderlyingParentClass, ILClassGetParentClass): Add new
+	support functions.
+
+	* image/lib_attrs.c, image/member.c, image/meta_build.c: Use the new
+	internal conversion macros where appropriate.
+
+	* image/meta_types.c (ILTypeImport): Add support function for importing
+	a type from a foreign image.
+
+	* image/meta_writer.c (Format_TypeDef): Use the new function
+	ProgramItemToToken for retrieving the parent token.
+
+	* image/misc_token.c (ILTypeSpecImport): Add support function for
+	importing a TypeSpec from a foreign image.
+
+	* image/item.c (ILProgramItemToUnderlyingClass): Add support function
+	for retrieving the underlying parent class or implemented interface.
+
+	* ilalink/link_type.c (_ILLinkerConvertProgramItemRef): Add function
+	for converting parent classes and implemented interfaces 
+
+	* ilalink/linker.h (_ILLinkerConvertProgramItemRef): Add prototype.
+
 2008-11-11  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* engine/lib_string.c: small bugfix.

@@ -1,7 +1,7 @@
 /*
  * layout.c - Type and object layout algorithms.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -359,7 +359,7 @@ static int _ILGCBuildTypeDescriptor(ILClass *classInfo,
 	if(classInfo->parent)
 	{
 		/* Use "ILClassGetParent" to resolve cross-image links */
-		ILClass *parent = ILClassGetParent(classInfo);
+		ILClass *parent = ILClass_ParentClass(classInfo);
 
 		if(!_ILGCBuildTypeDescriptor(parent, bitmap, checkBitmap, classOffset))
 		{
@@ -419,7 +419,7 @@ int ILGCBuildTypeDescriptor(ILClassPrivate *classPrivate,
 		if(classInfo->parent)
 		{
 			/* Use "ILClassGetParent" to resolve cross-image links */
-			ILClass *parent = ILClassGetParent(classInfo);
+			ILClass *parent = ILClass_ParentClass(classInfo);
 
 			if(!_ILGCBuildTypeDescriptor(parent, bitmap, checkBitmap, IL_OBJECT_HEADER_SIZE))
 			{
@@ -738,7 +738,7 @@ static ILMethod *FindVirtualAncestor(ILClass *scope, ILClass *info,
 				}
 			}
 		}
-		info = ILClassGetParent(info);
+		info = ILClass_ParentClass(info);
 	}
 	return 0;
 }
@@ -789,7 +789,7 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 	/* Determine if the parent class implements the interface */
 	parent = info;
 	impl2 = 0;
-	while(impl2 == 0 && (parent = ILClassGetParent(parent)) != 0)
+	while(impl2 == 0 && (parent = ILClass_ParentClass(parent)) != 0)
 	{
 		impl2 = ((ILClassPrivate *)(parent->userData))->implements;
 		while(impl2 != 0)
@@ -880,7 +880,7 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 				{
 					break;
 				}
-				parent = ILClassGetParent(parent);
+				parent = ILClass_ParentClass(parent);
 			}
 		}
 
@@ -1041,7 +1041,7 @@ static void BuildIMT(ILExecProcess *process, ILClass *info,
 		{
 			break;
 		}
-		parentPrivate = (ILClassPrivate*) (ILClassGetParent(parentPrivate->classInfo)->userData);
+		parentPrivate = (ILClassPrivate*) (ILClass_ParentClass(parentPrivate->classInfo)->userData);
 	}
 
 	/* Clear positions in the table that indicate conflicts */
@@ -1156,7 +1156,7 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	if(info->parent)
 	{
 		/* Use "ILClassGetParent" to resolve cross-image links */
-		parent = ILClassGetParent(info);
+		parent = ILClass_ParentClass(info);
 		if(ILClassNeedsExpansion(parent))
 		{
 			/* This can happen when a non-generic class inherits from a generic class */
@@ -1166,7 +1166,7 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 				info->userData = 0;
 				return 0;
 			}
-			info->parent = parent;
+			info->parent = ILToProgramItem(parent);
 		}
 		if(!LayoutClass(process, parent, layout))
 		{

@@ -1,7 +1,7 @@
 /*
  * item.c - Process program item information from an image file.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -437,6 +437,59 @@ ILClass *ILProgramItemToClass(ILProgramItem *item)
 	{
 		return 0;
 	}
+}
+
+ILClass *ILProgramItemToUnderlyingClass(ILProgramItem *item)
+{
+	if(!item)
+	{
+		return 0;
+	}
+	switch(item->token & IL_META_TOKEN_MASK)
+	{
+		case IL_META_TOKEN_TYPE_DEF:
+		case IL_META_TOKEN_TYPE_REF:
+		case IL_META_TOKEN_EXPORTED_TYPE:
+		{
+			ILClass *info = (ILClass *)item;
+
+			if(info->synthetic)
+			{
+				ILType *type;
+
+				type = ILTypeGetWithMain(info->synthetic);
+				if(!type)
+				{
+					return 0;
+				}
+				type = ILTypeGetWithMain(type);
+				if(type)
+				{
+					return ILType_ToClass(type);
+				}
+				return 0;
+			}
+			return info;
+		}
+		break;
+
+		case IL_META_TOKEN_TYPE_SPEC:
+		{
+			ILType *type;
+
+			type = ILTypeSpec_Type((ILTypeSpec *)item);
+			if(type)
+			{
+				type = ILTypeGetWithMain(type);
+				if(type)
+				{
+					return ILType_ToClass(type);
+				}
+			}
+		}
+		break;
+	}
+	return 0;
 }
 
 ILMember *ILProgramItemToMember(ILProgramItem *item)

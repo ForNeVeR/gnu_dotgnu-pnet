@@ -1,7 +1,7 @@
 /*
  * synthetic.c - Handle synthetic classes such as arrays, pointers, etc.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -164,7 +164,7 @@ static ILClass *CreateSynthetic(ILImage *image, const char *name,
 	}
 
 	/* Create a new class information block */
-	info = ILClassCreate(scope, 0, name, "$Synthetic", parent);
+	info = ILClassCreate(scope, 0, name, "$Synthetic", ILToProgramItem(parent));
 	if(!info)
 	{
 		return 0;

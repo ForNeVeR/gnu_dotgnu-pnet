@@ -1,7 +1,7 @@
 /*
  * lib_attrs.c - Builtin library attributes with special meanings.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ static int SerializableAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILClass *classInfo;
 
 	/* We must use this on a class */
-	classInfo = ILProgramItemToClass(item);
+	classInfo = _ILProgramItem_ToClass(item);
 	if(!classInfo)
 	{
 		return 0;
@@ -54,7 +54,7 @@ static int NonSerializedAttribute(ILProgramItem *item,
 	ILField *fieldInfo;
 
 	/* We must use this on a field */
-	fieldInfo = ILProgramItemToField(item);
+	fieldInfo = _ILProgramItem_ToFieldDef(item);
 	if(!fieldInfo)
 	{
 		return 0;
@@ -101,8 +101,8 @@ static int DllImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	   We have added an extension to also support PInvoke'ed fields.
 	   The metadata supports PInvoke information on fields, and it
 	   is necessary for importing variables from shared objects */
-	method = ILProgramItemToMethod(item);
-	field = ILProgramItemToField(item);
+	method = _ILProgramItem_ToMethodDef(item);
+	field = _ILProgramItem_ToFieldDef(item);
 	if(!method && !field)
 	{
 		return 0;
@@ -276,7 +276,7 @@ static int FieldOffsetAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILUInt32 offset;
 
 	/* We must use this on a field */
-	field = ILProgramItemToField(item);
+	field = _ILProgramItem_ToFieldDef(item);
 	if(!field)
 	{
 		return 0;
@@ -317,7 +317,7 @@ static int InAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILParameter *param;
 
 	/* We must use this on a parameter */
-	param = ILProgramItemToParameter(item);
+	param = _ILProgramItem_ToParamDef(item);
 	if(!param)
 	{
 		return 0;
@@ -343,7 +343,7 @@ static int OutAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILParameter *param;
 
 	/* We must use this on a parameter */
-	param = ILProgramItemToParameter(item);
+	param = _ILProgramItem_ToParamDef(item);
 	if(!param)
 	{
 		return 0;
@@ -369,7 +369,7 @@ static int OptionalAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILParameter *param;
 
 	/* We must use this on a parameter */
-	param = ILProgramItemToParameter(item);
+	param = _ILProgramItem_ToParamDef(item);
 	if(!param)
 	{
 		return 0;
@@ -405,7 +405,7 @@ static int StructLayoutAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILMember *member;
 
 	/* We must use this on a class */
-	classInfo = ILProgramItemToClass(item);
+	classInfo = _ILProgramItem_ToClass(item);
 	if(!classInfo)
 	{
 		return 0;
@@ -548,7 +548,7 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILFieldMarshal *marshal;
 
 	/* We must use this on a field or parameter */
-	if(!ILProgramItemToField(item) && !ILProgramItemToParameter(item))
+	if(!_ILProgramItem_ToFieldDef(item) && !_ILProgramItem_ToParamDef(item))
 	{
 		return 0;
 	}
@@ -751,7 +751,7 @@ static int ComImportAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILClass *classInfo;
 
 	/* We must use this on a class */
-	classInfo = ILProgramItemToClass(item);
+	classInfo = _ILProgramItem_ToClass(item);
 	if(!classInfo)
 	{
 		return 0;
@@ -773,7 +773,7 @@ static int MethodImplAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	ILUInt32 attrs;
 
 	/* We must use this on a method */
-	method = ILProgramItemToMethod(item);
+	method = _ILProgramItem_ToMethodDef(item);
 	if(!method)
 	{
 		return 0;
@@ -804,7 +804,7 @@ static int MethodImplAttribute(ILProgramItem *item, ILSerializeReader *reader)
 static int IndexerNameAttribute(ILProgramItem *item, ILSerializeReader *reader)
 {
 	/* We must use this on a property, and we just remove it when found */
-	return (ILProgramItemToProperty(item) != 0);
+	return (_ILProgramItem_ToPropertyDef(item) != 0);
 }
 
 /*
@@ -859,7 +859,7 @@ static int DefaultValueAttribute(ILProgramItem *item, ILSerializeReader *reader)
 	void *utf16;
 
 	/* We only convert the attribute if it is on a parameter */
-	if(!ILProgramItemToParameter(item))
+	if(!_ILProgramItem_ToParamDef(item))
 	{
 		return 0;
 	}
@@ -1122,9 +1122,9 @@ static int SecurityPermissionAttribute(ILProgramItem *item,
 	ILDeclSecurity *decl;
 
 	/* The item must be a class, method, or assembly */
-	if(!ILProgramItemToClass(item) &&
-	   !ILProgramItemToMethod(item) &&
-	   !ILProgramItemToAssembly(item))
+	if(!_ILProgramItem_ToTypeDef(item) &&
+	   !_ILProgramItem_ToMethodDef(item) &&
+	   !_ILProgramItem_ToAssemblyDef(item))
 	{
 		return 0;
 	}

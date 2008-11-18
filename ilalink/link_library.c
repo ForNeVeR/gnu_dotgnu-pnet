@@ -1,7 +1,7 @@
 /*
  * link_library.c - Process libraries within a linker context.
  *
- * Copyright (C) 2001, 2003, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003, 2004, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1052,7 +1052,7 @@ static ILClass *MakeTypeRef(ILLibraryFind *find, ILLibraryClass *libClass,
 		{
 			if(!ILStrICmp(find->library->name, ILAssembly_Name(assem)) &&
 			   !ILMemCmp(find->library->version,
-			   			 ILAssemblyGetVersion(assem), sizeof(ILUInt16) * 4))
+						 ILAssemblyGetVersion(assem), sizeof(ILUInt16) * 4))
 			{
 				break;
 			}
@@ -1070,7 +1070,7 @@ static ILClass *MakeTypeRef(ILLibraryFind *find, ILLibraryClass *libClass,
 			if(find->library->publicKey)
 			{
 				if(!SetAssemblyRefToken(assem, find->library->publicKey,
-								        find->library->publicKeyLen))
+										find->library->publicKeyLen))
 				{
 					_ILLinkerOutOfMemory(find->linker);
 					return 0;

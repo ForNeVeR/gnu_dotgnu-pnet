@@ -1,7 +1,7 @@
 /*
  * link_main.c - Link IL images together to form an assembly.
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -805,13 +805,13 @@ int ILLinkerMain(int argc, char *argv[])
 	}
 
 	/* Add the libraries to the linker context */
-	for(temp = 0; temp < numLibraries; ++temp)
-	{
-		errors |= addLibrary(linker, libraries[temp]);
-	}
 	if(useStdlib)
 	{
 		errors |= addLibrary(linker, stdLibrary);
+	}
+	for(temp = 0; temp < numLibraries; ++temp)
+	{
+		errors |= addLibrary(linker, libraries[temp]);
 	}
 
 	/* Set the metadata version in the assembly's header */

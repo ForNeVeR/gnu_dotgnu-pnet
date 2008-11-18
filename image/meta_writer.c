@@ -1,7 +1,7 @@
 /*
  * meta_writer.c - Write metadata index informtion to an image.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,6 +176,22 @@ static ILToken ClassToToken(ILImage *image, ILClass *info)
 	}
 }
 
+static ILToken ProgramItemToToken(ILImage *image, ILProgramItem *item)
+{
+	ILClass *info;
+	ILTypeSpec *spec;
+
+	if((info = _ILProgramItem_ToClass(item)) != 0)
+	{
+		return ClassToToken(image, info);
+	}
+	else if((spec = _ILProgramItem_ToTypeSpec(item)) != 0)
+	{
+		return ILTypeSpec_Token(spec);
+	}
+	return 0;
+}
+
 /*
  * Format a TypeDef token.
  */
@@ -196,7 +212,7 @@ static void Format_TypeDef(ILWriter *writer, ILImage *image,
 			GetPersistString(image, info->className->namespace);
 	if(info->parent)
 	{
-		values[IL_OFFSET_TYPEDEF_PARENT] = ClassToToken(image, info->parent);
+		values[IL_OFFSET_TYPEDEF_PARENT] = ProgramItemToToken(image, info->parent);
 	}
 	else
 	{

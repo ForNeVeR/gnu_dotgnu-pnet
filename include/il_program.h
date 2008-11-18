@@ -1,7 +1,7 @@
 /*
  * il_program.h - Definitions related to program information.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -152,6 +152,15 @@ ILExportedType *ILProgramItemToExportedType(ILProgramItem *item);
 ILGenericPar *ILProgramItemToGenericPar(ILProgramItem *item);
 ILMethodSpec *ILProgramItemToMethodSpec(ILProgramItem *item);
 ILGenericConstraint *ILProgramItemToGenericConstraint(ILProgramItem *item);
+
+/*
+ * Get the underlying class for a program item.
+ * If the program item is a TypeDef or TypeRef the program item is returned
+ * as a class.
+ * If the program item is a TypeSpec for a WithType (generic) then the
+ * generic class (MainType) is returned.
+ */
+ILClass *ILProgramItemToUnderlyingClass(ILProgramItem *item);
 
 /*
  * Helper macros for querying information about a program item.
@@ -478,7 +487,7 @@ const void *ILAssemblyGetHash(ILAssembly *assem, unsigned long *len);
  * the class already exists.
  */
 ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
-					   const char *nspace, ILClass *parent);
+					   const char *nspace, ILProgramItem *parent);
 
 /*
  * Create a reference class within a particular scope.
@@ -527,13 +536,27 @@ int ILClassIsRef(ILClass *info);
  * Get the parent of a particular class.  This will cross
  * image boundaries to take linking into account.
  */
-ILClass *ILClassGetParent(ILClass *info);
+ILProgramItem *ILClassGetParent(ILClass *info);
+
+/*
+ * Get the underlying parent class of a particular class.
+ * This will cross image boundaries to take linking into account.
+ */
+ILClass *ILClassGetUnderlyingParentClass(ILClass *info);
+
+/*
+ * Get the parent class of a particular class.  This will cross
+ * image boundaries to take linking into account.
+ * If the parent is a type spec the synthetic class for the
+ * TypeSpec will be returned.
+ */
+ILClass *ILClassGetParentClass(ILClass *info);
 
 /*
  * Set the parent of a class, if the class hasn't been
  * marked completed.
  */
-void ILClassSetParent(ILClass *info, ILClass *parent);
+void ILClassSetParent(ILClass *info, ILProgramItem *parent);
 
 /*
  * Get the parent of a particular class, but don't cross
@@ -945,6 +968,9 @@ ILType *ILMethodGetMethodTypeArguments(ILMethod *method);
 #define	ILClass_Namespace(info)		(ILClassGetNamespace((info)))
 #define	ILClass_SynType(info)		(ILClassGetSynType((info)))
 #define	ILClass_Parent(info)		(ILClassGetParent((info)))
+#define	ILClass_ParentClass(info)	(ILClassGetParentClass((info)))
+#define	ILClass_UnderlyingParentClass(info)	\
+			(ILClassGetUnderlyingParentClass((info)))
 #define	ILClass_ParentRef(info)		(ILClassGetParentRef((info)))
 #define	ILClass_NestedParent(info)	(ILClassGetNestedParent((info)))
 #define	ILClass_UserData(info)		(ILClassGetUserData((info)))
@@ -1945,6 +1971,12 @@ ILProcessorInfo *ILProcessorInfoNext(ILAssembly *assem,
  * Create a TypeSpec token within an image.
  */
 ILTypeSpec *ILTypeSpecCreate(ILImage *image, ILToken token, ILType *type);
+
+/*
+ * Import a TypeSpec token into the given image.
+ * Returns spec if it is in the given image.
+ */
+ILTypeSpec *ILTypeSpecImport(ILImage *image, ILTypeSpec *spec);
 
 /*
  * Get the type information associated with a TypeSpec.

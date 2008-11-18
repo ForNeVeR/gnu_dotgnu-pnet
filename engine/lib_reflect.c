@@ -1,7 +1,7 @@
 /*
  * lib_reflect.c - Internalcall methods for the reflection classes.
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ static ILInt32 NumMatchingAttrs(ILExecThread *thread, ILProgramItem *item,
 					++num;
 				}
 			}
-			classInfo = ILClassGetParent(classInfo);
+			classInfo = ILClass_ParentClass(classInfo);
 		}
 	}
 	else
@@ -463,7 +463,7 @@ System_Array *_IL_ClrHelpers_GetCustomAttributes
 						++buffer;
 					}
 				}
-				classInfo = ILClassGetParent(classInfo);
+				classInfo = ILClass_ParentClass(classInfo);
 			}
 		}
 		else

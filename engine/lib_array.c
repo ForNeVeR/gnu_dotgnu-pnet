@@ -1,7 +1,7 @@
 /*
  * lib_array.c - Internalcall methods for "System.Array" and subclasses.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1762,7 +1762,7 @@ static void System_MArray_Set_managedValue(ILExecThread *thread,
 static int IsMArrayClass(ILClass *classInfo)
 {
 	const char *name;
-	classInfo = ILClass_Parent(classInfo);
+	classInfo = ILClass_ParentClass(classInfo);
 	if(!classInfo)
 	{
 		return 0;
@@ -2538,7 +2538,7 @@ int _ILIsSArray(System_Array *array)
 	{
 		ILClass *classInfo;
 		const char *name;
-		classInfo = ILClass_Parent(GetObjectClass(array));
+		classInfo = ILClass_ParentClass(GetObjectClass(array));
 		if(!classInfo)
 		{
 			return 0;

@@ -1,7 +1,7 @@
 /*
  * cg_library.c - Routines for manipulating the builtin C# library.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,7 @@ static ILMethod *AddMethod(ILClass *classInfo, const char *name,
  * Make a value type.
  */
 static void MakeValueType(ILGenInfo *info, ILImage *image,
-						  const char *name, ILClass *parent,
+						  const char *name, ILProgramItem *parent,
 						  ILClass *stringClass)
 {
 	ILClass *newClass;
@@ -300,7 +300,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Create the "System.String" class */
 	ABORT_IF(stringClass,
-			 ILClassCreate(scope, 0, "String", "System", objectClass));
+			 ILClassCreate(scope, 0, "String", "System",
+						   ILToProgramItem(objectClass)));
 	ILClassSetAttrs(stringClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -309,7 +310,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Create the "System.Type" class */
 	ABORT_IF(typeClass,
-			 ILClassCreate(scope, 0, "Type", "System", objectClass));
+			 ILClassCreate(scope, 0, "Type", "System",
+						   ILToProgramItem(objectClass)));
 	ILClassSetAttrs(typeClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -349,7 +351,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Create the "System.ValueType" class */
 	ABORT_IF(valueTypeClass,
-			 ILClassCreate(scope, 0, "ValueType", "System", objectClass));
+			 ILClassCreate(scope, 0, "ValueType", "System",
+						   ILToProgramItem(objectClass)));
 	ILClassSetAttrs(valueTypeClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 					IL_META_TYPEDEF_BEFORE_FIELD_INIT |
@@ -358,7 +361,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Create the "System.Enum" class */
 	ABORT_IF(enumClass,
-			 ILClassCreate(scope, 0, "Enum", "System", valueTypeClass));
+			 ILClassCreate(scope, 0, "Enum", "System",
+						   ILToProgramItem(valueTypeClass)));
 	ILClassSetAttrs(enumClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 					IL_META_TYPEDEF_ABSTRACT |
@@ -368,7 +372,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Create the "System.Void" class */
 	ABORT_IF(voidClass,
-			 ILClassCreate(scope, 0, "Void", "System", valueTypeClass));
+			 ILClassCreate(scope, 0, "Void", "System",
+						   ILToProgramItem(valueTypeClass)));
 	ILClassSetAttrs(voidClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
@@ -376,21 +381,33 @@ void ILGenMakeLibrary(ILGenInfo *info)
 					IL_META_TYPEDEF_SEALED);
 
 	/* Create the numeric value types */
-	MakeValueType(info, image, "SByte", valueTypeClass, stringClass);
-	MakeValueType(info, image, "Byte", valueTypeClass, stringClass);
-	MakeValueType(info, image, "Int16", valueTypeClass, stringClass);
-	MakeValueType(info, image, "UInt16", valueTypeClass, stringClass);
-	MakeValueType(info, image, "Int32", valueTypeClass, stringClass);
-	MakeValueType(info, image, "UInt32", valueTypeClass, stringClass);
-	MakeValueType(info, image, "Int64", valueTypeClass, stringClass);
-	MakeValueType(info, image, "UInt64", valueTypeClass, stringClass);
-	MakeValueType(info, image, "Single", valueTypeClass, stringClass);
-	MakeValueType(info, image, "Double", valueTypeClass, stringClass);
-	MakeValueType(info, image, "Decimal", valueTypeClass, stringClass);
+	MakeValueType(info, image, "SByte", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "Byte", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "Int16", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "UInt16", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "Int32", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "UInt32", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "Int64", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "UInt64", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "Single", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "Double", ILToProgramItem(valueTypeClass),
+				  stringClass);
+	MakeValueType(info, image, "Decimal", ILToProgramItem(valueTypeClass),
+				  stringClass);
 
 	/* Create the "System.IntPtr" class */
 	ABORT_IF(intPtrClass,
-			 ILClassCreate(scope, 0, "IntPtr", "System", valueTypeClass));
+			 ILClassCreate(scope, 0, "IntPtr", "System",
+						   ILToProgramItem(valueTypeClass)));
 	ILClassSetAttrs(intPtrClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
@@ -400,7 +417,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Create the "System.UIntPtr" class */
 	ABORT_IF(uintPtrClass,
-			 ILClassCreate(scope, 0, "UIntPtr", "System", valueTypeClass));
+			 ILClassCreate(scope, 0, "UIntPtr", "System",
+						   ILToProgramItem(valueTypeClass)));
 	ILClassSetAttrs(uintPtrClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
@@ -411,7 +429,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.TypedReference" class */
 	ABORT_IF(typedRefClass,
 			 ILClassCreate(scope, 0, "TypedReference", "System",
-			 			   valueTypeClass));
+			 			   ILToProgramItem(valueTypeClass)));
 	ILClassSetAttrs(typedRefClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
@@ -422,7 +440,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.ArgIterator" class */
 	ABORT_IF(argIterClass,
 			 ILClassCreate(scope, 0, "ArgIterator", "System",
-			 			   valueTypeClass));
+			 			   ILToProgramItem(valueTypeClass)));
 	ILClassSetAttrs(argIterClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
@@ -433,7 +451,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.RuntimeArgumentHandle" class */
 	ABORT_IF(argHandleClass,
 			 ILClassCreate(scope, 0, "RuntimeArgumentHandle", "System",
-			 			   valueTypeClass));
+			 			   ILToProgramItem(valueTypeClass)));
 	ILClassSetAttrs(argHandleClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_VALUE_TYPE |
@@ -444,7 +462,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.Attribute" class */
 	ABORT_IF(attributeClass,
 			 ILClassCreate(scope, 0, "Attribute", "System",
-			 			   objectClass));
+			 			   ILToProgramItem(objectClass)));
 	ILClassSetAttrs(attributeClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -454,7 +472,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.ParamArrayAttribute" class */
 	ABORT_IF(paramAttributeClass,
 			 ILClassCreate(scope, 0, "ParamArrayAttribute", "System",
-			 			   attributeClass));
+			 			   ILToProgramItem(attributeClass)));
 	ILClassSetAttrs(paramAttributeClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -465,7 +483,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.Reflection.DefaultMemberAttribute" class */
 	ABORT_IF(defMemberAttributeClass,
 			 ILClassCreate(scope, 0, "DefaultMemberAttribute",
-			 			   "System.Reflection", attributeClass));
+			 			   "System.Reflection",
+						   ILToProgramItem(attributeClass)));
 	ILClassSetAttrs(defMemberAttributeClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -479,7 +498,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ABORT_IF(decimalConstantClass,
 			 ILClassCreate(scope, 0, "DecimalConstantAttribute",
 			 			   "System.Runtime.CompilerServices",
-			 			   attributeClass));
+			 			   ILToProgramItem(attributeClass)));
 	ILClassSetAttrs(decimalConstantClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -490,7 +509,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.Exception" class */
 	ABORT_IF(exceptionClass,
 			 ILClassCreate(scope, 0, "Exception", "System",
-			 			   objectClass));
+			 			   ILToProgramItem(objectClass)));
 	ILClassSetAttrs(exceptionClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -559,7 +578,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	ABORT_IF(isVolatileClass,
 			 ILClassCreate(scope, 0, "IsVolatile",
 			 			   "System.Runtime.CompilerServices",
-			 			   objectClass));
+			 			   ILToProgramItem(objectClass)));
 	ILClassSetAttrs(isVolatileClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 					IL_META_TYPEDEF_SEALED |
@@ -569,7 +588,8 @@ void ILGenMakeLibrary(ILGenInfo *info)
 
 	/* Create the "System.Delegate" class */
 	ABORT_IF(delegateClass,
-			 ILClassCreate(scope, 0, "Delegate", "System", objectClass));
+			 ILClassCreate(scope, 0, "Delegate", "System",
+						   ILToProgramItem(objectClass)));
 	ILClassSetAttrs(delegateClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -593,7 +613,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "System.MulticastDelegate" class */
 	ABORT_IF(multicastDelegateClass,
 			 ILClassCreate(scope, 0, "MulticastDelegate", "System",
-			 			   delegateClass));
+			 			   ILToProgramItem(delegateClass)));
 	ILClassSetAttrs(multicastDelegateClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |
@@ -617,7 +637,7 @@ void ILGenMakeLibrary(ILGenInfo *info)
 	/* Create the "AsyncCallback" delegate class */
 	ABORT_IF(asyncCallbackClass,
 			 ILClassCreate(scope, 0, "AsyncCallback", "System",
-			 			   multicastDelegateClass));
+			 			   ILToProgramItem(multicastDelegateClass)));
 	ILClassSetAttrs(asyncCallbackClass, ~0,
 					IL_META_TYPEDEF_PUBLIC |
 				    IL_META_TYPEDEF_SERIALIZABLE |

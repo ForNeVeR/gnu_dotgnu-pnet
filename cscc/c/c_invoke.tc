@@ -1,7 +1,7 @@
 /*
  * c_invoke.tc - Function invocation handling for C.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -643,7 +643,7 @@ static ILMethod *ResolveCSMethod(ILGenInfo *info, ILClass *classInfo,
 		}
 		else
 		{
-			classInfo = ILClass_Parent(classInfo);
+			classInfo = ILClass_ParentClass(classInfo);
 		}
 	}
 

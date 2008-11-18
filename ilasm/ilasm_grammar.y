@@ -3,7 +3,7 @@
  * ilasm_grammar.y - Input file for yacc that defines the syntax of
  *                   the ILASM language.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -710,6 +710,7 @@ static void FinishDataLabels()
 		int			extraSize;
 	}				byteList;
 	ILClass		   *classInfo;
+	ILProgramItem  *programItem;
 	ILType		   *type;
 	struct
 	{
@@ -732,7 +733,6 @@ static void FinishDataLabels()
 		ILProgramItem  *item;
 
 	}				typeSpec;
-	ILProgramItem  *customType;
 	struct
 	{
 		const char *start;
@@ -1071,13 +1071,14 @@ static void FinishDataLabels()
 %type <opcode>		I_NEWARRAY I_MULTINEWARRAY
 %type <floatValue>	Float64 InstructionFloat
 %type <byteList>	ByteList
-%type <classInfo>	ClassName CatchClause ClassNameTypeSpec
+%type <classInfo>	ClassName CatchClause
+%type <programItem> ClassNameTypeSpec
 %type <type>		Type ArrayBounds Bounds
 %type <marshType>	MarshalledType
 %type <typeSpec>	TypeSpecification
 %type <params>		OptSignatureArguments SignatureArguments SignatureArgument
 %type <fieldInit>	FieldInitialization InitOption
-%type <customType>	CustomType
+%type <programItem>	CustomType
 %type <scope>		ScopeBlock TryBlock FilterClause HandlerBlock
 %type <scope>		JavaScopeBlock JavaTryBlock JavaHandlerBlock
 %type <exception>	ExceptionClause ExceptionClauses
@@ -1588,13 +1589,13 @@ ImplementsClause
 
 ClassNameList
 	: ClassNameTypeSpec		{
-				if(!ILClassAddImplements(ILAsmClass, $1, 0))
+				if(!ILClassAddImplements(ILAsmClass, ILProgramItemToClass($1), 0))
 				{
 					ILAsmOutOfMemory();
 				}
 			}
 	| ClassNameList ',' ClassNameTypeSpec	{
-				if(!ILClassAddImplements(ILAsmClass, $3, 0))
+				if(!ILClassAddImplements(ILAsmClass, ILProgramItemToClass($3), 0))
 				{
 					ILAsmOutOfMemory();
 				}
@@ -3159,7 +3160,7 @@ ClassName
 
 ClassNameTypeSpec
 	: TypeSpecification		{
-				$$ = ILProgramItemToClass($1.item);
+				$$ = $1.item;
 			}
 	;
 

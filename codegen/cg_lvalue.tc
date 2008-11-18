@@ -4,7 +4,7 @@
 /*
  * cg_lvalue.tc - Identifier and l-value nodes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -234,7 +234,7 @@ ILNode_GenValue(ILNode_BaseAccess)
 {
  	ILClass *classInfo = ((ILNode_ClassDefn *)(info->currentClass))
  									->classInfo;
- 	ILType *type =ILClassToType(ILClass_Parent(classInfo));
+ 	ILType *type =ILClassToType(ILClass_ParentClass(classInfo));
  	ILMachineType machineType;
  
  	/* Do we need to unpack a value type instance? */

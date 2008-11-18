@@ -1,7 +1,7 @@
 /*
  * jitc.c - Coder implementation for JIT output.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1837,7 +1837,7 @@ static void *_ILRuntimeLookupInterfaceMethod(ILClassPrivate *objectClassPrivate,
 			}
 			implements = implements->next;
 		}
-		parent = ILClassGetParent(searchClass->classInfo);
+		parent = ILClass_ParentClass(searchClass->classInfo);
 		if(!parent)
 		{
 			break;
@@ -1887,7 +1887,7 @@ static void *_ILRuntimeLookupInterfaceILMethod(ILClassPrivate *objectClassPrivat
 			}
 			implements = implements->next;
 		}
-		parent = ILClassGetParent(searchClass->classInfo);
+		parent = ILClass_ParentClass(searchClass->classInfo);
 		if(!parent)
 		{
 			break;
@@ -4461,7 +4461,7 @@ static ILJitType _ILJitTypeCreate(ILClass *info, ILExecProcess *process)
 		if(info->parent)
 		{
 			/* The parent class must be laid out at this point */
-			ILClass *parent = ILClassGetParent(info);
+			ILClass *parent = ILClass_ParentClass(info);
 
 			if(parent && parent->userData)
 			{

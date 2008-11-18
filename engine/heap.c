@@ -1,7 +1,7 @@
 /*
  * heap.c - Heap routines for the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ static IL_INLINE ILMethod *FindFinalizeMethod(ILClassPrivate *classPrivate)
 				}
 			}
 		}
-		classInfo = ILClassGetParent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 
 	return 0;

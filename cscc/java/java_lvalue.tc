@@ -1,7 +1,7 @@
 /*
  * java_lvalue.tc - Semantic analysis for Java Identifiers and other l-values 
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2003  Gopal.V
  *
  * This program is free software; you can redistribute it and/or modify
@@ -963,7 +963,7 @@ ILNode_JSemAnalysis(ILNode_BaseAccess)
 	}
 
 	/* Find the parent class to start searching from */
-	classInfo = ILClass_Parent(ILMethod_Owner(caller->methodInfo));
+	classInfo = ILClass_ParentClass(ILMethod_Owner(caller->methodInfo));
 	if(!classInfo)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),

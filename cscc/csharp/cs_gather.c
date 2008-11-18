@@ -1,7 +1,7 @@
 /*
  * cs_gather.c - "Type gathering" support for the C# compiler.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -528,7 +528,7 @@ static void AddBaseClasses(ILGenInfo *info,
 			{
 				if(parent && !ILClass_IsInterface(classInfo))
 				{
-					ILClassSetParent(classInfo, parent);
+					ILClassSetParent(classInfo, ILToProgramItem(parent));
 				}
 			}
 
@@ -553,7 +553,7 @@ static void AddBaseClasses(ILGenInfo *info,
 
 			if(ILClassResolve(classInfo) != ILClassResolve(parent))
 			{
-				ILClassSetParent(classInfo, parent);
+				ILClassSetParent(classInfo, ILToProgramItem(parent));
 			}
 		}
 	}
@@ -871,7 +871,7 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 		}
 
 		/* Move up to the parent of this class */
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	return 0;
 }
@@ -943,7 +943,7 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 		}
 
 		/* Move up to the parent of this class */
-		classInfo = ILClass_Parent(classInfo);
+		classInfo = ILClass_ParentClass(classInfo);
 	}
 	return 0;
 }
@@ -1274,7 +1274,7 @@ static const char *GetFullExplicitName(ILClass *interface, const char *memberNam
  */
 static int IsRealFinalizer(ILClass *classInfo)
 {
-	ILClass *parent = ILClass_Parent(classInfo);
+	ILClass *parent = ILClass_UnderlyingParentClass(classInfo);
 	ILMethod *method;
 	ILType *signature;
 	while(parent != 0)
@@ -1303,7 +1303,7 @@ static int IsRealFinalizer(ILClass *classInfo)
 				}
 			}
 		}
-		parent = ILClass_Parent(parent);
+		parent = ILClass_UnderlyingParentClass(parent);
 	}
 	return 0;
 }
@@ -2356,7 +2356,7 @@ static int FuzzyIsDelegate(ILType *type)
 	if(ILType_IsClass(type))
 	{
 		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
-		ILClass *parent = ILClass_Parent(classInfo);
+		ILClass *parent = ILClass_UnderlyingParentClass(classInfo);
 		if(parent)
 		{
 			const char *namespace = ILClass_Namespace(parent);
@@ -2600,7 +2600,7 @@ static void CheckAbstractOverrides(ILGenInfo *info, ILClass *classInfo,
 	ILMethod *method2;
 
 	/* Scan up through the parents and look for all "abstract" methods */
-	parent = ILClass_Parent(classInfo);
+	parent = ILClass_ParentClass(classInfo);
 	while(parent != 0)
 	{
 		method = 0;
@@ -2625,7 +2625,7 @@ static void CheckAbstractOverrides(ILGenInfo *info, ILClass *classInfo,
 				{
 					break;
 				}
-				tempClass = ILClass_Parent(tempClass);
+				tempClass = ILClass_ParentClass(tempClass);
 				method2 = 0;
 			}
 
@@ -2637,7 +2637,7 @@ static void CheckAbstractOverrides(ILGenInfo *info, ILClass *classInfo,
 							  CSItemToName(ILToProgramItem(method)));
 			}
 		}
-		parent = ILClass_Parent(parent);
+		parent = ILClass_ParentClass(parent);
 	}
 }
 

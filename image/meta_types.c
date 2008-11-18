@@ -1,7 +1,7 @@
 /*
  * meta_types.c - Type handling for IL images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1068,7 +1068,7 @@ ILType *ILTypeGetEnumType(ILType *type)
 	}
 	if(classInfo)
 	{
-		ILClass *parent = ILClass_Parent(classInfo);
+		ILClass *parent = ILClass_UnderlyingParentClass(classInfo);
 		if(parent)
 		{
 			const char *namespace = ILClass_Namespace(parent);
@@ -1351,7 +1351,9 @@ int ILTypeIsEnum(ILType *type)
 	if(ILType_IsValueType(type))
 	{
 		ILClass *classInfo = ILClassResolve(ILType_ToValueType(type));
-		ILClass *parent = ILClass_Parent(classInfo);
+		ILClass *parent;
+
+		parent = ILClass_UnderlyingParentClass(classInfo);
 		if(parent)
 		{
 			const char *namespace = ILClass_Namespace(parent);
@@ -1391,7 +1393,9 @@ void *ILTypeGetDelegateMethod(ILType *type)
 	if(ILType_IsClass(type))
 	{
 		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
-		ILClass *parent = ILClass_Parent(classInfo);
+		ILClass *parent;
+
+		parent = ILClass_UnderlyingParentClass(classInfo);
 		if(parent)
 		{
 			const char *namespace = ILClass_Namespace(parent);
@@ -1420,8 +1424,9 @@ void *ILTypeGetDelegateBeginInvokeMethod(ILType *type)
 	{
 		ILType *invokeMethod = ILTypeGetDelegateMethod(type);
 		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
-		ILClass *parent = ILClass_Parent(classInfo);
+		ILClass *parent;
 
+		parent = ILClass_UnderlyingParentClass(classInfo);
 		if (invokeMethod == 0)
 		{
 			return 0;
@@ -1511,8 +1516,9 @@ void *ILTypeGetDelegateEndInvokeMethod(ILType *type)
 	{
 		ILType *invokeMethod = ILTypeGetDelegateMethod(type);
 		ILClass *classInfo = ILClassResolve(ILType_ToClass(type));
-		ILClass *parent = ILClass_Parent(classInfo);
+		ILClass *parent;
 
+		parent = ILClass_UnderlyingParentClass(classInfo);
 		if (invokeMethod == 0)
 		{
 			return 0;
@@ -1683,7 +1689,7 @@ int ILTypeIsDelegateSubClass(ILType *type)
 					return 1;
 				}
 			}
-			classInfo = ILClass_Parent(classInfo);
+			classInfo = ILClass_UnderlyingParentClass(classInfo);
 		}
 	}
 	return 0;
@@ -1748,6 +1754,158 @@ void ILTypeSetWithMain(ILType *type, ILType *mainType)
 	{
 		type->un.method__.retType__ = mainType;
 	}
+}
+
+ILType *ILTypeImport(ILImage *image, ILType *type)
+{
+	if(!image || !type)
+	{
+		return 0;
+	}
+	if(ILType_IsPrimitive(type))
+	{
+		return type;
+	}
+	else if(ILType_IsClass(type) || ILType_IsValueType(type))
+	{
+		ILClass *class = ILType_ToClass(type);
+		ILType *synType;
+
+		if((synType = ILClassGetSynType(class)) != 0)
+		{
+			return ILTypeImport(image, synType);
+		}
+		if(class->programItem.image != image)
+		{
+			class = ILClassResolve(class);
+			if(!class)
+			{
+				return 0;
+			}
+			class = ILClassImport(image, class);
+			if(!class)
+			{
+				return 0;
+			}
+			if(ILType_IsClass(type))
+			{
+				return ILType_FromClass(class);
+			}
+			return ILType_FromValueType(class);
+		}
+		return type;
+	}
+	else if(ILType_IsComplex(type))
+	{
+		switch(ILType_Kind(type))
+		{
+			case IL_TYPE_COMPLEX_VAR:
+			case IL_TYPE_COMPLEX_MVAR:
+			{
+				return type;
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_BYREF:
+			case IL_TYPE_COMPLEX_PTR:
+			case IL_TYPE_COMPLEX_PINNED:
+			{
+				ILType *refType;
+				ILType *newRefType;
+
+				refType = ILType_Ref(type);
+				if((newRefType = ILTypeImport(image, refType)) == 0)
+				{
+					return 0;
+				}
+				if(newRefType != refType)
+				{
+					return ILTypeCreateRef(ILImageToContext(image),
+										   ILType_Kind(type), newRefType);
+				}
+				return type;
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_ARRAY:
+			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+			{
+				ILType *elemType;
+				ILType *newElemType;
+
+				elemType = ILType_ElemType(type);
+				if(!elemType)
+				{
+					return 0;
+				}
+				newElemType = ILTypeImport(image, elemType);
+				if(!newElemType)
+				{
+					return 0;
+				}
+				if(elemType != newElemType)
+				{
+					ILType *newType;
+
+					newType = ILTypeCreateArray(ILImageToContext(image), 1,
+												newElemType);
+					if(!newType)
+					{
+						return 0;
+					}
+					newType->kind__ = ILType_Kind(type);
+					ILType_Size(newType) = ILType_Size(type);
+					ILType_LowBound(newType) = ILType_LowBound(type);
+					return newType;
+				}
+				return type;
+			}
+			break;
+
+			case IL_TYPE_COMPLEX_WITH:
+			{
+				ILType *withMain;
+				ILType *newWithMain;
+				ILType *newType;
+				unsigned long numWithParams;
+				unsigned long current;
+
+				withMain = ILTypeGetWithMain(type);
+				if((newWithMain = ILTypeImport(image, withMain)) == 0)
+				{
+					return 0;
+				}
+				if((newType = ILTypeCreateWith(ILImageToContext(image),
+											   newWithMain)) == 0)
+				{
+					return 0;
+				}
+				numWithParams = ILTypeNumWithParams(type);
+				for(current = 1; current <= numWithParams; ++current)
+				{
+					ILType *withParam;
+					ILType *newWithParam;
+
+					if((withParam = ILTypeGetWithParam(type, current)) == 0)
+					{
+						return 0;
+					}
+					if((newWithParam = ILTypeImport(image, withParam)) == 0)
+					{
+						return 0;
+					}
+					if(ILTypeAddWithParam(ILImageToContext(image), newType,
+										  newWithParam) == 0)
+					{
+						return 0;
+					}
+				}
+				return newType;
+			}
+			break;
+		}
+	}
+	return 0;
 }
 
 #ifdef	__cplusplus

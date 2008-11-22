@@ -1,3 +1,8 @@
+2008-11-22  Oscar Bacho  <oscar.bacho@gmail.com>
+
+	* doc/cvmdoc.py: Fix build error with python >= 2.5. Conditional use of
+	regex_syntax module because it was eliminated from python 2.5.
+
 2008-11-18  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_program.h (ILClassCreate, ILClassSetParent): Change parameter

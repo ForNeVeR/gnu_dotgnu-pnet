@@ -338,8 +338,7 @@ if __name__=="__main__":
 #RHYS PART of the puzzle starts
 	codes={}
 	codefile=open(sys.argv[2], 'r')
-        from distutils.sysconfig import get_config_var
-        if get_config_var('VERSION') < 2.5:
+        if sys.version_info < (2,5):
 		import regex_syntax 
 	        prog=re.compile("^#define[ \t]*COP_", regex_syntax.RE_SYNTAX_GREP)
         else:

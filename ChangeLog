@@ -1,3 +1,17 @@
+2008-11-25  Radek Polak  <psonek2@seznam.cz>
+
+	* System/Private/BlockingOperation.cs,
+	System/Private/BlockingOperations.cs: Moved to runtime.
+
+	* runtime/DotGNU/Platform/BlockingOperation.cs,
+	runtime/DotGNU/Platform/BlockingOperations.cs: Moved here from
+	System and make the functions public.
+
+	* DotGNU.Misc/BlockingOperation.cs: Using functions from runtime
+	instead of internal call.
+
+	* System/Net/Sockets/Socket.cs: Use blocking ops in runtime.
+
 2008-10-05  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Nullable.cs, runtime/System/Nullable_1.cs: Add support

@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Private
+namespace DotGNU.Platform
 {
 
 using System;
@@ -43,7 +43,7 @@ using Platform;
 //
 // After you close resource of blocking operation (socket), you can call
 // Abort() to unblock all registered operations that are blocking.
-internal sealed class BlockingOperations
+public sealed class BlockingOperations
 {
 	// Internal state.
 	private BlockingOperation operations;
@@ -101,4 +101,4 @@ internal sealed class BlockingOperations
 
 }; // class BlockingOperations
 
-}; // namespace System.Private
+}; // namespace DotGNU.Platform

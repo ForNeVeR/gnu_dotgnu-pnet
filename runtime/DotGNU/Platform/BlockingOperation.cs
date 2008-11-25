@@ -18,7 +18,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Private
+namespace DotGNU.Platform
 {
 
 using System;
@@ -26,7 +26,7 @@ using System.Threading;
 using System.Runtime.CompilerServices;
 
 // Helper that must be disposed after blocking operation ends.
-internal sealed class BlockingOperation : IDisposable
+public sealed class BlockingOperation : IDisposable
 {
 	// Internal state.
 	private Thread thread;
@@ -81,4 +81,4 @@ internal sealed class BlockingOperation : IDisposable
 
 }; // class BlockingOperation
 
-}; // namespace System.Private
+}; // namespace DotGNU.Platform

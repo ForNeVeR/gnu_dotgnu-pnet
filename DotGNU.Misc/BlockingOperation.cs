@@ -29,8 +29,10 @@ public sealed class BlockingOperation
 {
 	// Send IL_SIG_ABORT to given thread to cancel operation that is blocking
 	// in system call.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static void ThreadSigAbort(Thread thread);
+	public static void ThreadSigAbort(Thread thread)
+			{
+				DotGNU.Platform.BlockingOperation.ThreadSigAbort(thread);
+			}
 
 }; // class BlockingOperation
 

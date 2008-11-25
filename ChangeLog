@@ -1,3 +1,8 @@
+2008-11-25  Radek Polak  <psonek2@seznam.cz>
+
+	* engine/int_proto.h, engine/int_table.c: Regenerate for new blocking
+	ops namespace.
+
 2008-11-23  Oscar Bacho  <oscar.bacho@gmail.com>
 
 	* doc/cvmdoc.py: Make last change more portable.

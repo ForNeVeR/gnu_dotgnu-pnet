@@ -1,3 +1,7 @@
+2008-11-26  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Nullable_1.cs: Exclude class from build for now.
+
 2008-11-25  Radek Polak  <psonek2@seznam.cz>
 
 	* System/Private/BlockingOperation.cs,

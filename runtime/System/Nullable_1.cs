@@ -21,7 +21,7 @@
 namespace System
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_FRAMEWORK_2_0 && CONFIG_GENERICS
 
 #if !ECMA_COMPAT && CONFIG_SERIALIZATION
 using System.Runtime.Serialization;

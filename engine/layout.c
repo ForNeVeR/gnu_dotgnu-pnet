@@ -904,14 +904,14 @@ static int ComputeInterfaceTable(ILClass *info, ILClass *interface)
 	}
 
 	/* Recursively compute all interfaces that the interface inherits from */
-	implBlock = interface->implements;
+	implBlock = _ILClass_Implements(interface);
 	while(implBlock != 0)
 	{
-		if(!ComputeInterfaceTable(info, ILClassResolve(implBlock->interface)))
+		if(!ComputeInterfaceTable(info, ILImplements_InterfaceClass(implBlock)))
 		{
 			return 0;
 		}
-		implBlock = implBlock->nextInterface;
+		implBlock = _ILImplements_NextImplements(implBlock);
 	}
 
 	/* Done */
@@ -1195,10 +1195,10 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 #endif
 
 	/* Lay out the interfaces that this class implements */
-	implements = info->implements;
+	implements = _ILClass_Implements(info);
 	while(implements != 0)
 	{
-		ILClass *interface = implements->interface;
+		ILClass *interface = ILImplements_InterfaceClass(implements);
 
 		if(ILClassNeedsExpansion(interface))
 		{
@@ -1210,18 +1210,15 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 				info->userData = 0;
 				return 0;
 			}
-			implements->interface = interface;
-		}
-		else
-		{
-			interface = ILClassResolve(interface);
+			/* TODO: We don't really need this */
+			implements->interface = ILToProgramItem(interface);
 		}
 		if(!LayoutClass(process, interface, &typeLayout))
 		{
 			info->userData = 0;
 			return 0;
 		}
-		implements = implements->nextInterface;
+		implements = _ILImplements_NextImplements(implements);
 	}
 
 	/* Should we use the explicit layout algorithm? */
@@ -1613,10 +1610,10 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 	if((info->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK) !=
 				IL_META_TYPEDEF_INTERFACE)
 	{
-		implements = info->implements;
+		implements = _ILClass_Implements(info);
 		while(implements != 0)
 		{
-			parent = ILClassResolve(implements->interface);
+			parent = ILImplements_InterfaceClass(implements);
 			if(parent->userData)
 			{
 				if(!ComputeInterfaceTable(info, parent))
@@ -1625,7 +1622,7 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 					return 0;
 				}
 			}
-			implements = implements->nextInterface;
+			implements = _ILImplements_NextImplements(implements);
 		}
 	}
 

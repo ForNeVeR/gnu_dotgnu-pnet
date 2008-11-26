@@ -1589,13 +1589,13 @@ ImplementsClause
 
 ClassNameList
 	: ClassNameTypeSpec		{
-				if(!ILClassAddImplements(ILAsmClass, ILProgramItemToClass($1), 0))
+				if(!ILClassAddImplements(ILAsmClass, $1, 0))
 				{
 					ILAsmOutOfMemory();
 				}
 			}
 	| ClassNameList ',' ClassNameTypeSpec	{
-				if(!ILClassAddImplements(ILAsmClass, ILProgramItemToClass($3), 0))
+				if(!ILClassAddImplements(ILAsmClass, $3, 0))
 				{
 					ILAsmOutOfMemory();
 				}

@@ -346,7 +346,7 @@ static void Format_InterfaceImpl(ILWriter *writer, ILImage *image,
 {
 	values[IL_OFFSET_INTERFACE_TYPE] = impl->implement->programItem.token;
 	values[IL_OFFSET_INTERFACE_INTERFACE] =
-			ClassToToken(image, impl->interface);
+			ProgramItemToToken(image, impl->interface);
 }
 
 /*

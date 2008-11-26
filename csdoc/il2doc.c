@@ -1846,7 +1846,8 @@ static void DumpBases(ILClass *classInfo, ILProgramItem *base,
 	{
 		fputs(extendsNoBase, stdout);
 	}
-	while(impl && !ILClass_IsPublic(ILImplementsGetInterface(impl)))
+	while(impl &&
+		  !ILClass_IsPublic(ILImplements_UnderlyingInterfaceClass(impl)))
 	{
 		impl = ILClassNextImplements(classInfo, impl);
 	}
@@ -1854,17 +1855,17 @@ static void DumpBases(ILClass *classInfo, ILProgramItem *base,
 	{
 		return;
 	}
-	PrintClassNameWithFlags(ILImplementsGetInterface(impl),
-							ILToProgramItem(classInfo), flags);
+	PrintProgramItemWithFlags(ILImplements_Interface(impl),
+							  ILToProgramItem(classInfo), flags);
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
-		if(!ILClass_IsPublic(ILImplementsGetInterface(impl)))
+		if(!ILClass_IsPublic(ILImplements_UnderlyingInterfaceClass(impl)))
 		{
 			continue;
 		}
 		fputs(implementsSeparator, stdout);
-		PrintClassNameWithFlags(ILImplementsGetInterface(impl),
-								ILToProgramItem(classInfo), flags);
+		PrintProgramItemWithFlags(ILImplements_Interface(impl),
+								  ILToProgramItem(classInfo), flags);
 	}
 }
 
@@ -2902,14 +2903,14 @@ static void DumpClass(ILClass *classInfo)
 		fputs("<Interfaces>\n", stdout);
 		do
 		{
-			if(!ILClass_IsPublic(ILImplementsGetInterface(impl)))
+			if(!ILClass_IsPublic(ILImplements_UnderlyingInterfaceClass(impl)))
 			{
 				continue;
 			}
 			fputs("<Interface><InterfaceName>", stdout);
-			PrintClassNameWithFlags(ILImplementsGetInterface(impl),
-									ILToProgramItem(classInfo),
-									DUMP_STYLE_CSHARP);
+			PrintProgramItemWithFlags(ILImplements_Interface(impl),
+									  ILToProgramItem(classInfo),
+									  DUMP_STYLE_CSHARP);
 			fputs("</InterfaceName></Interface>\n", stdout);
 		}
 		while((impl = ILClassNextImplements(classInfo, impl)) != 0);

@@ -992,17 +992,20 @@ void WriteJavaClass(ILWriter *writer, ILClass *class)
 	OUT_UINT16(parentIndex);
 
 	/* implemented interfaces */
-	impl = 0;
+	impl = _ILClass_Implements(class);
 	count = 0;
-	while((impl = ILClassNextImplements(class, impl)) != 0)
+	while(impl)
+	{
 		count++;
+		impl = _ILImplements_NextImplements(impl);
+	}
 	OUT_UINT16(count);
-	impl = 0;
-	while((impl = ILClassNextImplements(class, impl)) != 0)
+	impl = _ILClass_Implements(class);
+	while(impl)
 	{
 		int index;
 
-		interface = ILImplementsGetInterface(impl);
+		interface = ILImplements_InterfaceClass(impl);
 		index = ILJavaSetClass(writer, class, interface);
 		if(!index)
 		{
@@ -1010,6 +1013,7 @@ void WriteJavaClass(ILWriter *writer, ILClass *class)
 			goto cleanup;
 		}
 		OUT_UINT16(index);
+		impl = _ILImplements_NextImplements(impl);
 	}
 
 	/* Dump the class members */

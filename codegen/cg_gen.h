@@ -224,6 +224,13 @@ ILType *ILFindNonSystemType(ILGenInfo *info, const char *name,
 ILClass *ILTypeToClass(ILGenInfo *info, ILType *type);
 
 /*
+ * Convert a type into its program item form.
+ * Returns either a class or typespec or NULL if
+ * there is no class or typespec form for the type.
+ */
+ILProgramItem *ILTypeToProgramItem(ILGenInfo *info, ILType *type);
+
+/*
  * Convert a type into a machine type.
  */
 ILMachineType ILTypeToMachineType(ILType *type);

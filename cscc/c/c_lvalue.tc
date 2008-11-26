@@ -688,7 +688,7 @@ static CSemValue ResolveMember(ILGenInfo *info, ILType *type,
 			while((impl = ILClassNextImplements(tempClass, impl)) != 0)
 			{
 				value = ResolveMember
-					(info, ILClassToType(ILImplementsGetInterface(impl)),
+					(info, ILProgramItemToType(ILImplements_Interface(impl)),
 					 name, isStatic);
 				if(!CSemIsError(value))
 				{

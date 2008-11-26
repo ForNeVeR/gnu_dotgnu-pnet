@@ -211,7 +211,7 @@ static ILMember *FindInterfaceMatchInParents(ILClass *classInfo,
 
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
-		interface = ILClassResolve(ILImplementsGetInterface(impl));
+		interface = ILImplements_InterfaceClass(impl);
 		member = FindInterfaceMatch(interface, name, signature, kind);
 		if(member)
 		{
@@ -591,7 +591,8 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	{
 		if(baseList[base] && ILClass_IsInterface(baseList[base]))
 		{
-			if(!ILClassAddImplements(classInfo, baseList[base], 0))
+			if(!ILClassAddImplements(classInfo,
+									 ILToProgramItem(baseList[base]), 0))
 			{
 				CCOutOfMemory();
 			}
@@ -671,9 +672,8 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 			impl = 0;
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
-				member = FindMemberByName
-					(ILClassResolve(ILImplementsGetInterface(impl)),
-					 name, scope);
+				member = FindMemberByName(ILImplements_InterfaceClass(impl),
+										  name, scope);
 				if(member)
 				{
 					return member;
@@ -728,7 +728,7 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
 				member = FindMemberBySignature
-					(ILClassResolve(ILImplementsGetInterface(impl)),
+					(ILImplements_InterfaceClass(impl),
 					 name, signature, notThis, scope, interfaceOverride);
 				if(member)
 				{

@@ -419,7 +419,6 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 {
 	ILMember *member;
 	ILImplements *impl;
-	ILClass *interface;
 	ILNestedInfo *nested;
 	int first;
 	int isModule = 0;
@@ -441,18 +440,22 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 	if(strcmp(ILClass_Name(info), "<Module>") != 0 ||
 	   ILClass_Namespace(info) != 0)
 	{
+		ILProgramItem *parent;
+
 		fputs(".class ", outstream);
 		ILDumpFlags(outstream, ILClass_Attrs(info), ILTypeDefinitionFlags, 0);
 		DumpClassName(outstream, image, info, flags, 0);
-		if(ILClass_Parent(info))
+		if((parent = ILClass_Parent(info)) != 0)
 		{
 			fputs("\n    extends ", outstream);
-			DumpClassName(outstream, image, ILClass_ParentClass(info), flags, 1);
+			ILDumpProgramItem(outstream, image, parent, flags);
 		}
 		first = 1;
 		impl = 0;
 		while((impl = ILClassNextImplements(info, impl)) != 0)
 		{
+			ILProgramItem *interface;
+
 			interface = ILImplementsGetInterface(impl);
 			if(first)
 			{
@@ -464,8 +467,7 @@ static void Dump_TypeAndNested(ILImage *image, FILE *outstream,
 				fputs(",\n", outstream);
 				fputs("               ", outstream);
 			}
-			interface = ILClassResolve(interface);
-			DumpClassName(outstream, image, interface, flags, 1);
+			ILDumpProgramItem(outstream, image, interface, flags);
 		}
 		fputs("\n{\n", outstream);
 

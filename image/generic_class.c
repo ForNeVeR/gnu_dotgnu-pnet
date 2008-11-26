@@ -121,19 +121,20 @@ static int ExpandInstantiations(ILImage *image, ILClass *classInfo,
 		}
 		classInfo->parent = ILToProgramItem(parentClass);
 	}
-	impl = 0;
-	while((impl = ILClassNextImplements(origClass, impl)) != 0)
+	impl = _ILClass_Implements(origClass);
+	while(impl)
 	{
-		tempInfo = ILImplementsGetInterface(impl);
+		tempInfo = ILImplements_InterfaceClass(impl);
 		tempInfo = ILClassExpand(image, tempInfo, classParams, 0);
 		if(!tempInfo)
 		{
 			return 0;
 		}
-		if(!ILClassAddImplements(classInfo, tempInfo, 0))
+		if(!ILClassAddImplements(classInfo, ILToProgramItem(tempInfo), 0))
 		{
 			return 0;
 		}
+		impl = _ILImplements_NextImplements(impl);
 	}
 
 	/* Expand the methods and fields */

@@ -232,9 +232,9 @@ static int ConvertClassParents(ILLinker *linker, ILClass *classInfo)
 	implements = 0;
 	while((implements = ILClassNextImplements(classInfo, implements)) != 0)
 	{
-		ILClass *interface;
+		ILProgramItem *interface;
 
-		interface = _ILLinkerConvertClassRef
+		interface = _ILLinkerConvertProgramItemRef
 					(linker, ILImplementsGetInterface(implements));
 		if(!interface)
 		{

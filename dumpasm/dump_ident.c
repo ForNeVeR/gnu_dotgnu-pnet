@@ -186,6 +186,31 @@ void ILDumpClassName(FILE *stream, ILImage *image, ILClass *info, int flags)
 	}
 }
 
+void ILDumpProgramItem(FILE *stream, ILImage *image,
+					    ILProgramItem *item, int flags)
+{
+	ILClass *info;
+	ILTypeSpec *spec;
+
+	if((spec = ILProgramItemToTypeSpec(item)) != 0)
+	{
+		ILType *type = ILTypeSpec_Type(spec);
+
+		ILDumpType(stream, image, type, flags);
+	}
+	else if((info = ILProgramItemToClass(item)) != 0)
+	{
+		info = ILClassResolve(info);
+		ILDumpClassName(stream, image, info, flags);
+	}
+	else if(ILProgramItem_Token(item) == 0)
+	{
+		/* Might be an unresolved class reference */
+		info = (ILClass *)item;
+		ILDumpClassName(stream, image, info, flags);
+	}
+}
+
 #ifdef	__cplusplus
 };
 #endif

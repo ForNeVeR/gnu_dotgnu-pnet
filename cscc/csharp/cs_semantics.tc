@@ -94,7 +94,7 @@ ILType *CSSemTypeVoid(ILNode *type, ILGenInfo *info, ILNode **parent);
  * zero if not a legal base type.
  */
 int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
-				  ILNode **baseNode, ILClass **baseClass);
+				  ILNode **baseNode, ILProgramItem **baseItem);
 
 /*
  * Perform semantic analysis on a node and expect a value.
@@ -221,7 +221,7 @@ int CSSemExpectType (ILNode *type, ILGenInfo *info, ILNode **parent)
 }
 
 int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
-				  ILNode **baseNode, ILClass **baseClass)
+				  ILNode **baseNode, ILProgramItem **baseItem)
 {
 	CSSemValue value;
 	int save = info->inSemType;
@@ -234,13 +234,13 @@ int CSSemBaseType(ILNode *type, ILGenInfo *info, ILNode **parent,
 	if(CSSemIsType(value))
 	{
 		*baseNode = 0;
-		*baseClass = ILTypeToClass(info, CSSemGetType(value));
-		return (*baseClass != 0);
+		*baseItem = ILTypeToProgramItem(info, CSSemGetType(value));
+		return (*baseItem != 0);
 	}
 	else if(CSSemIsTypeNode(value))
 	{
 		*baseNode = CSSemGetTypeNode(value);
-		*baseClass = 0;
+		*baseItem = 0;
 		return 1;
 	}
 	else

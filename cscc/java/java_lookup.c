@@ -553,14 +553,14 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 			/* also scan the 'Object' class , as all interface instances
 			 * have Objects behind them !!
 			 */
-			FindMembers(genInfo,ILTypeToClass(genInfo,objectType),
+			FindMembers(genInfo, ILTypeToClass(genInfo,objectType),
 					    name, accessedFrom, results,
 						0, baseAccess, literalType);
 
 			impl = 0;
 			while((impl = ILClassNextImplements(info, impl)) != 0)
 			{
-				FindMembers(genInfo, ILImplementsGetInterface(impl),
+				FindMembers(genInfo, ILImplements_InterfaceClass(impl),
 						    name, accessedFrom, results,
 							lookInParents, baseAccess, literalType);
 			}

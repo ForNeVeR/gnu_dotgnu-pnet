@@ -296,28 +296,35 @@ static ILClass *TypeResolver(ILImage *image, void *data,
 
 ILClass *ILTypeToClass(ILGenInfo *info, ILType *type)
 {
-#if IL_VERSION_MAJOR > 1
-	if(ILType_IsWith(type))
+	if(ILType_IsComplex(type))
 	{
-		ILClass *classInfo;
-		ILTypeSpec *typeSpec;
+		ILProgramItem *item;
 
-		typeSpec = ILTypeSpecCreate(info->image, 0, type);
-		if(!typeSpec)
+		item = ILProgramItemFromType(info->image, type);
+		if(item)
 		{
-			ILGenOutOfMemory(info);
+			return ILProgramItemToClass(item);
 		}
-		classInfo = ILTypeSpecGetClassWrapper(typeSpec);
-		if(!classInfo)
-		{
-			ILGenOutOfMemory(info);
-		}
-		return classInfo;
+		return 0;
 	}
 	else
-#endif /* IL_VERSION_MAJOR > 1 */
 	{
 		return ILClassFromType(info->image, info, type, TypeResolver);
+	}
+}
+
+ILProgramItem *ILTypeToProgramItem(ILGenInfo *info, ILType *type)
+{
+	if(ILType_IsComplex(type))
+	{
+		return ILProgramItemFromType(info->image, type);
+	}
+	else
+	{
+		ILClass *classInfo;
+
+		classInfo = ILClassFromType(info->image, info, type, TypeResolver);
+		return ILToProgramItem(classInfo);
 	}
 }
 

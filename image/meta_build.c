@@ -2026,7 +2026,8 @@ static int Load_InterfaceImpl(ILImage *image, ILUInt32 *values,
 {
 	ILClass *info;
 	ILProgramItem *item;
-	ILClass *interface;
+	ILProgramItem *interface;
+	ILClass *interfaceClass;
 #if IL_VERSION_MAJOR > 1
 	ILTypeSpec *spec;
 #endif
@@ -2049,12 +2050,18 @@ static int Load_InterfaceImpl(ILImage *image, ILUInt32 *values,
 #if IL_VERSION_MAJOR > 1
 	if((spec = _ILProgramItem_ToTypeSpec(item)))
 	{
-		interface = ILTypeSpecGetClassWrapper(spec);
+		interface = ILToProgramItem(spec);
 	}
 	else
 #endif
+	if((interfaceClass = _ILProgramItem_ToClass(item)))
 	{
-		interface = ILProgramItemToClass(item);
+		interface = ILToProgramItem(interfaceClass);
+	}
+	else
+	{
+		/* Invalid interface token type */
+		interface = 0;
 	}
 	if(!interface)
 	{
@@ -3612,7 +3619,7 @@ static TokenLoadFunc const TokenLoadFunctions[] = {
 	0,
 	0,
 	0,
-	0, 							/* 18 */
+	0,							/* 18 */
 	0,
 	Load_ModuleRef,
 	Load_TypeSpec,

@@ -163,7 +163,7 @@ static int ImplementsAllInterfaces(ILNode *node, ILClass *classInfo,
 	{
 		sawErrors |= ImplementsInterface
 				(node, classInfo,
-				 ILClassResolve(ILImplementsGetInterface(impl)),
+				 ILImplements_InterfaceClass(impl),
 				 error, proxy, visited, visitedSize);
 	}
 	return sawErrors;
@@ -178,7 +178,7 @@ static int GetSpanningSize(ILClass *interface)
 	ILImplements *impl = 0;
 	while((impl = ILClassNextImplements(interface, impl)) != 0)
 	{
-		size += GetSpanningSize(ILClassResolve(ILImplementsGetInterface(impl)));
+		size += GetSpanningSize(ILImplements_UnderlyingInterfaceClass(impl));
 	}
 	return size;
 }

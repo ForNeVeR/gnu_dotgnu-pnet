@@ -1,3 +1,74 @@
+2008-11-26  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_decls.tc: Use the new function ILDumpProgramItem for output
+	of class' parents or implemented interfaces.
+
+	* codegen/cg_gen.c (ILTypeToClass): Create a TypeSpec for complex types
+	and not only for generic types while converting them to an ILClass.
+	(ILTypeToProgramItem): Added.
+
+	* codegen/cg_gen.h (ILTypeToProgramItem): Add prototype.
+
+	* codegen/cg_interface.c, codegen/cg_resolve.c, cscc/csdoc.c,
+	cscc/c/c_invoke.tc, cscc/c/c_lvalue.tc, cscc/csharp/cs_lookup.c,
+	cscc/java/java_gather.c, cscc/java/java_lookup.c, csdoc/doc_valil.c,
+	csdoc/il2doc.c, engine/layout.c, engine/lib_emit.c, engine/lib_type.c,
+	image/generic_class.c, image/java_loader.c, image/java_writer.c:
+	Replace calls to ILImplementsGetInterface with macro invokations of
+	ILImplements_InterfaceClass or ILImplements_UnderlyingInterfaceClass
+	where appropriate.
+
+	* cscc/csharp/cs_gather.c (AddBaseClasses, CreateType): Use program 
+	items instead of classes for base types or implemented interfaces
+	to avoid creation of synthetic classes at this point.
+	(FindMemberByName, FindMemberBySignature, FindInterfaceMatchInParents):
+	Replace calls to ILImplementsGetInterface with macro invokations of
+	ILImplements_InterfaceClass.
+
+	* cscc/csharp/cs_semantics.tc (CSSemBaseType): Change baseClass argument
+	from ILClass ** to ILProgramItem **.
+
+	* dumpasm/dump_class.c (Dump_TypeAndNested): Use the new function
+	ILDumpProgramItem for output of class' parents and implemented interfaces.
+
+	* dumpasm/dump_ident.c (ILDumpProgramItem): Add new function for dumping
+	program items used as class parents and implemented interfaces.
+
+	* ilalink/link_class.c (ConvertClassParents): Use
+	_ILLinkerConvertProgramItemRef instead of _ILLinkerConvertClassRef for
+	converting implemented interfaces.
+
+	* ilasm/ilasm_grammar.y: Pass an ILProgramItem * to ILClassAddImplements
+	instead of a synthetic class.
+
+	* image/class.c (ILClassAddImplements): Change type of argument interface
+	from ILClass * to ILProgramItem *.
+	(ILImplementsGetInterface): Change type of return value from ILClass *
+	to ILProgramItem *.
+	(ILImplementsGetInterfaceClass, ILImplementsGetUnderlyingInterfaceClass):
+	Add new support functions.
+
+	* image/item.c (ILProgramItemFromType, ILProgramItemToType): Add new
+	support functions.
+
+	* image/meta_build.c (Load_InterfaceImpl): Store a program item instead
+	of an ILClass as the implemented interface.
+
+	* image/meta_writer.c (Format_InterfaceImpl): Use ProgramItemToToken for
+	storing the implemented interface.
+
+	* image/program.h: Change type of member interface from ILClass * to
+	ILProgramItem in ILImplements struct.
+
+	* include/il_dumpasm.h (ILDumpProgramItem): Add prototype.
+
+	* include/il_program.h 	(ILImplementsGetInterfaceClass,
+	ILImplementsGetUnderlyingInterfaceClass, ILProgramItemToType,
+	ILProgramItemFromType): Add	prototypes.
+	(ILClassAddImplements, ILImplementsGetInterface): Adjust prototypes
+	according to changes in class.c.
+	Add some new helper macros.
+
 2008-11-25  Radek Polak  <psonek2@seznam.cz>
 
 	* engine/int_proto.h, engine/int_table.c: Regenerate for new blocking

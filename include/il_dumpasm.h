@@ -110,6 +110,13 @@ void ILDumpIdentifier(FILE *stream, const char *name,
 void ILDumpClassName(FILE *stream, ILImage *image, ILClass *info, int flags);
 
 /*
+ * Dump a program item which can be a typespec or class like it's used
+ * with generics for class' parents or implemented interfaces.
+ */
+void ILDumpProgramItem(FILE *stream, ILImage *image,
+					    ILProgramItem *item, int flags);
+
+/*
  * Dump a simple NUL-terminated string to an output stream.
  */
 void ILDumpString(FILE *stream, const char *str);

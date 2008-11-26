@@ -250,7 +250,7 @@ static void FindMembers(ILGenInfo *genInfo, ILClass *info,
 			impl = 0;
 			while((impl = ILClassNextImplements(info, impl)) != 0)
 			{
-				FindMembers(genInfo, ILImplementsGetInterface(impl),
+				FindMembers(genInfo, ILImplements_InterfaceClass(impl),
 						    name, accessedFrom, results,
 							lookInParents, baseAccess, literalType, inAttrArg);
 			}
@@ -635,7 +635,7 @@ static void FindIndexers(ILClass *info, ILClass *accessedFrom,
 		impl = 0;
 		while((impl = ILClassNextImplements(info, impl)) != 0)
 		{
-			FindIndexers(ILImplementsGetInterface(impl),
+			FindIndexers(ILImplements_InterfaceClass(impl),
 					     accessedFrom, results, baseAccess);
 		}
 

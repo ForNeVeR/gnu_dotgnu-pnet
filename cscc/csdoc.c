@@ -1323,11 +1323,11 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	if(impl)
 	{
 		fputs(" implements ", stream);
-		DumpClassName(stream, ILImplementsGetInterface(impl));
+		DumpClassName(stream, ILImplements_UnderlyingInterfaceClass(impl));
 		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 		{
 			fputs(", ", stream);
-			DumpClassName(stream, ILImplementsGetInterface(impl));
+			DumpClassName(stream, ILImplements_UnderlyingInterfaceClass(impl));
 		}
 	}
 	fputs("\"/>\n", stream);
@@ -1394,11 +1394,14 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 	}
 	if(!isEnum && impl)
 	{
-		DumpClassNameOther(stream, ILImplementsGetInterface(impl), classInfo);
+		DumpClassNameOther(stream,
+						   ILImplements_UnderlyingInterfaceClass(impl),
+						   classInfo);
 		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 		{
 			fputs(", ", stream);
-			DumpClassNameOther(stream, ILImplementsGetInterface(impl),
+			DumpClassNameOther(stream,
+							   ILImplements_UnderlyingInterfaceClass(impl),
 							   classInfo);
 		}
 	}
@@ -1449,7 +1452,7 @@ static void GenerateDocsForClass(FILE *stream, ILNode_ClassDefn *defn,
 			fputs("<Interface>\n", stream);
 			Indent(stream, indent + 4);
 			fputs("<InterfaceName>", stream);
-			DumpClassName(stream, ILImplementsGetInterface(impl));
+			DumpClassName(stream, ILImplements_UnderlyingInterfaceClass(impl));
 			fputs("</InterfaceName>\n", stream);
 			Indent(stream, indent + 4);
 			fputs("<Excluded>0</Excluded>\n", stream);

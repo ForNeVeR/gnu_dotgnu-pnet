@@ -3237,7 +3237,7 @@ static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 			impl = 0;
 			while((impl = ILClassNextImplements(tempClass, impl)) != 0)
 			{
-				parent = ILImplementsGetInterface(impl);
+				parent = ILImplements_InterfaceClass(impl);
 				fullName = GetFullClassName(parent);
 				if(!strcmp(fullName, interface->name))
 				{
@@ -3274,7 +3274,7 @@ static int ValidateType(FILE *stream, ILContext *context, ILDocType *type)
 		fullName = 0;
 		while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 		{
-			parent = ILImplementsGetInterface(impl);
+			parent = ILImplements_InterfaceClass(impl);
 			if(ILClass_IsPrivate(parent))
 			{
 				/* It is OK to implement a private interface */

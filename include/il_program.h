@@ -163,6 +163,23 @@ ILGenericConstraint *ILProgramItemToGenericConstraint(ILProgramItem *item);
 ILClass *ILProgramItemToUnderlyingClass(ILProgramItem *item);
 
 /*
+ * Get the type for a program item.
+ * Only TypeSpecs and Classes are handled here and the type of the TypeSpec
+ * or the returnvalue from ILClassToType is returned.
+ * If item is NULL or neither a TypeSpec nor a Class 0 is returned.
+ */
+ILType *ILProgramItemToType(ILProgramItem *item);
+
+/*
+ * Get the program item for a type.
+ * Only primitive, class/value types, arrays and generic types are handled
+ * by now.
+ * Returns a TypeSpec for array and with types, a class for primitive,
+ * reference and value types and NULL otherwise.
+ */
+ILProgramItem *ILProgramItemFromType(ILImage *image, ILType *type);
+
+/*
  * Helper macros for querying information about a program item.
  */
 #define	ILProgramItem_FromToken(image,token)	\
@@ -661,7 +678,7 @@ ILClass *ILClassLookupGlobalUnicode(ILContext *context,
 /*
  * Add an implements clause to a class.  Returns NULL if out of memory.
  */
-ILImplements *ILClassAddImplements(ILClass *info, ILClass *interface,
+ILImplements *ILClassAddImplements(ILClass *info, ILProgramItem *interface,
 								   ILToken token);
 
 /*
@@ -688,7 +705,21 @@ ILClass *ILImplementsGetClass(ILImplements *impl);
 /*
  * Get the interface information from an implements clause.
  */
-ILClass *ILImplementsGetInterface(ILImplements *impl);
+ILProgramItem *ILImplementsGetInterface(ILImplements *impl);
+
+/*
+ * Get the interface class information from an implements clause.
+ * This will create and return a synthetic class if it's a generic
+ * interface and cross image boundaries to take linking into account.
+ */
+ILClass *ILImplementsGetInterfaceClass(ILImplements *impl);
+
+/*
+ * Get the class underlying ine interface class. If the interface is not
+ * generic the interface class will be returned.
+ * This will cross image boundaries to take linking into account.
+ */
+ILClass *ILImplementsGetUnderlyingInterfaceClass(ILImplements *impl);
 
 /*
  * Determine if "child" is directly or indirectly nested within "parent".
@@ -1046,6 +1077,16 @@ ILType *ILMethodGetMethodTypeArguments(ILMethod *method);
 			((ILClassGetAttrs((info)) & IL_META_TYPEDEF_RT_SPECIAL_NAME) != 0)
 #define	ILClass_IsGenericInstance(info)	\
 			ILClassIsExpanded(info)
+
+#define ILImplements_Class(impl)	\
+			ILImplementsGetClass(impl)
+#define ILImplements_Interface(impl)	\
+			ILImplementsGetInterface(impl)
+#define ILImplements_InterfaceClass(impl)	\
+			ILImplementsGetInterfaceClass(impl)
+#define ILImplements_UnderlyingInterfaceClass(impl)	\
+			ILImplementsGetUnderlyingInterfaceClass(impl)
+
 /*
  * Member kinds.
  */
@@ -1776,7 +1817,7 @@ char *ILPInvokeResolveModule(ILPInvoke *pinvoke);
  * "decl" to "body".  Returns NULL if out of memory.
  */
 ILOverride *ILOverrideCreate(ILClass *info, ILToken token,
-					   		 ILMethod *decl, ILMethod *body);
+							 ILMethod *decl, ILMethod *body);
 
 /*
  * Get the method declaration part of an override declaration.
@@ -2016,6 +2057,7 @@ ILClass *ILTypeSpecGetClassWrapper(ILTypeSpec *spec);
 #define	ILTypeSpec_Token(spec)	(ILProgramItem_Token((spec)))
 #define	ILTypeSpec_Type(spec)	(ILTypeSpecGetType((spec)))
 #define	ILTypeSpec_Class(spec)	(ILTypeSpecGetClass((spec)))
+#define	ILTypeSpec_ClassWrapper(spec)	(ILTypeSpecGetClassWrapper((spec)))
 
 /*
  * Create a stand alone signature token within an image.

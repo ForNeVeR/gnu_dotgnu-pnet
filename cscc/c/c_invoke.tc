@@ -631,7 +631,7 @@ static ILMethod *ResolveCSMethod(ILGenInfo *info, ILClass *classInfo,
 			ILImplements *impl = 0;
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
-				method = ResolveCSMethod(info, ILImplementsGetInterface(impl),
+				method = ResolveCSMethod(info, ILImplements_InterfaceClass(impl),
 									     callScope, name, args, numArgs,
 										 isStatic);
 				if(method)

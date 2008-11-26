@@ -305,7 +305,7 @@ struct _tagILImplements
 {
 	ILProgramItem	programItem;		/* Parent class fields */
 	ILClass		   *implement;			/* Implementing class */
-	ILClass		   *interface;			/* Implemented interface */
+	ILProgramItem  *interface;			/* Implemented interface */
 	ILImplements   *nextInterface;		/* Next implemented interface */
 
 };
@@ -851,6 +851,14 @@ void _ILMethodSpecSetTypeIndex(ILMethodSpec *spec, ILUInt32 index);
 			((((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE) || \
 	        (((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE_REF)) ? \
 			(item) : 0)
+
+/*
+ * Internal macros for accessing members in external opaque types
+ */
+#define _ILClass_Synthetic(info)	((info)->synthetic)
+#define _ILClass_Implements(info)	((info)->implements)
+#define _ILImplements_NextImplements(impl)	((impl)->nextInterface)
+#define _ILTypeSpec_Type(spec)	((spec)->type)
 
 #ifdef	__cplusplus
 };

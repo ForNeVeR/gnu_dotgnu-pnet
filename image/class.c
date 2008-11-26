@@ -309,6 +309,39 @@ static ILClass *CreateClassRef(ILProgramItem *scope,
 	return info;
 }
 
+static ILProgramItem *ImportItem(ILImage *image, ILProgramItem *item)
+{
+	ILClass *info;
+	ILTypeSpec *spec;
+
+	if((info = _ILProgramItem_ToClass(item)) != 0)
+	{
+		info = ILClassImport(image, info);
+		if(info)
+		{
+			return ILToProgramItem(info);
+		}
+	}
+	else if((spec = _ILProgramItem_ToTypeSpec(item)) != 0)
+	{
+		spec = ILTypeSpecImport(image, spec);
+		if(spec)
+		{
+			return ILToProgramItem(spec);
+		}
+	}
+	else if(item->token == 0)
+	{
+		/* We have an unresolved ClassRef here or a synthetic class */
+		info = ILClassImport(image, (ILClass *)item);
+		if(info)
+		{
+			return ILToProgramItem(info);
+		}
+	}
+	return 0;
+}
+
 ILClass *ILClassCreateWrapper(ILProgramItem *scope, ILToken token,
 							  ILType *type)
 {
@@ -361,42 +394,7 @@ ILClass *ILClassCreate(ILProgramItem *scope, ILToken token, const char *name,
 	/* Import the parent class into this image */
 	if(parent)
 	{
-		ILClass *parentClass;
-		ILTypeSpec *parentSpec;
-
-		if((parentClass = _ILProgramItem_ToClass(parent)) != 0)
-		{
-			parentClass = ILClassImport(image, parentClass);
-			if(!parentClass)
-			{
-				return 0;
-			}
-			parent = ILToProgramItem(parentClass);
-		}
-		else if((parentSpec = _ILProgramItem_ToTypeSpec(parent)) != 0)
-		{
-			parentSpec = ILTypeSpecImport(image, parentSpec);
-			if(!parentSpec)
-			{
-				return 0;
-			}
-			parent = ILToProgramItem(parentSpec);
-		}
-		else if(parent->token == 0)
-		{
-			/* We have an unresolved ClassRef here or a synthetic class */
-			parentClass = ILClassImport(image, (ILClass *)parent);
-			if(!parentClass)
-			{
-				return 0;
-			}
-			parent = ILToProgramItem(parentClass);
-		}
-		else
-		{
-			/* Invalid parent program item type */
-			return 0;
-		}
+		parent = ImportItem(image, parent);
 		if(!parent)
 		{
 			return 0;
@@ -636,27 +634,48 @@ int ILClassIsRef(ILClass *info)
  */
 static ILProgramItem *GetParent(ILClass *info)
 {
-	if(info->parent)
+	if(info)
 	{
-		return _ILProgramItemResolve(info->parent);
+		return info->parent;
 	}
 	return 0;
 }
 
 /*
- * Get the parent class of a class.
- * If the parent is a TypeSpec then the main class of the TypeSpec is returned.
+ * Get the underlying class of a ProgramItem.
+ * If the ProgramItem is a TypeSpec then the main class of the TypeSpec
+ * is returned.
  */
-static ILClass *GetUnderlyingParentClass(ILClass *info)
+static ILClass *GetUnderlyingClassResolved(ILProgramItem *item)
 {
-	if(!info || !info->parent)
+	if(item)
 	{
-		return 0;
+		ILClass *info;
+
+		info = ILProgramItemToUnderlyingClass(item);
+		if(info)
+		{
+			return ILClassResolve(info);
+		}
 	}
-	info = ILProgramItemToUnderlyingClass(info->parent);
-	if(info)
+	return 0;
+}
+
+/*
+ * Get the class for a program item.
+ * If the program item is a TypeSpec the synthetic class is returned.
+ */
+static ILClass *GetClassResolved(ILProgramItem *item)
+{
+	if(item)
 	{
-		return ILClassResolve(info);
+		ILClass *info;
+
+		info = ILProgramItemToClass(item);
+		if(info)
+		{
+			return ILClassResolve(info);
+		}
 	}
 	return 0;
 }
@@ -667,12 +686,9 @@ static ILClass *GetUnderlyingParentClass(ILClass *info)
  */
 static ILClass *GetParentClass(ILClass *info)
 {
-	if(info && info->parent)
+	if(info)
 	{
-		if((info = ILProgramItemToClass(info->parent)) != 0)
-		{
-			return ILClassResolve(info);
-		}
+		return GetClassResolved(info->parent);
 	}
 	return 0;
 }
@@ -684,7 +700,11 @@ ILProgramItem *ILClassGetParent(ILClass *info)
 
 ILClass *ILClassGetUnderlyingParentClass(ILClass *info)
 {
-	return GetUnderlyingParentClass(info);
+	if(info)
+	{
+		return GetUnderlyingClassResolved(info->parent);
+	}
+	return 0;
 }
 
 ILClass *ILClassGetParentClass(ILClass *info)
@@ -806,29 +826,25 @@ void _ILClassRemoveAllFromHash(ILImage *image)
 
 int ILClassIsValid(ILClass *info)
 {
-	ILImplements *implements;
-	ILProgramItem *item;
 	info = (ILClass *)(_ILProgramItemResolve(&(info->programItem)));
 	while(info != 0)
 	{
+		ILImplements *implements;
+
 		if((info->attributes & IL_META_TYPEDEF_REFERENCE) != 0)
 		{
 			return 0;
 		}
-		implements = info->implements;
+		implements = _ILClass_Implements(info);
 		while(implements != 0)
 		{
-			if(!ILClassIsValid(implements->interface))
+			if(!ILClassIsValid(GetUnderlyingClassResolved(implements->interface)))
 			{
 				return 0;
 			}
-			implements = implements->nextInterface;
+			implements = _ILImplements_NextImplements(implements);
 		}
-		item = info->parent;
-		if(item != 0)
-		{
-			item = _ILProgramItemResolve(item);
-		}
+		info = GetUnderlyingClassResolved(info->parent);
 	}
 	return 1;
 }
@@ -1098,7 +1114,7 @@ ILClass *ILClassLookupGlobalUnicode(ILContext *context,
 						   (ILHashMatchFunc)UnicodeMatch));
 }
 
-ILImplements *ILClassAddImplements(ILClass *info, ILClass *interface,
+ILImplements *ILClassAddImplements(ILClass *info, ILProgramItem *interface,
 								   ILToken token)
 {
 	ILImplements *impl;
@@ -1110,15 +1126,17 @@ ILImplements *ILClassAddImplements(ILClass *info, ILClass *interface,
 		return 0;
 	}
 
-	/* Import the interface into the class's image */
-	interface = ILClassImport(info->programItem.image, interface);
-	if(!interface)
+	if(token == 0)
 	{
-		return 0;
+		interface = ImportItem(info->programItem.image, interface);
+		if(!interface)
+		{
+			return 0;
+		}
 	}
 
 	/* Ignore the request if the interface is already on the list */
-	current = info->implements;
+	current = _ILClass_Implements(info);
 	last = 0;
 	while(current != 0)
 	{
@@ -1127,7 +1145,7 @@ ILImplements *ILClassAddImplements(ILClass *info, ILClass *interface,
 			return current;
 		}
 		last = current;
-		current = current->nextInterface;
+		current = _ILImplements_NextImplements(current);
 	}
 
 	/* Allocate space for the implements clause and fill it in */
@@ -1190,11 +1208,10 @@ static int ImplementsResolved(ILClass *info, ILClass *interface)
 	ILClass *tempInterface;
 	while(info != 0)
 	{
-		temp = info->implements;
+		temp = _ILClass_Implements(info);
 		while(temp != 0)
 		{
-			tempInterface = (ILClass *)(_ILProgramItemResolve
-								(&(temp->interface->programItem)));
+			tempInterface = GetClassResolved(temp->interface);
 			if(tempInterface == interface)
 			{
 				return 1;
@@ -1203,7 +1220,7 @@ static int ImplementsResolved(ILClass *info, ILClass *interface)
 			{
 				return 1;
 			}
-			temp = temp->nextInterface;
+			temp = _ILImplements_NextImplements(temp);
 		}
 		info = GetParentClass(info);
 	}
@@ -1225,11 +1242,11 @@ ILImplements *ILClassNextImplements(ILClass *info, ILImplements *last)
 {
 	if(last)
 	{
-		return last->nextInterface;
+		return _ILImplements_NextImplements(last);
 	}
 	else
 	{
-		return info->implements;
+		return _ILClass_Implements(info);
 	}
 }
 
@@ -1238,9 +1255,38 @@ ILClass *ILImplementsGetClass(ILImplements *impl)
 	return impl->implement;
 }
 
-ILClass *ILImplementsGetInterface(ILImplements *impl)
+ILProgramItem *ILImplementsGetInterface(ILImplements *impl)
 {
 	return impl->interface;
+}
+
+ILClass *ILImplementsGetInterfaceClass(ILImplements *impl)
+{
+	if(impl && impl->interface)
+	{
+		ILClass *info;
+
+		if((info = ILProgramItemToClass(impl->interface)) != 0)
+		{
+			return ILClassResolve(info);
+		}
+	}
+	return 0;
+}
+
+ILClass *ILImplementsGetUnderlyingInterfaceClass(ILImplements *impl)
+{
+	if(impl && impl->interface)
+	{
+		ILClass *info;
+
+		info = ILProgramItemToUnderlyingClass(impl->interface);
+		if(info)
+		{
+			return ILClassResolve(info);
+		}
+	}
+	return 0;
 }
 
 int ILClassIsNested(ILClass *parent, ILClass *child)
@@ -1662,7 +1708,7 @@ static int InheritsFromValueType(ILClass *info)
 				return 1;
 			}
 		}
-		info = GetUnderlyingParentClass(info);
+		info = GetUnderlyingClassResolved(info->parent);
 	}
 	return 0;
 }

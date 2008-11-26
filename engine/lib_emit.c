@@ -1215,7 +1215,7 @@ void _IL_TypeBuilder_ClrTypeAddInterface(ILExecThread *_thread,
 		ILExecThreadThrowOutOfMemory(_thread);
 		return;
 	}
-	if (!(ILClassAddImplements(class, interface, token)))
+	if (!(ILClassAddImplements(class, ILToProgramItem(interface), token)))
 	{
 		IL_METADATA_UNLOCK(_ILExecThreadProcess(_thread));
 		ILExecThreadThrowOutOfMemory(_thread);

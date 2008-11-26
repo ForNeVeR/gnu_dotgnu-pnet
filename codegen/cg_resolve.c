@@ -150,7 +150,7 @@ static ILMethod *ResolveMethod(ILGenInfo *info, ILClass *classInfo,
 			ILImplements *impl = 0;
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
-				method = ResolveMethod(info, ILImplementsGetInterface(impl),
+				method = ResolveMethod(info, ILImplements_InterfaceClass(impl),
 									   callScope, name, args, nodes, numArgs,
 									   returnType, attrs, normalOrVirtual,
 									   dontInherit,indirect);
@@ -307,7 +307,7 @@ static ILProperty *ResolveProperty(ILGenInfo *info, ILClass *classInfo,
 			ILImplements *impl = 0;
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
-				property = ResolveProperty(info, ILImplementsGetInterface(impl),
+				property = ResolveProperty(info, ILImplements_InterfaceClass(impl),
 										   callScope, name, type, attrs,
 										   dontInherit);
 				if(property)

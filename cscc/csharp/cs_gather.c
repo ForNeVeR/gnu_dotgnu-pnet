@@ -79,6 +79,8 @@ static ILClass *NodeToClass(ILNode *node)
 	return 0;
 }
 
+#define NodeToProgramItem(node)	ILToProgramItem(NodeToClass(node))
+
 /*
  * Get the full and basic names from a method/property/event name.
  */
@@ -379,7 +381,7 @@ static void AddBaseClasses(ILGenInfo *info,
 	if(classInfo && (classInfo != (ILClass *)1) &&
 					(classInfo != (ILClass *)2))
 	{
-		ILClass *parent = 0;
+		ILProgramItem *parent = 0;
 		int numBases = CountBaseClasses(classNode->baseClass);
 
 		if(numBases > 0)
@@ -388,7 +390,7 @@ static void AddBaseClasses(ILGenInfo *info,
 			ILNode *baseNode;
 			ILNode *baseNodeList;
 			int errorReported = 0;
-			ILClass *baseList[numBases];
+			ILProgramItem *baseList[numBases];
 
 			ILMemZero(baseList, numBases * sizeof(ILClass *));
 
@@ -416,7 +418,7 @@ static void AddBaseClasses(ILGenInfo *info,
 					   this point. */
 					if(baseList[base] == 0)
 					{
-						baseList[base] = NodeToClass(baseTypeNode);
+						baseList[base] = NodeToProgramItem(baseTypeNode);
 
 						if(baseList[base] == 0)
 						{
@@ -428,17 +430,18 @@ static void AddBaseClasses(ILGenInfo *info,
 
 					if(baseList[base])
 					{
-					#if IL_VERSION_MAJOR > 1
-						ILClass *underlying = ILClassGetUnderlying(baseList[base]);
+						ILClass *underlying;
 
+						underlying = ILProgramItemToUnderlyingClass(baseList[base]);
+						if(underlying)
+						{
+							underlying = ILClassResolve(underlying);
+						}
 						if(!underlying)
 						{
 							CCOutOfMemory();
 						}
 						if(!ILClass_IsInterface(underlying))
-					#else /* IL_VERSION_MAJOR == 1 */
-						if(!ILClass_IsInterface(baseList[base]))
-					#endif /* IL_VERSION_MAJOR == 1 */
 						{
 							if(parent)
 							{
@@ -479,8 +482,10 @@ static void AddBaseClasses(ILGenInfo *info,
 			else if(!parent)
 			{
 				/* Use the builtin library's "System.Object" */
-				parent = ILType_ToClass(ILFindSystemType(info, "Object"));
-				if(!parent)
+				ILClass *objectClass;
+
+				objectClass = ILType_ToClass(ILFindSystemType(info, "Object"));
+				if(!objectClass)
 				{
 					ILNode *baseTypeNode;
 
@@ -490,9 +495,13 @@ static void AddBaseClasses(ILGenInfo *info,
 					{
 						if(!parent)
 						{
-							parent = NodeToClass(baseTypeNode);
+							parent = NodeToProgramItem(baseTypeNode);
 						}
 					}
+				}
+				else
+				{
+					parent = ILToProgramItem(objectClass);
 				}
 				if(!parent)
 				{
@@ -501,17 +510,25 @@ static void AddBaseClasses(ILGenInfo *info,
 				}
 				else
 				{
-					if(ILClassResolve(parent) == ILClassResolve(classInfo))
+					if(!ILProgramItemToTypeSpec(parent) &&
+					   ((objectClass = ILProgramItemToClass(parent)) != 0))
 					{
-						/* Compiling System.Object so don't set the parent. */
-						parent = 0;
+						if(ILClassResolve(objectClass) == ILClassResolve(classInfo))
+						{
+							/* Compiling System.Object so don't set the parent. */
+							parent = 0;
+						}
 					}
 				}
 			}
 			else
 			{
 				/* Output an error if attempting to inherit from a sealed class */
-				ILClass *underlying = ILClassGetUnderlying(parent);
+				ILClass *underlying = ILProgramItemToUnderlyingClass(parent);
+				if(underlying)
+				{
+					underlying = ILClassResolve(underlying);
+				}
 				if(!underlying)
 				{
 					CCOutOfMemory();
@@ -528,7 +545,7 @@ static void AddBaseClasses(ILGenInfo *info,
 			{
 				if(parent && !ILClass_IsInterface(classInfo))
 				{
-					ILClassSetParent(classInfo, ILToProgramItem(parent));
+					ILClassSetParent(classInfo, parent);
 				}
 			}
 
@@ -546,14 +563,14 @@ static void AddBaseClasses(ILGenInfo *info,
 		}
 		else if(!ILClass_IsInterface(classInfo))
 		{
-			ILClass *parent;
+			ILClass *objectClass;
 
 			/* Use the builtin library's "System.Object" as parent class */
-			parent = ILType_ToClass(ILFindSystemType(info, "Object"));
+			objectClass = ILType_ToClass(ILFindSystemType(info, "Object"));
 
-			if(ILClassResolve(classInfo) != ILClassResolve(parent))
+			if(ILClassResolve(classInfo) != ILClassResolve(objectClass))
 			{
-				ILClassSetParent(classInfo, ILToProgramItem(parent));
+				ILClassSetParent(classInfo, ILToProgramItem(objectClass));
 			}
 		}
 	}
@@ -599,7 +616,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	ILNode *baseNodeList;
 	ILNode *baseNode;
 	ILNode *baseTypeNode;
-	ILClass *parent;
+	ILProgramItem *parent;
 	ILClass *classInfo;
 	ILNode_ClassDefn *defn;
 	ILNode *savedNamespace;
@@ -669,7 +686,7 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	baseNodeList = defn->baseClass;
 	while(baseNodeList)
 	{
-		ILClass *baseClass = 0;
+		ILProgramItem *baseItem = 0;
 
 		/* Get the name of the class to be inherited or implemented */
 		if(yykind(baseNodeList) == yykindof(ILNode_ArgList))
@@ -685,33 +702,34 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 
 		/* Look in the scope for the base class */
 		if(CSSemBaseType(baseNode, info, &baseNode,
-						 &baseTypeNode, &baseClass))
+						 &baseTypeNode, &baseItem))
 		{
-			if(baseClass == 0)
+			if(baseItem == 0)
 			{
-				baseClass = NodeToClass(baseTypeNode);
-				if(baseClass == 0)
+				baseItem = NodeToProgramItem(baseTypeNode);
+				if(baseItem == 0)
 				{
 					CreateType(info, globalScope, list,
 							   systemObjectName, baseTypeNode);
-					baseClass = NodeToClass(baseTypeNode);
+					baseItem = NodeToProgramItem(baseTypeNode);
 				}
 			}
-			if(baseClass)
+			if(baseItem)
 			{
-			#if IL_VERSION_MAJOR > 1
-				ILClass *underlying = ILClassGetUnderlying(baseClass);
+				ILClass *underlying;
 
+				underlying = ILProgramItemToUnderlyingClass(baseItem);
+				if(underlying)
+				{
+					underlying = ILClassResolve(underlying);
+				}
 				if(!underlying)
 				{
 					CCOutOfMemory();
 				}
 				if(!ILClass_IsInterface(underlying))
-			#else /* IL_VERSION_MAJOR == 1 */
-				if(!ILClass_IsInterface(baseClass))
-			#endif /* IL_VERSION_MAJOR == 1 */
 				{
-					parent = baseClass;
+					parent = baseItem;
 				}
 			}
 		}
@@ -733,9 +751,11 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	{
 		/* Compiling something else that inherits "System.Object" */
 		/* Use the builtin library's "System.Object" as parent class */
-		parent = ILType_ToClass(ILFindSystemType(info, "Object"));
+		ILClass *objectClass;
 
-		if(!parent)
+		objectClass = ILType_ToClass(ILFindSystemType(info, "Object"));
+
+		if(!objectClass)
 		{
 			/* Change to the global namespace to resolve "System.Object" */
 			while(((ILNode_Namespace *)(info->currentNamespace))->enclosing != 0)
@@ -752,12 +772,12 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 				   what means we are currently processing System.Object itself. */
 				if(!parent && (baseTypeNode != type))
 				{
-					parent = NodeToClass(baseTypeNode);
+					parent = NodeToProgramItem(baseTypeNode);
 					if(!parent)
 					{
 						CreateType(info, globalScope, list,
 								   systemObjectName, baseTypeNode);
-						parent = NodeToClass(baseTypeNode);
+						parent = NodeToProgramItem(baseTypeNode);
 					}
 				}
 			}
@@ -839,11 +859,12 @@ static void AddMemberToScope(ILScope *scope, int memberKind,
 static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 								  ILClass *scope, ILMember *notThis)
 {
-	ILMember *member;
-	ILImplements *impl;
 	while(classInfo != 0)
 	{
 		/* Scan the members of this class */
+		ILMember *member;
+		ILImplements *impl;
+
 		member = 0;
 		while((member = ILClassNextMemberMatch
 				(classInfo, member, 0, name, 0)) != 0)
@@ -861,7 +882,7 @@ static ILMember *FindMemberByName(ILClass *classInfo, const char *name,
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
 				member = FindMemberByName
-					(ILClassResolve(ILImplementsGetInterface(impl)),
+					(ILClassResolve(ILImplements_InterfaceClass(impl)),
 					 name, scope, notThis);
 				if(member)
 				{
@@ -883,13 +904,13 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 									   ILType *signature, ILMember *notThis,
 									   ILClass *scope, int interfaceOverride)
 {
-	ILMember *member;
-	ILImplements *impl;
 	int kind = ILMemberGetKind(notThis);
 
 	while(classInfo != 0)
 	{
 		/* Scan the members of this class */
+		ILMember *member;
+
 		member = 0;
 		while((member = ILClassNextMemberMatch
 				(classInfo, member, 0, name, 0)) != 0)
@@ -929,11 +950,13 @@ static ILMember *FindMemberBySignature(ILClass *classInfo, const char *name,
 		/* Scan parent interfaces if this class is itself an interface */
 		if(ILClass_IsInterface(classInfo))
 		{
+			ILImplements *impl;
+
 			impl = 0;
 			while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 			{
 				member = FindMemberBySignature
-					(ILClassResolve(ILImplementsGetInterface(impl)),
+					(ILImplements_InterfaceClass(impl),
 					 name, signature, notThis, scope, interfaceOverride);
 				if(member)
 				{
@@ -1101,12 +1124,13 @@ static ILMember *FindInterfaceMatchInParents(ILClass *classInfo,
 											 int kind)
 {
 	ILImplements *impl = 0;
-	ILMember *member;
-	ILClass *interface;
 
 	while((impl = ILClassNextImplements(classInfo, impl)) != 0)
 	{
-		interface = ILClassResolve(ILImplementsGetInterface(impl));
+		ILMember *member;
+		ILClass *interface;
+
+		interface = ILImplements_InterfaceClass(impl);
 		member = FindInterfaceMatch(interface, name, signature, kind);
 		if(member)
 		{

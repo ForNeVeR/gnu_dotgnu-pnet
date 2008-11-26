@@ -1178,7 +1178,7 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 		{
 			goto cleanup;
 		}
-		if(!ILClassAddImplements(classInfo, otherClass, 0))
+		if(!ILClassAddImplements(classInfo, ILToProgramItem(otherClass), 0))
 		{
 			error = IL_LOADERR_MEMORY;
 			goto cleanup;

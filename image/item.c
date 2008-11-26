@@ -477,7 +477,7 @@ ILClass *ILProgramItemToUnderlyingClass(ILProgramItem *item)
 		{
 			ILType *type;
 
-			type = ILTypeSpec_Type((ILTypeSpec *)item);
+			type = _ILTypeSpec_Type((ILTypeSpec *)item);
 			if(type)
 			{
 				type = ILTypeGetWithMain(type);
@@ -489,6 +489,77 @@ ILClass *ILProgramItemToUnderlyingClass(ILProgramItem *item)
 		}
 		break;
 	}
+	return 0;
+}
+
+ILProgramItem *ILProgramItemFromType(ILImage *image, ILType *type)
+{
+	if(!type)
+	{
+		return 0;
+	}
+	if(ILType_IsComplex(type))
+	{
+		switch(ILType_Kind(type))
+		{
+			case IL_TYPE_COMPLEX_WITH:
+			case IL_TYPE_COMPLEX_ARRAY:
+			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
+			case IL_TYPE_COMPLEX_PTR:
+			case IL_TYPE_COMPLEX_METHOD:
+			case (IL_TYPE_COMPLEX_METHOD | IL_TYPE_COMPLEX_METHOD_SENTINEL):
+			{
+				ILTypeSpec *spec;
+
+				spec = ILTypeSpecCreate(image, 0, type);
+				return ILToProgramItem(spec);
+			}
+		}
+	}
+	else
+	{
+		ILClass *info;
+
+		info = ILClassFromType(image, 0, type, 0);
+		if(info)
+		{
+			info = ILClassImport(image, info);
+		}
+		return ILToProgramItem(info);
+	}
+	return 0;
+}
+
+ILType *ILProgramItemToType(ILProgramItem *item)
+{
+	if(!item)
+	{
+		return 0;
+	}
+	switch(item->token & IL_META_TOKEN_MASK)
+	{
+		case IL_META_TOKEN_TYPE_DEF:
+		case IL_META_TOKEN_TYPE_REF:
+		case IL_META_TOKEN_EXPORTED_TYPE:
+		{
+			ILType *type;
+			ILClass *info = (ILClass *)item;
+
+			if((type = _ILClass_Synthetic(info)) != 0)
+			{
+				return type;
+			}
+			return ILClassToType(info);
+		}
+		break;
+
+		case IL_META_TOKEN_TYPE_SPEC:
+		{
+			return _ILTypeSpec_Type((ILTypeSpec *)item);
+		}
+		break;
+	}
+
 	return 0;
 }
 

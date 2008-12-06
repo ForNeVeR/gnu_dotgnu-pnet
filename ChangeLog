@@ -1,3 +1,7 @@
+2008-12-06  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_grammar.y; Fix cast to pointer to pointer (char **).
+
 2008-11-26  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_decls.tc: Use the new function ILDumpProgramItem for output

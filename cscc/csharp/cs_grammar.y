@@ -1208,7 +1208,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		PrimaryMemberAccessStart
 %type <node>		PrimaryTypeExpressionPart
 %type <node>		LocalVariableType
-%type <node>		LocalVariableSimplePointerType LocalVariablePointerType
+%type <node>		LocalVariablePointerType
 %type <node>		LocalVariableNonArrayType
 %type <node>		LocalVariableArrayTypeStart
 %type <arrayType>	LocalVariableArrayTypeContinue
@@ -1328,7 +1328,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 21
+%expect 20
 
 %start CompilationUnit
 %%
@@ -1854,18 +1854,13 @@ LocalVariableArrayType
 	;
 
 /*
- * This one is needed to fix a shift/reduce conflict with the
- * multiplication expression.
+ * Pointer types
  */
-LocalVariableSimplePointerType
-	: PrimaryTypeExpression '*'			{ $$ = $1; }
-	;
-
 LocalVariablePointerType
 	: BuiltinType '*'					{
  				MakeUnary(PtrType, $1);
 			}
-	| LocalVariableSimplePointerType	{
+	| PrimaryTypeExpression '*'			{
 				MakeUnary(PtrType, $1);
 			} 
 	| LocalVariableArrayType '*'		{
@@ -2232,10 +2227,10 @@ MultiplicativeNonTypeExpression
 	| MultiplicativeNonTypeExpression '*' PrefixedUnaryExpression	{
 				MakeBinary(Mul, $1, $3);
 			}
-	| LocalVariableSimplePointerType PrefixedUnaryExpression	{
+	| PrimaryTypeExpression '*' PrefixedUnaryExpression	{
 				/* This one is to pick up the cases where the first part is
 				   a PrimaryTypeExpression. */
-				MakeBinary(Mul, $1, $2);
+				MakeBinary(Mul, $1, $3);
 			}
 	| MultiplicativeExpression '/' PrefixedUnaryExpression	{
 				MakeBinary(Div, $1, $3);

@@ -502,6 +502,11 @@ ILNode_CName(ILNode_CastType)
 		(CTypeToName(&CCCodeGen, node->type),
 		 ILNode_CName(node->expr), C_PREC_UNARY);
 }
+ILNode_CName(ILNode_CastStringToCharPtr)
+{
+	return CNameCreateUnaryBracketed
+		("(__wchar__ *)", ILNode_CName(node->expr), C_PREC_UNARY);
+}
 ILNode_CName(ILNode_Conditional)
 {
 	CName name1 = ILNode_CName(node->expr1);

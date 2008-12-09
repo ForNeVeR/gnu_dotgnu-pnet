@@ -131,49 +131,33 @@ ILGenCast(ILMachineType_ManagedPtr, ILMachineType_Boolean),
 ILGenCast(ILMachineType_TransientPtr, ILMachineType_Boolean)
 {
 	/* Note: this would be a lot easier if there was a
-	   "cne" opcode in the instruction set */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	ILGenJump(info, IL_OP_BRFALSE, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
+	   "cne" opcode in the instruction set.
+	   So We have to use ceq and not instead */
 	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CEQ);
+	ILGenSimple(info, IL_OP_LDC_I4_1);
+	ILGenSimple(info, IL_OP_XOR);
+	ILGenExtend(info, 1);
 }
 ILGenCast(ILMachineType_Int64, ILMachineType_Boolean),
 ILGenCast(ILMachineType_UInt64, ILMachineType_Boolean)
 {
-    /* Note: we can probably do this with "brfalse", but the
-       documentation is a little vague.  It provides information
-       for types "I" and "O", but not "I8" or "F".  Therefore,
-       we will be paranoid and do it the long way */
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-    ILGenSimple(info, IL_OP_LDC_I4_0);
-    ILGenSimple(info, IL_OP_CONV_I8);
-    ILGenJump(info, IL_OP_BEQ, &label1);
-    ILGenSimple(info, IL_OP_LDC_I4_1);
-    ILGenJump(info, IL_OP_BR, &label2);
-    ILGenLabel(info, &label1);
-    ILGenSimple(info, IL_OP_LDC_I4_0);
-    ILGenLabel(info, &label2);
-    ILGenExtend(info, 1);
+	ILGenSimple(info, IL_OP_LDC_I4_0);
+	ILGenSimple(info, IL_OP_CONV_I8);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CEQ);
+	ILGenSimple(info, IL_OP_LDC_I4_1);
+	ILGenSimple(info, IL_OP_XOR);
+	ILGenExtend(info, 1);
 }
 ILGenCast(ILMachineType_Float32, ILMachineType_Boolean),
 ILGenCast(ILMachineType_Float64, ILMachineType_Boolean),
 ILGenCast(ILMachineType_NativeFloat, ILMachineType_Boolean)
 {
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
     ILGenLoadFloat32(info, (ILFloat)0.0);
-    ILGenJump(info, IL_OP_BEQ, &label1);
-    ILGenSimple(info, IL_OP_LDC_I4_1);
-    ILGenJump(info, IL_OP_BR, &label2);
-    ILGenLabel(info, &label1);
-    ILGenSimple(info, IL_OP_LDC_I4_0);
-    ILGenLabel(info, &label2);
-    ILGenExtend(info, 1);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CEQ);
+	ILGenSimple(info, IL_OP_LDC_I4_1);
+	ILGenSimple(info, IL_OP_XOR);
+	ILGenExtend(info, 1);
 }
 ILGenCast(ILMachineType_Decimal, ILMachineType_Boolean)
 {

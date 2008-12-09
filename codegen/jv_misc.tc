@@ -285,6 +285,13 @@ JavaGenValue(ILNode_CastType)
 	JavaGenAdjust(info, JavaGenTypeSize(type));
 	return type;
 }
+JavaGenValue(ILNode_CastStringToCharPtr)
+{
+	JavaGenValue(node->expr, info);
+	JavaGenSimple(info, JAVA_OP_POP);
+	JavaGenSimple(info, JAVA_OP_ICONST_0);
+	return ILMachineType_UnmanagedPtr;
+}
 
 /*
  * Generate value code for a user conversion expression.

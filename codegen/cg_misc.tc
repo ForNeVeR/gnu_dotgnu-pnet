@@ -105,6 +105,10 @@ ILNode_GetType(ILNode_CastType)
 {
 	return ILTypeToMachineType(node->type);
 }
+ILNode_GetType(ILNode_CastStringToCharPtr)
+{
+	return ILMachineType_UnmanagedPtr;
+}
 
 /*
  * Get the type associated with a user-defined conversion.
@@ -672,6 +676,19 @@ ILNode_GenValue(ILNode_CastType)
 	ILNode_GenValue(node->expr, info);
 	ILGenTypeToken(info, IL_OP_CASTCLASS, node->type);
 	return ILTypeToMachineType(node->type);
+}
+ILNode_GenValue(ILNode_CastStringToCharPtr)
+{
+	ILNode_GenValue(node->expr, info);
+	ILGenSimple(info, IL_OP_CONV_I);
+	ILGenCallByName(info, "int32 "
+					"[.library]System.Runtime.CompilerServices.RuntimeHelpers"
+					"::get_OffsetToStringData()");
+	ILGenAdjust(info, 1);
+	ILGenSimple(info, IL_OP_CONV_I);
+	ILGenSimple(info, IL_OP_ADD);
+	ILGenAdjust(info, -1);
+	return ILMachineType_UnmanagedPtr;
 }
 
 /*
@@ -1516,19 +1533,15 @@ ILNode_GenValue(ILNode_As)
  */
 ILNode_GenValue(ILNode_Is)
 {
-	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-
 	/* Compute the "as" version of the expression */
 	As_GenValue((ILNode_As *)node, info);
 
 	/* Compare the result against "null" to get the result */
-	ILGenJump(info, IL_OP_BRFALSE, &label1);
+	ILGenSimple(info, IL_OP_LDNULL);
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CEQ);
 	ILGenSimple(info, IL_OP_LDC_I4_1);
-	ILGenJump(info, IL_OP_BR, &label2);
-	ILGenLabel(info, &label1);
-	ILGenSimple(info, IL_OP_LDC_I4_0);
-	ILGenLabel(info, &label2);
+	ILGenSimple(info, IL_OP_XOR);
+	ILGenExtend(info, 1);
 	return ILMachineType_Boolean;
 }
 

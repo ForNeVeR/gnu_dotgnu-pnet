@@ -1521,11 +1521,14 @@ static int LayoutClass(ILExecProcess *process, ILClass *info, LayoutInfo *layout
 		{
 			vtable[method->index] = method;
 		#ifdef IL_USE_JIT
-			/* NOTE: Here still exists the slight possibility that a type is
-			   layouted whose parent type's vtable is not complete yet.
-			   Maybe we'll have to loop over the whole vtable again to build the 
-			   jitvtable */
-			jitVtable[method->index] = ILJitGetVtablePointer(process->coder, method);
+			if(isJitCoder)
+			{
+				/* NOTE: Here still exists the slight possibility that a type is
+				   layouted whose parent type's vtable is not complete yet.
+				   Maybe we'll have to loop over the whole vtable again to build the 
+				   jitvtable */
+				jitVtable[method->index] = ILJitGetVtablePointer(process->coder, method);
+			}
 		#endif
 		}
 	}

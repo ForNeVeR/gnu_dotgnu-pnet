@@ -1,3 +1,32 @@
+2008-12-09  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_cast.tc: Replace the code generated for casts to bool with
+	branchless alternatives.
+
+	* codegen/cg_coerce.c (GetUnsafeConvertRules): Add Check for casts from
+	System.String to a pointer to char.
+	(ApplyRules): Handle the cast from string to char *.
+
+	* codegen/cg_misc.tc: Add code genereration for the new nodetype
+	ILNode_CastStringToCharPtr.
+	(ILNode_GenValue(ILNode_Is)): Replace the code with branches with a
+	branchless alternative.
+
+	* codegen/cg_nodes.tc: Add the new node type ILNode_CastStringToCharPtr
+	for casts from string to char *.
+
+	* codegen/jv_misc.tc: Add dummy code genereration for the new nodetype
+	ILNode_CastStringToCharPtr.
+
+	* cscc/c/c_name.tc, cscc/c/c_oper.tc, cscc/csharp/cs_oper.tc: Add the
+	functions needed for the new node type ILNode_CastStringToCharPtr.
+
+	* engine/layout.c (LayoutClass): Generate jit functions only if not
+	executed from ILVerify if built with jit.
+
+	* engine/verify_conv.c (VERIFY_CONV): Allow casting an object reference
+	to NativeInt in unsafe contexts.
+
 2008-12-06  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_grammar.y; Fix cast to pointer to pointer (char **).

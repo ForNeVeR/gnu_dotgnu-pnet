@@ -39,10 +39,13 @@
 					STK_UNARY_TYPEINFO = 0; \
 				} \
 				else if(unsafeAllowed && \
-						(STK_UNARY == ILEngineType_M || \
-						 STK_UNARY == ILEngineType_T)) \
+						((STK_UNARY == ILEngineType_M || \
+						 STK_UNARY == ILEngineType_O || \
+						 STK_UNARY == ILEngineType_T) && \
+						 (((resultType) == ILEngineType_I8) || \
+						 ((resultType) == ILEngineType_I)))) \
 				{ \
-					ILCoderConv(coder, opcode, ILEngineType_I); \
+					ILCoderConv(coder, opcode, resultType); \
 					STK_UNARY = resultType; \
 					STK_UNARY_TYPEINFO = 0; \
 				} \

@@ -48,6 +48,8 @@ typedef struct
 	/* Coerce "null" to a pointer type */
 	int			pointerNull;
 
+	/* Explicit cast from System.String to a pointer to System.Char */
+	int			stringCharPtr;
 } ConvertRules;
 
 /*
@@ -385,7 +387,7 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 			}
 		}
 
-		/* Numberic to pointer conversion */
+		/* Numeric to pointer conversion */
 		if(ILType_IsPointer(toType) && ILIsBuiltinNumeric(fromType))
 		{
 			conv = ILFindConversion(fromType, toType, explicit, 1);
@@ -394,6 +396,15 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 				rules->builtin = conv;
 				return 1;
 			}
+		}
+
+		/* String to char * conversion */
+		if((ILTypeToMachineType(fromType) == ILMachineType_String) &&
+		   (ILType_IsPointer(toType) && 
+			ILTypeToMachineType(ILType_Ref(toType)) == ILMachineType_Char))
+		{
+			rules->stringCharPtr = 1;
+			return 1;
 		}
 	}
 
@@ -420,6 +431,7 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 	rules->castType = 0;
 	rules->builtin = 0;
 	rules->pointerNull = 0;
+	rules->stringCharPtr = 0;
 
 	/* Strip type prefixes before we start */
 	fromType = ILTypeStripPrefixes(fromType);
@@ -930,6 +942,14 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 	}
+
+	/* Convert from System.String to a pointer to System.Char */
+	if(rules->stringCharPtr)
+	{
+		*parent = ILNode_CastStringToCharPtr_create(node);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+	}
 }
 
 /*
@@ -1361,8 +1381,8 @@ int ILBetterConversion(ILGenInfo *info, ILType *sType,
 
 /* TODO : Figure out the actual conversion rules before using
  * 		  this in the rest of the code . But it's a reasonably
- * 		  good approximation of what I understand about the spec */
-
+ * 		  good approximation of what I understand about the spec
+ */
 int ILBetterConversionFrom(ILGenInfo *info, ILType *s1Type,
 					   ILType *s2Type, ILType *tType)
 {

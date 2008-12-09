@@ -2166,6 +2166,15 @@ ILNode_CSemAnalysis(ILNode_CastType)
 }
 
 /*
+ * Perform semantic analysis for the cast from C# String to C# char pointer.
+ */
+ILNode_CSemAnalysis(ILNode_CastStringToCharPtr)
+{
+	/* This will never be called, as the grammar uses "CastType" instead */
+	return CSemValueError;
+}
+
+/*
  * Perform semantic analysis for C to C# string conversion.
  */
 ILNode_CSemAnalysis(ILNode_CToCSharpString)

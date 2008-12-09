@@ -405,6 +405,9 @@ struct _tagILSwitchValue
 	ILMachineType machineType;
 	ILMethod *method;
 }
+%node ILNode_CastStringToCharPtr ILNode_UnaryExpression =
+{
+}
 %node ILNode_Conditional ILNode_TernaryExpression
 %node ILNode_Deref ILNode_LValueNoRef =
 {

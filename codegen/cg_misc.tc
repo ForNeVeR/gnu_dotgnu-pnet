@@ -679,8 +679,12 @@ ILNode_GenValue(ILNode_CastType)
 }
 ILNode_GenValue(ILNode_CastStringToCharPtr)
 {
+	ILLabel label = ILLabel_Undefined;
+
 	ILNode_GenValue(node->expr, info);
 	ILGenSimple(info, IL_OP_CONV_I);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenJump(info, IL_OP_BRFALSE, &label);
 	ILGenCallByName(info, "int32 "
 					"[.library]System.Runtime.CompilerServices.RuntimeHelpers"
 					"::get_OffsetToStringData()");
@@ -688,6 +692,7 @@ ILNode_GenValue(ILNode_CastStringToCharPtr)
 	ILGenSimple(info, IL_OP_CONV_I);
 	ILGenSimple(info, IL_OP_ADD);
 	ILGenAdjust(info, -1);
+	ILGenLabel(info, &label);
 	return ILMachineType_UnmanagedPtr;
 }
 

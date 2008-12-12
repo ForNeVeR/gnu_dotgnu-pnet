@@ -1,3 +1,8 @@
+2008-12-12  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_misc.tc (ILNode_GenValue(ILNode_CastStringToCharPtr)): Add
+	OffsetToStringData only if the String is nonnull.
+
 2008-12-09  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_cast.tc: Replace the code generated for casts to bool with

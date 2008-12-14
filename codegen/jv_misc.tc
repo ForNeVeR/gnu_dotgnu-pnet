@@ -292,6 +292,13 @@ JavaGenValue(ILNode_CastStringToCharPtr)
 	JavaGenSimple(info, JAVA_OP_ICONST_0);
 	return ILMachineType_UnmanagedPtr;
 }
+JavaGenValue(ILNode_CastArrayToElementPtr)
+{
+	JavaGenValue(node->expr, info);
+	JavaGenSimple(info, JAVA_OP_POP);
+	JavaGenSimple(info, JAVA_OP_ICONST_0);
+	return ILMachineType_UnmanagedPtr;
+}
 
 /*
  * Generate value code for a user conversion expression.

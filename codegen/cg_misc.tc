@@ -109,6 +109,10 @@ ILNode_GetType(ILNode_CastStringToCharPtr)
 {
 	return ILMachineType_UnmanagedPtr;
 }
+ILNode_GetType(ILNode_CastArrayToElementPtr)
+{
+	return ILMachineType_UnmanagedPtr;
+}
 
 /*
  * Get the type associated with a user-defined conversion.
@@ -693,6 +697,104 @@ ILNode_GenValue(ILNode_CastStringToCharPtr)
 	ILGenSimple(info, IL_OP_ADD);
 	ILGenAdjust(info, -1);
 	ILGenLabel(info, &label);
+	return ILMachineType_UnmanagedPtr;
+}
+
+%{
+
+/*
+ * Push the low bounds of an Array on the stack
+ * Returns the number of low bounds pushed on the stack.
+ */
+static int ILGenPushArrayLowBounds(ILGenInfo *info, ILType *arrayType)
+{
+	int bounds = 0;
+
+	if(arrayType && ILType_IsComplex(arrayType))
+	{
+		if(arrayType->kind__ == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
+		{
+			bounds = ILGenPushArrayLowBounds(info, ILType_ElemType(arrayType));
+			ILGenInt32(info, ILType_LowBound(arrayType));
+			++bounds;
+		}
+		else if(arrayType->kind__ == IL_TYPE_COMPLEX_ARRAY)
+		{
+			ILGenInt32(info, ILType_LowBound(arrayType));
+			++bounds;
+		}
+	}
+	return bounds;
+}
+
+%}
+
+ILNode_GenValue(ILNode_CastArrayToElementPtr)
+{
+	ILLabel doneLabel = ILLabel_Undefined;
+	ILLabel nullLabel = ILLabel_Undefined;
+	ILLabel length0Label = ILLabel_Undefined;
+	ILType *elementType;
+	int stackUsed = 1;
+
+	elementType = ILTypeGetElemType(node->arrayType);
+	ILNode_GenValue(node->expr, info);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenJump(info, IL_OP_BRFALSE, &nullLabel);
+	ILGenSimple(info, IL_OP_DUP);
+	if(ILType_IsSimpleArray(node->arrayType))
+	{
+		ILGenSimple(info, IL_OP_LDLEN);
+	}
+	else
+	{
+		ILGenCallVirtual(info, "int32 "
+						"[.library]System.Array::get_Length()");	
+	}
+	ILGenJump(info, IL_OP_BRFALSE, &length0Label);
+	if(ILType_IsSimpleArray(node->arrayType))
+	{		
+		ILGenSimple(info, IL_OP_LDC_I4_0);
+		++stackUsed;
+		ILGenTypeToken(info, IL_OP_LDELEMA, elementType);
+	}
+	else
+	{
+		ILType *arrayType = node->arrayType;
+		int rank;
+
+		rank = ILTypeGetRank(arrayType);
+		if(rank > 0)
+		{
+			ILClass *classInfo;
+			ILMethod *method = 0;
+
+			classInfo = ILClassResolve(ILTypeToClass(info, arrayType));
+			method = (ILMethod *)ILClassNextMemberMatch(classInfo, 0,
+								 IL_META_MEMBERKIND_METHOD, "Address", 0);
+
+			/* Push the low bounds on the stack for the Address call */
+			ILGenPushArrayLowBounds(info, arrayType);
+			ILGenCallByMethod(info, method);
+			stackUsed += rank;
+		}
+		else
+		{
+			/* Looks like arrayType is no array */
+			ILGenSimple(info, IL_OP_POP);
+			ILGenSimple(info, IL_OP_LDNULL);
+		}
+	}
+	ILGenSimple(info, IL_OP_CONV_I);
+	ILGenJump(info, IL_OP_BR, &doneLabel);
+	ILGenLabel(info, &length0Label);
+	ILGenSimple(info, IL_OP_POP);
+	ILGenSimple(info, IL_OP_LDNULL);
+	ILGenLabel(info, &nullLabel);
+	ILGenSimple(info, IL_OP_CONV_I);
+	ILGenLabel(info, &doneLabel);
+	ILGenExtend(info, stackUsed);
+
 	return ILMachineType_UnmanagedPtr;
 }
 

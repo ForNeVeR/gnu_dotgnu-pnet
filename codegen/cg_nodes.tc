@@ -408,6 +408,10 @@ struct _tagILSwitchValue
 %node ILNode_CastStringToCharPtr ILNode_UnaryExpression =
 {
 }
+%node ILNode_CastArrayToElementPtr ILNode_UnaryExpression =
+{
+	ILType *arrayType;
+}
 %node ILNode_Conditional ILNode_TernaryExpression
 %node ILNode_Deref ILNode_LValueNoRef =
 {

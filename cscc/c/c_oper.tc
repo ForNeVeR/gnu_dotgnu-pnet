@@ -2175,6 +2175,17 @@ ILNode_CSemAnalysis(ILNode_CastStringToCharPtr)
 }
 
 /*
+ * Perform semantic analysis for the cast from C# Array to a C pointer to
+ * the array's element type.
+ */
+ILNode_CSemAnalysis(ILNode_CastArrayToElementPtr)
+{
+	/* This will never be called, as the grammar uses "CastType" instead */
+	return CSemValueError;
+}
+
+
+/*
  * Perform semantic analysis for C to C# string conversion.
  */
 ILNode_CSemAnalysis(ILNode_CToCSharpString)

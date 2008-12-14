@@ -1,3 +1,20 @@
+2008-12-14  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_coerce.c (GetUnsafeConvertRules): Handle cast from an array
+	to a pointer to the array's element type.
+	(ApplyRules): Handle the array to element type pointer conversion.
+
+	* codegen/cg_misc.tc: Add the codegen functions for the new node type
+	ILNode_CastArrayToElementPtr.
+
+	* codegen/cg_nodes.tc: Add the new node type ILNode_CastArrayToElementPtr.
+
+	* codegen/jv_misc.tc: Add stubbs for the java codegen functions for the
+	new node type ILNode_CastArrayToElementPtr.
+
+	* cscc/c/c_name.tc, cscc/c/c_oper.tc, cscc/csharp/cs_oper.tc: Add the
+	functions to handle the new node type ILNode_CastArrayToElementPtr.
+
 2008-12-12  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_misc.tc (ILNode_GenValue(ILNode_CastStringToCharPtr)): Add

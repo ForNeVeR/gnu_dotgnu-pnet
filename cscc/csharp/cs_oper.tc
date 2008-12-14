@@ -2640,6 +2640,10 @@ ILNode_SemAnalysis(ILNode_CastStringToCharPtr)
 {
 	return CSSemValueDefault;
 }
+ILNode_SemAnalysis(ILNode_CastArrayToElementPtr)
+{
+	return CSSemValueDefault;
+}
 
 /*
  * Perform semantic analysis for the user-defined logical AND operator.

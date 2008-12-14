@@ -48,8 +48,11 @@ typedef struct
 	/* Coerce "null" to a pointer type */
 	int			pointerNull;
 
-	/* Explicit cast from System.String to a pointer to System.Char */
+	/* Cast from System.String to a pointer to System.Char */
 	int			stringCharPtr;
+
+	/* Cast from a managed array to a pointer to the element type */
+	int			arrayElementPtr;
 } ConvertRules;
 
 /*
@@ -398,13 +401,42 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 			}
 		}
 
-		/* String to char * conversion */
+		/* String to char * or void * conversion */
 		if((ILTypeToMachineType(fromType) == ILMachineType_String) &&
-		   (ILType_IsPointer(toType) && 
-			ILTypeToMachineType(ILType_Ref(toType)) == ILMachineType_Char))
+		   ILType_IsPointer(toType))
 		{
-			rules->stringCharPtr = 1;
-			return 1;
+			ILMachineType machineType;
+
+			machineType = ILTypeToMachineType(ILType_Ref(toType));
+			if((machineType == ILMachineType_Char) ||
+			   (machineType == ILMachineType_Void))
+			{
+				rules->stringCharPtr = 1;
+				return 1;
+			}
+		}
+
+		/* Array to element pointer conversion */
+		if(ILType_IsArray(fromType) && ILType_IsPointer(toType))
+		{
+			ILType *elementType;
+
+			/* We can implicitely cast every pointer to void * */
+			if(ILTypeToMachineType(ILType_Ref(toType)) == ILMachineType_Void)
+			{
+				rules->arrayElementPtr = 1;
+				return 1;
+			}
+
+			elementType = ILTypeGetElemType(fromType);
+			if(elementType)
+			{
+				if(ILTypeIdentical(elementType, ILType_Ref(toType)))
+				{
+					rules->arrayElementPtr = 1;
+					return 1;
+				}
+			}
 		}
 	}
 
@@ -432,6 +464,7 @@ static int GetConvertRules(ILGenInfo *info, ILType *fromType,
 	rules->builtin = 0;
 	rules->pointerNull = 0;
 	rules->stringCharPtr = 0;
+	rules->arrayElementPtr = 0;
 
 	/* Strip type prefixes before we start */
 	fromType = ILTypeStripPrefixes(fromType);
@@ -947,6 +980,15 @@ static void ApplyRules(ILGenInfo *info, ILNode *node,
 	if(rules->stringCharPtr)
 	{
 		*parent = ILNode_CastStringToCharPtr_create(node);
+		yysetfilename(*parent, yygetfilename(node));
+		yysetlinenum(*parent, yygetlinenum(node));
+	}
+
+	/* Cast a managed array to a pointer to the element type */
+	if(rules->arrayElementPtr)
+	{
+		*parent = ILNode_CastArrayToElementPtr_create(node,
+											ILTypeStripPrefixes(fromType));
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));
 	}

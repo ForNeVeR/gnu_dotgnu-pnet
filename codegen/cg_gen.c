@@ -112,6 +112,7 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 	info->needSwitchPop = 0;
 	info->hasGotoScopes = -1;
 	info->resolvingAlias = 0;
+	info->inFixed = 0;
 	info->decimalRoundMode = IL_DECIMAL_ROUND_HALF_EVEN;
 	info->stackHeight = 0;
 	info->maxStackHeight = 0;

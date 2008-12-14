@@ -1672,6 +1672,12 @@ ILNode_SemAnalysis(ILNode_Fixed)
 	/* Perform semantic analysis on the local variable type */
 	type = CSSemType(node->type, info, &(node->type));
 
+	if(!ILType_IsPointer(type))
+	{
+		CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+					"only pointer types can be declared in fixed statements");
+	}
+
 	/* Scan through the variable names and declare them in the current scope */
 	ILNode_ListIter_Init(&iter, node->decls);
 	while((varNode = ILNode_ListIter_Next(&iter)) != 0)
@@ -1717,7 +1723,9 @@ ILNode_SemAnalysis(ILNode_Fixed)
 			ILScopeDeclareLocal(info->currentScope, name,
 								ILTypeNumLocals(method->localVarSig) - 1,
 								((ILNode_FixedVariable*)varNode)->name);
+			info->inFixed = -1;
 			ILNode_SemAnalysis(varNode,info,iter.last);
+			info->inFixed = 0;
 		}
 	}
 	ILNode_SemAnalysis(node->stmt,info,&(node->stmt));

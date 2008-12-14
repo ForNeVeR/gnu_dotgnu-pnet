@@ -121,6 +121,7 @@ struct _tagILGenInfo
 	int				needSwitchPop : 1;	/* Non-zero to pop a switch value */
 	int				hasGotoScopes : 1;	/* Non-zero if goto scopes used */
 	int				resolvingAlias : 1;	/* Non-zero if resolving an alias */
+	int				inFixed : 1;		/* Non-Zero if in a fixed statement */
 	int             decimalRoundMode;	/* Rounding mode for ILDecimal */
 	long			stackHeight;		/* Current stack height */
 	long			maxStackHeight;		/* Maximum stack height */

@@ -400,7 +400,9 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 				return 1;
 			}
 		}
-
+	}
+	else if(info->inFixed)
+	{
 		/* String to char * or void * conversion */
 		if((ILTypeToMachineType(fromType) == ILMachineType_String) &&
 		   ILType_IsPointer(toType))

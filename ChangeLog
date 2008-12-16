@@ -1,3 +1,10 @@
+2008-12-16  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Windows.Forms/ScrollableControl.cs: fix ScrollControlIntoView and
+	updating scrollbars if controls are added or removed.
+	* System.Windows.Forms/NumericUpdown.cs: implemented a lot of TODOs.
+	* System.Windows.Forms/UpDownBase.cs: implemented a lot of TODOs.
+
 2008-11-26  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Nullable_1.cs: Exclude class from build for now.

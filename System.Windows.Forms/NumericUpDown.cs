@@ -88,6 +88,15 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 		thousandsSeparator = DefaultThousandsSeparator;
 		UpdateEditText();
 	}
+	
+	private void SetCurrentvalue( decimal value ) {
+		if( currentValue != value ) {
+			currentValue = value;
+			if( null != ValueChanged ) {
+				ValueChanged( this, System.EventArgs.Empty );
+			}
+		}
+	}
 
 	[TODO]
 	public void BeginInit()
@@ -120,6 +129,7 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 	public void EndInit()
 	{
 		initializing = false;
+		this.Value = this.Constrain(this.currentValue);
 	}
 
 	public decimal Increment
@@ -143,12 +153,12 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 		}
 		set
 		{
-			maximum = Constrain(value);
-			if (maximum < currentValue)
+			this.maximum = value;
+			if (this.minimum > this.maximum)
 			{
-				currentValue = maximum;
-				UpdateEditText();
+				this.minimum = this.maximum;
 			}
+			this.Value = this.Constrain(this.currentValue);
 		}
 	}
 
@@ -161,12 +171,12 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 		}
 		set
 		{
-			minimum = Constrain(value);
-			if (minimum > currentValue)
+			this.minimum = value;
+			if (this.minimum > this.maximum)
 			{
-				currentValue = minimum;
-				UpdateEditText();
+				this.maximum = value;
 			}
+			this.Value = this.Constrain(this.currentValue);
 		}
 	}
 
@@ -183,39 +193,80 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 			{
 				throw new ArgumentException();
 			}
-			currentValue = Constrain(value);
+			SetCurrentvalue( Constrain(value) );
 			UpdateEditText();
 		}
 	}
 
-	[TODO]
 	private decimal Constrain(decimal value)
 	{
+		if (value < this.minimum)
+		{
+			value = this.minimum;
+		}
+		if (value > this.maximum)
+		{
+			value = this.maximum;
+		}
 		return value;
 	}
 
+	protected void ParseEditText()
+	{
+		try
+		{
+			decimal newValue;
+			if (this.hexadecimal)
+			{
+				newValue = this.Constrain(Convert.ToDecimal(Convert.ToInt32(this.Text, 0x10)));
+			}
+			else
+			{
+				newValue = this.Constrain(decimal.Parse(this.Text));
+			}
+			SetCurrentvalue( newValue );
+		}
+		catch (Exception)
+		{
+		}
+		finally
+		{
+			base.UserEdit = false;
+			UpdateEditText();
+		}
+	}
+	
 	public override void UpButton()
 	{
+		if( base.UserEdit ) {
+			this.ParseEditText();
+		}
 		if (currentValue < maximum)
 		{
-			currentValue += increment;
-			if (currentValue > maximum)
+			decimal newValue = currentValue + increment;
+			if (newValue > maximum)
 			{
-				currentValue = maximum;
+				newValue = maximum;
 			}
+			SetCurrentvalue( newValue );
 			UpdateEditText();
 		}
 	}
 
 	public override void DownButton()
 	{
+		if( base.UserEdit ) {
+			this.ParseEditText();
+		}
 		if (currentValue > minimum)
 		{
-			currentValue -= increment;
-			if (currentValue < minimum)
+			decimal newValue = currentValue - increment;
+
+			if (newValue < minimum)
 			{
-				currentValue = minimum;
+				newValue = minimum;
 			}
+			SetCurrentvalue( newValue );
 			UpdateEditText();
 		}
 	}
@@ -259,34 +310,71 @@ public class NumericUpDown : UpDownBase, ISupportInitialize
 
 	protected override void UpdateEditText()
 	{
-		if (hexadecimal)
+		if (!this.initializing)
 		{
-			base.Text = currentValue.ToString("X");
-		}
-		else
-		{
-			if (thousandsSeparator)
+			if (base.UserEdit)
 			{
-				base.Text = currentValue.ToString("N" + decimalPlaces.ToString());
+				this.ParseEditText();
+			}
+	
+			if (hexadecimal)
+			{
+				base.Text = currentValue.ToString("X");
 			}
 			else
 			{
-				base.Text = currentValue.ToString("F" + decimalPlaces.ToString());
+				if (thousandsSeparator)
+				{
+					base.Text = currentValue.ToString("N" + decimalPlaces.ToString());
+				}
+				else
+				{
+					base.Text = currentValue.ToString("F" + decimalPlaces.ToString());
+				}
 			}
 		}
 	}
 
-	[TODO]
-	protected virtual void ValidateEditText()
+	protected override void ValidateEditText()
 	{
+		this.ParseEditText();
+		this.UpdateEditText();
 	}
 
 	[TODO]
 	protected override void OnChanged(object source, EventArgs e)
 	{
-		throw new NotImplementedException("OnChanged");
 	}
 
+	protected override void OnTextBoxKeyPress(object source, KeyPressEventArgs e)
+	{
+		base.OnTextBoxKeyPress(source, e);
+		
+		System.Globalization.NumberFormatInfo numberFormat = System.Globalization.CultureInfo.CurrentCulture.NumberFormat;
+		
+		string dec   = numberFormat.NumberDecimalSeparator;
+		string group = numberFormat.NumberGroupSeparator;
+		string sign  = numberFormat.NegativeSign;
+		string key   = e.KeyChar.ToString();
+		
+		if ( !char.IsDigit(e.KeyChar) &&  key != dec && key != group && key != sign && e.KeyChar != '\b' )
+		{
+			if (this.hexadecimal)
+			{
+				if ( e.KeyChar >= 'a' && e.KeyChar <= 'f' )
+				{
+					return;
+				}
+				if ( e.KeyChar >= 'A' && e.KeyChar <= 'F' )
+				{
+					return;
+				}
+			}
+				
+			e.Handled = true;
+		}
+	}
+	
 	public override string ToString()
 	{
 		return "System.Windows.Forms.NumericUpDown, Minimum = " + minimum.ToString() +

@@ -363,10 +363,8 @@ public abstract class UpDownBase : ContainerControl
 		}
 	}
 
-	[TODO]
 	protected virtual void OnChanged(object source, EventArgs e)
 	{
-		throw new NotImplementedException("OnChanged");
 	}
 
 	[TODO]
@@ -380,41 +378,68 @@ public abstract class UpDownBase : ContainerControl
 		Height = ClientToBounds(new Size(0, s.Height)).Height;
 	}
 
-	[TODO]
 	protected override void OnHandleCreated(EventArgs e)
 	{
 		base.OnHandleCreated(e);
+		doLayout();
 	}
 
-	[TODO]
 	protected override void OnLayout(LayoutEventArgs e)
 	{
 		base.OnLayout(e);
 		doLayout();
 	}
 
-	[TODO]
 	protected override void OnMouseWheel(MouseEventArgs e)
 	{
+		if( e.Delta > 0 ) {
+			this.UpButton();
+		}
+		else {
+			this.DownButton();
+		}
 		base.OnMouseWheel(e);
 	}
 
-	[TODO]
 	protected virtual void OnTextBoxKeyDown(object source, KeyEventArgs e)
 	{
+		this.OnKeyDown(e);
+		if (this.interceptArrowKeys)
+		{
+				if (e.KeyData == Keys.Up)
+				{
+						this.UpButton();
+						e.Handled = true;
+				}
+				else if (e.KeyData == Keys.Down)
+				{
+						this.DownButton();
+						e.Handled = true;
+				}
+		}
+		if ((e.KeyCode == Keys.Return) && this.UserEdit)
+		{
+				this.ValidateEditText();
+		}
+	}
+	
+	protected virtual void ValidateEditText() 
+	{
 	}
 
-	[TODO]
 	protected virtual void OnTextBoxKeyPress(object source, KeyPressEventArgs e)
 	{
+		this.OnKeyPress(e);
 	}
 
-	[TODO]
 	protected virtual void OnTextBoxLostFocus(object source, EventArgs e)
 	{
+		if(this.UserEdit)
+		{
+			this.ValidateEditText();
+		}
 	}
 
-	[TODO]
 	protected virtual void OnTextBoxResize(object source, EventArgs e)
 	{
 		Size s;
@@ -422,12 +447,15 @@ public abstract class UpDownBase : ContainerControl
 		s = upDownEdit.Size;
 		s = ClientToBounds(new Size(s.Width + DefaultButtonsWidth, s.Height));
 		this.Size = s;
+		doLayout();
 	}
 
 	[TODO]
 	protected virtual void OnTextBoxTextChanged(object source, EventArgs e)
 	{
 		userEdit = true;
+		this.OnTextChanged(e);
+		this.OnChanged(source, new EventArgs());
 	}
 
 	[DefaultValue(false)]	

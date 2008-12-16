@@ -268,11 +268,14 @@ public class ScrollableControl : Control
 					}
 					else
 					{
-						vScrollBar.LargeChange = DisplayRectangle.Height;
-						vScrollBar.SmallChange = (DisplayRectangle.Height + 9 )/ 10;
+//						vScrollBar.CreateControl();
+						
 						// set Maximum before setting the value, or we get an exception
 						vScrollBar.Maximum = ScrollArea.Height - 1;
 						vScrollBar.Value = -(autoScrollPosition.Y);
+						// set Large/SmallChange after setting maximum, or display failure
+						vScrollBar.LargeChange = DisplayRectangle.Height;
+						vScrollBar.SmallChange = (DisplayRectangle.Height + 9 )/ 10;
 						vScrollBar.Visible = vscroll;
 					}	
 				}
@@ -285,11 +288,12 @@ public class ScrollableControl : Control
 					}
 					else
 					{
-						hScrollBar.LargeChange = DisplayRectangle.Width;			
-						hScrollBar.SmallChange = (DisplayRectangle.Width + 9) / 10;
 						// set Maximum before setting the value, or we get an exception
 						hScrollBar.Maximum = ScrollArea.Width - 1;
 						hScrollBar.Value = -(autoScrollPosition.X);
+						// set Large/SmallChange after setting maximum, or display failure
+						hScrollBar.LargeChange = DisplayRectangle.Width;			
+						hScrollBar.SmallChange = (DisplayRectangle.Width + 9) / 10;
 						hScrollBar.Visible = hscroll;
 					}
 				}
@@ -511,15 +515,57 @@ public class ScrollableControl : Control
 					return total;					
 				}
 			}
+			
+	protected override void OnControlAdded(ControlEventArgs e) {
+  	base.OnControlAdded (e);
+		UpdateScrollBars();
+	}
 
+	protected override void OnControlRemoved(ControlEventArgs e) {
+		base.OnControlRemoved (e);
+		UpdateScrollBars();
+	}
+	
 	public void ScrollControlIntoView(Control activeControl)
 	{
 		if(activeControl.Visible && AutoScroll &&
 			(hScrollBar.Visible || vScrollBar.Visible))
 		{
-			int x = autoScrollPosition.X + activeControl.Left;
-			int y = autoScrollPosition.Y + activeControl.Top;
-			ScrollByOffset(new Size(x, y));
+			Rectangle displayRect = DisplayRectangle;
+			Rectangle clientRectangle = ClientRectangle;
+			
+			int x = displayRect.X;
+			int y = displayRect.Y;
+			int width = this.autoScrollMargin.Width;
+			int height = this.autoScrollMargin.Height;
+			
+			Rectangle bounds = activeControl.Bounds;
+			if (bounds.X < width)
+			{
+					x = (displayRect.X + width) - bounds.X;
+			}
+			else if (((bounds.X + bounds.Width) + width) > clientRectangle.Width)
+			{
+					x = clientRectangle.Width - (((bounds.X + bounds.Width) + width) - displayRect.X);
+					if (((bounds.X + x) - displayRect.X) < width)
+					{
+							x = (displayRect.X + width) - bounds.X;
+					}
+			}
+			if (bounds.Y < height)
+			{
+					y = (displayRect.Y + height) - bounds.Y;
+			}
+			else if (((bounds.Y + bounds.Height) + height) > clientRectangle.Height)
+			{
+				y = clientRectangle.Height - (((bounds.Y + bounds.Height) + height) - displayRect.Y);
+				if (((bounds.Y + y) - displayRect.Y) < height)
+				{
+						y = (displayRect.Y + height) - bounds.Y;
+				}
+			}
+			
+			ScrollByOffset(new Size(-x, -y));
 			UpdateScrollBars();
 		}
 		return;

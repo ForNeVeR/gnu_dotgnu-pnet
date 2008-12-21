@@ -1,3 +1,9 @@
+2008-12-21  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_stmt.tc (ILNode_SemAnalysis(ILNode_FixExpr)): Remove the
+	handling of a simple array because this is done by the cast now.
+	(ILNode_SemAnalysis(ILNode_Fixed)): Fix a compiler warning.
+
 2008-12-14  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_coerce.c (GetUnsafeConvertRules): Handle cast from an array

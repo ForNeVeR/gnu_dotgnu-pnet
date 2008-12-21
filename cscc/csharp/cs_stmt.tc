@@ -1674,7 +1674,7 @@ ILNode_SemAnalysis(ILNode_Fixed)
 
 	if(!ILType_IsPointer(type))
 	{
-		CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
+		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
 					"only pointer types can be declared in fixed statements");
 	}
 
@@ -1774,30 +1774,8 @@ ILNode_SemAnalysis(ILNode_FixAddress)
  */
 ILNode_SemAnalysis(ILNode_FixExpr)
 {
-	CSSemValue value;
-	ILNode *expr;
-	
-	/* Perform semantic analysis on the expression */
-	value = ILNode_SemAnalysis(node->expr, info, &(node->expr));
-
-	/* Wrap the expression to prevent double evaluation */
-	expr = ILNode_SemGuard_create(node->expr, value);
-	yysetfilename(expr, yygetfilename(node->expr));
-	yysetlinenum(expr, yygetlinenum(node->expr));
-
-	/* If the expression is an array, then turn it into a pointer */
-	if(CSSemIsValue(value) && ILType_IsSimpleArray(CSSemGetType(value)))
-	{
-		expr = ILNode_ArrayAccess_create(expr, ILNode_Int32_create(0, 0, 1));
-		yysetfilename(expr, yygetfilename(node->expr));
-		yysetlinenum(expr, yygetlinenum(node->expr));
-		expr = ILNode_AddressOf_create(expr);
-		yysetfilename(expr, yygetfilename(node->expr));
-		yysetlinenum(expr, yygetlinenum(node->expr));
-	}
-
 	/* Assign the value to the variable */
-	*parent = ILNode_Assign_create(node->name, expr);
+	*parent = ILNode_Assign_create(node->name, node->expr);
 	yysetfilename(*parent, yygetfilename(node));
 	yysetlinenum(*parent, yygetlinenum(node));
 

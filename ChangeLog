@@ -1,3 +1,20 @@
+2008-12-23  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_cast.tc: Allow cast from managed pointer to unmanaged
+	pointer and vice versa.
+
+	* codegen/cg_coerce.c (GetUnsafeConvertRules): Allow cast from managed
+	pointer to umpanaged pointer in a fixed statement for the address of
+	operator.
+
+	* codegen/cg_decls.tc (DumpILLocals): Dump locals including prefixes.
+
+	* cscc/csharp/cs_stmt.tc: Create a pinned local for the expressions in
+	fixed expression and fixed address.
+
+	* include/il_types.h: Add macro ILType_IsRef to check for managed
+	pointers.
+
 2008-12-21  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_stmt.tc (ILNode_SemAnalysis(ILNode_FixExpr)): Remove the

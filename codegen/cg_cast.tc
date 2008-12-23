@@ -1652,6 +1652,11 @@ ILGenCast(ILMachineType_UInt64, ILMachineType_UnmanagedPtr)
 {
 	ILGenSimple(info, IL_OP_CONV_U);
 }
+ILGenCast(ILMachineType_ManagedPtr, ILMachineType_UnmanagedPtr),
+ILGenCast(ILMachineType_UnmanagedPtr, ILMachineType_ManagedPtr)
+{
+	/* Nothing to do here */
+}
 ILGenCast(ILMachineType, ILMachineType_ObjectRef),
 ILGenCast(ILMachineType, ILMachineType_UnmanagedPtr),
 ILGenCast(ILMachineType, ILMachineType_ManagedPtr),

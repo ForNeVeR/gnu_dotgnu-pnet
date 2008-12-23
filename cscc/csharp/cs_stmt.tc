@@ -152,6 +152,93 @@ static int StmtContextOK(ILGenInfo *info, int context, int stopContext)
 	}
 }
 
+static ILNode *HandleFixedExpr(ILGenInfo *info, ILNode *nameNode,
+							   ILNode *exprNode, ILNode **exprParent,
+							   int isFixAddress)
+{
+	CSSemValue value;
+	ILNode *expr;
+
+	/* Perform semantic analysis on the expression */
+	value = ILNode_SemAnalysis(exprNode, info, exprParent);
+
+	/* Assign the value to a pinned local. */
+	if(CSSemIsValue(value))
+	{
+		ILNode *pinnedVar;
+		unsigned long tempVar;
+		ILNode_MethodDeclaration *method;
+		ILType *pinnedType;
+		ILType *type = CSSemGetType(value);
+
+		/* Locate the method that this local is declared within */
+		method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+		expr = *exprParent;
+
+		if(isFixAddress && ILType_IsPointer(type))
+		{
+			type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_BYREF,
+								   ILType_Ref(type));
+
+			if(!type)
+			{
+				CCOutOfMemory();
+			}
+			CSSemSetValueKind(value, CSSemGetKind(value), type);
+		}
+
+		/* Create the local variable signature for this method */
+		if(!(method->localVarSig))
+		{
+			method->localVarSig = ILTypeCreateLocalList(info->context);
+			if(!(method->localVarSig))
+			{
+				CCOutOfMemory();
+			}
+		}
+			
+		pinnedType = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PINNED,
+									 type);
+		if(!pinnedType)
+		{
+			ILGenOutOfMemory(info);
+		}
+
+		if(!ILTypeAddLocal(info->context, method->localVarSig, pinnedType))
+		{
+			CCOutOfMemory();
+		}
+
+		tempVar = ILTypeNumLocals(method->localVarSig) - 1;
+		pinnedVar = ILNode_LocalVar_create(tempVar, ILTypeToMachineType(type));
+
+		/* Assign the value to the pinned variable */
+		expr = ILNode_Assign_create(pinnedVar, expr);
+		yysetfilename(expr, yygetfilename(exprNode));
+		yysetlinenum(expr, yygetlinenum(exprNode));
+
+		/* Wrap the expression to prevent double evaluation */
+		expr = ILNode_SemGuard_create(expr, value);
+		yysetfilename(expr, yygetfilename(expr));
+		yysetlinenum(expr, yygetlinenum(expr));
+	}
+	else
+	{
+		/* Wrap the expression to prevent double evaluation */
+		expr = ILNode_SemGuard_create(*exprParent, value);
+		yysetfilename(expr, yygetfilename(exprNode));
+		yysetlinenum(expr, yygetlinenum(exprNode));
+	}
+
+	/* Assign the value to the variable */
+	expr = ILNode_Assign_create(nameNode, expr);
+	yysetfilename(expr, yygetfilename(nameNode));
+	yysetlinenum(expr, yygetlinenum(nameNode));
+
+	return expr;
+}
+
 %}
 
 /*
@@ -1762,10 +1849,11 @@ ILNode_EndsInReturnImpl(ILNode_Fixed)
  */
 ILNode_SemAnalysis(ILNode_FixAddress)
 {
-	*parent=ILNode_Assign_create(node->name,node->address);
-	yysetfilename(*parent, yygetfilename(node));
-	yysetlinenum(*parent, yygetlinenum(node));
-	ILNode_SemAnalysis(*parent,info,parent);
+	*parent = HandleFixedExpr(info, node->name, node->address,
+							  &(node->address), 1);
+
+	/* Perform semantic analysis on the assignment */
+	ILNode_SemAnalysis(*parent, info, parent);
 	return CSSemValueDefault;
 }
 
@@ -1774,10 +1862,7 @@ ILNode_SemAnalysis(ILNode_FixAddress)
  */
 ILNode_SemAnalysis(ILNode_FixExpr)
 {
-	/* Assign the value to the variable */
-	*parent = ILNode_Assign_create(node->name, node->expr);
-	yysetfilename(*parent, yygetfilename(node));
-	yysetlinenum(*parent, yygetlinenum(node));
+	*parent = HandleFixedExpr(info, node->name, node->expr, &(node->expr), 0);
 
 	/* Perform semantic analysis on the assignment */
 	ILNode_SemAnalysis(*parent, info, parent);

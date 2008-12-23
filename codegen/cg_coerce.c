@@ -440,6 +440,21 @@ static int GetUnsafeConvertRules(ILGenInfo *info, ILType *fromType,
 				}
 			}
 		}
+
+		/* Managed Pointer to pointer conversion */
+		if(ILType_IsPointer(toType) && ILType_IsRef(fromType))
+		{
+			if(ILType_Ref(toType) == ILType_Void)
+			{
+				/* We can allways cast to void * */
+				return 1;
+			}
+
+			if(ILTypeIdentical(ILType_Ref(fromType), ILType_Ref(toType)))
+			{
+				return 1;
+			}
+		}		
 	}
 
 	/* Could not find an appropriate conversion */

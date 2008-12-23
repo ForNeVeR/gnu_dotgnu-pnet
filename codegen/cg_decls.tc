@@ -614,7 +614,7 @@ static void DumpILLocals(ILGenInfo *info, FILE *outstream, ILType *localVarSig)
 				fputs(", ", outstream);
 			}
 			ILDumpType(outstream, info->image,
-					   ILTypeGetLocal(localVarSig, index),
+					   ILTypeGetLocalWithPrefixes(localVarSig, index),
 					   IL_DUMP_QUOTE_NAMES);
 		}
 		fputs(")\n", outstream);

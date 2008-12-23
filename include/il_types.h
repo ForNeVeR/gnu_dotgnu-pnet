@@ -235,6 +235,13 @@ struct _tagILType
 				  ((type)->kind__ & 0xFF) == IL_TYPE_COMPLEX_SENTINEL))
 
 /*
+ * Determine if a type is a managed pointer.
+ */
+#define	ILType_IsRef(type)	\
+				((type) != 0 && ILType_IsComplex((type)) && \
+				 ILType_Kind((type)) == IL_TYPE_COMPLEX_BYREF)
+
+/*
  * Determine if a type is a pointer.
  */
 #define	ILType_IsPointer(type)	\

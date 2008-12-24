@@ -277,7 +277,7 @@ void _IL_RuntimeHelpers_RunClassConstructor(ILExecThread *thread, void *type)
 
 ILInt32 _IL_RuntimeHelpers_InternalOffsetToStringData(ILExecThread *thread)
 {
-	return (ILInt32)(StringToBuffer(0));
+	return (ILInt32)(ILNativeInt)(StringToBuffer(0));
 }
 
 ILObject *_IL_RuntimeHelpers_GetObjectValue(ILExecThread *_thread,

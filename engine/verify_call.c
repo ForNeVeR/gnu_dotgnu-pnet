@@ -1297,6 +1297,9 @@ static InlineMethodInfo const InlineMethods[] = {
 	{"Array", "System", "Clear", "(oSystem.Array;ii)V",
 	 IL_INLINEMETHOD_ARRAY_CLEAR_AI4I4},
 
+	{"RuntimeHelpers", "System.Runtime.CompilerServices",
+	 "get_OffsetToStringData", "()i", IL_INLINEMETHOD_OFFSETTOSTRINGDATA},
+
 	{"Math", "System", "Abs", "(i)i", IL_INLINEMETHOD_ABS_I4},
 	{"Math", "System", "Max", "(ii)i", IL_INLINEMETHOD_MAX_I4},
 	{"Math", "System", "Min", "(ii)i", IL_INLINEMETHOD_MIN_I4},
@@ -1748,7 +1751,29 @@ callNonvirtualFromVirtual:
 						break;
 					}
 
-				 	if (inlineType != -1
+				 	if (inlineType == IL_INLINEMETHOD_OFFSETTOSTRINGDATA)
+					{
+						ILInt32 offset = (ILInt32)(ILNativeInt)(StringToBuffer(0));
+
+						ILCoderConstant(coder, IL_OP_LDC_I4, (unsigned char *)&offset);
+						stack[stackSize].engineType = ILEngineType_I4;
+						stack[stackSize].typeInfo = 0;
+
+#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+						if (coderFlags & IL_CODER_FLAG_STATS)
+						{
+							ILMutexLock(globalTraceMutex);
+							fprintf(stdout,
+								"Inlining: %s.%s at %s.%s\n", 
+									ILClass_Name(ILMethod_Owner(methodInfo)),
+									ILMethod_Name(methodInfo),
+									ILClass_Name(ILMethod_Owner(method)),
+									ILMethod_Name(method));
+							ILMutexUnlock(globalTraceMutex);
+						}
+#endif
+					}
+				 	else if (inlineType != -1
 				 		&& ILCoderCallInlineable(coder, inlineType,
 												 methodInfo, elementSize))
 				 	{

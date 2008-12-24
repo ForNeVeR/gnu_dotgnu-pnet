@@ -1,3 +1,17 @@
+2008-12-24  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_helpers.c (_IL_RuntimeHelpers_InternalOffsetToStringData):
+	Fix compiler warning on 64bit archs.
+
+	* engine/jitc_except.c (JITCoder_TryHandlerStart): Make sure the current
+	ILExecThread is available on entry of a catch block if built without
+	the thread in the signature.
+
+	* engine/verify.c: include lib_defs.h
+
+	* engine/verify_call.c, include/il_coder.h: Add support for inlining of
+	OffsetToStringData in System.Runtime.CompilerServices.RuntimeHelpers.
+
 2008-12-23  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_cast.tc: Allow cast from managed pointer to unmanaged

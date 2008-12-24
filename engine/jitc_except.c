@@ -464,10 +464,24 @@ static void JITCoder_TryHandlerStart(ILCoder *_coder,
 
 	if(!(jitCoder->isInCatcher))
 	{
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+		ILJitValue thread;
+#endif
+
 		/* Tell libjit that we are in the catcher. */
 		jit_insn_start_catcher(jitCoder->jitFunction);
 		
 		jitCoder->isInCatcher = 1;
+
+#ifndef IL_JIT_THREAD_IN_SIGNATURE
+		/* 
+		 * We have to make sure the current thread is available at the start
+		 * of a catch block.
+		 * This is a NOP if the thread was loaded during execution of
+		 * 'normal' code.
+		 */
+		thread = _ILJitCoderGetThread(jitCoder);
+#endif
 	}
 	else
 	{

@@ -19,6 +19,7 @@
  */
 
 #include "engine.h"
+#include "lib_defs.h"
 #include "il_coder.h"
 #include "il_opcodes.h"
 #include "il_align.h"

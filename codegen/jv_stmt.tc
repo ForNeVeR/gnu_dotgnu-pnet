@@ -1780,3 +1780,19 @@ JavaGenDiscard(ILNode_EventAddOrRemove)
 		JavaGenAdjust(info, -1);
 	}
 }
+
+/*
+ * Generate discard code for a memcpy statement.
+ */
+JavaGenDiscard(ILNode_Memcpy)
+{
+	/* TODO */
+}
+
+/*
+ * Generate discard code for a memset statement.
+ */
+JavaGenDiscard(ILNode_Memset)
+{
+	/* TODO */
+}

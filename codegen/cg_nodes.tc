@@ -638,6 +638,20 @@ struct _tagILSwitchValue
 	ILNode *thenClause;
 	ILNode *elseClause;
 }
+%node ILNode_Memcpy ILNode_Statement =
+{
+	ILNode *destExpr;
+	ILNode *srcExpr;
+	ILNode *sizeExpr;
+	ILUInt8	align;
+}
+%node ILNode_Memset ILNode_Statement =
+{
+	ILNode *addrExpr;
+	ILNode *valueExpr;
+	ILNode *sizeExpr;
+	ILUInt8	align;
+}
 %node ILNode_LabelledStatement ILNode_Statement %abstract =
 {
 	%nocreate const char *name = {0};
@@ -679,6 +693,7 @@ struct _tagILSwitchValue
 	unsigned long varIndex;
 	ILMachineType varType;
 }
+
 %node ILNode_EmptyExpr ILNode_Expression=
 {
 	ILMachineType type;

@@ -1475,3 +1475,22 @@ ILNode_CSemAnalysis(ILNode_Lock)
 	return CSemValueDefault;
 }
 
+/*
+ * Perform semantic analysis for a memcpy statement.
+ */
+ILNode_CSemAnalysis(ILNode_Memcpy)
+{
+	/* Nothing to do here: this node is generated during semantic
+	   analysis of an invokation expression */
+	return CSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for a memset statement.
+ */
+ILNode_CSemAnalysis(ILNode_Memset)
+{
+	/* Nothing to do here: this node is generated during semantic
+	   analysis of an invokation expression */
+	return CSemValueDefault;
+}

@@ -2051,6 +2051,26 @@ ILNode_SemAnalysis(ILNode_EventAddOrRemove)
 }
 
 /*
+ * Perform semantic analysis for a memcpy statement.
+ */
+ILNode_SemAnalysis(ILNode_Memcpy)
+{
+	/* Nothing to do here: this node is generated during semantic
+	   analysis of an invokation expression */
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for a memset statement.
+ */
+ILNode_SemAnalysis(ILNode_Memset)
+{
+	/* Nothing to do here: this node is generated during semantic
+	   analysis of an invokation expression */
+	return CSSemValueDefault;
+}
+
+/*
  * This is ILNode_LocalVarDeclaration's copy ,except for the fact that
  * all nodes are replaced with ILNode_LocVar after SemAnalysis.
  */

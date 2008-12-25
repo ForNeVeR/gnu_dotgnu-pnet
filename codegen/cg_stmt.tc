@@ -2612,3 +2612,37 @@ ILNode_GenDiscard(ILNode_EventAddOrRemove)
 		ILGenAdjust(info, -1);
 	}
 }
+
+/*
+ * Generate discard code for a memcpy statement.
+ */
+ILNode_GenDiscard(ILNode_Memcpy)
+{
+	ILNode_GenValue(node->destExpr, info);
+	ILNode_GenValue(node->srcExpr, info);
+	ILNode_GenValue(node->sizeExpr, info);
+	if(node->align)
+	{
+		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED,
+					  node->align);
+	}
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_CPBLK);
+	ILGenAdjust(info, -3);
+}
+
+/*
+ * Generate discard code for a memset statement.
+ */
+ILNode_GenDiscard(ILNode_Memset)
+{
+	ILNode_GenValue(node->addrExpr, info);
+	ILNode_GenValue(node->valueExpr, info);
+	ILNode_GenValue(node->sizeExpr, info);
+	if(node->align)
+	{
+		ILGenByteInsn(info, IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED,
+					  node->align);
+	}
+	ILGenSimple(info, IL_OP_PREFIX + IL_PREFIX_OP_INITBLK);
+	ILGenAdjust(info, -3);
+}

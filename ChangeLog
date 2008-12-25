@@ -1,3 +1,16 @@
+2008-12-25  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_nodes.tc: Define the new nodetypes ILNode_Memcpy and
+	ILNode_Memset for memcpy and memset.
+
+	* codegen/cg_stmt.tc: Add discard methods for the new node types which
+	generates cpblk for ILNode_Memcpy and initblk for ILNode_Memset.
+
+	* codegen/jv_stmt.tc: Stub out JavaGenDiscard for the new node types.
+
+	* cscc/c/c_stmt.tc, cscc/csharp/cs_stmt.tc: Add the functions for semantic
+	analysis for the new node types.
+
 2008-12-24  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_helpers.c (_IL_RuntimeHelpers_InternalOffsetToStringData):
@@ -18,7 +31,7 @@
 	pointer and vice versa.
 
 	* codegen/cg_coerce.c (GetUnsafeConvertRules): Allow cast from managed
-	pointer to umpanaged pointer in a fixed statement for the address of
+	pointer to unmanaged pointer in a fixed statement for the address of
 	operator.
 
 	* codegen/cg_decls.tc (DumpILLocals): Dump locals including prefixes.

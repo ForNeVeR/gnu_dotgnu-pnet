@@ -120,76 +120,70 @@
 	stloc.s	6
 	ldloc.2
 	isinst	'Test2'
-	brfalse	?L9
+	ldnull
+	ceq
 	ldc.i4.1
-	br	?L10
-?L9:
-	ldc.i4.0
-?L10:
+	xor
 	stloc.0
 	ldloc.2
 	isinst	'Test2'
+	brfalse	?L9
+	ldc.i4.1
+	stloc.s	6
+?L9:
+	ldloc.2
+	isinst	'Test2'
+	brtrue	?L10
+	ldc.i4.2
+	stloc.s	6
+?L10:
+	ldloc.2
+	isinst	'I'
+	ldnull
+	ceq
+	ldc.i4.1
+	xor
+	stloc.0
+	ldloc.2
+	isinst	'I'
 	brfalse	?L11
 	ldc.i4.1
 	stloc.s	6
 ?L11:
 	ldloc.2
-	isinst	'Test2'
+	isinst	'I'
 	brtrue	?L12
 	ldc.i4.2
 	stloc.s	6
 ?L12:
-	ldloc.2
-	isinst	'I'
+	ldloc.1
+	isinst	['.library']'System'.'Int32'
+	ldnull
+	ceq
+	ldc.i4.1
+	xor
+	stloc.0
+	ldloc.1
+	isinst	['.library']'System'.'Int32'
 	brfalse	?L13
 	ldc.i4.1
-	br	?L14
+	stloc.s	6
 ?L13:
-	ldc.i4.0
+	ldloc.1
+	isinst	['.library']'System'.'Int32'
+	brtrue	?L14
+	ldc.i4.2
+	stloc.s	6
 ?L14:
+	ldc.i4.0
 	stloc.0
-	ldloc.2
-	isinst	'I'
-	brfalse	?L15
+	br	?L15
 	ldc.i4.1
 	stloc.s	6
 ?L15:
-	ldloc.2
-	isinst	'I'
-	brtrue	?L16
 	ldc.i4.2
 	stloc.s	6
 ?L16:
-	ldloc.1
-	isinst	['.library']'System'.'Int32'
-	brfalse	?L17
-	ldc.i4.1
-	br	?L18
-?L17:
-	ldc.i4.0
-?L18:
-	stloc.0
-	ldloc.1
-	isinst	['.library']'System'.'Int32'
-	brfalse	?L19
-	ldc.i4.1
-	stloc.s	6
-?L19:
-	ldloc.1
-	isinst	['.library']'System'.'Int32'
-	brtrue	?L20
-	ldc.i4.2
-	stloc.s	6
-?L20:
-	ldc.i4.0
-	stloc.0
-	br	?L21
-	ldc.i4.1
-	stloc.s	6
-?L21:
-	ldc.i4.2
-	stloc.s	6
-?L22:
 	ret
 	.maxstack 2
 } // method m1

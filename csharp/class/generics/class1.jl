@@ -43,7 +43,7 @@
 } // namespace System
 .namespace 'System'
 {
-.class public auto ansi 'Test2`1'<valuetype 'T'> extends ['.library']'System'.'Object'
+.class public auto ansi 'Test2`1'<.ctor valuetype 'T'> extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {

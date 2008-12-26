@@ -76,9 +76,9 @@
 } // namespace System
 .namespace 'System'
 {
-.class public auto ansi 'Test1`2'<valuetype 'T', 'U'> extends ['.library']'System'.'Object'
+.class public auto ansi 'Test1`2'<.ctor valuetype 'T', 'U'> extends ['.library']'System'.'Object'
 {
-.class nested public auto ansi 'Test1Nested'<valuetype 'T', 'U'> extends ['.library']'System'.'Object'
+.class nested public auto ansi 'Test1Nested'<.ctor valuetype 'T', 'U'> extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
@@ -89,7 +89,7 @@
 	.maxstack 1
 } // method .ctor
 } // class Test1Nested
-.class nested public auto ansi 'Test1Nested1`1'<valuetype 'T', '<_P0>', 'U'> extends ['.library']'System'.'Object'
+.class nested public auto ansi 'Test1Nested1`1'<.ctor valuetype 'T', '<_P0>', 'U'> extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
@@ -100,7 +100,7 @@
 	.maxstack 1
 } // method .ctor
 } // class Test1Nested1`1
-.class nested public auto ansi 'Test1Nested1`2'<valuetype 'T', '<_P0>', 'U', 'V'> extends ['.library']'System'.'Object'
+.class nested public auto ansi 'Test1Nested1`2'<.ctor valuetype 'T', '<_P0>', 'U', 'V'> extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
@@ -111,7 +111,7 @@
 	.maxstack 1
 } // method .ctor
 } // class Test1Nested1`2
-.class nested public auto ansi 'Test1Nested2`1'<valuetype '<_P0>', 'U', 'T'> extends ['.library']'System'.'Object'
+.class nested public auto ansi 'Test1Nested2`1'<.ctor valuetype '<_P0>', 'U', 'T'> extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {
@@ -122,7 +122,7 @@
 	.maxstack 1
 } // method .ctor
 } // class Test1Nested2`1
-.class nested public auto ansi 'Test1Nested2`2'<valuetype '<_P1>', '<_P0>', 'U', 'T'> extends ['.library']'System'.'Object'
+.class nested public auto ansi 'Test1Nested2`2'<.ctor valuetype '<_P1>', '<_P0>', 'U', 'T'> extends ['.library']'System'.'Object'
 {
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {

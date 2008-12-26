@@ -1,3 +1,10 @@
+2008-12-26  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/class/generics/class1.il, csharp/class/generics/class1.jl,
+	csharp/class/generics/class2.il, csharp/class/generics/class2.jl,
+	csharp/expr/is1.err, csharp/expr/is1.il, csharp/expr/is1.jerr: Reflect
+	latest compiler changes.
+
 2008-08-16  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/expr/invoke3.cs, csharp/expr/invoke3.il, csharp/expr/invoke3.jl:

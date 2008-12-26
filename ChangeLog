@@ -5,6 +5,11 @@
 	csharp/expr/is1.err, csharp/expr/is1.il, csharp/expr/is1.jerr: Reflect
 	latest compiler changes.
 
+	* csharp/stmt/fixed1.cs, csharp/stmt/fixed1.err, csharp/stmt/fixed1.jerr:
+	Add some tests for the fixed statement.
+
+	* csharp/stmt/Makefile.am: Add fixed1.cs to the tests.
+
 2008-08-16  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/expr/invoke3.cs, csharp/expr/invoke3.il, csharp/expr/invoke3.jl:

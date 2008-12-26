@@ -1,6 +1,7 @@
 
 TESTS = block1.cs \
 		block2.cs \
+		fixed1.cs \
 		foreach1.cs \
 		foreach2.cs \
 		foreach3.cs \

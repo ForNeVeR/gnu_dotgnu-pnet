@@ -1,3 +1,18 @@
+2008-12-27  Klaus Treichel  <ktreichek@web.de>
+
+	* engine/jitc_string.c: Add support for inlining for String.get_Chars
+	and String.NewString.
+
+	* engine/jitc.c: Add the signature for the string allocator.
+	(ILJitInit): Define the signature for the string allocator.
+	(_ILJitSetMethodInfo): Set the method info for the new inlining
+	functions.
+	(ILJitTypeCreate): Mark the System.String class.
+
+	* engine/jitc.h: Add a new type kind for the System.String class.
+ 
+	* engine/Makefile.am: Add jitc_string.c to the jit coder sources.
+
 2008-12-25  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_nodes.tc: Define the new nodetypes ILNode_Memcpy and

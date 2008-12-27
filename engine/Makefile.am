@@ -35,6 +35,7 @@ JITC_INCLUDES = jitc.h \
 				jitc_ptr.c \
 				jitc_setup.c \
 				jitc_stack.c \
+				jitc_string.c \
 				jitc_var.c
 
 MD_ARM_INCLUDES = md_arm.h arm_codegen.h

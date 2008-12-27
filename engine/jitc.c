@@ -183,6 +183,12 @@ static ILJitType _ILJitSignature_ILJitAllocTyped = 0;
 static ILJitType _ILJitSignature_ILJitSArrayAlloc = 0;
 
 /*
+ * System_String *_ILJitStringAlloc(ILClass *stringClass,
+ *									ILUInt32 numChars)
+ */
+static ILJitType _ILJitSignature_ILJitStringAlloc = 0;
+
+/*
  * System_Array *_ILJitGetExceptionStackTrace(ILExecThread *thread)
  */
 static ILJitType _ILJitSignature_ILJitGetExceptionStackTrace = 0;
@@ -395,6 +401,7 @@ typedef struct _tagILJITCoder ILJITCoder;
 #include "jitc_except.c"
 #include "jitc_alloc.c"
 #include "jitc_array.c"
+#include "jitc_string.c"
 #include "jitc_call.c"
 #include "jitc_delegate.c"
 #include "jitc_math.c"
@@ -2342,6 +2349,15 @@ int ILJitInit()
 	}
 
 	args[0] = _IL_JIT_TYPE_VPTR;
+	args[1] = _IL_JIT_TYPE_UINT32;
+	returnType = _IL_JIT_TYPE_VPTR;
+	if(!(_ILJitSignature_ILJitStringAlloc = 
+		jit_type_create_signature(IL_JIT_CALLCONV_CDECL, returnType, args, 2, 1)))
+	{
+		return 0;
+	}
+
+	args[0] = _IL_JIT_TYPE_VPTR;
 	args[1] = _IL_JIT_TYPE_VPTR;
 	args[2] = _IL_JIT_TYPE_VPTR;
 	returnType = _IL_JIT_TYPE_INT32;
@@ -3895,6 +3911,25 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 				}
 			}
 			break;
+
+			case IL_JIT_TYPEKIND_SYSTEM_STRING:
+			{
+				ILType *signature = ILMethod_Signature(method);
+
+				if(ILMethod_IsStatic(method) &&
+				   !strcmp(ILMethod_Name(method), "NewString") &&
+				   _ILLookupTypeMatch(signature, "(i)oSystem.String;"))
+				{
+						inlineFunc = _ILJitSystemStringNew;
+				}
+				else if(!ILMethod_IsStatic(method) &&
+						!strcmp(ILMethod_Name(method), "get_Chars") &&
+						_ILLookupTypeMatch(signature, "(Ti)c"))
+				{
+						inlineFunc = _ILJitSystemStringChars;
+				}
+			}
+			break;
 		}
 	}
 
@@ -4597,6 +4632,10 @@ int ILJitTypeCreate(ILClassPrivate *classPrivate, ILExecProcess *process)
 					{
 						classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_SYSTEM_MATH;
 					}
+					else if(!strcmp(ILClass_Name(classPrivate->classInfo), "String"))
+					{
+						classPrivate->jitTypes.jitTypeKind = IL_JIT_TYPEKIND_SYSTEM_STRING;
+					}
 				}
 			}
 		}
@@ -5029,6 +5068,7 @@ void ILJitBacktrace(void *frame, void *pc, int numFrames)
 #include "jitc_inline.c"
 #include "jitc_alloc.c"
 #include "jitc_array.c"
+#include "jitc_string.c"
 #include "jitc_except.c"
 #include "jitc_call.c"
 #include "jitc_delegate.c"

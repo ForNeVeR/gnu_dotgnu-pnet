@@ -1914,6 +1914,8 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 	}
 	else if(ILType_IsPointer(CSSemGetType(value)))
 	{
+		CSSemValue value1;
+		
 		/* Access to an array defined by a pointer */
 		CCUnsafeMessage(info, (ILNode *)node,
 						"unsafe pointer-based array access");
@@ -1940,15 +1942,17 @@ ILNode_SemAnalysis(ILNode_ArrayAccess)
 		}
 		else
 		{
-			tempNode = ILNode_SizeOf_create(0);
-			((ILNode_SizeOf *)tempNode)->type = objectType;
-			tempNode = ILNode_CastSimple_create
-				(tempNode, ILMachineType_NativeInt);
-			tempNode = ILNode_Add_create(node->array,
-				ILNode_Mul_create(args[0].node, tempNode));
+			tempNode = PointerDelta(info, objectType, args[0].node,
+									args[0].type, ILType_Int);
+			tempNode = ILNode_Add_create(node->array, tempNode);
 		}
 		yysetfilename(tempNode, yygetfilename(node));
 		yysetlinenum(tempNode, yygetlinenum(node));
+
+		/* Perform constant propagation if possible */
+		CSSemSetRValue(value1, ILType_Int);
+		EvalOperator(info, tempNode, &tempNode, &value1);
+
 		*parent = ILNode_Deref_create(tempNode, objectType);
 		yysetfilename(*parent, yygetfilename(node));
 		yysetlinenum(*parent, yygetlinenum(node));

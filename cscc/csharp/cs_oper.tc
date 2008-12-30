@@ -398,6 +398,81 @@ error:
 	return value;
 }
 
+/*
+ * Create a SizeOf node for the given type.
+ */
+static ILNode *CreateSizeOf(ILGenInfo *info, ILType *type)
+{
+	ILNode_SizeOf *sizeNode;
+
+	sizeNode = (ILNode_SizeOf *)ILNode_SizeOf_create(0);
+	sizeNode->type = type;
+	sizeNode->size = GetPrimitiveTypeSize(type);
+
+	return (ILNode *)sizeNode;
+}
+
+/*
+ * Create an expression for arthmetic involving a pointer type and a
+ * numeric type.
+ */
+static ILNode *PointerDelta(ILGenInfo *info, ILType *refType, ILNode *numNode,
+							ILType *numType, ILType *resultType)
+{
+	ILNode *sizeNode;
+	ILNode *resultNode;
+	CSSemValue value;
+	ILMachineType machineType;
+
+	if(resultType == ILType_UInt32 || resultType == ILType_UInt64)
+	{
+		machineType = ILMachineType_NativeUInt;
+	}
+	else
+	{
+		machineType = ILMachineType_NativeInt;
+	}
+
+	if(refType == ILType_Void)
+	{
+		CCErrorOnLine(yygetfilename(numNode), yygetlinenum(numNode),
+					  "`void *' cannot be used for arithmetic operations");
+		refType = ILType_UInt8;
+	}
+	sizeNode = CreateSizeOf(info, refType);
+	sizeNode = ILNode_CastSimple_create(sizeNode, machineType);
+	numNode = ILNode_CastSimple_create(numNode, machineType);
+
+	resultNode = ILNode_Mul_create(numNode, sizeNode);
+	yysetfilename(resultNode, yygetfilename(numNode));
+	yysetlinenum(resultNode, yygetlinenum(numNode));
+	
+	/* Perform constant propagation if possible */
+	CSSemSetRValue(value, resultType);
+	EvalOperator(info, resultNode, &resultNode, &value);
+
+	return resultNode;
+}
+
+/*
+ * Perform an add or sub of a numeric type to a pointer.
+ */
+static void PointerOp(ILGenInfo *info, ILNode **parent,
+					  ILNode **pointerNode, ILType *pointerType,
+					  ILNode **numNode, ILType *numType,
+					  ILType *resultType)
+{
+	CSSemValue value;
+	ILType *elemType;
+
+	elemType = ILTypeStripPrefixes(ILType_Ref(pointerType));
+	ILCoerce(info, *pointerNode, pointerNode, pointerType, resultType, 0);
+	*numNode = PointerDelta(info, elemType, *numNode, numType, resultType);
+
+	CSSemSetRValue(value, resultType);
+	EvalOperator(info, *parent, parent, &value);
+}
+
 %}
 
 /*
@@ -410,9 +485,6 @@ ILNode_SemAnalysis(ILNode_Add)
 	CSSemValue value1;
 	CSSemValue value2;
 	ILType *resultType;
-	ILType *elemType;
-	ILNode_SizeOf *sizeNode;
-	ILMachineType machineType;
 
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -515,25 +587,16 @@ ILNode_SemAnalysis(ILNode_Add)
 		resultType = ToNumericType(info, CSSemGetType(value2));
 		if(resultType)
 		{
-			ILCoerce(info, node->expr2, &(node->expr2),
-					 CSSemGetType(value2), resultType, 0);
 			if(resultType == ILType_UInt32 || resultType == ILType_UInt64)
 			{
-				machineType = ILMachineType_NativeUInt;
+				resultType = ILType_UInt;
 			}
 			else
 			{
-				machineType = ILMachineType_NativeInt;
+				resultType = ILType_Int;
 			}
-			node->expr1 = ILNode_CastSimple_create(node->expr1, machineType);
-			node->expr2 = ILNode_CastSimple_create(node->expr2, machineType);
-			elemType = ILTypeStripPrefixes(ILType_Ref(CSSemGetType(value1)));
-			sizeNode = (ILNode_SizeOf *)ILNode_SizeOf_create(0);
-			sizeNode->type = elemType;
-			sizeNode->size = GetPrimitiveTypeSize(elemType);
-			node->expr2 = ILNode_Mul_create
-				(node->expr2, ILNode_CastSimple_create
-					((ILNode *)sizeNode, machineType));
+			PointerOp(info, parent, &(node->expr1), CSSemGetType(value1),
+					  &(node->expr2), CSSemGetType(value2), resultType);
 			CSSemSetRValue(value1, CSSemGetType(value1));
 			return value1;
 		}
@@ -543,25 +606,16 @@ ILNode_SemAnalysis(ILNode_Add)
 		resultType = ToNumericType(info, CSSemGetType(value1));
 		if(resultType)
 		{
-			ILCoerce(info, node->expr1, &(node->expr1),
-					 CSSemGetType(value1), resultType, 0);
 			if(resultType == ILType_UInt32 || resultType == ILType_UInt64)
 			{
-				machineType = ILMachineType_NativeUInt;
+				resultType = ILType_UInt;
 			}
 			else
 			{
-				machineType = ILMachineType_NativeInt;
+				resultType = ILType_Int;
 			}
-			node->expr1 = ILNode_CastSimple_create(node->expr1, machineType);
-			node->expr2 = ILNode_CastSimple_create(node->expr2, machineType);
-			elemType = ILTypeStripPrefixes(ILType_Ref(CSSemGetType(value1)));
-			sizeNode = (ILNode_SizeOf *)ILNode_SizeOf_create(0);
-			sizeNode->type = elemType;
-			sizeNode->size = GetPrimitiveTypeSize(elemType);
-			node->expr1 = ILNode_Mul_create
-				(node->expr1, ILNode_CastSimple_create
-					((ILNode *)sizeNode, machineType));
+			PointerOp(info, parent, &(node->expr2), CSSemGetType(value2),
+					  &(node->expr1), CSSemGetType(value1), resultType);
 			CSSemSetRValue(value2, CSSemGetType(value2));
 			return value2;
 		}
@@ -622,8 +676,6 @@ ILNode_SemAnalysis(ILNode_Sub)
 	CSSemValue value2;
 	ILType *resultType;
 	ILType *elemType;
-	ILNode_SizeOf *sizeNode;
-	ILMachineType machineType;
 
 	/* Perform semantic analysis on the arguments */
 	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
@@ -704,17 +756,17 @@ ILNode_SemAnalysis(ILNode_Sub)
 		if(ILTypeIdentical(ILType_Ref(CSSemGetType(value1)),
 						   ILType_Ref(CSSemGetType(value2))))
 		{
+			ILNode *sizeNode;
+
 			/* Subtract two pointers of the same type */
 			elemType = ILTypeStripPrefixes
 				(ILType_Ref(CSSemGetType(value1)));
-			sizeNode = (ILNode_SizeOf *)ILNode_SizeOf_create(0);
-			sizeNode->type = elemType;
-			sizeNode->size = GetPrimitiveTypeSize(elemType);
+			sizeNode = CreateSizeOf(info, elemType);
 			*parent = ILNode_CastSimple_create
 				((ILNode *)node, ILMachineType_Int64);
 			*parent = ILNode_Div_create
 				(*parent, ILNode_CastSimple_create
-					((ILNode *)sizeNode, ILMachineType_Int64));
+					(sizeNode, ILMachineType_Int64));
 			yysetfilename(*parent, yygetfilename(node));
 			yysetlinenum(*parent, yygetlinenum(node));
 			CSSemSetRValue(value1, ILType_Int64);
@@ -726,25 +778,16 @@ ILNode_SemAnalysis(ILNode_Sub)
 		resultType = ToNumericType(info, CSSemGetType(value2));
 		if(resultType)
 		{
-			ILCoerce(info, node->expr2, &(node->expr2),
-					 CSSemGetType(value2), resultType, 0);
 			if(resultType == ILType_UInt32 || resultType == ILType_UInt64)
 			{
-				machineType = ILMachineType_NativeUInt;
+				resultType = ILType_UInt;
 			}
 			else
 			{
-				machineType = ILMachineType_NativeInt;
+				resultType = ILType_Int;
 			}
-			node->expr1 = ILNode_CastSimple_create(node->expr1, machineType);
-			node->expr2 = ILNode_CastSimple_create(node->expr2, machineType);
-			elemType = ILTypeStripPrefixes(ILType_Ref(CSSemGetType(value1)));
-			sizeNode = (ILNode_SizeOf *)ILNode_SizeOf_create(0);
-			sizeNode->type = elemType;
-			sizeNode->size = GetPrimitiveTypeSize(elemType);
-			node->expr2 = ILNode_Mul_create
-				(node->expr2, ILNode_CastSimple_create
-					((ILNode *)sizeNode, machineType));
+			PointerOp(info, parent, &(node->expr1), CSSemGetType(value1),
+					  &(node->expr2), CSSemGetType(value2), resultType);
 			CSSemSetRValue(value1, CSSemGetType(value1));
 			return value1;
 		}
@@ -1411,13 +1454,11 @@ static CSSemValue IncOrDecSem(ILGenInfo *info, ILNode_UnaryExpression *node,
 					ILTypeStripPrefixes(ILType_Ref(CSSemGetType(value)));
 				if(elemType != ILType_Void)
 				{
-					ILNode_SizeOf *sizeNode = (ILNode_SizeOf *)
-						ILNode_SizeOf_create(0);
-					sizeNode->type = elemType;
-					sizeNode->size = GetPrimitiveTypeSize(elemType);
+					ILNode *sizeNode;
+
+					sizeNode = CreateSizeOf(info, elemType);
 					*parent = (*createPtrFunc)
-						(node->expr, GetPrimitiveTypeSize(elemType),
-						 (ILNode *)sizeNode);
+						(node->expr, GetPrimitiveTypeSize(elemType), sizeNode);
 					return value;
 				}
 			}
@@ -1482,7 +1523,7 @@ ILNode_SemAnalysis(ILNode_PostDec)
 {
 	return IncOrDecSem(info, (ILNode_UnaryExpression *)node, parent,
 					   "op_Decrement", "--", ILNode_UserPostDec_create,
-					   ILNode_PostIncPtr_create);
+					   ILNode_PostDecPtr_create);
 }
 
 /*

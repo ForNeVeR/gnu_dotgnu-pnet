@@ -82,15 +82,154 @@ static int IsPowOfTwo(ILEvalValue evalValue)
 }
 
 /*
+ * Check if the constant is a zero
+ */
+static int IsConstZero(ILEvalValue evalValue)
+{
+	switch(evalValue.valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_Int16:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt8:
+		case ILMachineType_UInt16:
+		case ILMachineType_UInt32:
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			return (evalValue.un.i4Value == 0);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			return (evalValue.un.i8Value == 0);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			return (evalValue.un.r4Value == (ILFloat)0.0);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			return (evalValue.un.r8Value == (ILDouble)0.0);
+		}
+		break;
+
+		default:
+			break;
+	}
+	return 0;
+}
+
+/*
+ * Check if the constant is a 1
+ */
+static int IsConstOne(ILEvalValue evalValue)
+{
+	switch(evalValue.valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_Int16:
+		case ILMachineType_Int32:
+		case ILMachineType_UInt8:
+		case ILMachineType_UInt16:
+		case ILMachineType_UInt32:
+		case ILMachineType_NativeInt:
+		case ILMachineType_NativeUInt:
+		{
+			return (evalValue.un.i4Value == 1);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		case ILMachineType_UInt64:
+		{
+			return (evalValue.un.i8Value == 1);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			return (evalValue.un.r4Value == (ILFloat)1.0);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			return (evalValue.un.r8Value == (ILDouble)1.0);
+		}
+		break;
+
+		default:
+			break;
+	}
+	return 0;
+}
+
+/*
+ * Check if the constant is a -1
+ */
+static int IsConstMinusOne(ILEvalValue evalValue)
+{
+	switch(evalValue.valueType)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_Int16:
+		case ILMachineType_Int32:
+		case ILMachineType_NativeInt:
+		{
+			return (evalValue.un.i4Value == -1);
+		}
+		break;
+
+		case ILMachineType_Int64:
+		{
+			return (evalValue.un.i8Value == -1);
+		}
+		break;
+
+		case ILMachineType_Float32:
+		{
+			return (evalValue.un.r4Value == (ILFloat)-1.0);
+		}
+		break;
+
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			return (evalValue.un.r8Value == (ILDouble)-1.0);
+		}
+		break;
+
+		default:
+			break;
+	}
+	return 0;
+}
+
+/*
  * Reduce operator strength for arithmetic operators
  */
 static int ReduceOperator(ILGenInfo *info, ILNode *node,
 		ILNode** parent,ILMachineType commonType)
 {
-	ILEvalValue evalValue;
+	ILEvalValue evalValue1;
+	ILEvalValue evalValue2;
+	int expr1IsConst;
+	int expr2IsConst;
+
 	ILNode_BinaryExpression *expr;
 	int bitpos;
-	if(info->overflowInsns || !(info->optimizeFlag))
+
+	/* if(info->overflowInsns || !(info->optimizeFlag)) */
+	if(info->overflowInsns)
 	{
 		return 0;
 	}
@@ -100,8 +239,10 @@ static int ReduceOperator(ILGenInfo *info, ILNode *node,
 	}
 
 	expr=(ILNode_BinaryExpression*)(node);
-	if(!ILNode_EvalConst(expr->expr1,info,&evalValue) && 
-		!ILNode_EvalConst(expr->expr2,info,&evalValue))
+	expr1IsConst = ILNode_EvalConst(expr->expr1, info, &evalValue1);
+	expr2IsConst = ILNode_EvalConst(expr->expr2, info, &evalValue2);
+
+	if(!expr1IsConst && !expr2IsConst)
 	{
 		return 0;
 	}
@@ -109,45 +250,242 @@ static int ReduceOperator(ILGenInfo *info, ILNode *node,
 	switch(commonType)
 	{
 		case ILMachineType_Int8:
-		case ILMachineType_UInt8:
 		case ILMachineType_Int16:
-		case ILMachineType_UInt16:
 		case ILMachineType_Int32:
-		case ILMachineType_UInt32:
 		case ILMachineType_Int64:
-		case ILMachineType_UInt64:
+		case ILMachineType_NativeInt:
 		{
-			if(ILNode_EvalConst(expr->expr1,info,&evalValue))
+			/*
+			 * Handle the optimizations that are allowed only for numeric
+			 * types.
+			 */
+			if(expr1IsConst)
 			{
-				if((bitpos=IsPowOfTwo(evalValue))>0)
+				if(IsConstMinusOne(evalValue1))
 				{
-					if(yyisa(node,ILNode_Mul))
+					if(yyisa(node, ILNode_Mul))
 					{
-						*parent=ILNode_Shl_create(expr->expr2,
-									ILNode_Int32_create(bitpos,0,0));
+						*parent = ILNode_Neg_create(expr->expr2);
+						return 1;
+					}
+				}
+				else if((bitpos = IsPowOfTwo(evalValue1)) > 0)
+				{
+					if(yyisa(node, ILNode_Mul))
+					{
+						*parent = ILNode_Shl_create(expr->expr2,
+										ILNode_Int32_create(bitpos, 0, 0));
 						return 1;
 					}
 				}
 			}
-			else if(ILNode_EvalConst(expr->expr2,info,&evalValue))
+			else if(expr2IsConst)
 			{
-				if((bitpos=IsPowOfTwo(evalValue))>0)
+				if(IsConstMinusOne(evalValue2))
 				{
-					if(yyisa(node,ILNode_Mul))
+					if(yyisa(node, ILNode_Mul) ||
+					   yyisa(node, ILNode_Div))
 					{
-						*parent=ILNode_Shl_create(expr->expr1,
-									ILNode_Int32_create(bitpos,0,0));
+						*parent = ILNode_Neg_create(expr->expr1);
 						return 1;
 					}
-					else if(yyisa(node,ILNode_Div))
+				}
+				else if((bitpos = IsPowOfTwo(evalValue2)) > 0)
+				{
+					if(yyisa(node, ILNode_Mul))
 					{
-						*parent=ILNode_Shr_create(expr->expr1,
-									ILNode_Int32_create(bitpos,0,0));
+						*parent = ILNode_Shl_create(expr->expr1,
+										ILNode_Int32_create(bitpos, 0, 0));
 						return 1;
 					}
 				}
 			}
 		}
+		/* Fall through */
+
+		case ILMachineType_UnmanagedPtr:
+		case ILMachineType_ManagedPtr:
+		{
+			if(expr1IsConst)
+			{
+				if(IsConstZero(evalValue1))
+				{
+					if(yyisa(node, ILNode_Add))
+					{
+						*parent = expr->expr2;
+						return 1;
+					}
+				}
+				else if(IsConstOne(evalValue1))
+				{
+					if(yyisa(node, ILNode_Mul))
+					{
+						*parent = expr->expr2;
+						return 1;
+					}
+				}
+			}
+			else if(expr2IsConst)
+			{
+				if(IsConstZero(evalValue2))
+				{
+					if(yyisa(node, ILNode_Add) ||
+					   yyisa(node, ILNode_Sub))
+					{
+						*parent = expr->expr1;
+						return 1;
+					}
+				}
+				else if(IsConstOne(evalValue2))
+				{
+					if(yyisa(node, ILNode_Mul) ||
+					   yyisa(node, ILNode_Div))
+					{
+						*parent = expr->expr1;
+						return 1;
+					}
+				}
+			}
+		}
+		break;
+
+		case ILMachineType_UInt8:
+		case ILMachineType_UInt16:
+		case ILMachineType_UInt32:
+		case ILMachineType_UInt64:
+		case ILMachineType_NativeUInt:
+		{
+			if(expr1IsConst)
+			{
+				if(IsConstZero(evalValue1))
+				{
+					if(yyisa(node, ILNode_Add))
+					{
+						*parent = expr->expr2;
+						return 1;
+					}
+				}
+				else if(IsConstOne(evalValue1))
+				{
+					if(yyisa(node, ILNode_Mul))
+					{
+						*parent = expr->expr2;
+						return 1;
+					}
+				}
+				else if((bitpos = IsPowOfTwo(evalValue1)) > 0)
+				{
+					if(yyisa(node, ILNode_Mul))
+					{
+						*parent = ILNode_Shl_create(expr->expr2,
+										ILNode_Int32_create(bitpos, 0, 0));
+						return 1;
+					}
+				}
+			}
+			else if(expr2IsConst)
+			{
+				if(IsConstZero(evalValue2))
+				{
+					if(yyisa(node, ILNode_Add) ||
+					   yyisa(node, ILNode_Sub))
+					{
+						*parent = expr->expr1;
+						return 1;
+					}
+				}
+				else if(IsConstOne(evalValue2))
+				{
+					if(yyisa(node, ILNode_Mul) ||
+					   yyisa(node, ILNode_Div))
+					{
+						*parent = expr->expr1;
+						return 1;
+					}
+				}
+				else if((bitpos = IsPowOfTwo(evalValue2)) > 0)
+				{
+					if(yyisa(node, ILNode_Mul))
+					{
+						*parent = ILNode_Shl_create(expr->expr1,
+										ILNode_Int32_create(bitpos, 0, 0));
+						return 1;
+					}
+					else if(yyisa(node, ILNode_Div))
+					{
+						*parent = ILNode_Shr_create(expr->expr1,
+										ILNode_Int32_create(bitpos, 0, 0));
+						return 1;
+					}
+				}
+			}
+		}
+		break;
+
+		case ILMachineType_Float32:
+		case ILMachineType_Float64:
+		case ILMachineType_NativeFloat:
+		{
+			if(expr1IsConst)
+			{
+				if(IsConstZero(evalValue1))
+				{
+					if(yyisa(node, ILNode_Add))
+					{
+						*parent = expr->expr2;
+						return 1;
+					}
+				}
+				else if(IsConstOne(evalValue1))
+				{
+					if(yyisa(node, ILNode_Mul))
+					{
+						*parent = expr->expr2;
+						return 1;
+					}
+				}
+				else if(IsConstMinusOne(evalValue1))
+				{
+					if(yyisa(node, ILNode_Mul))
+					{
+						*parent = ILNode_Neg_create(expr->expr2);
+						return 1;
+					}
+				}
+			}
+			else if(expr2IsConst)
+			{
+				if(IsConstZero(evalValue2))
+				{
+					if(yyisa(node, ILNode_Add) ||
+					   yyisa(node, ILNode_Sub))
+					{
+						*parent = expr->expr1;
+						return 1;
+					}
+				}
+				else if(IsConstOne(evalValue2))
+				{
+					if(yyisa(node, ILNode_Mul) ||
+					   yyisa(node, ILNode_Div))
+					{
+						*parent = expr->expr1;
+						return 1;
+					}
+				}
+				else if(IsConstMinusOne(evalValue2))
+				{
+					if(yyisa(node, ILNode_Mul) ||
+					   yyisa(node, ILNode_Div))
+					{
+						*parent = ILNode_Neg_create(expr->expr1);
+						return 1;
+					}
+				}
+			}
+		}
+		break;
+
 		default:
 			break;
 	}
@@ -399,8 +737,18 @@ ILNode_GenValue(ILNode_Add)
 	}
 	else
 	{
+		ILNode *reducedNode = NULL;
+
 		/* Numeric addition operator */
 		commonType = ILCommonType(info, type1, type2, 0);
+
+		if(ReduceOperator(info, (ILNode*)node, &reducedNode, commonType))
+		{
+			if(reducedNode != NULL)
+			{
+				return ILNode_GenValue(reducedNode, info);
+			}
+		}
 	}
 
 	/* Evaluate the sub-expressions and cast to the common type */

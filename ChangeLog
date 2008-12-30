@@ -1,3 +1,24 @@
+2008-12-30  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_arith.tc (ReduceOperator): Add more basic optimizations and
+	apply them even if no optimization is specified.
+	(ILNode_GenValue(ILNode_Add)): Add call to ReduceOperator.
+
+	* cscc/csharp/cs_oper.tc (CreateSizeOf, PointerDelta): Add functions for
+	handling of unsafe constructs involving pointers in an uniform way.
+	(PointerOp): Add function for performing addition or substraction of a
+	numeric value and a pointer value.
+	(ILNode_SemAnalysis(ILNode_Add), ILNode_SemAnalysis(ILNode_Sub)): Use the
+	new functions where appropriate.
+	(ILNode_SemAnalysis(ILNode_PostDec)): Fix pointer post decrement.
+
+	* cscc/csharp/cs_lvalue.tc (ILNode_SemAnalysis(ILNode_ArrayAccess)): Use
+	the new functions in cs_oper.tc for pointer array access and perform
+	constant propagation if possible.
+
+	* cscc/csharp/cs_semvalue.c (_CSSemReplaceWithConstant): Add support for
+	constant propagation for NativeInt and NativeUInt.
+
 2008-12-27  Klaus Treichel  <ktreichek@web.de>
 
 	* engine/jitc_string.c: Add support for inlining for String.get_Chars

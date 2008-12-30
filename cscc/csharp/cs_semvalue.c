@@ -143,6 +143,32 @@ void _CSSemReplaceWithConstant(ILNode **parent, ILEvalValue *value)
 		}
 		break;
 
+		case ILMachineType_NativeInt:
+		{
+			if(value->un.i4Value >= 0)
+			{
+				*parent = ILNode_Int32_create
+					((ILUInt64)(ILInt64)(value->un.i4Value), 0, 0);
+			}
+			else
+			{
+				*parent = ILNode_Int32_create
+					((ILUInt64)(-((ILInt64)(value->un.i4Value))), 1, 0);
+			}
+			*parent = ILNode_CastSimple_create(*parent,
+											   ILMachineType_NativeInt);
+		}
+		break;
+
+		case ILMachineType_NativeUInt:
+		{
+			*parent = ILNode_UInt32_create
+				((ILUInt64)(ILUInt32)(value->un.i4Value), 0, 0);
+			*parent = ILNode_CastSimple_create(*parent,
+											   ILMachineType_NativeUInt);
+		}
+		break;
+
 		case ILMachineType_Float32:
 		{
 			*parent = ILNode_Float32_create((ILDouble)(value->un.r4Value));

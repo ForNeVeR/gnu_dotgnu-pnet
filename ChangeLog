@@ -1,3 +1,15 @@
+2008-12-30  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/expr/addressof1.cs, csharp/expr/addressof1.err,
+	csharp/expr/addressof1.il, csharp/expr/addressof1.jerr: Add tests for the
+	unsafe address of operator.
+
+	* csharp/expr/pointer3.cs, csharp/expr/pointer3.err,
+	csharp/expr/pointer3.il, csharp/expr/pointer3.jerr: Add tests for unsafe
+	pointer arithmetic.
+
+	* csharp/expr/Makefile.am: Add addressof1.cs and pointer3.cs to the tests.
+
 2008-12-26  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/class/generics/class1.il, csharp/class/generics/class1.jl,

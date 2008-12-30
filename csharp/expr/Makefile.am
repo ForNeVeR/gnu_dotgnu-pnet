@@ -1,5 +1,6 @@
 
-TESTS = arglist1.cs \
+TESTS = addressof1.cs \
+		arglist1.cs \
 		arglist2.cs \
 		array1.cs \
 		array2.cs \
@@ -44,6 +45,7 @@ TESTS = arglist1.cs \
 		newarray4.cs \
 		pointer1.cs \
 		pointer2.cs \
+		pointer3.cs \
 		ref1.cs \
 		ref2.cs \
 		relop1.cs \

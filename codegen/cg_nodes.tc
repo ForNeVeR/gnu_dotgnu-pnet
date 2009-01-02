@@ -5,7 +5,7 @@
 /*
  * cg_nodes.tc - Declare common nodes and operations.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -413,7 +413,7 @@ struct _tagILSwitchValue
 	ILType *arrayType;
 }
 %node ILNode_Conditional ILNode_TernaryExpression
-%node ILNode_Deref ILNode_LValueNoRef =
+%node ILNode_Deref ILNode_LValue =
 {
 	ILNode *expr;
 	ILType *elemType;
@@ -499,6 +499,19 @@ struct _tagILSwitchValue
 	ILNode	   *expr;
 	ILType     *type;
 	int			useCtorMethod;
+}
+%node ILNode_RefInit ILNode_Expression =
+{
+	ILNode	   *expr;
+	ILType	   *type;
+}
+%node ILNode_RefValueTypeCreationExpression ILNode_Expression =
+{
+	ILNode	   *expr;
+	ILType	   *type;
+	%nocreate ILNode   *argList = {0};
+	%nocreate ILMethod *methodInfo = {0};
+	%nocreate ILType   *callSiteSig = {0};
 }
 
 /*

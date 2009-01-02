@@ -4,7 +4,7 @@
 /*
  * cg_misc.tc - Miscellaneous operator nodes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -154,6 +154,23 @@ ILNode_GetType(ILNode_DelegateCreationExpression)
  * Get the type of a default value type constructor call.
  */
 ILNode_GetType(ILNode_DefaultConstructor)
+{
+	return ILTypeToMachineType(node->type);
+}
+
+/*
+ * Get the type of a value type initialization
+ */
+ILNode_GetType(ILNode_RefInit)
+{
+	return ILTypeToMachineType(node->type);
+}
+
+/*
+ * Get the type of a value type constructor call with the reference passed
+ * as argument 1 and emitted like a normal method call.
+ */
+ILNode_GetType(ILNode_RefValueTypeCreationExpression)
 {
 	return ILTypeToMachineType(node->type);
 }
@@ -594,6 +611,49 @@ ILNode_GenDiscard(ILNode_AddressOf)
 {
 	/* Evaluate the sub-expression for side effects */
 	ILNode_GenDiscard(node->expr, info);
+}
+
+/*
+ * Generate the discard code for a reference initialization.
+ */
+ILNode_GenDiscard(ILNode_RefInit)
+{
+	ILNode_GenRef(node->expr, info);
+	ILGenTypeToken(info, IL_PREFIX_OP_INITOBJ + IL_OP_PREFIX,
+				   node->type);
+	ILGenAdjust(info, -1);
+}
+
+/*
+ * Generate the discard code for a value type constructor call with the
+ * reference passed as argument 1 and emitted like a normal method call.
+ */
+ILNode_GenDiscard(ILNode_RefValueTypeCreationExpression)
+{
+	long saveStack;
+
+	/* Save the current stack height, so we know where to
+	   unwind to when popping the arguments */
+	saveStack = info->stackHeight;
+
+	/* Push a reference to the value to be initialized on the stack */
+	ILNode_GenRef(node->expr, info);
+
+	/* Push the argument expressions */
+	if(node->argList)
+	{
+		ILNode_GenValue(node->argList, info);
+	}
+
+	/* Invoke the constructor */
+	ILGenCallByMethodSig(info, node->methodInfo, node->callSiteSig);
+
+	/* Re-adjust the stack to remove the arguments and push the result */
+	info->stackHeight = saveStack;
+	if(info->stackHeight > info->maxStackHeight)
+	{
+		info->maxStackHeight = info->stackHeight;
+	}
 }
 
 /*
@@ -1392,6 +1452,64 @@ ILNode_GenValue(ILNode_DefaultConstructor)
 		break;
 	}
 	return type;
+}
+
+/*
+ * Generate the value code for a reference initialization.
+ */
+ILNode_GenValue(ILNode_RefInit)
+{
+	ILNode_GenRef(node->expr, info);
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+	ILGenTypeToken(info, IL_PREFIX_OP_INITOBJ + IL_OP_PREFIX,
+				   node->type);
+	ILGenAdjust(info, -1);
+	ILGenTypeToken(info, IL_OP_LDOBJ, node->type);
+
+	return ILTypeToMachineType(node->type);
+}
+
+/*
+ * Generate value code for a value type constructor call with the reference
+ * passed as argument 1 and emitted like a normal method call.
+ */
+ILNode_GenValue(ILNode_RefValueTypeCreationExpression)
+{
+	long saveStack;
+
+	/* Save the current stack height, so we know where to
+	   unwind to when popping the arguments */
+	saveStack = info->stackHeight;
+
+	/* Push a reference to the value to be initialized on the stack */
+	ILNode_GenRef(node->expr, info);
+
+	/* Duplicate the reference which will be used by the call */
+	ILGenSimple(info, IL_OP_DUP);
+	ILGenAdjust(info, 1);
+
+	/* Push the argument expressions */
+	if(node->argList)
+	{
+		ILNode_GenValue(node->argList, info);
+	}
+
+	/* Invoke the constructor */
+	ILGenCallByMethodSig(info, node->methodInfo, node->callSiteSig);
+
+	/* Re-adjust the stack to remove the arguments and push the result */
+	info->stackHeight = saveStack + 1;
+	if(info->stackHeight > info->maxStackHeight)
+	{
+		info->maxStackHeight = info->stackHeight;
+	}
+
+	/* The first reference is now on the stack */
+	/* Load the value just initialized */
+	ILGenLoadManaged(info, ILTypeToMachineType(node->type), node->type);
+
+	return ILMachineType_ManagedValue;
 }
 
 %decls %end %{

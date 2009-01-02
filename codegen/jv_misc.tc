@@ -1,7 +1,7 @@
 /*
  * jv_misc.tc - Miscellaneous operator nodes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1569,6 +1569,25 @@ JavaGenValue(ILNode_DefaultConstructor)
 		break;
 	}
 	return type;
+}
+
+/*
+ * Generate the value code for a reference initialization.
+ */
+JavaGenValue(ILNode_RefInit)
+{
+	/* Reference initialization is not yet supported in Java */
+	return ILTypeToMachineType(node->type);
+}
+
+/*
+ * Generate value code for a value type constructor call with the reference
+ * passed as argument 1 and emitted like a normal method call.
+ */
+JavaGenValue(ILNode_RefValueTypeCreationExpression)
+{
+	/* Invoking constructors this way is not yet supported in Java */
+	return ILTypeToMachineType(node->type);
 }
 
 %decls %end %{

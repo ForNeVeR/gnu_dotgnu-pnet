@@ -1,7 +1,7 @@
 /*
  * cs_oper.tc - Semantic analysis for C# operators.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1062,9 +1062,70 @@ ILNode_SemAnalysis(ILNode_Assign)
 	ILCoerce(info, node->expr2, &(node->expr2),
 			 CSSemGetType(value2), CSSemGetType(value1),1);
 
+	/* Check if this is an assignment to a value type (struct) */
+	if(!info->outputIsJava && ILType_IsValueType(CSSemGetType(value1)) &&
+	   !ILTypeIsEnum(CSSemGetType(value1)))
+	{
+		ILNode *expr = 0;
+
+		/* Check if we can get a reference to the assignment target */
+		if(yyisa(node->expr1, ILNode_LValue) &&
+		   !yyisa(node->expr1, ILNode_LValueNoRef))
+		{
+			expr = node->expr1;
+		}
+		if(expr)
+		{
+			if(yyisa(node->expr2, ILNode_DefaultConstructor))
+			{
+				*parent = ILNode_RefInit_create(expr, CSSemGetType(value1));
+			}
+			else if(yyisa(node->expr2, ILNode_ObjectCreationExpression))
+			{
+				ILNode_RefValueTypeCreationExpression *newNode;
+				ILNode_ObjectCreationExpression *createExpr;
+
+				createExpr = (ILNode_ObjectCreationExpression *)(node->expr2);
+				newNode = (ILNode_RefValueTypeCreationExpression *)
+							ILNode_RefValueTypeCreationExpression_create
+								(expr, CSSemGetType(value1));
+				newNode->argList = createExpr->argList;
+				newNode->methodInfo = createExpr->methodInfo;
+				newNode->callSiteSig = createExpr->callSiteSig;
+
+				*parent = (ILNode *)newNode;
+			}
+		}
+	}
+
 	/* Convert value1 into an rvalue and return its type */
 	CSSemSetRValue(value1, CSSemGetType(value1));
 	return value1;
+}
+
+/*
+ * semantic analysis for a reference initialization.
+ */
+ILNode_SemAnalysis(ILNode_RefInit)
+{
+	/*
+	 * This node is created during semanalyzing an assignment.
+	 * So it will never be semanalyzed directly.
+	 */
+	return CSSemValueDefault;
+}
+
+/*
+ * semantic analysis for a value type constructor call with the reference
+ * passed as argument 1 and emitted like a normal method call.
+ */
+ILNode_SemAnalysis(ILNode_RefValueTypeCreationExpression)
+{
+	/*
+	 * This node is created during semanalyzing an assignment.
+	 * So it will never be semanalyzed directly.
+	 */
+	return CSSemValueDefault;
 }
 
 %{
@@ -2303,6 +2364,12 @@ ILNode_SemAnalysis(ILNode_AddressOf)
 		/* If the argument is a pointer dereference, then remove the
 		   extra layer and use the pointer directly as the address */
 		*parent = ((ILNode_Deref *)(node->expr))->expr;
+	}
+	else if(!yyisa(node->expr, ILNode_LValue) ||
+			yyisa(node->expr, ILNode_LValueNoRef))
+	{
+		CCErrorOnLine(yygetfilename(node->expr),yygetlinenum(node->expr),
+					  "cannot get address of expression");
 	}
 	CSSemSetRValue(value,ILTypeCreateRef(info->context,
 							IL_TYPE_COMPLEX_PTR,

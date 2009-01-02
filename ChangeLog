@@ -1,3 +1,32 @@
+2009-01-02  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_lvalue.tc (ILNode_GenRef(ILNode_Deref)): Add code generation
+	for getting the address of of a dreferencing node.
+
+	* codegen/cg_misc.tc: Add support operations for the new node types
+	ILNode_RefInit and ILNode_RefValueTypeCreationExpression.
+
+	* codegen/cg_nodes.tc: Add node types ILNode_RefInit and
+	ILNode_RefValueTypeCreationExpression for optimizing initialization of
+	value types (structs) where the target is a node where a reference can be
+	computed.
+	Change parent of ILNode_Deref from ILNode_LValueNoRef to ILNode_LValue.
+
+	* codegen/jv_misc.tc: Stub out JavaGenValue operation for the new node
+	types ILNode_RefInit and ILNode_RefValueTypeCreationExpression.
+
+	* cscc/c/c_name.tc, cscc/c/c_stubs.tc: Stub out operations for the new
+	node types ILNode_RefInit and ILNode_RefValueTypeCreationExpression.
+
+	* cscc/csharp/cs_oper.tc (ILNode_SemAnalysis(ILNode_Assign)): Optimize
+	assignment to a value type from a new expression if a reference to the
+	target can be computed.
+	Stub out operations for the new node types ILNode_RefInit and
+	ILNode_RefValueTypeCreationExpression because they will never be
+	semanalyzed.
+	(ILNode_SemAnalysis(ILNode_AddressOf)): Add a check if the address of the
+	expression can be computed.
+
 2008-12-30  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_arith.tc (ReduceOperator): Add more basic optimizations and

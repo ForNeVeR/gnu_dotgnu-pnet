@@ -2,7 +2,7 @@
  * c_name.tc - Convert expressions into names suitable for embedding
  *             in array types.
  *
- * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2004, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -226,6 +226,8 @@ ILNode_CName(ILNode_NewExpression),
 ILNode_CName(ILNode_ObjectCreationExpression),
 ILNode_CName(ILNode_DelegateCreationExpression),
 ILNode_CName(ILNode_DefaultConstructor),
+ILNode_CName(ILNode_RefInit),
+ILNode_CName(ILNode_RefValueTypeCreationExpression),
 ILNode_CName(ILNode_InvocationExpression),
 ILNode_CName(ILNode_CSharpInvocation),
 ILNode_CName(ILNode_BaseInit),

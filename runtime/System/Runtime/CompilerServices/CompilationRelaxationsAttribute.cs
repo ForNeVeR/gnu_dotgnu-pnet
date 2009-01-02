@@ -2,7 +2,7 @@
  * CompilationRelaxationsAttribute.cs - Implementation of the
  *	"System.Runtime.CompilerServices.CompilationRelaxationsAttribute" class.
  *
- * Copyright (C) 2001, 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2004, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,17 +22,22 @@
 namespace System.Runtime.CompilerServices
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if !ECMA_COMPAT || CONFIG_FRAMEWORK_2_0
 
+#if CONFIG_FRAMEWORK_2_0
 [AttributeUsage(AttributeTargets.Assembly |
 				AttributeTargets.Class |
 				AttributeTargets.Struct |
 				AttributeTargets.Constructor |
 				AttributeTargets.Method,
 				AllowMultiple=false, Inherited=false)]
+#else
+[AttributeUsage(AttributeTargets.Module)]
+#endif
 public class CompilationRelaxationsAttribute : Attribute
 {
 
+#if CONFIG_FRAMEWORK_2_0
 	private const Int32 invalidStringRelaxations = 0x000C;
 
 	private const Int32 invalidNullReferenceRelaxations = 0x0030;
@@ -42,10 +47,12 @@ public class CompilationRelaxationsAttribute : Attribute
 	private const Int32 invalidArrayRelaxations =  0x0300;
 
 	private const Int32 invalidOverflowRelaxations = 0x0C00;
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Internal state.
 	private int value;
 
+#if CONFIG_FRAMEWORK_2_0
 	private void Check(Int32 relaxation)
 	{
 		if((relaxation & invalidStringRelaxations) ==
@@ -74,19 +81,24 @@ public class CompilationRelaxationsAttribute : Attribute
 			throw new ArgumentException();
 		}
 	}
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Constructors.
 	public CompilationRelaxationsAttribute(int relaxations)
 			{
+#if CONFIG_FRAMEWORK_2_0
 				Check(relaxations);
+#endif // CONFIG_FRAMEWORK_2_0
 				value = relaxations;
 			}
 
+#if CONFIG_FRAMEWORK_2_0
 	public CompilationRelaxationsAttribute(CompilationRelaxations relaxations)
 			{
 				Check((int)relaxations);
 				value = (int)relaxations;
 			}
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Properties.
 	public int CompilationRelaxations
@@ -99,6 +111,6 @@ public class CompilationRelaxationsAttribute : Attribute
 
 }; // class CompilationRelaxationsAttribute
 
-#endif // !CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT || CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Runtime.CompilerServices

@@ -1,3 +1,11 @@
+2009-01-02  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Runtime/CompilerServices/CompilationRelaxationsAttribute.cs:
+	Change conditional compilation so that non ECMA 1.x features are available
+	if built with framework_1_x.
+
+	* runtime/System/Collections/IEqualityComparer.cs: Add non ECMA 2.0 interface.
+
 2008-12-16  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Windows.Forms/ScrollableControl.cs: fix ScrollControlIntoView and

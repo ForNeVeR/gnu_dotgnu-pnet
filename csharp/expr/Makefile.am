@@ -39,6 +39,7 @@ TESTS = addressof1.cs \
 		is2.cs \
 		new1.cs \
 		new2.cs \
+		new3.cs \
 		newarray1.cs \
 		newarray2.cs \
 		newarray3.cs \

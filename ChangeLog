@@ -1,3 +1,16 @@
+2009-01-02  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/expr/binary3.il: Update to reflect latest compiler changes.
+
+	* csharp/expr/Makefile.am: Add new3.cs to the tests.
+
+	* csharp/expr/new1.cs, csharp/expr/new1.il, csharp/expr/new1.jl: Add more
+	tests for value type creation.
+
+	* csharp/expr/new3.cs, csharp/expr/new3.err, csharp/expr/new3.il,
+	csharp/expr/new3.jerr: Add tests for value type creation involving unsafe
+	constructs.
+
 2008-12-30  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/expr/addressof1.cs, csharp/expr/addressof1.err,

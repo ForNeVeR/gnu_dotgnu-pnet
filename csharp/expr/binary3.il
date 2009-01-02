@@ -58,12 +58,12 @@
 .method private hidebysig instance void 'm1'() cil managed 
 {
 	.locals init	(valuetype 'Y', valuetype 'Y', valuetype 'X', valuetype 'Y')
+	ldloca.s	0
 	ldc.i4.1
-	newobj	instance void 'Y'::'.ctor'(int32)
-	stloc.0
+	call	instance void 'Y'::'.ctor'(int32)
+	ldloca.s	1
 	ldc.i4.2
-	newobj	instance void 'Y'::'.ctor'(int32)
-	stloc.1
+	call	instance void 'Y'::'.ctor'(int32)
 	ldloc.0
 	ldloc.1
 	call	valuetype 'X' 'Y'::'op_Subtraction'(valuetype 'Y', valuetype 'Y')

@@ -1,7 +1,7 @@
 /*
  * new1.cs - Test the valid cases of the "new" operator.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,23 @@ struct X
 	private int x;
 
 	public X(int _x) { x = _x; }
+}
+
+struct Y
+{
+	public X x;
+
+	public X X
+	{
+		get
+		{
+			return x;
+		}
+		set
+		{
+			x = value;
+		}
+	}
 }
 
 enum Color
@@ -57,6 +74,29 @@ class Test
 		t2 = new Test2(3);
 		t2 = new Test2(3L);
 		o1 = new Object();
+	}
+
+	void m2(Y y)
+	{
+		y.x = new X(1);
+	}
+
+	void m3(Y y)
+	{
+		y.X = new X(1);
+	}
+
+	X m4(Y y)
+	{
+		return y.x = new X(1);
+	}
+
+	void m4()
+	{
+		X[] x = new X[2];
+
+		x[0] = new X(0);
+		x[1] = new X();
 	}
 }
 

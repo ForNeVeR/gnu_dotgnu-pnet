@@ -1,7 +1,7 @@
 /*
  * TestArray.cs - Tests for the "Array" class.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -253,6 +253,26 @@ public class TestArray : TestCase
 					}
 				}
 				return true;
+			}
+
+	// Helper to clone an array via the ICloneable interface
+	static private Object CloneObject(ICloneable o)
+			{
+				return o.Clone();
+			}
+
+	// Test Cloning Arrays
+	public void TestArrayClone()
+			{
+				int[] a;
+				int[] b;
+
+				a = new int [] {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+				b = (int[])a.Clone();
+				Assert("Clone (1)", SameContents(a, b));
+
+				b = (int[])CloneObject(a);
+				Assert("Clone (2)", SameContents(a, b));
 			}
 
 	// Test copying arrays.

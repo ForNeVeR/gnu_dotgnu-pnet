@@ -1,7 +1,7 @@
 /*
  * Array.cs - Implementation of the "System.Array" class.
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,10 +176,8 @@ public abstract class Array : ICloneable, ICollection, IEnumerable, IList
 #endif
 
 	// Clone this array.
-	public virtual Object Clone()
-	{
-		return MemberwiseClone();
-	}
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public virtual Object Clone();
 
 	// Copy the contents of one array into another.
 	public static void Copy(Array sourceArray, Array destinationArray,

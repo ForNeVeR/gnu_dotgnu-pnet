@@ -1,3 +1,9 @@
+2009-01-03  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Array.cs (Clone): Make Clone method an internalcall.
+
+	* tests/runtime/System/TestArray.cs: Add tests for the Clone method.
+
 2009-01-02  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Runtime/CompilerServices/CompilationRelaxationsAttribute.cs:

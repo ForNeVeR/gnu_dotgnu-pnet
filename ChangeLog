@@ -1,3 +1,16 @@
+2009-01-03  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/int_proto.h, engine/int_table.c: Regenerate
+
+	* engine/mkint.sh: Set collation to en_US prior to generating the
+	internal table to make sure it's ordered the same way every time.
+
+	* engine/lib_array.c (_IL_Array_Clone): Add internal function for
+	Array.Clone.
+
+	* engine/lib_object.c (_IL_Object_MemberwiseClone): Remove handling
+	of arrays because this is done now in Array.Clone.
+
 2009-01-02  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_lvalue.tc (ILNode_GenRef(ILNode_Deref)): Add code generation

@@ -1,7 +1,7 @@
 /*
  * lib_object.c - Internalcall methods for "System.Object".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,18 +97,6 @@ ILBool _IL_Object_Equals(ILExecThread *thread, ILObject *_this, ILObject *obj)
 ILObject *_IL_Object_MemberwiseClone(ILExecThread *thread, ILObject *_this)
 {
 	ILObject *obj;
-
-	/* Test for arrays, which must be cloned differently */
-	if(_ILIsSArray((System_Array *)_this))
-	{
-		return _ILCloneSArray(thread, (System_Array *)_this);
-	}
-#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
-	else if(_ILIsMArray((System_Array *)_this))
-	{
-		return _ILCloneMArray(thread, (System_MArray *)_this);
-	}
-#endif
 
 	/* Allocate a new object of the same class */
 	obj = _ILEngineAllocObject(thread, GetObjectClass(_this));

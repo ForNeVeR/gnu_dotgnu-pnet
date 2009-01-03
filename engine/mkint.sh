@@ -22,6 +22,12 @@ else
 fi
 
 # Convert the assemblies into the necessary internalcall tables.
+# Make sure that the same locale is used while creating the tables because
+# if that's not done to much noise is gererated by reordering the entries.
+LANG=en_US
+LC_ALL=en_US
+export LANG LC_ALL
+
 DLLS="$PNETLIB/runtime/mscorlib.dll $PNETLIB/System/System.dll $PNETLIB/I18N/I18N.CJK.dll $PNETLIB/DotGNU.Misc/DotGNU.Misc.dll"
 ../ilnative/ilinternal -p $DLLS >int_proto.h
 ../ilnative/ilinternal -t $DLLS >int_table.c

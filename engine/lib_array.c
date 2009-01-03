@@ -1,7 +1,7 @@
 /*
  * lib_array.c - Internalcall methods for "System.Array" and subclasses.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4333,6 +4333,24 @@ ILObject *_ILCloneMArray(ILExecThread *thread, System_MArray *array)
 	{
 		return 0;
 	}
+}
+
+/*
+ * public virtual Object Array.Clone();
+ */
+ILObject * _IL_Array_Clone(ILExecThread * _thread, ILObject * _this)
+{
+#ifdef IL_CONFIG_NON_VECTOR_ARRAYS
+	/* Test for arrays, which must be cloned differently */
+	if(_ILIsSArray((System_Array *)_this))
+	{
+		return _ILCloneSArray(_thread, (System_Array *)_this);
+	}
+	return _ILCloneMArray(_thread, (System_MArray *)_this);
+#else
+	return _ILCloneSArray(_thread, (System_Array *)_this);
+#endif
+
 }
 
 #endif /* IL_CONFIG_NON_VECTOR_ARRAYS */

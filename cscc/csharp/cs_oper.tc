@@ -1319,6 +1319,30 @@ static CSSemValue AssignSem(ILGenInfo *info,
 		}
 	}
 
+	/* Is this a pointer expression? */
+	if(ILType_IsPointer(CSSemGetType(value1)) &&
+	   (yyisa(node, ILNode_Add) || yyisa(node, ILNode_Sub)))
+	{
+		ILType *resultType;
+
+		resultType = ToNumericType(info, CSSemGetType(value2));
+		if(resultType)
+		{
+			if(resultType == ILType_UInt32 || resultType == ILType_UInt64)
+			{
+				resultType = ILType_UInt;
+			}
+			else
+			{
+				resultType = ILType_Int;
+			}
+			PointerOp(info, parent, &(node->expr1), CSSemGetType(value1),
+					  &(node->expr2), CSSemGetType(value2), resultType);
+			CSSemSetRValue(value1, CSSemGetType(value1));
+			return value1;
+		}
+	}
+
 	/* Try again, this time coercing value2's type to value1's type */
 	if (ILCanCoerceNode(info, node->expr2, 
 						CSSemGetType(value2), CSSemGetType(value1),1))

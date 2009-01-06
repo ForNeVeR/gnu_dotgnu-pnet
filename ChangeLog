@@ -1,3 +1,8 @@
+2009-01-06  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_oper.tc (AssignSem): Handle operations with pointers
+	for the += and -= expressions.
+
 2009-01-03  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/int_proto.h, engine/int_table.c: Regenerate

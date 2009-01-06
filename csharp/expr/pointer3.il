@@ -46,6 +46,16 @@
 	conv.i
 	sub
 	stloc.1
+	ldloc.1
+	ldc.i4.2
+	conv.i
+	add
+	stloc.1
+	ldloc.1
+	ldc.i4.2
+	conv.i
+	sub
+	stloc.1
 	ret
 	.maxstack 2
 } // method t1
@@ -91,6 +101,16 @@
 	conv.i
 	sub
 	stloc.1
+	ldloc.1
+	ldc.i4.8
+	conv.i
+	add
+	stloc.1
+	ldloc.1
+	ldc.i4.8
+	conv.i
+	sub
+	stloc.1
 	ret
 	.maxstack 3
 } // method t1
@@ -133,6 +153,16 @@
 	stloc.1
 	ldarg.1
 	ldc.i4.s	32
+	conv.i
+	sub
+	stloc.1
+	ldloc.1
+	ldc.i4.s	16
+	conv.i
+	add
+	stloc.1
+	ldloc.1
+	ldc.i4.s	16
 	conv.i
 	sub
 	stloc.1
@@ -184,6 +214,22 @@
 	stloc.1
 	ldarg.1
 	ldc.i4.4
+	conv.i
+	sizeof	void *
+	conv.i
+	mul
+	sub
+	stloc.1
+	ldloc.1
+	ldc.i4.2
+	conv.i
+	sizeof	void *
+	conv.i
+	mul
+	add
+	stloc.1
+	ldloc.1
+	ldc.i4.2
 	conv.i
 	sizeof	void *
 	conv.i

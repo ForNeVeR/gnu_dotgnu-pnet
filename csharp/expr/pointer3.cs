@@ -31,6 +31,8 @@ unsafe class Test
 		tmp = 4 + x;
 		tmp = i + x;
 		tmp = x - 4;
+		tmp += 2;
+		tmp -= 2;
 	}
 
 	public unsafe void t1(int *x, int *y, int i)
@@ -44,6 +46,8 @@ unsafe class Test
 		tmp = 4 + x;
 		tmp = i + x;
 		tmp = x - 4;
+		tmp += 2;
+		tmp -= 2;
 	}
 
 	public unsafe void t1(long *x, long *y, int i)
@@ -57,6 +61,8 @@ unsafe class Test
 		tmp = 4 + x;
 		tmp = i + x;
 		tmp = x - 4;
+		tmp += 2;
+		tmp -= 2;
 	}
 
 	public unsafe void t1(void **x, void **y, int i)
@@ -70,6 +76,8 @@ unsafe class Test
 		tmp = 4 + x;
 		tmp = i + x;
 		tmp = x - 4;
+		tmp += 2;
+		tmp -= 2;
 	}
 
 	public unsafe void t2()

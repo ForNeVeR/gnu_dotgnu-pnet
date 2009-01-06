@@ -1,3 +1,9 @@
+2009-01-06  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/expr/pointer3.cs, csharp/expr/pointer3.err,
+	csharp/expr/pointer3.il, csharp/expr/pointer3.jerr: Add some tests for
+	the += and -= expressions involving unmanaged pointers.
+
 2009-01-02  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/expr/binary3.il: Update to reflect latest compiler changes.

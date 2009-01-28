@@ -384,10 +384,13 @@ public abstract class XmlReader
 					// bail out now if there's nothing to read
 					if(IsEmptyElement)
 					{
-						Read();
 						return String.Empty;
 					}
 					Read();
+					if(NodeType == XmlNodeType.EndElement)
+					{
+						return String.Empty;
+					}
 				}
 
 				// create the content log

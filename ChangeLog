@@ -1,3 +1,7 @@
+2009-01-28  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Xml/XmlReader.cs: fix ReadString for empty elements
+
 2009-01-03  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Array.cs (Clone): Make Clone method an internalcall.

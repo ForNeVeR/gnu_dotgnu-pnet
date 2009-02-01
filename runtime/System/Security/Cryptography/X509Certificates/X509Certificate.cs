@@ -28,12 +28,12 @@ using System;
 using System.IO;
 using System.Text;
 using System.Security.Cryptography;
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_FRAMEWORK_2_0 && CONFIG_SERIALIZATION
 using System.Runtime.Serialization;
 #endif
 
 [Serializable]
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_SERIALIZATION
 public class X509Certificate: IDeserializationCallback, ISerializable
 #else
 public class X509Certificate
@@ -52,14 +52,6 @@ public class X509Certificate
 	private byte[] serialNumber;
 
 	// Constructors.
-#if CONFIG_FRAMEWORK_2_0
-	[TODO]
-	public X509Certificate()
-			{
-				throw new NotImplementedException("X509Certificate()");
-			}
-
-#endif
 	public X509Certificate(byte[] data)
 			{
 				if(data == null)
@@ -68,7 +60,28 @@ public class X509Certificate
 				}
 				Parse(data);
 			}
+#if !CONFIG_COMPACT_FRAMEWORK
+	public X509Certificate(IntPtr handle)
+			{
+				// Handle-based certificate construction is not supported.
+				throw new NotSupportedException
+					(_("Crypto_CertNotSupp"));
+			}
+	public X509Certificate(X509Certificate cert)
+			{
+				if(cert == null)
+				{
+					throw new ArgumentNullException("cert");
+				}
+				Parse(cert.rawData);
+			}
 #if CONFIG_FRAMEWORK_2_0
+	[TODO]
+	public X509Certificate()
+			{
+				throw new NotImplementedException("X509Certificate()");
+			}
+
 	[TODO]
 	public X509Certificate(byte[] rawData, String password)
 			{
@@ -79,19 +92,13 @@ public class X509Certificate
 			{
 				throw new NotImplementedException("X509Certificate(byte[], String, X509KeyStorageFlags)");
 			}
-#endif
-	public X509Certificate(IntPtr handle)
-			{
-				// Handle-based certificate construction is not supported.
-				throw new NotSupportedException
-					(_("Crypto_CertNotSupp"));
-			}
-#if CONFIG_FRAMEWORK_2_0
+#if CONFIG_SERIALIZATION
 	[TODO]
 	public X509Certificate(SerializationInfo info, StreamingContext context)
 			{
 				throw new NotImplementedException("X509Certificate(SerializationInfo, StreamingContext)");
 			}
+#endif // CONFIG_SERIALIZATION
 	[TODO]
 	public X509Certificate(String fileName)
 			{
@@ -107,16 +114,8 @@ public class X509Certificate
 			{
 				throw new NotImplementedException("X509Certificate(String, String, X509KeyStorageFlags)");
 			}
-#endif
-	public X509Certificate(X509Certificate cert)
-			{
-				if(cert == null)
-				{
-					throw new ArgumentNullException("cert");
-				}
-				Parse(cert.rawData);
-			}
-
+#endif // CONFIG_FRAMEWORK_2_0
+#endif // !CONFIG_COMPACT_FRAMEWORK
 	// Parse the contents of a certificate data block.
 	private void Parse(byte[] data)
 			{
@@ -380,11 +379,13 @@ public class X509Certificate
 			}
 
 #if CONFIG_FRAMEWORK_2_0
+#if CONFIG_SERIALIZATION
 	[TODO]
 	void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
 			{
 				throw new NotImplementedException("GetObjectData");
 			}
+#endif // CONFIG_SERIALIZATION
 	[TODO]
 	public IntPtr Handle
 			{
@@ -413,11 +414,13 @@ public class X509Certificate
 			{
 				throw new NotImplementedException("Import");
 			}
+#if CONFIG_SERIALIZATION
 	[TODO]
 	void IDeserializationCallback.OnDeserialization(Object sender)
 			{
 				throw new NotImplementedException("OnDeserialization");
 			}
+#endif // CONFIG_SERIALIZATION
 	[TODO]
 	public virtual void Reset()
 			{

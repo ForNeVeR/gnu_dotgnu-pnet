@@ -22,7 +22,7 @@
 namespace System.Globalization
 {
 
-#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 using Platform;
 
@@ -145,6 +145,6 @@ public sealed class CharUnicodeInfo
 
 }; // class CharUnicodeInfo
 
-#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 }; // namespace System.Globalization

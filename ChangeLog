@@ -1,3 +1,15 @@
+2009-02-01  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Globalization/CharUnicodeInfo.cs: Change coditional
+	compilation from CONFIG_FRAMEWORK_1_2 to CONFIG_FRAMEWORK_2_0.
+
+	* runtime/System/Security/Cryptography/X509Certificates/X509Certificate.cs:
+	Fix build with compact profile (without CONFIG_SERIALIZATION).
+
+	* runtime/System/Globalization/CalendarAlgorithmType.cs,
+	runtime/System/Globalization/DigitShapes.cs,
+	runtime/System/Text/NormalizationForm.cs: Add some 2.0 enumerations.
+
 2009-01-28  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System.Xml/XmlReader.cs: fix ReadString for empty elements

@@ -1,7 +1,7 @@
 /*
- * PlatformID.cs - Implementation of the "System.PlatformID" class.
+ * UriComponents.cs - Implementation of the
+ *								"System.UriComponents" enumeration.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,27 +22,32 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
-#if CONFIG_FRAMEWORK_2_0
-using System.Runtime.InteropServices;
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
-[ComVisible(true)]
-#endif // CONFIG_FRAMEWORK_2_0
-[Serializable]
-public enum PlatformID
+[Flags]
+public enum UriComponents
 {
-	Win32S       = 0,
-	Win32Windows = 1,
-	Win32NT      = 2,
-	WinCE        = 3,
-	Unix         = 4,
-#if CONFIG_FRAMEWORK_2_0
-	Xbox		 = 5,
-	MacOSX		 = 6
-#endif
 
-}; // enum PlatformID
+	Scheme					= 0x01,
+	UserInfo				= 0x02,
+	Host					= 0x04,
+	Port					= 0x08,
+	SchemeAndServer			= Scheme | Host | Port,
+	Path					= 0x10,
+	Query					= 0x20,
+	PathAndQuery			= Path | Query,
+	HttpRequestUrl			= Scheme | Host | Port | Path | Query,
+	Fragment				= 0x40,
+	AbsoluteUri				= Scheme | UserInfo | Host | Port | Path | Query |
+							  Fragment,
+	StrongPort				= 0x80,
+	HostAndPort				= StrongPort | Host,
+	StrongAuthority			= StrongPort | Host | UserInfo,
+	KeepDelimiter			= 0x40000000,
+	SerializationInfoString	= 0x80000000
 
-#endif // !ECMA_COMPAT
+}; // enum UriComponents
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 }; // namespace System

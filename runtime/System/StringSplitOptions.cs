@@ -1,7 +1,7 @@
 /*
- * PlatformID.cs - Implementation of the "System.PlatformID" class.
+ * StringSplitOptions.cs - Implementation of the
+ *								"System.StringSplitOptions" enumeration.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,27 +22,20 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
-#if CONFIG_FRAMEWORK_2_0
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+
 using System.Runtime.InteropServices;
 
-[ComVisible(true)]
-#endif // CONFIG_FRAMEWORK_2_0
-[Serializable]
-public enum PlatformID
+[ComVisible(false)]
+[Flags]
+public enum StringSplitOptions
 {
-	Win32S       = 0,
-	Win32Windows = 1,
-	Win32NT      = 2,
-	WinCE        = 3,
-	Unix         = 4,
-#if CONFIG_FRAMEWORK_2_0
-	Xbox		 = 5,
-	MacOSX		 = 6
-#endif
 
-}; // enum PlatformID
+	None				= 0,
+	RemoveEmptyEntries	= 1
 
-#endif // !ECMA_COMPAT
+}; // enum StringSplitOptions
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System

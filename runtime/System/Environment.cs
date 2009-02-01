@@ -2,6 +2,7 @@
  * Environment.cs - Implementation of the "System.Environment" class.
  *
  * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -253,7 +254,7 @@ public sealed class Environment
 				}
 			}
 
-#if CONFIG_FRAMEWORK_1_2
+#if CONFIG_FRAMEWORK_2_0
 
 	// Get the number of processors in this machine.
 	public static int ProcessorCount
@@ -264,7 +265,7 @@ public sealed class Environment
 				}
 			}
 
-#endif // CONFIG_FRAMEWORK_1_2
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Expand environment variable references in a string.
 	public static String ExpandEnvironmentVariables(String name)
@@ -321,6 +322,9 @@ public sealed class Environment
 		Desktop               = 0x00,
 		Programs              = 0x02,
 		Personal              = 0x05,
+#if CONFIG_FRAMEWORK_2_0
+		MyDocuments           = 0x05,
+#endif // !CONFIG_FRAMEWORK_2_0
 		Favorites             = 0x06,
 		Startup               = 0x07,
 		Recent                = 0x08,

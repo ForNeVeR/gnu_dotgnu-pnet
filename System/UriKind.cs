@@ -1,7 +1,8 @@
 /*
- * Comparision_1.cs - Implementation of the "System.Comparision<T>" delegate.
+ * UriKind.cs - Implementation of the
+ *								"System.UriKind" enumeration.
  *
- * Copyright (C) 2007, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +22,17 @@
 namespace System
 {
 
-#if CONFIG_FRAMEWORK_2_0
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
-public delegate void Comparision<T>(T x, T y);
+public enum UriKind
+{
 
-#endif // CONFIG_FRAMEWORK_2_0
+	RelativeOrAbsolute	= 0,
+	Absolute			= 1,
+	Relative			= 2
+
+}; // enum UriKind
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 }; // namespace System

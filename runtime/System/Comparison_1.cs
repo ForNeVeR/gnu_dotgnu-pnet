@@ -1,7 +1,6 @@
 /*
- * PlatformID.cs - Implementation of the "System.PlatformID" class.
+ * Comparison_1.cs - Implementation of the "System.Comparison<T>" delegate.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,27 +21,10 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
 #if CONFIG_FRAMEWORK_2_0
-using System.Runtime.InteropServices;
 
-[ComVisible(true)]
+public delegate void Comparison<T>(T x, T y);
+
 #endif // CONFIG_FRAMEWORK_2_0
-[Serializable]
-public enum PlatformID
-{
-	Win32S       = 0,
-	Win32Windows = 1,
-	Win32NT      = 2,
-	WinCE        = 3,
-	Unix         = 4,
-#if CONFIG_FRAMEWORK_2_0
-	Xbox		 = 5,
-	MacOSX		 = 6
-#endif
-
-}; // enum PlatformID
-
-#endif // !ECMA_COMPAT
 
 }; // namespace System

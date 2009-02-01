@@ -1,14 +1,36 @@
 2009-02-01  Klaus Treichel  <ktreichel@web.de>
 
-	* runtime/System/Globalization/CharUnicodeInfo.cs: Change coditional
+	* runtime/System/Globalization/CharUnicodeInfo.cs: Change conditional
 	compilation from CONFIG_FRAMEWORK_1_2 to CONFIG_FRAMEWORK_2_0.
 
 	* runtime/System/Security/Cryptography/X509Certificates/X509Certificate.cs:
 	Fix build with compact profile (without CONFIG_SERIALIZATION).
 
+	* runtime/System/Comparision_1.cs: Move to runtime/System/Comparison_1.cs
+	and rename class accordingly.
+
+	* runtime/Syst3m/Environment.cs: Change conditional compilation from
+	CONFIG_FRAMEWORK_1_2 to CONFIG_FRAMEWORK_2_0 and add MyDocuments to
+	the SpecialFolder enumeration.
+
+	* runtime/System/PlatformID.cs: Add new 2.0 members to the enumeration.
+	Change Unix to 4 to be in sync with the 2.0 declaration.
+
 	* runtime/System/Globalization/CalendarAlgorithmType.cs,
 	runtime/System/Globalization/DigitShapes.cs,
-	runtime/System/Text/NormalizationForm.cs: Add some 2.0 enumerations.
+	runtime/System/Text/NormalizationForm.cs,
+	runtime/System/AppDomainInitializer.cs,
+	runtime/System/AppDomainManagerInitializationOptions.cs,
+	runtime/System/Base64FormattingOptions.cs,
+	runtime/System/EnvironmentVariableTarget.cs,
+	runtime/System/GCNotificationStatus.cs,
+	runtime/System/MidpointRounding.cs,
+	runtime/System/StringSplitOptions.cs,
+	System/UriComponents.cs, System/UriFormat.cs, System/UriIdnScope.cs,
+	System/UriKind.cs: Add some 2.0 enumerations.
+
+	* runtime/System/EventHandler_1.cs: Add the generic version of the
+	EventHandler class.
 
 2009-01-28  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 

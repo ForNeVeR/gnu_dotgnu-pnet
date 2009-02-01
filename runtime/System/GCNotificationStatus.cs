@@ -1,7 +1,7 @@
 /*
- * PlatformID.cs - Implementation of the "System.PlatformID" class.
+ * GCNotificationStatus.cs - Implementation of the 
+ *							"System.GCNotificationStatus" enumeration.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,27 +22,19 @@
 namespace System
 {
 
-#if !ECMA_COMPAT
-#if CONFIG_FRAMEWORK_2_0
-using System.Runtime.InteropServices;
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
-[ComVisible(true)]
-#endif // CONFIG_FRAMEWORK_2_0
 [Serializable]
-public enum PlatformID
+public enum GCNotificationStatus
 {
-	Win32S       = 0,
-	Win32Windows = 1,
-	Win32NT      = 2,
-	WinCE        = 3,
-	Unix         = 4,
-#if CONFIG_FRAMEWORK_2_0
-	Xbox		 = 5,
-	MacOSX		 = 6
-#endif
+	Succeeded		= 0,
+	Failed			= 1,
+	Canceled		= 2,
+	Timeout			= 3,
+	NotApplicable	= 4
 
-}; // enum PlatformID
+}; // enum GCNotificationStatus
 
-#endif // !ECMA_COMPAT
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 }; // namespace System

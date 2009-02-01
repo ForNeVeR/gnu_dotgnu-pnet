@@ -72,7 +72,7 @@ ILInt32 _IL_InfoMethods_GetPlatformID(ILExecThread *thread)
 #ifdef IL_WIN32_PLATFORM
 	return 2;			/* PlatformID.Win32NT */
 #else
-	return 128;			/* PlatformID.Unix */
+	return 4;			/* PlatformID.Unix */
 #endif
 }
 

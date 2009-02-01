@@ -1,3 +1,8 @@
+2009-02-01  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_info.c (_IL_InfoMethods_GetPlatformID): Return 4 for Unix
+	instead of 128 to be in sync with the 2.0 enumeration.
+
 2009-01-06  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_oper.tc (AssignSem): Handle operations with pointers

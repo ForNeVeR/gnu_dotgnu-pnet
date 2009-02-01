@@ -35,8 +35,9 @@ public enum PlatformID
 	Win32Windows = 1,
 	Win32NT      = 2,
 	WinCE        = 3,
-	Unix         = 4,
+	Unix         = 4
 #if CONFIG_FRAMEWORK_2_0
+	,
 	Xbox		 = 5,
 	MacOSX		 = 6
 #endif

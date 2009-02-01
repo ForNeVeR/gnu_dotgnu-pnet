@@ -9,6 +9,9 @@
 	* runtime/System/Comparision_1.cs: Move to runtime/System/Comparison_1.cs
 	and rename class accordingly.
 
+	* runtime/System/Comparison_1.cs: Move runtime/System/Comparision_1.cs to
+	here and fix return type.
+
 	* runtime/Syst3m/Environment.cs: Change conditional compilation from
 	CONFIG_FRAMEWORK_1_2 to CONFIG_FRAMEWORK_2_0 and add MyDocuments to
 	the SpecialFolder enumeration.

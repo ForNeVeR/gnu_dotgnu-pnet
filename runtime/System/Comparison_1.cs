@@ -23,7 +23,7 @@ namespace System
 
 #if CONFIG_FRAMEWORK_2_0
 
-public delegate void Comparison<T>(T x, T y);
+public delegate int Comparison<T>(T x, T y);
 
 #endif // CONFIG_FRAMEWORK_2_0
 

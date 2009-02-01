@@ -30,10 +30,18 @@
 	runtime/System/MidpointRounding.cs,
 	runtime/System/StringSplitOptions.cs,
 	System/UriComponents.cs, System/UriFormat.cs, System/UriIdnScope.cs,
-	System/UriKind.cs: Add some 2.0 enumerations.
+	System/UriKind.cs, runtime/System/Security/HostSecurityManagerOptions.cs,
+	runtime/System/Security/SecurityCriticalScope.cs: Add some 2.0
+	enumerations.
 
 	* runtime/System/EventHandler_1.cs: Add the generic version of the
 	EventHandler class.
+
+	* runtime/System/Security/SecurityCriticalAttribute.cs,
+	runtime/System/Security/SecuritySafeCriticalAttribute.cs,
+	runtime/System/Security/SecurityTransparentAttribute.cs,
+	runtime/System/Security/SecurityTreatAsSafeAttribute.cs: Add some 2.0
+	security attributes.
 
 2009-01-28  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 

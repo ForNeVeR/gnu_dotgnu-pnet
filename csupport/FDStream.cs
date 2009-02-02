@@ -61,7 +61,7 @@ public class FDStream : Stream, IFDOperations
 			{
 				get
 				{
-					if(Environment.OSVersion.Platform != (PlatformID)128)
+					if(Environment.OSVersion.Platform != PlatformID.Unix)
 					{
 						// Win32-style system: cannot select.
 						return -1;

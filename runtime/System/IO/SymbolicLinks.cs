@@ -41,7 +41,7 @@ public sealed class SymbolicLinks
 	private static bool IsWindows()
 			{
 			#if !ECMA_COMPAT
-				return (InfoMethods.GetPlatformID() != (PlatformID)128);
+				return (InfoMethods.GetPlatformID() != PlatformID.Unix);
 			#else
 				return (Path.DirectorySeparatorChar == '\\');
 			#endif

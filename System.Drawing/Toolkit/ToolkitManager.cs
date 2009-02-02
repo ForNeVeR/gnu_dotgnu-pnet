@@ -75,7 +75,7 @@ public sealed class ToolkitManager
 	private static bool IsUnix()
 			{
 			#if !ECMA_COMPAT
-				if(Environment.OSVersion.Platform != (PlatformID)128) /* Unix */
+				if(Environment.OSVersion.Platform != PlatformID.Unix)
 			#else
 				if(Path.DirectorySeparatorChar == '\\' ||
 				   Path.AltDirectorySeparatorChar == '\\')

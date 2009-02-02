@@ -714,7 +714,7 @@ public abstract class FileDialog : CommonDialog
 	private static bool IsWindows()
 			{
 			#if !ECMA_COMPAT
-				return (Environment.OSVersion.Platform != (PlatformID)128);
+				return (Environment.OSVersion.Platform != PlatformID.Unix);
 			#else
 				return (Path.DirectorySeparatorChar == '\\');
 			#endif

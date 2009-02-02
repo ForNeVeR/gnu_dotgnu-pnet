@@ -1,5 +1,15 @@
 2009-02-02  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
+	* csupport/FDStream.cs,
+	DotGNU.Terminal/Readline.cs,
+	runtime/System/IO/SymbolicLinks.cs,
+	System.Drawing/Toolkit/ToolkitManager.cs,
+	System.Windows.Forms/Themes/ThemeManager.cs,
+	System.Windows.Forms/FileDialog.cs: replaced (PlatformID)128 with
+	PlatformID.Unix, patch by Klaus Treichel.
+
+2009-02-02  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
 	* System.Xml/XmlReader.cs: fix ReadElementString because of fix in ReadString
 
 2009-02-01  Klaus Treichel  <ktreichel@web.de>

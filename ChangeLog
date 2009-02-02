@@ -1,3 +1,7 @@
+2009-02-02  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System.Xml/XmlReader.cs: fix ReadElementString because of fix in ReadString
+
 2009-02-01  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Globalization/CharUnicodeInfo.cs: Change conditional

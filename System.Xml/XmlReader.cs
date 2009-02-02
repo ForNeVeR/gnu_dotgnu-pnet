@@ -167,32 +167,69 @@ public abstract class XmlReader
 	// Read the contents of a text element string using a name.
 	public virtual String ReadElementString(String localname, String ns)
 			{
-				if(MoveToContent() == XmlNodeType.Element &&
-				   LocalName == localname && NamespaceURI == ns)
+				if( (MoveToContent() != XmlNodeType.Element) ||
+				    (LocalName != localname ) || 
+						(NamespaceURI == ns) )
 				{
-					return ReadString();
+					throw new XmlException(S._("Xml_IncorrectNode"));
 				}
-				throw new XmlException(S._("Xml_IncorrectNode"));
+				
+				if( !this.IsEmptyElement ) 
+				{
+					string ret = ReadString();
+					if (this.NodeType != XmlNodeType.EndElement)
+					{
+						throw new XmlException(S._("Xml_IncorrectNode"));
+					}
+					this.Read();
+					return ret;
+				}
+				this.Read();
+				return string.Empty;
 			}
 
 	// Read the contents of a text element string using a qualified name.
 	public virtual String ReadElementString(String name)
 			{
-				if(MoveToContent() == XmlNodeType.Element && Name == name)
+				if(MoveToContent() != XmlNodeType.Element || Name != name)
 				{
-					return ReadString();
+					throw new XmlException(S._("Xml_IncorrectNode"));	
 				}
-				throw new XmlException(S._("Xml_IncorrectNode"));
+				
+				if( !this.IsEmptyElement ) 
+				{
+					string ret = ReadString();
+					if (this.NodeType != XmlNodeType.EndElement)
+					{
+						throw new XmlException(S._("Xml_IncorrectNode"));
+					}
+					this.Read();
+					return ret;
+				}
+				this.Read();
+				return string.Empty;
 			}
 
 	// Read the contents of a text element.
 	public virtual String ReadElementString()
 			{
-				if(MoveToContent() == XmlNodeType.Element)
+				if(MoveToContent() != XmlNodeType.Element)
 				{
-					return ReadString();
+					throw new XmlException(S._("Xml_IncorrectNode"));
 				}
-				throw new XmlException(S._("Xml_IncorrectNode"));
+				if( !this.IsEmptyElement ) 
+				{
+					this.Read();
+					string ret = ReadString();
+					if (this.NodeType != XmlNodeType.EndElement)
+					{
+						throw new XmlException(S._("Xml_IncorrectNode"));
+					}
+					this.Read();
+					return ret;
+				}
+				this.Read();
+				return string.Empty;
 			}
 
 	// Read an end element node and advance to the next node.

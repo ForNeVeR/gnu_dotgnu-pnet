@@ -1,8 +1,8 @@
 /*
- * CriticalFinalizerObject.cs - Implementation of the
- *		"System.Runtime.ConstrainedExecution.CriticalFinalizerObject" class.
+ * ProcessorArchitecture.cs - Implementation of the
+ *			"System.Reflection.ProcessorArchitecture" enumeration.
  *
- * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,26 +19,24 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.ConstrainedExecution
+namespace System.Reflection
 {
 
-#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-
+#if !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 using System.Runtime.InteropServices;
 
+[Serializable]
 [ComVisible(true)]
-public abstract class CriticalFinalizerObject
+public enum ProcessorArchitecture
 {
-	// Constructor.
-	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-	protected CriticalFinalizerObject() {}
+	None	= 0,
+	MSIL	= 1,
+	X86		= 2,
+	IA64	= 3,
+	Amd64	= 4
 
-	// Destructor.
-	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-	~CriticalFinalizerObject() {}
+}; // enum ProcessorArchitecture
 
-}; // class CriticalFinalizerObject
+#endif // !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-
-}; // namespace System.Runtime.ConstrainedExecution
+}; // namespace System.Reflection

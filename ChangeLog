@@ -1,3 +1,42 @@
+2009-02-03  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Reflection/AssemblyNameFlags.cs: Add new 2.0 members.
+
+	* runtime/Microsoft/Win32/SafeHandles/CriticalHandleMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/CriticalHandleZeroOrMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeFileHandle.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeHandleMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeHandleZeroOrMinusOneIsInvalid.cs,
+	runtime/Microsoft/Win32/SafeHandles/SafeWaitHandle.cs: Include in build
+	only for non compact builds and add missing ReliabilityContract attributes.
+
+	* runtime/System/Runtime/ConstrainedExecution/Consistency.cs,
+	runtime/System/Runtime/ConstrainedExecution/CriticalFinalizerObject.cs,
+	runtime/System/Runtime/ConstrainedExecution/PrePrepareMethodAttribute.cs,
+	runtime/System/Runtime/ConstrainedExecution/ReliabilityContractAttribute.cs:
+	Include in build only for non compact builds, add missing
+	ReliabilityContract attributes and rename CER to Cer.
+
+	* runtime/System/Runtime/InteropServices/CriticalHandle.cs,
+	runtime/System/Runtime/InteropServices/SafeHandle.cs: Include in build
+	only for non compact builds, rename CER to Cer.
+
+	* runtime/System/Runtime/ConstrainedExecution/CER.cs: Move to
+	runtime/System/Runtime/ConstrainedExecution/Cer.cs.
+
+	* runtime/System/Runtime/ConstrainedExecution/Cer.cs: Move
+	runtime/System/Runtime/ConstrainedExecution/CER.cs to here and rename
+	class accordingly.
+
+	* runtime/System/Reflection/ExceptionHandlingClauseOptions.cs,
+	runtime/System/Reflection/ImageFileMachine.cs,
+	runtime/System/Reflection/PortableExecutableKinds.cs,
+	runtime/System/Reflection/ProcessorArchitecture.cs,
+	runtime/System/Runtime/GCLatencyMode.cs: Add some 2.0 enumerations.
+
+	* runtime/System/Reflection/ObfuscateAssemblyAttribute.cs,
+	runtime/System/Reflection/ObfuscationAttribute.cs: Add some 2.0 attributes.
+
 2009-02-02  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* csupport/FDStream.cs,

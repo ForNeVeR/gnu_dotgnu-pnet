@@ -3,6 +3,7 @@
  *			"System.Runtime.InteropServices.CriticalHandle" class.
  *
  * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,26 +23,19 @@
 namespace System.Runtime.InteropServices
 {
 
-#if CONFIG_FRAMEWORK_2_0
-using System.Runtime.ConstrainedExecution;
-#else
-using System.Runtime.Reliability;
-#endif
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-#if CONFIG_FRAMEWORK_1_2
+using System.Runtime.ConstrainedExecution;
 
 public abstract class CriticalHandle
-#if CONFIG_FRAMEWORK_2_0
 	: CriticalFinalizerObject, IDisposable
-#else
-	: IDisposable
-#endif
 {
 	// Internal state.
 	protected IntPtr handle;
 	private bool closed;
 
 	// Constructor.
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 	protected CriticalHandle(IntPtr invalidHandleValue)
 			{
 				this.handle = invalidHandleValue;
@@ -49,39 +43,39 @@ public abstract class CriticalHandle
 			}
 
 	// Destructor.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	~CriticalHandle()
 			{
 				Destroy();
 			}
 
 	// Close this handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public void Close()
 			{
 				Destroy();
 			}
 
 	// Implement the IDisposable interface.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public void Dispose()
 			{
 				Destroy();
 			}
 
 	// Release the handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	protected abstract bool ReleaseHandle();
 
 	// Set the handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	protected void SetHandle(IntPtr handle)
 			{
 				this.handle = handle;
 			}
 
 	// Set the handle to invalid.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public void SetHandleAsInvalid()
 			{
 				this.closed = true;
@@ -91,7 +85,7 @@ public abstract class CriticalHandle
 	public bool IsClosed
 			{
 				[ReliabilityContract(Consistency.WillNotCorruptState,
-									 CER.Success)]
+									 Cer.Success)]
 				get
 				{
 					return closed;
@@ -102,7 +96,7 @@ public abstract class CriticalHandle
 	public abstract bool IsInvalid
 			{
 				[ReliabilityContract(Consistency.WillNotCorruptState,
-									 CER.Success)]
+									 Cer.Success)]
 				get;
 			}
 
@@ -122,6 +116,6 @@ public abstract class CriticalHandle
 
 }; // class CriticalHandle
 
-#endif // CONFIG_FRAMEWORK_1_2
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Runtime.InteropServices

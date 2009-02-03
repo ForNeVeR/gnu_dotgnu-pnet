@@ -1,8 +1,8 @@
 /*
- * CriticalFinalizerObject.cs - Implementation of the
- *		"System.Runtime.ConstrainedExecution.CriticalFinalizerObject" class.
+ * ImageFileMachine.cs - Implementation of the
+ *			"System.Reflection.ImageFileMachine" enumeration.
  *
- * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,26 +19,22 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.ConstrainedExecution
+namespace System.Reflection
 {
 
-#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-
+#if !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-public abstract class CriticalFinalizerObject
+[Serializable]
+public enum ImageFileMachine
 {
-	// Constructor.
-	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
-	protected CriticalFinalizerObject() {}
+	I386			= 0x14C,
+	IA64			= 0x200,
+	AMD64			= 0x8664
 
-	// Destructor.
-	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
-	~CriticalFinalizerObject() {}
+}; // enum ImageFileMachine
 
-}; // class CriticalFinalizerObject
+#endif // !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
-
-}; // namespace System.Runtime.ConstrainedExecution
+}; // namespace System.Reflection

@@ -22,13 +22,8 @@
 namespace System.Runtime.ConstrainedExecution
 {
 
-using System.Runtime.InteropServices;
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-#if CONFIG_FRAMEWORK_2_0
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
 [AttributeUsage(AttributeTargets.Method | AttributeTargets.Constructor,
 				Inherited=false)]
 public sealed class PrePrepareMethodAttribute : Attribute
@@ -38,6 +33,6 @@ public sealed class PrePrepareMethodAttribute : Attribute
 
 }; // class PrePrepareMethodAttribute
 
-#endif // CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Runtime.ConstrainedExecution

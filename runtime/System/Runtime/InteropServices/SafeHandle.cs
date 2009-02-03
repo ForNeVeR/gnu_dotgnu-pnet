@@ -22,20 +22,12 @@
 namespace System.Runtime.InteropServices
 {
 
-#if CONFIG_FRAMEWORK_2_0
-using System.Runtime.ConstrainedExecution;
-#else
-using System.Runtime.Reliability;
-#endif
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-#if CONFIG_FRAMEWORK_1_2
+using System.Runtime.ConstrainedExecution;
 
 public abstract class SafeHandle
-#if CONFIG_FRAMEWORK_2_0
 	: CriticalFinalizerObject, IDisposable
-#else
-	: IDisposable
-#endif
 {
 	// Internal state.
 	protected IntPtr handle;
@@ -43,6 +35,7 @@ public abstract class SafeHandle
 	private bool closed;
 
 	// Constructor.
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 	protected SafeHandle(IntPtr invalidHandleValue, bool ownsHandle)
 			{
 				this.handle = invalidHandleValue;
@@ -57,18 +50,35 @@ public abstract class SafeHandle
 	// Destructor.
 	~SafeHandle()
 			{
-				Destroy();
+				Dispose(false);
+			}
+
+	// Dispose
+	protected virtual void Dispose(bool disposing)
+			{
+				if(!IsClosed)
+				{
+					closed = true;
+					if(!IsInvalid)
+					{
+						ReleaseHandle();
+					}
+				}
+				if(disposing)
+				{
+					GC.SuppressFinalize(this);
+				}
 			}
 
 	// Close this handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public void Close()
 			{
-				Dispose();
+				Dispose(true);
 			}
 
 	// Perform a reference add.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.MayFail)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 	public void DangerousAddRef(ref bool success)
 			{
 				// Nothing to do in this implementation.
@@ -76,39 +86,39 @@ public abstract class SafeHandle
 			}
 
 	// Get the handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public IntPtr DangerousGetHandle()
 			{
 				return handle;
 			}
 
 	// Release the handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public void DangerousRelease()
 			{
-				Destroy();
+				// Nothing to do in this implementation.
 			}
 
 	// Implement the IDisposable interface.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public void Dispose()
 			{
-				Destroy();
+				Dispose(true);
 			}
 
 	// Release the handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	protected abstract bool ReleaseHandle();
 
 	// Set the handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	protected void SetHandle(IntPtr handle)
 			{
 				this.handle = handle;
 			}
 
 	// Set the handle to invalid.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.Success)]
 	public void SetHandleAsInvalid()
 			{
 				this.closed = true;
@@ -118,7 +128,7 @@ public abstract class SafeHandle
 	public bool IsClosed
 			{
 				[ReliabilityContract(Consistency.WillNotCorruptState,
-									 CER.Success)]
+									 Cer.Success)]
 				get
 				{
 					return closed;
@@ -129,26 +139,12 @@ public abstract class SafeHandle
 	public abstract bool IsInvalid
 			{
 				[ReliabilityContract(Consistency.WillNotCorruptState,
-									 CER.Success)]
+									 Cer.Success)]
 				get;
-			}
-
-	// Destroy this handle.
-	private void Destroy()
-			{
-				if(!IsClosed)
-				{
-					closed = true;
-					if(!IsInvalid)
-					{
-						ReleaseHandle();
-						GC.SuppressFinalize(this);
-					}
-				}
 			}
 
 }; // class SafeHandle
 
-#endif // CONFIG_FRAMEWORK_1_2
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Runtime.InteropServices

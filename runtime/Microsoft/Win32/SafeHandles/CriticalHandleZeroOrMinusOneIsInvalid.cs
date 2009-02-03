@@ -22,14 +22,17 @@
 namespace Microsoft.Win32.SafeHandles
 {
 
-#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
+#if CONFIG_WIN32_SPECIFICS
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 using System;
 using System.Runtime.InteropServices;
+using System.Runtime.ConstrainedExecution;
 
 public abstract class CriticalHandleZeroOrMinusOneIsInvalid : CriticalHandle
 {
 	// Constructor.
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 	protected CriticalHandleZeroOrMinusOneIsInvalid()
 			: base(new IntPtr(-1L)) {}
 
@@ -45,6 +48,7 @@ public abstract class CriticalHandleZeroOrMinusOneIsInvalid : CriticalHandle
 
 }; // class CriticalHandleZeroOrMinusOneIsInvalid
 
-#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32.SafeHandles

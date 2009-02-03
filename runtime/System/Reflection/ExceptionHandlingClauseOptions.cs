@@ -1,8 +1,8 @@
 /*
- * CER.cs - Implementation of the
- *			"System.Runtime.ConstrainedExecution.CER" class.
+ * ExceptionHandlingClauseOptions.cs - Implementation of the
+ *			"System.Reflection.ExceptionHandlingClauseOptions" enumeration.
  *
- * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,24 +19,23 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-namespace System.Runtime.ConstrainedExecution
+namespace System.Reflection
 {
 
+#if !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 using System.Runtime.InteropServices;
 
-#if CONFIG_FRAMEWORK_2_0
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
-public enum CER
+[ComVisible(true)]
+[Flags]
+public enum ExceptionHandlingClauseOptions
 {
-	None	= 0,
-	MayFail	= 1,
-	Success	= 2
+	Clause			= 0x00,
+	Filter			= 0x01,
+	Finally			= 0x02,
+	Fault			= 0x04
 
-}; // enum CER
+}; // enum ExceptionHandlingClauseOptions
 
-#endif // CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-}; // namespace System.Runtime.ConstrainedExecution
+}; // namespace System.Reflection

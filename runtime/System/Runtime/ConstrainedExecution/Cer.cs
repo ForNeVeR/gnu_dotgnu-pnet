@@ -1,8 +1,8 @@
 /*
- * ReliabilityContractAttribute.cs - Implementation of the
- *	"System.Runtime.ConstrainedExecution.ReliabilityContractAttribute" class.
+ * Cer.cs - Implementation of the
+ *			"System.Runtime.ConstrainedExecution.Cer" enumeration.
  *
- * Copyright (C) 2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,45 +24,14 @@ namespace System.Runtime.ConstrainedExecution
 
 #if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-[AttributeUsage(AttributeTargets.Method |
-				AttributeTargets.Constructor |
-				AttributeTargets.Struct |
-				AttributeTargets.Class |
-				AttributeTargets.Interface |
-				AttributeTargets.Assembly,
-				Inherited=false)]
-public sealed class ReliabilityContractAttribute : Attribute
+[Serializable]
+public enum Cer
 {
-	// Internal state.
-	private Consistency consistencyGuarantee;
-	private Cer cer;
+	None	= 0,
+	MayFail	= 1,
+	Success	= 2
 
-	// Constructor.
-	public ReliabilityContractAttribute
-				(Consistency consistencyGuarantee, Cer cer)
-	{
-		this.consistencyGuarantee = consistencyGuarantee;
-		this.cer = cer;
-	}
-
-	// Get or set this attribute's properties.
-	public Consistency ConsistencyGuarantee
-	{
-		get
-		{
-			return consistencyGuarantee;
-		}
-	}
-
-	public Cer Cer
-	{
-		get
-		{
-			return cer;
-		}
-	}
-
-}; // class ReliabilityContractAttribute
+}; // enum Cer
 
 #endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 

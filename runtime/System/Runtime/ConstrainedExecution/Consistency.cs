@@ -22,13 +22,9 @@
 namespace System.Runtime.ConstrainedExecution
 {
 
-using System.Runtime.InteropServices;
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
-#if CONFIG_FRAMEWORK_2_0
-
-#if !ECMA_COMPAT
-[ComVisible(false)]
-#endif
+[Serializable]
 public enum Consistency
 {
 	MayCorruptProcess		= 0,
@@ -38,6 +34,6 @@ public enum Consistency
 
 }; // enum Consistency
 
-#endif // CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Runtime.ConstrainedExecution

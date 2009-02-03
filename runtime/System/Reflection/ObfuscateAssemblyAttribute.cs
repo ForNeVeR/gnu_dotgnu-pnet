@@ -1,8 +1,7 @@
 /*
- * AssemblyNameFlags.cs - Implementation of the
- *			"System.Reflection.AssemblyNameFlags" class.
+ * ObfuscateAssemblyAttribute.cs - Implementation of the
+ *			"System.Reflection.ObfuscateAssemblyAttribute" class.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
  * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,27 +22,45 @@
 namespace System.Reflection
 {
 
-#if !ECMA_COMPAT
-#if CONFIG_FRAMEWORK_2_0
+#if !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
-#endif // CONFIG_FRAMEWORK_2_0
-[Serializable]
-[Flags]
-public enum AssemblyNameFlags
+[AttributeUsage(AttributeTargets.Assembly,
+				AllowMultiple = false, Inherited = false)]
+public sealed class ObfuscateAssemblyAttribute : Attribute
 {
-	None         = 0x0000,
-	PublicKey    = 0x0001,
-	Retargetable = 0x0100
-#if CONFIG_FRAMEWORK_2_0
-	,
-	EnableJITcompileOptimizer	= 0x4000,
-	EnableJITcompileTracking	= 0x8000
-#endif // CONFIG_FRAMEWORK_2_0
+	private bool assemblyIsPrivate;
+	private bool stripAfterObfuscation;
 
-}; // enum AssemblyNameFlags
+	public ObfuscateAssemblyAttribute(bool assemblyIsPrivate)
+	{
+		this.assemblyIsPrivate = assemblyIsPrivate;
+		this.stripAfterObfuscation = true;
+	}
 
-#endif // ECMA_COMPAT
+	public bool AssemblyIsPrivate
+	{
+		get
+		{
+			return assemblyIsPrivate;
+		}
+	}
+
+	public bool StripAfterObfuscation
+	{
+		get
+		{
+			return stripAfterObfuscation;
+		}
+		set
+		{
+			stripAfterObfuscation = value;
+		}
+	}
+
+}; // class ObfuscateAssemblyAttribute
+
+#endif // !ECMA_COMPAT &&  CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Reflection

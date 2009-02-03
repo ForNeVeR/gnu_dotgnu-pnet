@@ -22,19 +22,17 @@
 namespace Microsoft.Win32.SafeHandles
 {
 
-#if CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
+#if CONFIG_WIN32_SPECIFICS
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 using System;
 using System.Runtime.InteropServices;
-#if CONFIG_FRAMEWORK_2_0
 using System.Runtime.ConstrainedExecution;
-#else
-using System.Runtime.Reliability;
-#endif
 
 public sealed class SafeWaitHandle : SafeHandleZeroOrMinusOneIsInvalid
 {
 	// Constructor.
+	[ReliabilityContract(Consistency.WillNotCorruptState, Cer.MayFail)]
 	public SafeWaitHandle(IntPtr existingHandle, bool ownsHandle)
 			: base(ownsHandle)
 			{
@@ -46,7 +44,6 @@ public sealed class SafeWaitHandle : SafeHandleZeroOrMinusOneIsInvalid
 	extern private static bool CloseHandle(IntPtr handle);
 
 	// Release the handle.
-	[ReliabilityContract(Consistency.WillNotCorruptState, CER.Success)]
 	protected override bool ReleaseHandle()
 			{
 				return CloseHandle(handle);
@@ -54,6 +51,7 @@ public sealed class SafeWaitHandle : SafeHandleZeroOrMinusOneIsInvalid
 
 }; // class SafeWaitHandle
 
-#endif // CONFIG_WIN32_SPECIFICS && CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+#endif // CONFIG_WIN32_SPECIFICS
 
 }; // namespace Microsoft.Win32.SafeHandles

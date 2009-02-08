@@ -114,6 +114,26 @@ static int ImplementsInterface(ILNode *node, ILClass *classInfo,
 	ILMember *member;
 	int sawErrors;
 
+#if IL_VERSION_MAJOR > 1
+	if(ILClassNeedsExpansion(interface))
+	{
+		ILType *classType;
+		ILClass *instanceInfo;
+
+		classType = ILClass_SynType(interface);
+		instanceInfo = ILClassInstantiate(ILProgramItem_Image(interface),
+										  classType, classType, 0);
+		if(!instanceInfo)
+		{
+			sawErrors = 1;
+		}
+		else
+		{
+			interface = instanceInfo;
+		}
+	}
+#endif	/* IL_VERSION_MAJOR > 1 */
+
 	/* Bail out if we've already visited this interface */
 	for(posn = 0; posn < *visitedSize; ++posn)
 	{

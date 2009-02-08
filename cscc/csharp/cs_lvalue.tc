@@ -1231,6 +1231,20 @@ ILNode_SemAnalysisType(ILNode_GenericQualIdent)
 	}
 	info->inSemType = savedState;
 	
+	if(info->typeGather)
+	{
+		/* During type gathering only underlying classes are required */
+
+		if((CSSemGetKind(value) == CS_SEMKIND_TYPE) ||
+		   (CSSemGetKind(value) == CS_SEMKIND_TYPE_NODE))
+		{
+			/* Convert the result into an l-value or r-value and return it */
+			return SemToLRValue((ILNode *)node, info, parent, value,
+								name, node->left, &value);
+		}
+		return CSSemValueDefault;
+	}
+
 	if(CSSemGetKind(value) == CS_SEMKIND_TYPE)
 	{
 		ILType *withType;

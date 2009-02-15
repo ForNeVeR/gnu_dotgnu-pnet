@@ -22,6 +22,9 @@ namespace System
 {
 
 public struct TimeSpan : IComparable
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<TimeSpan>, IEquatable<TimeSpan>
+#endif
 {
 	internal long value_;
 
@@ -95,6 +98,33 @@ public struct TimeSpan : IComparable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<TinaSpan> interface.
+	public int CompareTo(TimeSpan value)
+			{
+				if(value_ < value.value_)
+				{
+					return -1;
+				}
+				else if(value_ > value.value_)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+	// Implementation of the IEquatable<TimeSpan> interface.
+	public bool Equals(TimeSpan obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Convert an integer value into two digits.
 	private static String TwoDigits(int value)

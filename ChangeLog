@@ -9,10 +9,10 @@
 	runtime/System/Int16.cs, runtime/System/Int32.cs,
 	runtime/System/Int64.cs, runtime/System/SByte.cs,
 	runtime/System/Single.cs, runtime/System/String.cs,
-	runtime/System/UInt16.cs, runtime/System/UInt32.cs,
-	runtime/System/UInt64.cs, runtime/System/Version.cs: Add in 2.0 ECMA
-	implemented generic interfaces IComparable<T> and IEquatable<T> and the
-	implementing methods.
+	runtime/System/TimeSpan.cs, runtime/System/UInt16.cs,
+	runtime/System/UInt32.cs, runtime/System/UInt64.cs,
+	runtime/System/Version.cs: Add in 2.0 ECMA implemented generic interfaces
+	IComparable<T> and IEquatable<T> and the implementing methods.
 	Add missing non ECMA 2.0 attributes ComVisible(true) and Serializable
 	where missing.
 

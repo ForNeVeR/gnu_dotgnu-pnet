@@ -3536,7 +3536,25 @@ ClassBase
 
 TypeList
 	: Type					{ $$ = $1; }
-	| TypeList ',' Type		{ MakeBinary(ArgList, $1, $3); }
+	| TypeList ',' Type		{
+				if(yykind($1) == yykindof(ILNode_ArgList))
+				{
+					/* Make sure the declaration order is preserved */
+					ILNode_ArgList *argList;
+
+					argList = (ILNode_ArgList *)$1;
+					while(yykind(argList->expr1) == yykindof(ILNode_ArgList))
+					{
+						argList = (ILNode_ArgList *)(argList->expr1);
+					}
+					argList->expr1 = ILNode_ArgList_create($3, argList->expr1);
+					$$ = $1;
+				}
+				else
+				{
+					$$ = ILNode_ArgList_create($3, $1);
+				}
+			}
 	;
 
 ClassBody

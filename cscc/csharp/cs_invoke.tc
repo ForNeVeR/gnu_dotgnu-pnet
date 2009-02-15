@@ -1939,7 +1939,10 @@ const char *CSItemToName(ILProgramItem *item)
 	}
 
 	/* Get the type of the class that contains the method */
-	type = (owner ? ILType_FromClass(owner) : 0);
+	if((type = ILClassGetSynType(owner)) == 0)
+	{
+		type = (owner ? ILType_FromClass(owner) : 0);
+	}
 
 	/* add the "event" if it is an event */
 	if(kind == IL_META_MEMBERKIND_EVENT)

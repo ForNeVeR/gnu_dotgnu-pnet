@@ -364,6 +364,60 @@ static void AddGenericParametersToClass(ILGenInfo *info, ILNode *classDefn)
 }
 #endif	/* IL_VERSION_MAJOR > 1 */
 
+static void AddObjectParent(ILGenInfo *info,
+							ILNode_ClassDefn *classNode,
+							ILClass *classInfo,
+							ILNode *systemObjectName)
+{
+	ILClass *objectClass;
+	ILProgramItem *parent = 0;
+
+	objectClass = ILType_ToClass(ILFindSystemType(info, "Object"));
+	if(!objectClass)
+	{
+		ILNode *baseTypeNode = 0;
+
+		/* Compiling something else that inherits "System.Object" */
+		if(CSSemBaseType(systemObjectName, info, &systemObjectName,
+						 &baseTypeNode, &parent))
+		{
+			if(!parent)
+			{
+				parent = NodeToProgramItem(baseTypeNode);
+			}
+		}
+	}
+	else
+	{
+		parent = ILToProgramItem(objectClass);
+	}
+	if(!parent)
+	{
+		CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
+					  "could not resolve System.Object");
+	}
+	else
+	{
+		/*
+		 * Check classInfo is System.Object so we don't have to add the
+		 * parent
+		 */
+		if(!ILProgramItemToTypeSpec(parent) &&
+		   ((objectClass = ILProgramItemToClass(parent)) != 0))
+		{
+			if(ILClassResolve(objectClass) == ILClassResolve(classInfo))
+			{
+				/* Compiling System.Object so don't set the parent. */
+				parent = 0;
+			}
+		}
+	}
+	if(parent)
+	{
+		ILClassSetParent(classInfo, parent);
+	}
+}
+
 static void AddBaseClasses(ILGenInfo *info,
 						   ILNode_ClassDefn *classNode,
 						   ILNode *systemObjectName)
@@ -383,6 +437,16 @@ static void AddBaseClasses(ILGenInfo *info,
 	{
 		ILProgramItem *parent = 0;
 		int numBases = CountBaseClasses(classNode->baseClass);
+
+		if(numBases > 0)
+		{
+			if(!strcmp(ILClass_Name(classInfo), "<Module>"))
+			{
+				CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
+							  "Modules must not have any base type specifications");
+				numBases = 0;
+			}
+		}
 
 		if(numBases > 0)
 		{
@@ -441,23 +505,89 @@ static void AddBaseClasses(ILGenInfo *info,
 						{
 							CCOutOfMemory();
 						}
-						if(!ILClass_IsInterface(underlying))
+						if(base == 0)
 						{
-							if(parent)
+							/* Handle the first item in the base list */
+							if(!ILClass_IsInterface(underlying))
 							{
-								if(!errorReported)
+								if(ILClass_IsInterface(classInfo))
 								{
+									/*
+									 * Interfaces must not have non interface
+									 * classes in the base list.
+									 */
 									CCErrorOnLine(yygetfilename(classNode),
 												  yygetlinenum(classNode),
-									  "class inherits from two or more non-interface classes");
+									"interface inherits from non-interface class");
 									errorReported = 1;
 								}
+								else
+								{
+									if(ILClass_IsSealed(underlying))
+									{
+										CCErrorOnLine(yygetfilename(classNode),
+													  yygetlinenum(classNode),
+									  "inheriting from a sealed parent class");
+									}
+									else
+									{
+										ILClassSetParent(classInfo, baseList[base]);
+									}
+								}
+								parent = baseList[base];
+								baseList[base] = 0;
 							}
 							else
 							{
-								parent = baseList[base];
+								/* First base in the list is an interface */
+								if(!ILClass_IsInterface(classInfo))
+								{
+									/* We have to add the System.Object parent */
+									AddObjectParent(info, classNode,
+													classInfo,
+													systemObjectName);
+								}
 							}
-							baseList[base] = 0;
+						}
+						else
+						{
+							if(!ILClass_IsInterface(underlying))
+							{
+								/*
+								 * Non interface class found later in the base list.
+								 */
+								if(ILClass_IsInterface(classInfo))
+								{
+									if(!errorReported)
+									{
+										CCErrorOnLine(yygetfilename(classNode),
+													  yygetlinenum(classNode),
+									  "interface inherits from non-interface classes");
+										errorReported = 1;
+									}
+								}
+								else
+								{
+									if(!parent)
+									{
+										CCErrorOnLine(yygetfilename(classNode),
+													  yygetlinenum(classNode),
+										  "base class must be the first class in the base list");
+										parent = baseList[base];
+									}
+									else
+									{
+										if(!errorReported)
+										{
+											CCErrorOnLine(yygetfilename(classNode),
+														  yygetlinenum(classNode),
+										  "class inherits from two or more non-interface classes");
+											errorReported = 1;
+										}
+									}
+								}
+								baseList[base] = 0;
+							}
 						}
 					}
 				}
@@ -466,86 +596,6 @@ static void AddBaseClasses(ILGenInfo *info,
 					/* This is not a valid base class specification */
 					CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
 								  "invalid base type");
-				}
-			}
-
-			/* Test for interfaces, or find "System.Object" if no parent yet */
-			if(ILClass_IsInterface(classInfo))
-			{
-				if(parent)
-				{
-					CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
-								  "interface inherits from non-interface class");
-					parent = 0;
-				}
-			}
-			else if(!parent)
-			{
-				/* Use the builtin library's "System.Object" */
-				ILClass *objectClass;
-
-				objectClass = ILType_ToClass(ILFindSystemType(info, "Object"));
-				if(!objectClass)
-				{
-					ILNode *baseTypeNode;
-
-					/* Compiling something else that inherits "System.Object" */
-					if(CSSemBaseType(systemObjectName, info, &systemObjectName,
-									 &baseTypeNode, &parent))
-					{
-						if(!parent)
-						{
-							parent = NodeToProgramItem(baseTypeNode);
-						}
-					}
-				}
-				else
-				{
-					parent = ILToProgramItem(objectClass);
-				}
-				if(!parent)
-				{
-					CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
-								  "could not resolve System.Object");
-				}
-				else
-				{
-					if(!ILProgramItemToTypeSpec(parent) &&
-					   ((objectClass = ILProgramItemToClass(parent)) != 0))
-					{
-						if(ILClassResolve(objectClass) == ILClassResolve(classInfo))
-						{
-							/* Compiling System.Object so don't set the parent. */
-							parent = 0;
-						}
-					}
-				}
-			}
-			else
-			{
-				/* Output an error if attempting to inherit from a sealed class */
-				ILClass *underlying = ILProgramItemToUnderlyingClass(parent);
-				if(underlying)
-				{
-					underlying = ILClassResolve(underlying);
-				}
-				if(!underlying)
-				{
-					CCOutOfMemory();
-				}
-				if(underlying && ILClass_IsSealed(underlying))
-				{
-					CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
-								  "inheriting from a sealed parent class");
-				}
-			}
-
-			/* Set the calass parent */
-			if(strcmp(ILClass_Name(classInfo), "<Module>") != 0)
-			{
-				if(parent && !ILClass_IsInterface(classInfo))
-				{
-					ILClassSetParent(classInfo, parent);
 				}
 			}
 
@@ -561,16 +611,13 @@ static void AddBaseClasses(ILGenInfo *info,
 				}
 			}
 		}
-		else if(!ILClass_IsInterface(classInfo))
+		else
 		{
-			ILClass *objectClass;
-
-			/* Use the builtin library's "System.Object" as parent class */
-			objectClass = ILType_ToClass(ILFindSystemType(info, "Object"));
-
-			if(ILClassResolve(classInfo) != ILClassResolve(objectClass))
+			if(!ILClass_IsInterface(classInfo) && 
+			   (strcmp(ILClass_Name(classInfo), "<Module>") != 0))
 			{
-				ILClassSetParent(classInfo, ILToProgramItem(objectClass));
+				/* We have to add the System.Object parent */
+				AddObjectParent(info, classNode, classInfo, systemObjectName);
 			}
 		}
 	}
@@ -1091,7 +1138,29 @@ static ILMember *FindInterfaceMatch(ILClass *interface,
 									ILType *signature,
 									int kind)
 {
-	ILMember *member = 0;
+	ILMember *member;
+
+#if IL_VERSION_MAJOR > 1
+	if(ILClassNeedsExpansion(interface))
+	{
+		ILType *classType;
+		ILClass *instanceInfo;
+
+		classType = ILClass_SynType(interface);
+		instanceInfo = ILClassInstantiate(ILProgramItem_Image(interface),
+										  classType, classType, 0);
+		if(!instanceInfo)
+		{
+			return 0;
+		}
+		else
+		{
+			interface = instanceInfo;
+		}
+	}
+#endif	/* IL_VERSION_MAJOR > 1 */
+
+	member = 0;
 	while((member = ILClassNextMemberMatch
 			(interface, member, kind, name, 0)) != 0)
 	{
@@ -2694,7 +2763,7 @@ static void FixNonInterfaceMethods(ILClass *classInfo)
 			overMethod = ILOverrideGetDecl(override);
 			if(!strcmp(ILMethod_Name(overMethod), ILMethod_Name(method)) &&
 			   ILTypeIdentical(ILMethod_Signature(overMethod),
-			   				   ILMethod_Signature(method)))
+							   ILMethod_Signature(method)))
 			{
 				/* We've found a match, so assume that the
 				   "final virtual" flags are incorrect */

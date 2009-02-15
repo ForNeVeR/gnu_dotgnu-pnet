@@ -1,3 +1,21 @@
+2009-02-15  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_cast.tc (CSTypeToName): Add handling of generic type
+	instances. Remove unnecessary casts to char * in calls to ILInternString.
+
+	* cscc/csharp/cs_gather.c (AddBaseClasses): Add the parent class at the
+	earliest point possible so that value types can be distinguished from
+	reference types while semanalyzing the base class lists.
+	(FindInterfaceMatch): Instantiate generic interfaced before looking for
+	interface member implementations.
+
+	* cscc/csharp/cs_grammar.y: Make sure that the declaration order in the
+	base type list is preserved so that the checks in cs_gather.c can be
+	performed.
+
+	* cscc/csharp/cs_invoke.tc (CSItemToName): Handle members if generic
+	instances.
+
 2009-02-08  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_interface.c (ImplementsInterface): Instantiate a generic

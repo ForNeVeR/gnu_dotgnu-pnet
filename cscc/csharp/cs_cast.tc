@@ -123,6 +123,23 @@ ILNode_SemAnalysis(ILNode_UserCast)
 
 %end %{
 
+#if IL_VERSION_MAJOR > 1
+
+/* Get the number of generic prameters for the nested patent class */
+static unsigned long NumNestedParentGenericPars(ILClass *classInfo)
+{
+	ILClass *nestedParentInfo;
+
+	nestedParentInfo = ILClass_NestedParent(classInfo);
+	if(nestedParentInfo)
+	{
+		return ILClassGetNumGenericPars(nestedParentInfo);
+	}
+	return 0;
+}
+
+#endif /* IL_VERSION_MAJOR > 1 */
+
 const char *CSTypeToName(ILType *type)
 {
 	if(ILType_IsPrimitive(type))
@@ -165,9 +182,9 @@ const char *CSTypeToName(ILType *type)
 		if(namespace)
 		{
 			finalName = ILInternStringConcat3
-							(ILInternString((char *)namespace, -1),
-							 ILInternString((char *)".", 1),
-							 ILInternString((char *)name, -1)).string;
+							(ILInternString(namespace, -1),
+							 ILInternString(".", 1),
+							 ILInternString(name, -1)).string;
 		}
 		else
 		{
@@ -179,9 +196,9 @@ const char *CSTypeToName(ILType *type)
 			const char *parentName = CSTypeToName
 				(ILType_FromClass(ILClass_NestedParent(classInfo)));
 			finalName = ILInternStringConcat3
-							(ILInternString((char *)parentName, -1),
-							 ILInternString((char *)".", 1),
-							 ILInternString((char *)finalName, -1)).string;
+							(ILInternString(parentName, -1),
+							 ILInternString(".", 1),
+							 ILInternString(finalName, -1)).string;
 		}
 		return finalName;
 	}
@@ -192,14 +209,14 @@ const char *CSTypeToName(ILType *type)
 		if(kind == IL_TYPE_COMPLEX_BYREF)
 		{
 			return ILInternAppendedString
-					(ILInternString((char *)CSTypeToName(ILType_Ref(type)), -1),
-					 ILInternString((char *)" &", 2)).string;
+					(ILInternString(CSTypeToName(ILType_Ref(type)), -1),
+					 ILInternString(" &", 2)).string;
 		}
 		else if(kind == IL_TYPE_COMPLEX_PTR)
 		{
 			return ILInternAppendedString
-					(ILInternString((char *)CSTypeToName(ILType_Ref(type)), -1),
-					 ILInternString((char *)" *", 2)).string;
+					(ILInternString(CSTypeToName(ILType_Ref(type)), -1),
+					 ILInternString(" *", 2)).string;
 		}
 		else if(kind == IL_TYPE_COMPLEX_ARRAY ||
 			    kind == IL_TYPE_COMPLEX_ARRAY_CONTINUE)
@@ -215,10 +232,10 @@ const char *CSTypeToName(ILType *type)
 			{
 				elemType = ILType_ElemType(elemType);
 			}
-			str = ILInternString((char *)CSTypeToName(elemType), -1);
-			open = ILInternString((char *)"[", 1);
-			close = ILInternString((char *)"]", 1);
-			comma = ILInternString((char *)",", 1);
+			str = ILInternString(CSTypeToName(elemType), -1);
+			open = ILInternString("[", 1);
+			close = ILInternString("]", 1);
+			comma = ILInternString(",", 1);
 			str = ILInternAppendedString(str, open);
 			while(type != elemType)
 			{
@@ -239,6 +256,69 @@ const char *CSTypeToName(ILType *type)
 			}
 			return str.string;
 		}
+#if IL_VERSION_MAJOR > 1
+		else if(kind == IL_TYPE_COMPLEX_WITH)
+		{
+			unsigned long current;
+			unsigned long numGenericPars;
+			unsigned long numParentGenericPars;
+			const char *typeName;
+			const char *temp;
+			ILType *mainType;
+			ILIntString str;
+
+			mainType = ILTypeGetWithMain(type);
+			typeName = CSTypeToName(mainType);
+
+			/* Strip the part including the arity fromm the type name */
+			temp = strchr(typeName, '`');
+			if(temp)
+			{
+				str = ILInternString(typeName, (int)(temp - typeName));
+			}
+			else
+			{
+				/* A non generic class nested in a generic class */
+				str = ILInternString(typeName, -1);
+			}
+			numParentGenericPars = NumNestedParentGenericPars(ILType_ToClass(mainType));
+			numGenericPars = ILTypeNumWithParams(type);
+			if(numGenericPars > numParentGenericPars)
+			{
+				ILIntString open;
+				ILIntString close;
+				ILIntString comma;
+				ILIntString tempString;
+
+				open = ILInternString("<", 1);
+				close = ILInternString(">", 1);
+				comma = ILInternString(",", 1);
+				str = ILInternAppendedString(str, open);
+				current = numParentGenericPars + 1;
+				while(current <= numGenericPars)
+				{
+					if(current > numParentGenericPars + 1)
+					{
+						str = ILInternAppendedString(str, comma);
+					}
+					typeName = CSTypeToName(ILTypeGetWithParam(type, current));
+					tempString = ILInternString(typeName, -1);
+					str = ILInternAppendedString(str, tempString);
+					++current;
+				}
+				str = ILInternAppendedString(str, close);
+			}
+			return str.string;
+		}
+		else if(kind == IL_TYPE_COMPLEX_VAR)
+		{
+			/* TODO */
+		}
+		else if(kind == IL_TYPE_COMPLEX_MVAR)
+		{
+			/* TODO */
+		}
+#endif	/* IL_VERSION_MAJOR > 1 */
 		else if(kind == IL_TYPE_COMPLEX_CMOD_REQD ||
 				kind == IL_TYPE_COMPLEX_CMOD_OPT)
 		{
@@ -253,13 +333,13 @@ const char *CSTypeToName(ILType *type)
 				str = ILInternString("/* opt ", -1);
 			}
 			temp = ILInternString
-			  ((char *)(CSTypeToName(ILType_FromClass
-			  				(type->un.modifier__.info__))), -1);
+			  (CSTypeToName(ILType_FromClass
+			  				(type->un.modifier__.info__)), -1);
 			str = ILInternAppendedString(str, temp);
 			temp = ILInternString(" */ ", -1);
 			str = ILInternAppendedString(str, temp);
 			temp = ILInternString
-				((char *)(CSTypeToName(type->un.modifier__.type__)), -1);
+				(CSTypeToName(type->un.modifier__.type__), -1);
 			str = ILInternAppendedString(str, temp);
 			return str.string;
 		}
@@ -273,7 +353,7 @@ const char *CSTypeToName(ILType *type)
 
 			/* Convert the return type */
 			str = ILInternString
-				((char *)(CSTypeToName(ILTypeGetReturnWithPrefixes(type))), -1);
+				(CSTypeToName(ILTypeGetReturnWithPrefixes(type)), -1);
 
 			/* Add the start of the parameter list */
 			temp = ILInternString(" * (", -1);
@@ -291,7 +371,7 @@ const char *CSTypeToName(ILType *type)
 			for(param = 1; param <= num; ++param)
 			{
 				paramType = ILTypeGetParamWithPrefixes(type, param);
-				temp = ILInternString((char *)(CSTypeToName(paramType)), -1);
+				temp = ILInternString(CSTypeToName(paramType), -1);
 				str = ILInternAppendedString(str, temp);
 				if(param < num)
 				{

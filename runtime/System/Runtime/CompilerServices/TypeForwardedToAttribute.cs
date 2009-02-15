@@ -1,8 +1,8 @@
 /*
- * MethodImplOptions.cs - Implementation of the
- *			"System.Runtime.CompilerServices.MethodImplOptions" class.
+ * TypeForwardedToAttribute.cs - Implementation of the
+ *	"System.Runtime.CompilerServices.TypeForwardedToAttribute" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,22 +21,34 @@
 
 namespace System.Runtime.CompilerServices
 {
-#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
-using System.Runtime.InteropServices;
 
-[ComVisible(true)]
-#endif
-[Flags]
-public enum MethodImplOptions
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+
+[AttributeUsage(AttributeTargets.Assembly,
+				AllowMultiple = true,
+				Inherited = false)]
+public sealed class TypeForwardedToAttribute : Attribute
 {
-	Unmanaged       = 0x0004,
-	NoInlining      = 0x0008,
-	ForwardRef      = 0x0010,
-	Synchronized    = 0x0020,
-	NoOptimization	= 0x0040,
-	PreserveSig     = 0x0080,
-	InternalCall    = 0x1000
+	// internal state
+	private Type destination;
 
-}; // enum MethodImplOptions
+	// Constructors.
+	public TypeForwardedToAttribute(Type destination)
+	{
+		this.destination = destination;
+	}
+
+	// Properties
+	public Type Destination
+	{
+		get
+		{
+			return destination;
+		}
+	}
+
+}; // class TypeForwardedToAttribute
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.Runtime.CompilerServices

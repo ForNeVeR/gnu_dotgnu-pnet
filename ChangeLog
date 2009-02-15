@@ -32,6 +32,16 @@
 	* runtime/System/Single.cs (IsNaN): Replace the internal call for IsNaN
 	with a check if a compare with itself yields false.
 
+	* runtime/System/Runtime/CompilerServices/MethodImplOptions.cs: Add
+	the missing NoOptimization member. Add the ComVisible(true) attribute
+	for non ECMA 2.0 builds.
+
+	* runtime/System/Runtime/CompilerServices/NativeCppClassAttribute.cs,
+	runtime/System/Runtime/CompilerServices/SpecialNameAttribute.cs,
+	runtime/System/Runtime/CompilerServices/TypeForwardedToAttribute.cs,
+	runtime/System/Runtime/CompilerServices/SuppressIldasmAttribute.cs:
+	Add some non ECMA 2.0 attributes.
+
 	* System/GenericUriParserOptions.cs: Add non ECMA 2.0 enumeration.
 
 	* tests/runtime/System/SuiteSystem.cs: Add the new tests to the suite.

@@ -28,9 +28,18 @@ using System.Private.NumberFormat;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct Single : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
+#endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<float>, IEquatable<float>
 #endif
 {
 	private float value_;
@@ -91,8 +100,11 @@ public struct Single : IComparable, IFormattable
 			}
 
 	// Value testing methods.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool IsNaN(float f);
+	public static bool IsNaN(float f)
+			{
+				// Comparing a NaN with any other value yields false.
+				return (f != f);
+			}
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int TestInfinity(float f);
@@ -199,6 +211,49 @@ public struct Single : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<float> interface.
+	public int CompareTo(float value)
+			{
+				if(value_ < value.value_)
+				{
+					return -1;
+				}
+				else if(value_ > value.value_)
+				{
+					return 1;
+				}
+				else if(value_ == value.value_)
+				{
+					return 0;
+				}
+				else if(IsNaN(value_))
+				{
+					if(IsNaN(value.value_))
+					{
+						return 0;
+					}
+					else
+					{
+						return -1;
+					}
+				}
+				else
+				{
+					return 1;
+				}
+			}
+
+	// Implementation of the IEquatable<float> interface.
+	public bool Equals(float obj)
+			{
+				return ((value_ == obj.value_) ||
+						(IsNaN(value_) && IsNaN(obj.value_)));
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

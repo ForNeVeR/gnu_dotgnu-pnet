@@ -26,7 +26,16 @@ namespace System
 using System.Runtime.CompilerServices;
 using System.Text;
 
+#if CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct Guid : IFormattable, IComparable
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<Guid>, IEquatable<Guid>
+#endif
 {
 	// The empty GUID.
 	public static readonly Guid Empty;
@@ -424,6 +433,104 @@ public struct Guid : IFormattable, IComparable
 				}
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<Guid> interface.
+	public int CompareTo(Guid value)
+			{
+				if(((uint)a__) < ((uint)(value.a__)))
+				{
+					return -1;
+				}
+				else if(((uint)a__) > ((uint)(value.a__)))
+				{
+					return 1;
+				}
+				if(((ushort)b__) < ((ushort)(value.b__)))
+				{
+					return -1;
+				}
+				else if(((ushort)b__) > ((ushort)(value.b__)))
+				{
+					return 1;
+				}
+				if(((ushort)c__) < ((ushort)(value.c__)))
+				{
+					return -1;
+				}
+				else if(((ushort)c__) > ((ushort)(value.c__)))
+				{
+					return 1;
+				}
+				if(d__ < value.d__)
+				{
+					return -1;
+				}
+				else if(d__ > value.d__)
+				{
+					return 1;
+				}
+				if(e__ < value.e__)
+				{
+					return -1;
+				}
+				else if(e__ > value.e__)
+				{
+					return 1;
+				}
+				if(f__ < value.f__)
+				{
+					return -1;
+				}
+				else if(f__ > value.f__)
+				{
+					return 1;
+				}
+				if(g__ < value.g__)
+				{
+					return -1;
+				}
+				else if(g__ > value.g__)
+				{
+					return 1;
+				}
+				if(h__ < value.h__)
+				{
+					return -1;
+				}
+				else if(h__ > value.h__)
+				{
+					return 1;
+				}
+				if(i__ < value.i__)
+				{
+					return -1;
+				}
+				else if(i__ > value.i__)
+				{
+					return 1;
+				}
+				if(j__ < value.j__)
+				{
+					return -1;
+				}
+				else if(j__ > value.j__)
+				{
+					return 1;
+				}
+				if(k__ < value.k__)
+				{
+					return -1;
+				}
+				else if(k__ > value.k__)
+				{
+					return 1;
+				}
+				return 0;
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
+
 	// Determine if two Guid objects are equal.
 	public override bool Equals(Object obj)
 			{
@@ -447,6 +554,26 @@ public struct Guid : IFormattable, IComparable
 					return false;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IEquatable<Guid> interface.
+	public bool Equals(Guid obj)
+			{
+					return (a__ == obj.a__ &&
+					        b__ == obj.b__ &&
+					        c__ == obj.c__ &&
+					        d__ == obj.d__ &&
+					        e__ == obj.e__ &&
+					        f__ == obj.f__ &&
+					        g__ == obj.g__ &&
+					        h__ == obj.h__ &&
+					        i__ == obj.i__ &&
+					        j__ == obj.j__ &&
+					        k__ == obj.k__);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Get a hash code for this Guid object.
 	public override int GetHashCode()

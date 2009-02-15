@@ -22,8 +22,14 @@ namespace System
 {
 
 using System.Collections;
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Collections.Generic;
+#endif
 
 public sealed class CharEnumerator : IEnumerator, ICloneable
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+	, IEnumerator<char>
+#endif
 {
 	// Internal state for the enumerator.
 	String str;
@@ -86,6 +92,15 @@ public sealed class CharEnumerator : IEnumerator, ICloneable
 					}
 				}
 			}
+
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+
+	void IDisposable.Dispose()
+			{
+				// Nothing to do here
+			}
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 
 }; // class CharEnumerator
 

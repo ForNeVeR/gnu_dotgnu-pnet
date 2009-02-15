@@ -21,9 +21,18 @@
 namespace System
 {
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct Boolean : IComparable
 #if !ECMA_COMPAT
 	, IConvertible
+#endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<bool>, IEquatable<bool>
 #endif
 {
 	private bool value_;
@@ -114,6 +123,26 @@ public struct Boolean : IComparable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<bool> interface.
+	public int CompareTo(bool value)
+			{
+				if(value_)
+				{
+					return value.value_ ? 0 : 1;
+				}
+				return value.value_ ? -1 : 0;
+			}
+
+	// Implementation of the IEquatable<bool> interface.
+	public bool Equals(bool obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

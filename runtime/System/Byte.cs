@@ -25,9 +25,18 @@ using System.Private;
 using System.Private.NumberFormat;
 using System.Globalization;
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct Byte : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
+#endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<byte>, IEquatable<byte>
 #endif
 {
 	private byte value_;
@@ -105,6 +114,22 @@ public struct Byte : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<byte> interface.
+	public int CompareTo(byte value)
+			{
+				return (int)value_ - (int)(value.value_);
+			}
+
+	// Implementation of the IEquatable<byte> interface.
+	public bool Equals(byte obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

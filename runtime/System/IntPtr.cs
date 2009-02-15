@@ -25,6 +25,12 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct IntPtr
 #if CONFIG_SERIALIZATION
 	: ISerializable

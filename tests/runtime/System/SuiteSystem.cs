@@ -40,11 +40,13 @@ public class SuiteSystem
 				suite.AddTests(typeof(TestArray));
 				suite.AddTests(typeof(TestAttribute));
 				suite.AddTests(typeof(TestBoolean));
+				suite.AddTests(typeof(TestChar));
 				suite.AddTests(typeof(TestConvert));
 				suite.AddTests(typeof(TestDecimal));
 				suite.AddTests(typeof(TestDelegate));
 				suite.AddTests(typeof(TestDouble));
 				suite.AddTests(typeof(TestSByte));
+				suite.AddTests(typeof(TestSingle));
 				suite.AddTests(typeof(TestString));
 			#if !ECMA_COMPAT
 				suite.AddTests(typeof(TestGuid));

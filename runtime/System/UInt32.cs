@@ -30,6 +30,9 @@ public struct UInt32 : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
 #endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<uint>, IEquatable<uint>
+#endif
 {
 	private uint value_;
 
@@ -124,6 +127,33 @@ public struct UInt32 : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<uint> interface.
+	public int CompareTo(uint value)
+			{
+				if(value_ < value.value_)
+				{
+					return -1;
+				}
+				else if(value_ > value.value_)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+	// Implementation of the IEquatable<uint> interface.
+	public bool Equals(uint obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

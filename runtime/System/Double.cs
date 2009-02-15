@@ -28,9 +28,18 @@ using System.Private.NumberFormat;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct Double : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
+#endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<double>, IEquatable<double>
 #endif
 {
 	private double value_;
@@ -78,8 +87,11 @@ public struct Double : IComparable, IFormattable
 			}
 
 	// Value testing methods.
-	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static bool IsNaN(double d);
+	public static bool IsNaN(double d)
+			{
+				// Comparing a NaN with any other value yields false.
+				return (d != d);
+			}
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static int TestInfinity(double d);
@@ -244,6 +256,50 @@ public struct Double : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<double> interface.
+	public int CompareTo(double value)
+			{
+				if(value_ == value)
+				{
+					return 0;
+				}
+				else if(IsNaN(value_))
+				{
+					if(IsNaN(value))
+					{
+						return 0;
+					}
+					else
+					{
+						return -1;
+					}
+				}
+				else if(value_ < value)
+				{
+					return -1;
+				}
+				else if(value_ > value)
+				{
+					return 1;
+				}
+				else
+				{
+					return 1;
+				}
+			}
+
+	// Implementation of the IEquatable<double> interface.
+	public bool Equals(double obj)
+			{
+				// We have to handle NaN values especially
+				return ((value_ == obj.value_) ||
+						(IsNaN(this) && IsNaN(obj)));
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

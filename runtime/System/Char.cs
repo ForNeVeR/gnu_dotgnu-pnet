@@ -23,9 +23,18 @@ namespace System
 
 using System.Globalization;
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct Char : IComparable
 #if !ECMA_COMPAT
 	, IConvertible
+#endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<char>, IEquatable<char>
 #endif
 {
 	private char value_;
@@ -100,6 +109,22 @@ public struct Char : IComparable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<char> interface.
+	public int CompareTo(char value)
+			{
+				return ((int)value_) - ((int)(value.value_));
+			}
+
+	// Implementation of the IEquatable<char> interface.
+	public bool Equals(char obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 
@@ -242,11 +267,23 @@ public struct Char : IComparable
 	public static bool IsLetter(char c)
 			{
 				UnicodeCategory category = GetUnicodeCategory(c);
-				return (category == UnicodeCategory.UppercaseLetter ||
-						category == UnicodeCategory.LowercaseLetter ||
-						category == UnicodeCategory.TitlecaseLetter ||
-						category == UnicodeCategory.ModifierLetter ||
-						category == UnicodeCategory.OtherLetter);
+
+				switch(category)
+				{
+					case UnicodeCategory.UppercaseLetter:
+					case UnicodeCategory.LowercaseLetter:
+					case UnicodeCategory.TitlecaseLetter:
+					case UnicodeCategory.ModifierLetter:
+					case UnicodeCategory.OtherLetter:
+					{
+						return true;
+					}
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 	public static bool IsLetter(String s, int index)
 			{
@@ -259,12 +296,24 @@ public struct Char : IComparable
 	public static bool IsLetterOrDigit(char c)
 			{
 				UnicodeCategory category = GetUnicodeCategory(c);
-				return (category == UnicodeCategory.UppercaseLetter ||
-						category == UnicodeCategory.LowercaseLetter ||
-						category == UnicodeCategory.TitlecaseLetter ||
-						category == UnicodeCategory.ModifierLetter ||
-						category == UnicodeCategory.OtherLetter ||
-						category == UnicodeCategory.DecimalDigitNumber);
+
+				switch(category)
+				{
+					case UnicodeCategory.UppercaseLetter:
+					case UnicodeCategory.LowercaseLetter:
+					case UnicodeCategory.TitlecaseLetter:
+					case UnicodeCategory.ModifierLetter:
+					case UnicodeCategory.OtherLetter:
+					case UnicodeCategory.DecimalDigitNumber:
+					{
+						return true;
+					}
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 	public static bool IsLetterOrDigit(String s, int index)
 			{
@@ -287,9 +336,21 @@ public struct Char : IComparable
 	public static bool IsNumber(char c)
 			{
 				UnicodeCategory category = GetUnicodeCategory(c);
-				return (category == UnicodeCategory.DecimalDigitNumber ||
-						category == UnicodeCategory.LetterNumber ||
-						category == UnicodeCategory.OtherNumber);
+
+				switch(category)
+				{
+					case UnicodeCategory.DecimalDigitNumber:
+					case UnicodeCategory.LetterNumber:
+					case UnicodeCategory.OtherNumber:
+					{
+						return true;
+					}
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 	public static bool IsNumber(String s, int index)
 			{
@@ -302,13 +363,25 @@ public struct Char : IComparable
 	public static bool IsPunctuation(char c)
 			{
 				UnicodeCategory category = GetUnicodeCategory(c);
-				return (category == UnicodeCategory.ConnectorPunctuation ||
-						category == UnicodeCategory.DashPunctuation ||
-						category == UnicodeCategory.OpenPunctuation ||
-						category == UnicodeCategory.ClosePunctuation ||
-						category == UnicodeCategory.InitialQuotePunctuation ||
-						category == UnicodeCategory.FinalQuotePunctuation ||
-						category == UnicodeCategory.OtherPunctuation);
+
+				switch(category)
+				{
+					case UnicodeCategory.ConnectorPunctuation:
+					case UnicodeCategory.DashPunctuation:
+					case UnicodeCategory.OpenPunctuation:
+					case UnicodeCategory.ClosePunctuation:
+					case UnicodeCategory.InitialQuotePunctuation:
+					case UnicodeCategory.FinalQuotePunctuation:
+					case UnicodeCategory.OtherPunctuation:
+					{
+						return true;
+					}
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 	public static bool IsPunctuation(String s, int index)
 			{
@@ -321,9 +394,21 @@ public struct Char : IComparable
 	public static bool IsSeparator(char c)
 			{
 				UnicodeCategory category = GetUnicodeCategory(c);
-				return (category == UnicodeCategory.SpaceSeparator ||
-						category == UnicodeCategory.LineSeparator ||
-						category == UnicodeCategory.ParagraphSeparator);
+
+				switch(category)
+				{
+					case UnicodeCategory.SpaceSeparator:
+					case UnicodeCategory.LineSeparator:
+					case UnicodeCategory.ParagraphSeparator:
+					{
+						return true;
+					}
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 	public static bool IsSeparator(String s, int index)
 			{
@@ -346,10 +431,22 @@ public struct Char : IComparable
 	public static bool IsSymbol(char c)
 			{
 				UnicodeCategory category = GetUnicodeCategory(c);
-				return (category == UnicodeCategory.MathSymbol ||
-						category == UnicodeCategory.CurrencySymbol ||
-						category == UnicodeCategory.ModifierSymbol ||
-						category == UnicodeCategory.OtherSymbol);
+
+				switch(category)
+				{
+					case UnicodeCategory.MathSymbol:
+					case UnicodeCategory.CurrencySymbol:
+					case UnicodeCategory.ModifierSymbol:
+					case UnicodeCategory.OtherSymbol:
+					{
+						return true;
+					}
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 	public static bool IsSymbol(String s, int index)
 			{
@@ -421,7 +518,154 @@ public struct Char : IComparable
 					throw new ArgumentNullException("culture");
 				}
 			}
-#endif
+
+#if CONFIG_FRAMEWORK_2_0
+	public static bool IsHighSurrogate(char c)
+			{
+				return ((c >= 0xd800) && (c <= 0xdbff));
+			}
+
+	public static bool IsHighSurrogate(string s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				if(index < 0 || index >= s.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", _("ArgRange_StringIndex"));
+				}
+				return IsHighSurrogate(s[index]);
+			}
+
+	public static bool IsLowSurrogate(char c)
+			{
+				return ((c >= 0xdc00) && (c <= 0xdfff));
+			}
+
+	public static bool IsLowSurrogate(string s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				if(index < 0 || index >= s.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", _("ArgRange_StringIndex"));
+				}
+				return IsLowSurrogate(s[index]);
+			}
+
+	public static bool IsSurrogatePair(char highSurrogate, char lowSurrogate)
+			{
+				return (IsHighSurrogate(highSurrogate) &&
+						IsLowSurrogate(lowSurrogate));
+			}
+
+	public static bool IsSurrogatePair(string s, int index)
+			{
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				if(index < 0 || index >= s.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", _("ArgRange_StringIndex"));
+				}
+				if(IsHighSurrogate(s[index]))
+				{
+					if(index + 1 < s.Length)
+					{
+						return IsLowSurrogate(s[index + 1]);
+					}
+				}
+				return false;
+			}
+
+	public static char ToLowerInvariant(char c)
+			{
+				return ToLower(c, CultureInfo.InvariantCulture);
+			}
+
+	public static char ToUpperInvariant(char c)
+			{
+				return ToUpper(c, CultureInfo.InvariantCulture);
+			}
+
+	public static bool TryParse(string s, out char result)
+			{
+				if(s != null)
+				{
+					if(s.Length == 1)
+					{
+						result = s[0];
+						return true;
+					}
+				}
+				return false;
+			}
+
+#if !CONFIG_COMPACT_FRAMEWORK
+	public static int ConvertToUtf32(char highSurrogate, char lowSurrogate)
+			{
+				if(!IsHighSurrogate(highSurrogate))
+				{
+					throw new ArgumentOutOfRangeException
+						("highSurrogate", _("ArgRange_HighSurrogate"));
+				}
+				if(!IsLowSurrogate(lowSurrogate))
+				{
+					throw new ArgumentOutOfRangeException
+						("lowSurrogate", _("ArgRange_LowSurrogate"));
+				}
+				return ((((int)highSurrogate & 0x3ff) << 10) |
+						((int)lowSurrogate & 0x3ff)) + 0x10000;
+			}
+
+	public static int ConvertToUtf32(string s, int index)
+			{
+				int char0;
+				int char1;
+
+				if(s == null)
+				{
+					throw new ArgumentNullException("s");
+				}
+				if(index < 0 || index >= s.Length)
+				{
+					throw new ArgumentOutOfRangeException
+						("index", _("ArgRange_StringIndex"));
+				}
+				char0 = s[index];
+				// Check if the character is no surrogate
+				if(char0 < 0xd800 || char0 >= 0xe000)
+				{
+					return char0;
+				}
+				if(char0 > 0xdbff)
+				{
+					throw new ArgumentException(_("Arg_LowSurrogate"));
+				}
+				if(index >= s.Length - 1)
+				{
+					throw new ArgumentException(_("Arg_HighSurrogate"));
+				}
+				char1 = s[index + 1];
+				// Check if the character is a high surrogate
+				if(char1 < 0xdc00 || char1 >= 0xe000)
+				{
+					throw new ArgumentException(_("Arg_HighSurrogate"));
+				}
+				return (((char1 & 0x3ff) << 10) |
+						(char0 & 0x3ff)) + 0x10000;
+			}
+
+#endif // !CONFIG_COMPACT_FRAMEWORK
+#endif // CONFIG_FRAMEWORK_2_0
+#endif // !ECMA_COMPAT
 
 }; // class Char
 

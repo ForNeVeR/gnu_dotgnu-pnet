@@ -1,3 +1,46 @@
+2009-02-15  Klaus Treichel  <ktreichel@web.de>
+
+	* resources/en_US/runtime/Arg.txt: Add messages for Exceptions thrown
+	because of invalid high- and low surrogates.
+
+	* runtime/System/Boolean.cs, runtime/System/Byte.cs,
+	runtime/System/Char.cs, runtime/System/DateTime.cs,
+	runtime/System/Double.cs, runtime/System/Guid.cs,
+	runtime/System/Int16.cs, runtime/System/Int32.cs,
+	runtime/System/Int64.cs, runtime/System/SByte.cs,
+	runtime/System/Single.cs, runtime/System/String.cs,
+	runtime/System/UInt16.cs, runtime/System/UInt32.cs,
+	runtime/System/UInt64.cs, runtime/System/Version.cs: Add in 2.0 ECMA
+	implemented generic interfaces IComparable<T> and IEquatable<T> and the
+	implementing methods.
+	Add missing non ECMA 2.0 attributes ComVisible(true) and Serializable
+	where missing.
+
+	* runtime/System/Char.cs: Add some 2.0 non ECMA functions.
+	Replace lots of comparisions by switch statements in unicode category
+	check functions.
+
+	* runtime/System/CharEnumerator.cs: Add the generic 2.0 IEnumerator<char>
+	to the implemented interface for non ECMA builds.
+
+	* runtime/System/Double.cs (IsNaN): Replace the internal call for IsNaN
+	with a check if a compare with itself yields false.
+
+	* runtime/System/IntPtr.cs: Add missing non ECMA 2.0 attributes
+	ComVisible(true) and Serializable
+
+	* runtime/System/Single.cs (IsNaN): Replace the internal call for IsNaN
+	with a check if a compare with itself yields false.
+
+	* System/GenericUriParserOptions.cs: Add non ECMA 2.0 enumeration.
+
+	* tests/runtime/System/SuiteSystem.cs: Add the new tests to the suite.
+
+	* tests/runtime/System/TestDouble.cs: Add tests for the IsNaN method.
+
+	* tests/runtime/System/TestChar.cs, tests/runtime/System/TestSingle.cs:
+	Add testcases for the System.Char and System.Single classes.
+
 2009-02-03  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Reflection/AssemblyNameFlags.cs: Add new 2.0 members.
@@ -215,7 +258,7 @@
 
 	* runtime/System/AppDomain.c, runtime/System/AppDomain.c: Replace the
 	IntPtr appdomain with an Object AppDomain to prevent the process from
-	veing collected while an AppDomain still exists.
+	being collected while an AppDomain still exists.
 
 	* runtime/System/AppDomain.c: Use the new internal call for retrieving
 	the id of the process.

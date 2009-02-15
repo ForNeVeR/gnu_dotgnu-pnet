@@ -34,6 +34,9 @@ public struct DateTime : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
 #endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<DateTime>, IEquatable<DateTime>
+#endif
 {
 
 	private long value_;
@@ -339,6 +342,16 @@ public struct DateTime : IComparable, IFormattable
 				return (d1.value_ == d2.value_);
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IEquatable<DateTime> interface.
+	public bool Equals(DateTime obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
+
 	// String conversion.
 	public override String ToString()
 			{
@@ -447,6 +460,27 @@ public struct DateTime : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<DateTime> interface.
+	public int CompareTo(DateTime value)
+			{
+				if(value_ < value.value_)
+				{
+					return -1;
+				}
+				else if(value_ > value.value_)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

@@ -25,9 +25,18 @@ using System.Private;
 using System.Private.NumberFormat;
 using System.Globalization;
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
+using System.Runtime.InteropServices;
+
+[ComVisible(true)]
+[Serializable]
+#endif
 public struct Int32 : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
+#endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<int>, IEquatable<int>
 #endif
 {
 	private int value_;
@@ -117,6 +126,22 @@ public struct Int32 : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<int> interface.
+	public int CompareTo(int value)
+			{
+				return (value_ - value.value_);
+			}
+
+	// Implementation of the IEquatable<int> interface.
+	public bool Equals(int obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

@@ -30,6 +30,9 @@ public struct UInt64 : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
 #endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<ulong>, IEquatable<ulong>
+#endif
 {
 	private ulong value_;
 
@@ -126,6 +129,33 @@ public struct UInt64 : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<ulong> interface.
+	public int CompareTo(ulong value)
+			{
+				if(value_ < value.value_)
+				{
+					return -1;
+				}
+				else if(value_ > value.value_)
+				{
+					return 1;
+				}
+				else
+				{
+					return 0;
+				}
+			}
+
+	// Implementation of the IEquatable<ulong> interface.
+	public bool Equals(ulong obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

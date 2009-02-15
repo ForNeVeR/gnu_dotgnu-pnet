@@ -88,5 +88,12 @@ public class TestDouble : TestCase
 		//d = -1.13d;
 		//AssertEquals("-1.13", "-1.13", d.ToString());
 	}
+
+	public void TestDoubleIsNaN()
+	{
+		Assert("!IsNaN(1.0)", !Double.IsNaN(1.0));
+		Assert("IsNaN(Double.NaN)", Double.IsNaN(Double.NaN));
+	}
+
 #endif // CONFIG_EXTENDED_NUMERICS
 }

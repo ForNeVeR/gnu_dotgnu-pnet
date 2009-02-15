@@ -22,6 +22,9 @@ namespace System
 {
 
 public sealed class Version : ICloneable, IComparable
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<Version>, IEquatable<Version>
+#endif
 {
 	// Internal state.
 	private int major, minor, build, revision;
@@ -263,6 +266,52 @@ public sealed class Version : ICloneable, IComparable
 				}
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<Value> interface.
+	public int CompareTo(Version value)
+			{
+				if(value != null)
+				{
+					if(major > value.major)
+					{
+						return 1;
+					}
+					else if(major < value.major)
+					{
+						return -1;
+					}
+					if(minor > value.minor)
+					{
+						return 1;
+					}
+					else if(minor < value.minor)
+					{
+						return -1;
+					}
+					if(build > value.build)
+					{
+						return 1;
+					}
+					else if(build < value.build)
+					{
+						return -1;
+					}
+					if(revision > value.revision)
+					{
+						return 1;
+					}
+					else if(revision < value.revision)
+					{
+						return -1;
+					}
+					return 0;
+				}
+				return 1;
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
+
 	// Determine if two Version objects are equal.
 	public override bool Equals(Object obj)
 			{
@@ -279,6 +328,23 @@ public sealed class Version : ICloneable, IComparable
 					return false;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IEquatable<Version> interface.
+	public bool Equals(Version obj)
+			{
+				if(obj != null)
+				{
+					return (major == obj.major &&
+							minor == obj.minor &&
+							build == obj.build &&
+							revision == obj.revision);
+				}
+				return false;
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 	// Get a hash code for this Version object.
 	public override int GetHashCode()

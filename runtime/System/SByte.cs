@@ -30,6 +30,9 @@ public struct SByte : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
 #endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<sbyte>, IEquatable<sbyte>
+#endif
 {
 	private sbyte value_;
 
@@ -112,6 +115,22 @@ public struct SByte : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<sbyte> interface.
+	public int CompareTo(sbyte value)
+			{
+				return ((int)value_ - (int)value.value_);
+			}
+
+	// Implementation of the IEquatable<sbyte> interface.
+	public bool Equals(sbyte obj)
+			{
+				return (value_ == obj.value_);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

@@ -30,6 +30,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 #if !ECMA_COMPAT
 	, IConvertible
 #endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<String>, IEquatable<String>
+#endif
 {
 
 	// Internal string state.

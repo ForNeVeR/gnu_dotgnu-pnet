@@ -180,15 +180,6 @@ IL_METHOD_END
 
 #if !defined(HAVE_LIBFFI)
 
-static void marshal_bpd(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
-}
-
-#endif
-
-#if !defined(HAVE_LIBFFI)
-
 static void marshal_ipd(void (*fn)(), void *rvalue, void **avalue)
 {
 	*((ILNativeInt *)rvalue) = (*(ILInt32 (*)(void *, ILDouble))fn)(*((void * *)(avalue[0])), *((ILDouble *)(avalue[1])));
@@ -199,7 +190,6 @@ static void marshal_ipd(void (*fn)(), void *rvalue, void **avalue)
 #ifndef _IL_Double_suppressed
 
 IL_METHOD_BEGIN(Double_Methods)
-	IL_METHOD("IsNaN", "(d)Z", _IL_Double_IsNaN, marshal_bpd)
 	IL_METHOD("TestInfinity", "(d)i", _IL_Double_TestInfinity, marshal_ipd)
 IL_METHOD_END
 
@@ -697,19 +687,9 @@ IL_METHOD_END
 
 #endif
 
-#if !defined(HAVE_LIBFFI)
-
-static void marshal_bpf(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILNativeInt *)rvalue) = (*(ILInt8 (*)(void *, ILFloat))fn)(*((void * *)(avalue[0])), *((ILFloat *)(avalue[1])));
-}
-
-#endif
-
 #ifndef _IL_Single_suppressed
 
 IL_METHOD_BEGIN(Single_Methods)
-	IL_METHOD("IsNaN", "(f)Z", _IL_Single_IsNaN, marshal_bpf)
 	IL_METHOD("TestInfinity", "(f)i", _IL_Single_TestInfinity, marshal_ipf)
 IL_METHOD_END
 
@@ -747,6 +727,9 @@ static void marshal_dpdd(void (*fn)(), void *rvalue, void **avalue)
 IL_METHOD_BEGIN(Math_Methods)
 	IL_METHOD("Log", "(d)d", _IL_Math_Log, marshal_dpd)
 	IL_METHOD("RoundDouble", "(di)d", _IL_Math_RoundDouble, marshal_dpdi)
+	IL_METHOD("Round", "(d)d", _IL_Math_Round, marshal_dpd)
+	IL_METHOD("RoundDoubleAwayFromZero", "(d)d", _IL_Math_RoundDoubleAwayFromZero_d, marshal_dpd)
+	IL_METHOD("RoundDoubleAwayFromZero", "(di)d", _IL_Math_RoundDoubleAwayFromZero_di, marshal_dpdi)
 	IL_METHOD("Acos", "(d)d", _IL_Math_Acos, marshal_dpd)
 	IL_METHOD("Asin", "(d)d", _IL_Math_Asin, marshal_dpd)
 	IL_METHOD("Atan", "(d)d", _IL_Math_Atan, marshal_dpd)
@@ -759,12 +742,12 @@ IL_METHOD_BEGIN(Math_Methods)
 	IL_METHOD("IEEERemainder", "(dd)d", _IL_Math_IEEERemainder, marshal_dpdd)
 	IL_METHOD("Log10", "(d)d", _IL_Math_Log10, marshal_dpd)
 	IL_METHOD("Pow", "(dd)d", _IL_Math_Pow, marshal_dpdd)
-	IL_METHOD("Round", "(d)d", _IL_Math_Round, marshal_dpd)
 	IL_METHOD("Sin", "(d)d", _IL_Math_Sin, marshal_dpd)
 	IL_METHOD("Sinh", "(d)d", _IL_Math_Sinh, marshal_dpd)
 	IL_METHOD("Sqrt", "(d)d", _IL_Math_Sqrt, marshal_dpd)
 	IL_METHOD("Tan", "(d)d", _IL_Math_Tan, marshal_dpd)
 	IL_METHOD("Tanh", "(d)d", _IL_Math_Tanh, marshal_dpd)
+	IL_METHOD("Truncate", "(d)d", _IL_Math_Truncate, marshal_dpd)
 IL_METHOD_END
 
 #endif

@@ -284,7 +284,7 @@ case "$THREADS" in
     THREADS=posix
     THREADLIBS=-lpthread
     case "$host" in
-     x86-*-linux* | ia64-*-linux* | i586-*-linux* | i686-*-linux*)
+     x86-*-linux* | ia64-*-linux* | i586-*-linux* | i686-*-linux* | x86_64-*-linux*)
 	AC_DEFINE(GC_LINUX_THREADS, 1, [Define to use libgc linux thread support])
 	AC_DEFINE(_REENTRANT, 1, [Define for re-entrant thread support])
         if test "${enable_parallel_mark}"; then
@@ -616,7 +616,7 @@ AC_CHECK_FUNCS(stat lstat vfprintf waitpid wait fork execv open)
 AC_CHECK_FUNCS(getpid qsort unlink remove getcwd getwd)
 AC_CHECK_FUNCS(get_current_dir_name dlopen strerror fcntl ftruncate)
 AC_CHECK_FUNCS(acos asin atan atan2 ceil cos cosh exp floor remainder)
-AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh)
+AC_CHECK_FUNCS(log log10 pow rint sin sinh sqrt tan tanh round rint trunc)
 AC_CHECK_FUNCS(wctomb wcrtomb mbtowc mbrtowc nl_langinfo setlocale)
 AC_CHECK_FUNCS(clock_gettime)
 AC_CHECK_FUNCS(usleep gethostbyname gethostbyaddr isatty getpwuid geteuid)
@@ -718,6 +718,7 @@ fi
 AM_CONDITIONAL(USING_LIBGC, test x$withgc = xyes)
 
 if test x$withffi = xyes; then
+
 	AC_CONFIG_SUBDIRS(libffi)
 fi
 

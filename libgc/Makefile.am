@@ -188,7 +188,7 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
 # :FIXME: why do we distribute this one???
 #
-EXTRA_DIST += libtool.m4
+# EXTRA_DIST += libtool.m4
 
 #
 # :GOTCHA: GNU make rule for making .s out of .S is flawed, 

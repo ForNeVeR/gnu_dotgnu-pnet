@@ -25,7 +25,6 @@ extern ILInt32 _IL_Array_GetLength_i(ILExecThread * _thread, ILObject * _this, I
 extern void _IL_Array_Set_Objectiii(ILExecThread * _thread, ILObject * _this, ILObject * value, ILInt32 index1, ILInt32 index2, ILInt32 index3);
 extern void _IL_Array_Set_Objectai(ILExecThread * _thread, ILObject * _this, ILObject * value, System_Array * indices);
 
-extern ILBool _IL_Double_IsNaN(ILExecThread * _thread, ILDouble d);
 extern ILInt32 _IL_Double_TestInfinity(ILExecThread * _thread, ILDouble d);
 
 extern ILObject * _IL_Enum_GetEnumValue(ILExecThread * _thread, ILObject * _this);
@@ -130,11 +129,13 @@ extern ILObject * _IL_Type_GetTypeFromHandle(ILExecThread * _thread, void * hand
 extern void _IL_Type_GetTypeHandle(ILExecThread * _thread, void * _result, ILObject * obj);
 extern ILObject * _IL_Type_GetType(ILExecThread * _thread, ILString * name, ILBool throwOnError, ILBool ignoreCase);
 
-extern ILBool _IL_Single_IsNaN(ILExecThread * _thread, ILFloat f);
 extern ILInt32 _IL_Single_TestInfinity(ILExecThread * _thread, ILFloat f);
 
 extern ILDouble _IL_Math_Log(ILExecThread * _thread, ILDouble d);
 extern ILDouble _IL_Math_RoundDouble(ILExecThread * _thread, ILDouble value, ILInt32 digits);
+extern ILDouble _IL_Math_Round(ILExecThread * _thread, ILDouble a);
+extern ILDouble _IL_Math_RoundDoubleAwayFromZero_d(ILExecThread * _thread, ILDouble a);
+extern ILDouble _IL_Math_RoundDoubleAwayFromZero_di(ILExecThread * _thread, ILDouble a, ILInt32 digits);
 extern ILDouble _IL_Math_Acos(ILExecThread * _thread, ILDouble d);
 extern ILDouble _IL_Math_Asin(ILExecThread * _thread, ILDouble d);
 extern ILDouble _IL_Math_Atan(ILExecThread * _thread, ILDouble d);
@@ -147,12 +148,12 @@ extern ILDouble _IL_Math_Floor(ILExecThread * _thread, ILDouble d);
 extern ILDouble _IL_Math_IEEERemainder(ILExecThread * _thread, ILDouble x, ILDouble y);
 extern ILDouble _IL_Math_Log10(ILExecThread * _thread, ILDouble d);
 extern ILDouble _IL_Math_Pow(ILExecThread * _thread, ILDouble x, ILDouble y);
-extern ILDouble _IL_Math_Round(ILExecThread * _thread, ILDouble a);
 extern ILDouble _IL_Math_Sin(ILExecThread * _thread, ILDouble a);
 extern ILDouble _IL_Math_Sinh(ILExecThread * _thread, ILDouble a);
 extern ILDouble _IL_Math_Sqrt(ILExecThread * _thread, ILDouble a);
 extern ILDouble _IL_Math_Tan(ILExecThread * _thread, ILDouble a);
 extern ILDouble _IL_Math_Tanh(ILExecThread * _thread, ILDouble value);
+extern ILDouble _IL_Math_Truncate(ILExecThread * _thread, ILDouble d);
 
 extern void _IL_ArgIterator_ctor_RuntimeArgumentHandle(ILExecThread * _thread, void * _this, void * argList);
 extern ILInt32 _IL_ArgIterator_GetRemainingCount(ILExecThread * _thread, void * _this);

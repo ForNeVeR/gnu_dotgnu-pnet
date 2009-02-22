@@ -1,3 +1,17 @@
+2009-02-22  Klaus Treichek  <ktreichel@web.de>
+
+	* configure.in: Add checking for x86_64-*-linux* when checking which
+	thread library to use if not specified.
+	Add checks for existance of the round, rint and trunc functions.
+
+	* engine/int_proto.h, engine/int_table.c: Regenerate
+
+	* engine/lib_math.c (Math_Round): Use the rint function if present.
+	Add support and internal functions for midpoint rounding away from zero
+	and System.Math.Truncate (rounding towards zero).
+
+	* libgc/Makefile.am: Remove libtool.m4 from extra dists.
+
 2009-02-15  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_cast.tc (CSTypeToName): Add handling of generic type

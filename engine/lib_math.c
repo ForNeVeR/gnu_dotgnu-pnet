@@ -209,6 +209,9 @@ static double Math_Remainder(double x, double y)
  * Round a "double" value to the nearest integer, using the
  * "round half even" rounding mode.
  */
+#ifdef HAVE_RINT
+	#define Math_Round(x)	(rint((x)))
+#else
 static double Math_Round(double x)
 {
 	double above, below;
@@ -235,6 +238,65 @@ static double Math_Round(double x)
 		return below;
 	}
 }
+#endif
+
+/*
+ * Round a "double" value to the nearest integer, using the
+ * "round away from zero" rounding mode.
+ */
+#ifdef HAVE_ROUND
+	#define Math_RoundAwayFromZero(x)	round((x))
+#else
+static double Math_RoundAwayFromZero(double x)
+{
+	double above, below;
+	if(!Math_Finite(x))
+	{
+		return x;
+	}
+	above = Math_Ceil(x);
+	below = Math_Floor(x);
+	if(x > 0)
+	{
+		if((x - below) < 0.5)
+		{
+			return below;
+		}
+		return above;
+	}
+	else
+	{
+		if((above - x) < 0.5)
+		{
+			return above;
+		}
+		return below;
+	}
+}
+#endif
+
+/*
+ * Round a "double" value towards zero.
+ */
+#ifdef HAVE_TRUNC
+	#define Math_Trunc(x)	trunc((x))
+#else
+static double Math_Trunc(double x)
+{
+	if(!Math_Finite(x))
+	{
+		return x;
+	}
+	if(x > 0.0)
+	{
+		return Math_Floor(x);
+	}
+	else
+	{
+		return Math_Ceil(x);
+	}
+}
+#endif
 
 /*
  * public static double Acos(double d);
@@ -419,6 +481,46 @@ ILDouble _IL_Math_RoundDouble(ILExecThread *thread, ILDouble value,
 }
 
 /*
+ * private static double RoundDoubleToNearest(double value);
+ */
+ILDouble _IL_Math_RoundDoubleAwayFromZero_d(ILExecThread *thread,
+											ILDouble value)
+{
+	return (ILDouble)Math_RoundAwayFromZero(value);
+}
+
+/*
+ * private static double RoundDoubleToNearest(double value, int digits);
+ */
+ILDouble _IL_Math_RoundDoubleAwayFromZero_di(ILExecThread *thread,
+											 ILDouble value,
+											 ILInt32 digits)
+{
+	double rounded;
+	double power;
+	rounded = Math_RoundAwayFromZero((double)value);
+	if(digits == 0 || rounded == (double)value)
+	{
+		/* Simple rounding, or the value is already an integer */
+		return rounded;
+	}
+	else
+	{
+	#ifdef HAVE_POW
+		power = pow(10, (double)digits);
+	#else
+		power = 1.0;
+		while(digits > 0)
+		{
+			power *= 10.0;
+			--digits;
+		}
+	#endif
+		return (Math_RoundAwayFromZero(((double)value) * power) / power);
+	}
+}
+
+/*
  * public static double Sin(double a);
  */
 ILDouble _IL_Math_Sin(ILExecThread *thread, ILDouble a)
@@ -476,6 +578,14 @@ ILDouble _IL_Math_Tanh(ILExecThread *thread, ILDouble value)
 #else
 	return NOT_A_NUMBER;
 #endif
+}
+
+/*
+ * pubic static double Truncate(double d)
+ */
+ILDouble _IL_Math_Truncate(ILExecThread *thread, ILDouble d)
+{
+	return Math_Trunc((double)d);
 }
 
 /*

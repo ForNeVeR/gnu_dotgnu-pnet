@@ -3,6 +3,11 @@
 	* configure.in: Add checking for x86_64-*-linux* when checking which
 	thread library to use if not specified.
 	Add checks for existance of the round, rint and trunc functions.
+	Add AC_GNU_SOURCE.
+
+	* cscc/c/c_grammar.y, cscc/csharp/cs_grammar.y, cscc/vb/vb_grammar.y,
+	ilasm/ilasm_grammar.y: Include il_config.h before including any other
+	file for having _GNU_SOURCE propperly defined.
 
 	* engine/int_proto.h, engine/int_table.c: Regenerate
 
@@ -11,6 +16,9 @@
 	and System.Math.Truncate (rounding towards zero).
 
 	* libgc/Makefile.am: Remove libtool.m4 from extra dists.
+
+	* support/thr_defs.h: Remove definition of _GNU_SOURCE because it will be
+	defined by il_config.h now if applicable.
 
 2009-02-15  Klaus Treichel  <ktreichel@web.de>
 

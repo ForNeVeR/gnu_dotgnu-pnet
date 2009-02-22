@@ -4,6 +4,9 @@ AC_INIT(include/il_opcodes.h)
 dnl Determine the build, host, and target system types.
 AC_CANONICAL_SYSTEM
 
+dnl Use gnu extensions where avaiable
+AC_GNU_SOURCE
+
 dnl Initialize automake.
 AM_INIT_AUTOMAKE(pnet, 0.8.1)
 AM_CONFIG_HEADER(include/il_config.h)

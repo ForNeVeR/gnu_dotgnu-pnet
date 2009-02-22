@@ -24,6 +24,7 @@
 
 /*#define YYDEBUG 1*/
 
+#include "il_config.h"
 #include <stdio.h>
 #include "il_system.h"
 #include "il_opcodes.h"

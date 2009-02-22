@@ -22,6 +22,7 @@
 /* Rename the lex/yacc symbols to support multiple parsers */
 #include "c_rename.h"
 
+#include "il_config.h"
 #include <stdio.h>
 #include <cscc/c/c_internal.h>
 #include "il_dumpasm.h"

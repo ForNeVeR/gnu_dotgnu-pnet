@@ -22,8 +22,6 @@
 #ifndef	_THR_DEFS_H
 #define	_THR_DEFS_H
 
-#define	_GNU_SOURCE		/* Get read-write lock support from <pthread.h> */
-
 /*
  * Choose which thread package we will be using.
  */

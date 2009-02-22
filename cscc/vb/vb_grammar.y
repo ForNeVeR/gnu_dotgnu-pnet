@@ -22,6 +22,7 @@
 /* Rename the lex/yacc symbols to support multiple parsers */
 #include "vb_rename.h"
 
+#include "il_config.h"
 #include <stdio.h>
 #include <cscc/vb/vb_internal.h>
 

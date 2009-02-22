@@ -51,6 +51,16 @@ public sealed class DecimalConstantAttribute : Attribute
 				}
 			}
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+
+	public DecimalConstantAttribute(byte scale, byte sign,
+									int hi, int mid, int low)
+			{
+				value = new Decimal(low, mid, hi, (sign != 0), scale);
+			}
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+
 	// Properties.
 	public Decimal Value
 			{

@@ -1096,6 +1096,15 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				return result;
 			}
 
+#if !ECMA_COMPAT && CONGIG_FRAMEWORK_2_0
+
+	public static bool IsNullOrEmpty(String value)
+			{
+				return (value == null || value.length == 0);
+			}
+
+#endif // !ECMA_COMPAT && CONGIG_FRAMEWORK_2_0
+
 	// Intern a string.
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static String Intern(String str);

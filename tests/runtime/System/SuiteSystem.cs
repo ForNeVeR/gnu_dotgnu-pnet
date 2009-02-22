@@ -45,6 +45,7 @@ public class SuiteSystem
 				suite.AddTests(typeof(TestDecimal));
 				suite.AddTests(typeof(TestDelegate));
 				suite.AddTests(typeof(TestDouble));
+				suite.AddTests(typeof(TestMath));
 				suite.AddTests(typeof(TestSByte));
 				suite.AddTests(typeof(TestSingle));
 				suite.AddTests(typeof(TestString));

@@ -102,11 +102,11 @@ public struct Double : IComparable, IFormattable
 				}
 	public static bool IsPositiveInfinity(double d)
 				{
-					return (TestInfinity(d) > 0);
+					return (d == PositiveInfinity);
 				}
 	public static bool IsNegativeInfinity(double d)
 				{
-					return (TestInfinity(d) < 0);
+					return (d == NegativeInfinity);
 				}
 
 	// String conversion.

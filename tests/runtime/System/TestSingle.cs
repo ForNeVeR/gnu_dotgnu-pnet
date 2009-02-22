@@ -45,8 +45,24 @@ public class TestSingle : TestCase
 
 	public void TestSingleIsNaN()
 	{
-		Assert("!IsNaN(1.0)", !Single.IsNaN((float)1.0));
+		Assert("!IsNaN(1.0)", !Single.IsNaN(1.0f));
 		Assert("IsNaN(Single.NaN)", Single.IsNaN(Single.NaN));
+	}
+
+	public void TestSingleIsNegativeInfinity()
+	{
+		Assert("!IsNegativeInfinity(1.0)", !Single.IsNegativeInfinity(1.0f));
+		Assert("!IsNegativeInfinity(Single.NaN)", !Single.IsNegativeInfinity(Single.NaN));
+		Assert("!IsNegativeInfinity(Single.PositiveInfinity)", !Single.IsNegativeInfinity(Single.PositiveInfinity));
+		Assert("IsNegativeInfinity(Single.NegativeInfinity)", Single.IsNegativeInfinity(Single.NegativeInfinity));
+	}
+
+	public void TestSingleIsPositiveInfinity()
+	{
+		Assert("!IsPositiveInfinity(1.0)", !Single.IsPositiveInfinity(1.0f));
+		Assert("!IsPositiveInfinity(Single.NaN)", !Single.IsPositiveInfinity(Single.NaN));
+		Assert("!IsPositiveInfinity(Single.NegativeInfinity)", !Single.IsPositiveInfinity(Single.NegativeInfinity));
+		Assert("IsPositiveInfinity(Single.PositiveInfinity)", Single.IsPositiveInfinity(Single.PositiveInfinity));
 	}
 
 #endif // CONFIG_EXTENDED_NUMERICS

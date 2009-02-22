@@ -25,14 +25,24 @@ namespace System
 
 using System.Runtime.CompilerServices;
 
-public sealed class Math
+public
+#if CONFIG_FRAMEWORK_2_0
+static
+#else
+sealed
+#endif
+class Math
 {
 	// Constants.
 	public const double E  = 2.7182818284590452354;
 	public const double PI = 3.14159265358979323846;
 
+#if !CONFIG_FRAMEWORK_2_0
+
 	// This class cannot be instantiated.
 	private Math() {}
+
+#endif // !CONFIG_FRAMEWORK_2_0
 
 	// Get the absolute value of a number.
 	[CLSCompliant(false)]
@@ -261,6 +271,46 @@ public sealed class Math
 				}
 				return RoundDouble(value, digits);
 			}
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+	public static double Round(double value, MidpointRounding mode)
+			{
+				if(mode == MidpointRounding.ToEven)
+				{
+					return Math.Round(value);
+				}
+				else if(mode == MidpointRounding.AwayFromZero)
+				{
+					return RoundDoubleAwayFromZero(value);
+				}
+				else
+				{
+					throw new ArgumentException
+						(_("Arg_InvalidMidpointRounding"));
+				}
+			}
+
+	public static double Round(double value, int digits, MidpointRounding mode)
+			{
+				if(digits < 0 || digits > 15)
+				{
+					throw new ArgumentOutOfRangeException
+						("digits", _("ArgRange_RoundDigits"));
+				}
+				if(mode == MidpointRounding.ToEven)
+				{
+					return RoundDouble(value, digits);
+				}
+				else if(mode == MidpointRounding.AwayFromZero)
+				{
+					return RoundDoubleAwayFromZero(value, digits);
+				}
+				else
+				{
+					throw new ArgumentException
+						(_("Arg_InvalidMidpointRounding"));
+				}
+			}
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 	public static Decimal Round(Decimal value)
 			{
 				return Decimal.Round(value, 0);
@@ -423,6 +473,14 @@ public sealed class Math
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private static double RoundDouble(double value, int digits);
 
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static double RoundDoubleAwayFromZero(double a);
+
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern private static double RoundDoubleAwayFromZero(double a, int digits);
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static double Sin(double a);
 
@@ -437,6 +495,11 @@ public sealed class Math
 
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern public static double Tanh(double value);
+
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
+	[MethodImpl(MethodImplOptions.InternalCall)]
+	extern public static double Truncate(double d);
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // class Math
 

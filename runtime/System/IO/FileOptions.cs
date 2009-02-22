@@ -1,7 +1,7 @@
 /*
- * FileShare.cs - Implementation of the "System.IO.FileShare" class.
+ * FileOptions.cs - Implementation of the "System.IO.FileOptions" class.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,28 +20,26 @@
 
 namespace System.IO
 {
+
 #if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 using System.Runtime.InteropServices;
 
 [ComVisible(true)]
 [Serializable]
-#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 [Flags]
-public enum FileShare
+public enum FileOptions
 {
-	None        = 0x00,
-	Read        = 0x01,
-	Write       = 0x02,
-	ReadWrite   = Read | Write
-#if !ECMA_COMPAT && !CONFIG_COMPACT_FRAMEWORK
-	,
-#if CONFIG_FRAMEWORK_2_0
-	Delete		= 0x04,
-#endif // CONFIG_FRAMEWORK_2_0
-	Inheritable = 0x10
-#endif
+	None			= 0x00000000,
+	Encrypted		= 0x00004000,
+	DeleteOnClose	= 0x04000000,
+	SequentialScan	= 0x08000000,
+	RandomAccess	= 0x10000000,
+	Asynchronous	= 0x40000000,
+	WriteThrough	= 0x80000000
 
-}; // enum FileShare
+}; // enum FileOptions
+
+#endif // !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 }; // namespace System.IO

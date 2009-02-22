@@ -95,5 +95,21 @@ public class TestDouble : TestCase
 		Assert("IsNaN(Double.NaN)", Double.IsNaN(Double.NaN));
 	}
 
+	public void TestDoubleIsNegativeInfinity()
+	{
+		Assert("!IsNegativeInfinity(1.0)", !Double.IsNegativeInfinity(1.0));
+		Assert("!IsNegativeInfinity(Double.NaN)", !Double.IsNegativeInfinity(Double.NaN));
+		Assert("!IsNegativeInfinity(Double.PositiveInfinity)", !Double.IsNegativeInfinity(Double.PositiveInfinity));
+		Assert("IsNegativeInfinity(Double.NegativeInfinity)", Double.IsNegativeInfinity(Double.NegativeInfinity));
+	}
+
+	public void TestDoubleIsPositiveInfinity()
+	{
+		Assert("!IsPositiveInfinity(1.0)", !Double.IsPositiveInfinity(1.0));
+		Assert("!IsPositiveInfinity(Double.NaN)", !Double.IsPositiveInfinity(Double.NaN));
+		Assert("!IsPositiveInfinity(Double.NegativeInfinity)", !Double.IsPositiveInfinity(Double.NegativeInfinity));
+		Assert("IsPositiveInfinity(Double.PositiveInfinity)", Double.IsPositiveInfinity(Double.PositiveInfinity));
+	}
+
 #endif // CONFIG_EXTENDED_NUMERICS
 }

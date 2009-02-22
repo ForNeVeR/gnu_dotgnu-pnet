@@ -115,11 +115,11 @@ public struct Single : IComparable, IFormattable
 				}
 	public static bool IsPositiveInfinity(float f)
 				{
-					return (TestInfinity(f) > 0);
+					return (f == PositiveInfinity);
 				}
 	public static bool IsNegativeInfinity(float f)
 				{
-					return (TestInfinity(f) < 0);
+					return (f == NegativeInfinity);
 				}
 
 	// Parsing methods.

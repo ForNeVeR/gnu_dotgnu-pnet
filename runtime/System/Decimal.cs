@@ -32,6 +32,9 @@ public struct Decimal : IComparable, IFormattable
 #if !ECMA_COMPAT
 	, IConvertible
 #endif
+#if CONFIG_FRAMEWORK_2_0
+	, IComparable<decimal>, IEquatable<decimal>
+#endif
 {
 	private int flags, high, middle, low;
 
@@ -347,7 +350,7 @@ public struct Decimal : IComparable, IFormattable
 				{
 					if(value is Decimal)
 					{
-			  			return Compare((decimal)this, (decimal)value);
+						return Compare((decimal)this, (decimal)value);
 					}
 					else
 					{
@@ -359,6 +362,22 @@ public struct Decimal : IComparable, IFormattable
 					return 1;
 				}
 			}
+
+#if CONFIG_FRAMEWORK_2_0
+
+	// Implementation of the IComparable<decimal> interface.
+	public int CompareTo(decimal value)
+			{
+				return Compare(this, value);
+			}
+
+	// Implementation of the IEquatable<decimal> interface.
+	public bool Equals(decimal obj)
+			{
+				return (Compare(this, obj) == 0);
+			}
+
+#endif // CONFIG_FRAMEWORK_2_0
 
 #if !ECMA_COMPAT
 

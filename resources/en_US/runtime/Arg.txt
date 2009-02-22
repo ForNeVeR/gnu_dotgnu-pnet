@@ -142,6 +142,7 @@ Arg_ResourceAlreadyPresent=The specified resource is already present
 Arg_InvalidColor=Invalid console color value
 Arg_LowSurrogate=Invalid low surrogate
 Arg_HighSurrogate=Invalid high surrogate
+Arg_InvalidMidpointRounding=Invalid midpoint rounding mode
 ArgRange_DecimalScale=Decimal scale factor must be between 0 and 28, inclusive
 ArgRange_YMD=Year, month, day specification is out of range
 ArgRange_HMS=Hour, minute, second specification is out of range

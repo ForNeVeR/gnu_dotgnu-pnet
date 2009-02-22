@@ -1,3 +1,39 @@
+2009-02-22  Klaus Treichel  <ktreichel@web.de>
+
+	* resources/en_US/runtime/Arg.txt: Add message for the invalid midpoint
+	rounding mode.
+
+	* runtime/System/Decimal.cs: Add the 2.0 ECMA generic interface
+	implementations.
+
+	* runtime/System/Double.cs, runtime/System/Single.cs (IsPositiveInfinity,
+	IsNegativeInfinity): Replace the internal calls with simple comparisions.
+
+	* runtime/System/Math.cs: Make class static for 2.0 builds.
+	Add 2.0 non ECMA double rounding methods.
+
+	* runtime/System/String.cs (IsNullOrEmpty): Add 2.0 non ECMA convinience
+	method.
+
+	* runtime/System/IO/DriveType.cs, runtime/System/IO/FileOptions.cs,
+	runtime/System/IO/SearchOption.cs: Add some non ECMA 2.0 enumerations.
+
+	* runtime/System/IO/FileShare.cs: Add 2.0 non ECMA member Delete.
+
+	* runtime/System/Reflection/MethodImplAttributes.cs: Add undocumented 2.0
+	non ECMA member NoOptimization.
+
+	* runtime/System/Runtime/CompilerServices/DecimalConstantAttribute.cs:
+	Add additional 2.0 non ECMA constructor.
+
+	* tests/runtime/System/SuiteSystem.cs: Add TestMath to the tests.
+
+	* tests/runtime/System/TestDouble.cs, tests/runtime/System/TestSingle.cs;
+	Add Tests for IsPositiveInfinity and IsNegativeInfinity.
+
+	* tests/runtime/System/TestMath.cs: Add tests for System.Math double
+	rounding methods.
+
 2009-02-15  Klaus Treichel  <ktreichel@web.de>
 
 	* resources/en_US/runtime/Arg.txt: Add messages for Exceptions thrown

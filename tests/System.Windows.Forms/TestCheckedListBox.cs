@@ -86,4 +86,4 @@ public class TestCheckedListBox : TestCase
 				AssertEquals("Index of (3)", 1, items.IndexOf(item2));
 				AssertEquals("Index of (4)", -1, items.IndexOf(item3));
 			}
-}; // class TestXmlTextReader
+}; // class TestCheckedListBox

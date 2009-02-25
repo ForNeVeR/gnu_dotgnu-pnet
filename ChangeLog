@@ -1,3 +1,19 @@
+2009-02-25  Radek Polak  <psonek2@seznam.cz>
+
+	* System.Windows.Forms/DateTimePicker.cs: Dummy implementation.
+
+	* System.Windows.Forms/StatusBar.cs: Fixes to panel collection - check null
+	and duplicit values, always set panel parent.
+
+	* System.Windows.Forms/StatusBarPanel.cs: Invalidate parent status bar when
+	changing visible properties.
+
+	* tests/System.Windows.Forms/TestCheckedListBox.cs: Fix comment.
+
+	* tests/System.Windows.Forms/TestStatusBar.cs: Tests for panel collection.
+
+	* tests/System.Windows.Forms/TestForms.cs: Add tests for status bar.
+
 2009-02-22  Klaus Treichel  <ktreichel@web.de>
 
 	* resources/en_US/runtime/Arg.txt: Add message for the invalid midpoint

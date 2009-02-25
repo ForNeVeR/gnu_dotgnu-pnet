@@ -1,7 +1,7 @@
 /*
- * TestForms.cs - Tests for the "System.Windows.Forms" namespace.
+ * DateTimePicker.cs - Implementation of "System.Windows.Forms.DateTimePicker"
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Free Software Foundation Inc.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,26 +18,38 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using CSUnit;
-using System;
-
-public class TestForms
+namespace System.Windows.Forms
 {
 
-	public static TestSuite Suite()
+using System;
+using System.Drawing;
+using System.Collections;
+using System.Globalization;
+using System.Drawing.Toolkit;
+using System.Windows.Forms.Themes;
+
+
+[TODO]
+public class DateTimePicker : Control
+{
+	private DateTime value;
+
+	public DateTimePicker()
 			{
-				TestSuite fullSuite, suite;
-				fullSuite = new TestSuite("System.Windows.Forms Assembly Tests");
-
-				suite = new TestSuite("CheckedListBox tests");
-				suite.AddTests(typeof(TestCheckedListBox));
-				fullSuite.AddTest(suite);
-
-				suite = new TestSuite("StatusBar tests");
-				suite.AddTests(typeof(TestStatusBar));
-				fullSuite.AddTest(suite);
-
-				return fullSuite;
 			}
 
-}; // class TestForms
+	public DateTime Value
+			{
+				get
+				{
+					return value;
+				}
+				set
+				{
+					this.value = value;
+				}
+			}
+
+}; // class DateTimePicker
+
+}; // namespace System.Windows.Forms

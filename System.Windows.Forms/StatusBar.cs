@@ -325,7 +325,7 @@ namespace System.Windows.Forms
 		#endif // !CONFIG_COMPACT_FORMS
 
 		public class StatusBarPanelCollection : IList	
-		{	
+		{
 			private StatusBar owner;
 			private ArrayList list;
 
@@ -338,12 +338,12 @@ namespace System.Windows.Forms
 			// Implement the ICollection interface.
 			void ICollection.CopyTo(Array array, int index)
 			{
-				List.CopyTo(array, index);
+				list.CopyTo(array, index);
 			}
 
 			public virtual int Count
 			{
-				get { return List.Count; }
+				get { return list.Count; }
 			}
 
 			bool ICollection.IsSynchronized
@@ -359,7 +359,7 @@ namespace System.Windows.Forms
 			// Implement the IEnumerable interface.
 			public IEnumerator GetEnumerator()
 			{
-				return List.GetEnumerator();
+				return list.GetEnumerator();
 			}
 
 			// Determine if the collection is read-only.
@@ -373,17 +373,69 @@ namespace System.Windows.Forms
 				get { return false; }
 			}
 
+			private static StatusBarPanel ValueAsPanel(object value)
+			{
+				if(value is StatusBarPanel)
+				{
+					return (StatusBarPanel)value;
+				}
+				throw new ArgumentException("value");
+			}
+
+			private static void CheckNull(StatusBarPanel value)
+			{
+				if(value == null)
+				{
+					throw new ArgumentNullException("value");
+				}
+			}
+
+			private void CheckSame(StatusBarPanel value)
+			{
+				if(list.IndexOf(value) >= 0)
+				{
+					throw new ArgumentException("value");
+				}
+			}
+
+			private void CheckAdd(StatusBarPanel value)
+			{
+				CheckNull(value);
+				CheckSame(value);
+			}
+
 			// Get the array list that underlies this collection
 			Object IList.this[int index]
 			{
-				get { return List[index]; }
-				set { List[index] = value; }
+				get
+				{
+					return list[index];
+				}
+				set
+				{
+					this[index] = ValueAsPanel(value);
+				}
 			}
 
 			public StatusBarPanel this[int index]
 			{
-				get { return (StatusBarPanel)List[index]; }
-				set { List[index] = value; }
+				get
+				{
+					return (StatusBarPanel)(list[index]);
+				}
+				set
+				{
+					StatusBarPanel old = (StatusBarPanel)(list[index]);
+					if(old == value)
+					{
+						return;
+					}
+					CheckAdd(value);
+					list[index] = value;
+					old.parent = null;
+					value.parent = owner;
+					owner.Invalidate();
+				}
 			}
 
 			protected virtual ArrayList List
@@ -393,11 +445,12 @@ namespace System.Windows.Forms
 
 			int IList.Add(Object value)
 			{
-				return Add(value as StatusBarPanel);				
+				return Add(ValueAsPanel(value));
 			}
 
 			public virtual int Add(StatusBarPanel value)
 			{
+				CheckAdd(value);
 				int result = list.Add(value);
 				value.parent = owner;
 				owner.Invalidate();
@@ -408,67 +461,85 @@ namespace System.Windows.Forms
 			{
 				StatusBarPanel panel = new StatusBarPanel();
 				panel.Text = text;
-				List.Add(panel);
+				Add(panel);
 				return panel;
 			}
 
 			public virtual void AddRange(StatusBarPanel[] panels)
 			{
-				List.AddRange(panels);
+				for(int i = 0; i < panels.Length; i++)
+				{
+					StatusBarPanel value = panels[i];
+					CheckAdd(value);
+					value.parent = owner;
+					list.Add(value);
+				}
 				owner.Invalidate();
 			}
 
 			public virtual void Clear()
 			{
-				List.Clear();
+				for(int i = 0; i < list.Count; i++)
+				{
+					this[i].parent = null;
+				}
+				list.Clear();
 				owner.Invalidate();
 			}
 
 			bool IList.Contains(Object value)
 			{
-				return List.Contains(value);
+				return list.Contains(value);
 			}
 
 			public bool Contains(StatusBarPanel panel)
 			{
-				return List.Contains(panel);
+				return list.Contains(panel);
 			}
 
 			int IList.IndexOf(Object value)
 			{
-				return List.IndexOf(value);
+				return list.IndexOf(value);
 			}
 
 			public int IndexOf(StatusBarPanel panel)
 			{
-				return List.IndexOf(panel);
+				return list.IndexOf(panel);
 			}
 
 			void IList.Insert(int index, Object value)
 			{
-				List.Insert(index, value);
-				owner.Invalidate();
+				Insert(index, ValueAsPanel(value));
 			}
 
 			public virtual void Insert(int index, StatusBarPanel value)
 			{
-				List.Insert(index, value);
+				CheckAdd(value);
+				list.Insert(index, value);
+				value.parent = owner;
+				owner.Invalidate();
 			}
 
 			void IList.Remove(Object value)
 			{
-				List.Remove(value);
-				owner.Invalidate();
+				Remove(ValueAsPanel(value));
 			}
 
 			public virtual void Remove(StatusBarPanel value)
 			{
-				List.Remove(value);
+				CheckNull(value);
+				int index = list.IndexOf(value);
+				if(index >= 0)
+				{
+					RemoveAt(index);
+				}
 			}
 
-			void IList.RemoveAt(int index)
+			public void RemoveAt(int index)
 			{
-				List.RemoveAt(index);
+				StatusBarPanel value = (StatusBarPanel)(list[index]);
+				value.parent = null;
+				list.RemoveAt(index);
 			}
 		}
 	}

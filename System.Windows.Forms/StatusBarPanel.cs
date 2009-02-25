@@ -80,63 +80,134 @@ namespace System.Windows.Forms
 		{
 		}
 
+		private void InvalidateParent()
+		{
+			if(parent != null)
+			{
+				parent.Invalidate();
+			}
+		}
+
 		public HorizontalAlignment Alignment
 		{
-			get { return alignment; }
-			set { alignment = value; }
+			get
+			{
+				return alignment;
+			}
+			set
+			{
+				alignment = value;
+				InvalidateParent();
+			}
 		}
 
 		public StatusBarPanelAutoSize AutoSize
 		{
-			get { return autosize; }
-			set { autosize = value; }
+			get
+			{
+				return autosize;
+			}
+			set
+			{
+				autosize = value;
+				InvalidateParent();
+			}
 		}
 
-		public StatusBarPanelBorderStyle BorderStyle 
+		public StatusBarPanelBorderStyle BorderStyle
 		{
-			get { return borderStyle; }
-			set { borderStyle = value; }
+			get
+			{
+				return borderStyle;
+			}
+			set
+			{
+				borderStyle = value;
+				InvalidateParent();
+			}
 		}
 
-		public Icon Icon 
+		public Icon Icon
 		{
-			get { return icon; }
-			set { icon = value; }
+			get
+			{
+				return icon;
+			}
+			set
+			{
+				icon = value;
+				InvalidateParent();
+			}
 		}
 
-		public int MinWidth 
+		public int MinWidth
 		{
-			get { return minWidth; }
-			set { minWidth = value; }
+			get
+			{
+				return minWidth;
+			}
+			set
+			{
+				minWidth = value;
+				InvalidateParent();
+			}
 		}
 
-		public StatusBar Parent 
+		public StatusBar Parent
 		{
 			get { return parent; }
 		}
 
-		public StatusBarPanelStyle Style 
+		public StatusBarPanelStyle Style
 		{
-			get { return style; }
-			set { style = value; }
+			get
+			{
+				return style;
+			}
+			set
+			{
+				style = value;
+				InvalidateParent();
+			}
 		}
 
 		public string Text
 		{
-			get { return text; }
-			set { text = value; }
+			get
+			{
+				return text;
+			}
+			set
+			{
+				text = value;
+				InvalidateParent();
+			}
 		}
 
-		public string ToolTipText 
+		public string ToolTipText
 		{
-			get { return toolTipText; }
-			set { toolTipText = value; }
+			get
+			{
+				return toolTipText;
+			}
+			set
+			{
+				toolTipText = value;
+				InvalidateParent();
+			}
 		}
 
-		public int Width 
+		public int Width
 		{
-			get { return width; }
-			set { width = value; }
+			get
+			{
+				return width;
+			}
+			set
+			{
+				width = value;
+				InvalidateParent();
+			}
 		}
 
 		public override string ToString()
@@ -144,5 +215,6 @@ namespace System.Windows.Forms
 			return text;
 		}
 
-	}
-}
+	}  // class StatusBarPanel
+
+} // namespace System.Windows.Forms

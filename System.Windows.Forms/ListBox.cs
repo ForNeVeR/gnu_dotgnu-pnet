@@ -230,18 +230,28 @@ public class ListBox : ListControl
  			return result;
  		}
 
- 		public virtual void AddRange(Object[] items)
- 		{
- 			List.AddRange(items);
+		private void AddRangeInternal(ICollection items)
+		{
+			List.AddRange(items);
 			
 			foreach(object value in items)
 				this.maxWidth = Math_Max(this.maxWidth, TextWidth(value));
 
 			if(this.owner.Sorted)
 				this.Sort();
-				
+
 			this.owner.CalculateScrollbars();
 			this.owner.RedrawList();
+		}
+
+ 		public virtual void AddRange(Object[] items)
+ 		{
+ 			AddRangeInternal(items);
+ 		}
+
+ 		public virtual void AddRange(ObjectCollection items)
+ 		{
+ 			AddRangeInternal(items);
  		}
 
  		public virtual void Clear()

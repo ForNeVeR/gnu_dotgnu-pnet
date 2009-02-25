@@ -1,5 +1,9 @@
 2009-02-25  Radek Polak  <psonek2@seznam.cz>
 
+	* System.Windows.Forms/ListBox.cs: Add overload for AddRange method.
+
+2009-02-25  Radek Polak  <psonek2@seznam.cz>
+
 	* System.Windows.Forms/DateTimePicker.cs: Dummy implementation.
 
 	* System.Windows.Forms/StatusBar.cs: Fixes to panel collection - check null

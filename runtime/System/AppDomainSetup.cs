@@ -162,7 +162,7 @@ public sealed class AppDomainSetup : IAppDomainSetup
 					}
 					else
 					{
-						String[] paths;
+						String[] paths = null;
 
 						GetPrivateBinPaths(appDomain, ref paths);
 

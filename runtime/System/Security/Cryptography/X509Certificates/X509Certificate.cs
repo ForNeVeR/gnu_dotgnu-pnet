@@ -28,7 +28,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Security.Cryptography;
-#if CONFIG_FRAMEWORK_2_0 && CONFIG_SERIALIZATION
+#if CONFIG_SERIALIZATION
 using System.Runtime.Serialization;
 #endif
 
@@ -379,13 +379,6 @@ public class X509Certificate
 			}
 
 #if CONFIG_FRAMEWORK_2_0
-#if CONFIG_SERIALIZATION
-	[TODO]
-	void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
-			{
-				throw new NotImplementedException("GetObjectData");
-			}
-#endif // CONFIG_SERIALIZATION
 	[TODO]
 	public IntPtr Handle
 			{
@@ -414,19 +407,25 @@ public class X509Certificate
 			{
 				throw new NotImplementedException("Import");
 			}
-#if CONFIG_SERIALIZATION
-	[TODO]
-	void IDeserializationCallback.OnDeserialization(Object sender)
-			{
-				throw new NotImplementedException("OnDeserialization");
-			}
-#endif // CONFIG_SERIALIZATION
 	[TODO]
 	public virtual void Reset()
 			{
 				throw new NotImplementedException("Reset");
 			}
 #endif
+#if CONFIG_SERIALIZATION
+	[TODO]
+	void IDeserializationCallback.OnDeserialization(Object sender)
+			{
+				throw new NotImplementedException("OnDeserialization");
+			}
+	[TODO]
+	void ISerializable.GetObjectData(SerializationInfo info, StreamingContext context)
+			{
+				throw new NotImplementedException("GetObjectData");
+			}
+#endif // CONFIG_SERIALIZATION
+
 	// Get the string represenation of this certificate.
 	public override String ToString()
 			{

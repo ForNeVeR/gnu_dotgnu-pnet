@@ -182,7 +182,7 @@ public sealed class AppDomain
 	// Create a new application domain with a specified name.
 	public static AppDomain CreateDomain(String friendlyName)
 			{
-				Object appDomain;
+				Object appDomain = null;
 
 				CreateAppDomain(ref appDomain);
 				return new AppDomain(friendlyName, appDomain);
@@ -191,7 +191,7 @@ public sealed class AppDomain
 	public static AppDomain CreateDomain(String friendlyName,
 										 Evidence securityInfo)
 			{
-				Object appDomain;
+				Object appDomain = null;
 
 				CreateAppDomain(ref appDomain);
 				return new AppDomain(friendlyName, securityInfo,
@@ -202,7 +202,7 @@ public sealed class AppDomain
 										 Evidence securityInfo,
 										 AppDomainSetup info)
 			{
-				Object appDomain;
+				Object appDomain = null;
 
 				CreateAppDomain(ref appDomain);
 				return new AppDomain(friendlyName, securityInfo, info, appDomain);
@@ -213,7 +213,7 @@ public sealed class AppDomain
 										 String appRelativeSearchPath,
 										 bool shadowCopyFiles)
 			{
-				Object appDomain;
+				Object appDomain = null;
 
 				CreateAppDomain(ref appDomain);
 				SetBaseDirectoryInternal(appDomain, appBasePath);

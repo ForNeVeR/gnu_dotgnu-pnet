@@ -681,11 +681,10 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 			 ref gnutls_datum key, Int type);
 
 	[StructLayout(LayoutKind.Sequential)]
-	private struct gnutls_datum : IDisposable
+	private struct gnutls_datum
 	{
 		public IntPtr data;
 		public UInt size;
-		private bool isDisposed;
 
 		// Constructor.
 		public gnutls_datum(byte[] value)
@@ -695,33 +694,15 @@ internal unsafe sealed class GNUTLS : ISecureSessionProvider
 					size = (UInt)(value.Length);
 				}
 
-		// Finalizer.
-		// structs do not normally have finalizers, however
-		// this one has unmanaged resources that needs to be freed
-		~gnutls_datum()
-				{
-					if(isDisposed == false)
-					{
-						Free();
-					}
-				}
-
-		// IDisposable interface because we have unmanaged resources
-		public void Dispose()
-				{
-					if(isDisposed == false)
-					{
-						Free();
-					}
-					isDisposed = true;
-				}
-
 		// Free the data in this object.
 		public void Free()
 				{
-					Marshal.FreeHGlobal(data);
-					data = IntPtr.Zero;
-					size = (UInt)0;
+					if(data != IntPtr.Zero)
+					{
+						Marshal.FreeHGlobal(data);
+						data = IntPtr.Zero;
+						size = (UInt)0;
+					}
 				}
 
 	}; // struct gnutls_datum

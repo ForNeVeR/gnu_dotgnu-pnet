@@ -298,7 +298,7 @@ internal abstract class Formatter
 	static protected string FormatAnyRound(Object o, int precision,
 										   IFormatProvider provider)
 	{
-		string ret;
+		string ret = null;
 
 		//  Type validation
 		if (IsSignedInt(o) )
@@ -791,7 +791,7 @@ internal abstract class Formatter
 	static public string FormatInt64( long value, string format, IFormatProvider provider ) {
 		int precision;
 		if( UseStandardFormatter(format, out precision ) ) {
-			NumberFormatInfo nfi = NumberFormatInfo.GetInstance( provider );
+			NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.GetInstance( provider );
 			StringBuilder sb = new StringBuilder( FormatInt64( value, nfi.NegativeSign ) );
 			if( precision > 0 ) {
 				sb.Append( nfi.NumberDecimalSeparator );
@@ -809,7 +809,7 @@ internal abstract class Formatter
 		int precision;
 		if( UseStandardFormatter(format, out precision ) ) {
 			if( precision > 0 ) {
-				NumberFormatInfo nfi = NumberFormatInfo.GetInstance( provider );
+				NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.GetInstance( provider );
 				StringBuilder sb = new StringBuilder( FormatUInt64( value ) );
 				sb.Append( nfi.NumberDecimalSeparator );
 				sb.Append( '0', precision );
@@ -859,7 +859,7 @@ internal abstract class Formatter
 
 	static protected string FormatDouble( double value, int exponent, int precision, bool FixedPoint, IFormatProvider provider ) {
 
-		NumberFormatInfo nfi = NumberFormatInfo.GetInstance( provider );
+		NumberFormatInfo nfi = System.Globalization.NumberFormatInfo.GetInstance( provider );
 
 		bool negativ = value < 0;
 		double work  = negativ ? -value : value;

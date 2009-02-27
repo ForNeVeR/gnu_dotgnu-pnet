@@ -1146,12 +1146,12 @@ public class Process
 			 
 	// Get the last-occurring system error code for the current thread.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static Errno GetErrno();
+	extern private static Errno GetErrno();
 	
 	// Get a descriptive message for an error from the underlying platform.
 	// Returns null if the platform doesn't have an appropriate message.
 	[MethodImpl(MethodImplOptions.InternalCall)]
-	extern public static String GetErrnoMessage(Errno errno);
+	extern private static String GetErrnoMessage(Errno errno);
 
 
 }; // class Process

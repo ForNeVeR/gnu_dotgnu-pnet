@@ -1238,4 +1238,4 @@ namespace yydebug {
  }
 } // close outermost namespace, that MUST HAVE BEEN opened in the prolog
 
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH

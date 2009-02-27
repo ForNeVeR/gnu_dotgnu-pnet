@@ -221,5 +221,5 @@ String Functions
 %include "XPathEvaluate.tc"
 
 %end %{
-#endif /* CONFIG_XPATH */
+#endif // CONFIG_XPATH
 %}

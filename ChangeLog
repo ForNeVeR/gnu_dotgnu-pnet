@@ -1,3 +1,25 @@
+2009-02-27  Radek Polak  <psonek@seznam.cz>
+
+	* DotGNU.SSL/GNUTLS.cs: Remove IDisposable interface from gnutls_datum.
+	For structs it makes no sence because calls to any interface method will
+	box and thus copy members including pointer to data. Later use of this
+	data can be dangerous.
+
+	* System.Xml/XPath/Private/XPathParser.cs,
+	System.Xml/XPath/Private/XPathParser.jay,
+	System.Xml/XPath/Private/XPathNodes.tc: Fix comments style.
+
+	* System/Diagnostics/Process.cs: Fix visibility of helper funcions.
+
+	* runtime/System/AppDomain.cs, runtime/System/AppDomainSetup.cs: Fix
+	uninitialized variables passed as refs.
+
+	* runtime/System/Private/NumberFormat/Formatter.cs: Fix uninitialized
+	return value and ambiguous NumberFormatInfo class calls.
+
+	* runtime/System/Security/Cryptography/X509Certificates/X509Certificate.cs:
+	Fix compiling under framework < 2.0.
+
 2009-02-25  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Windows.Forms/ListBox.cs: Add overload for AddRange method.

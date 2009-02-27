@@ -66,6 +66,7 @@ namespace System.Windows.Forms
 
 		protected override void OnPaint(PaintEventArgs e)
 		{
+			Graphics g = e.Graphics;
 			if (showPanels == false)
 			{
 				DrawSimpleText(e, 0, 0, Width, Height, Text);
@@ -85,13 +86,17 @@ namespace System.Windows.Forms
 					{
 						panelWidth = Width;
 					}
-					ControlPaint.DrawBorder3D(e.Graphics, 0, 2, panelWidth, Height - 2, Border3DStyle.SunkenOuter, Border3DSide.All);
+					ControlPaint.DrawBorder3D(g, 0, 2, panelWidth, Height - 2, Border3DStyle.SunkenOuter, Border3DSide.All);
 				}
 				else
 				{
 					for (int i=0;i<panels.Count;i++)
 					{
-						switch (panels[i].BorderStyle)
+						StatusBarPanel panel = panels[i];
+						Icon icon = panel.Icon;
+						int textLeft = left;
+
+						switch (panel.BorderStyle)
 						{
 							case StatusBarPanelBorderStyle.None:
 								style = Border3DStyle.Flat;
@@ -103,11 +108,16 @@ namespace System.Windows.Forms
 								style = Border3DStyle.SunkenOuter;
 								break;
 						}
-						ControlPaint.DrawBorder3D(e.Graphics, left, 4, panels[i].Width, Height -4, style, Border3DSide.All);
-						if (panels[i].Style == StatusBarPanelStyle.Text)
+						ControlPaint.DrawBorder3D(g, left, 4, panel.Width, Height -4, style, Border3DSide.All);
+						if (icon != null)
+						{
+							g.DrawIcon(icon, left, (Height - icon.Height) / 2);
+							textLeft += icon.Width;
+						}
+						if (panel.Style == StatusBarPanelStyle.Text)
 						{
 							StringAlignment align = 0;
-							switch (panels[i].Alignment)
+							switch (panel.Alignment)
 							{
 								case HorizontalAlignment.Center:
 									align = StringAlignment.Center;
@@ -118,23 +128,23 @@ namespace System.Windows.Forms
 								case HorizontalAlignment.Right:
 									align = StringAlignment.Far;
 									break;
-							}							
-							DrawSimpleText(e, left, 4, left + panels[i].Width, Height,  panels[i].Text, align);
+							}
+							DrawSimpleText(e, textLeft, 4, left + panel.Width, Height, panel.Text, align);
 						}
 						else
 						{
 							// Owner drawn
-							StatusBarDrawItemEventArgs args = new StatusBarDrawItemEventArgs(e.Graphics, this.Font, new Rectangle(0, 0, panels[i].Width, Height), i, DrawItemState.None, panels[i]);
+							StatusBarDrawItemEventArgs args = new StatusBarDrawItemEventArgs(g, this.Font, new Rectangle(0, 0, panel.Width, Height), i, DrawItemState.None, panel);
 							OnDrawItem(args);
 						}
-						left += panels[i].Width +2;
+						left += panel.Width +2;
 					}
 				}
 			}
 
 			if (sizingGrip == true)
 			{
-				ControlPaint.DrawSizeGrip(e.Graphics, BackColor, new Rectangle(Width - 16, Height - 16, Width, Height));
+				ControlPaint.DrawSizeGrip(g, BackColor, new Rectangle(Width - 16, Height - 16, Width, Height));
 			}
 			base.OnPaint(e);
 		}

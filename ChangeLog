@@ -1,5 +1,9 @@
 2009-02-27  Radek Polak  <psonek@seznam.cz>
 
+	* System.Windows.Forms/StatusBar.cs: Draw icon in panel.
+
+2009-02-27  Radek Polak  <psonek@seznam.cz>
+
 	* DotGNU.SSL/GNUTLS.cs: Remove IDisposable interface from gnutls_datum.
 	For structs it makes no sence because calls to any interface method will
 	box and thus copy members including pointer to data. Later use of this

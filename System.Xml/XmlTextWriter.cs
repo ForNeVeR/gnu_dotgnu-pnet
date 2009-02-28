@@ -478,7 +478,7 @@ public class XmlTextWriter : XmlWriter
 				// Write the prefix declaration, if needed.
 				if(needPrefixDecl)
 				{
-					writer.Write("xmlns:");
+					writer.Write(" xmlns:");
 					writer.Write(scope.prefix);
 					writer.Write('=');
 					writer.Write(quoteChar);

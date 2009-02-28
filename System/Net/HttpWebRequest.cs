@@ -178,7 +178,7 @@ public class HttpWebRequest : WebRequest
 		if(outStream==null)
 		{
 			if(preAuthenticate) AddHttpAuthHeaders(null);
-			outStream=new HttpStream(this);
+			outStream=new HttpStream(this, contentLength < 0);
 		}
 		return outStream;
 	}
@@ -194,7 +194,7 @@ public class HttpWebRequest : WebRequest
 		if(outStream==null)
 		{
 			if(preAuthenticate) AddHttpAuthHeaders(null);
-			outStream=new HttpStream(this);
+			outStream=new HttpStream(this, false);
 			outStream.Flush();
 			// which is the response stream as well 
 		}
@@ -383,12 +383,10 @@ public class HttpWebRequest : WebRequest
 	{
  		get
 		{
-			throw new NotImplementedException("CookieContainer");
+			return null;
 		}
-
  		set
 		{
-			throw new NotImplementedException("CookieContainer");
 		}
  	}
 #endif // !ECMA_COMPAT
@@ -796,17 +794,30 @@ public class HttpWebRequest : WebRequest
 		private HttpWebRequest request;
 		private Stream underlying=null;
 		private long contentLength=Int64.MaxValue;
+		private Stream netStream;
 
-		public HttpStream(HttpWebRequest req) 
-			: this(req, HttpStream.OpenStream(req))
+		public HttpStream(HttpWebRequest req, bool computeContentLength)
+			: this(req, HttpStream.OpenStream(req), computeContentLength)
 		{
 		}
 
-		public HttpStream(HttpWebRequest req, Stream underlying)
+		public HttpStream(HttpWebRequest req, Stream underlying,
+						  bool computeContentLength)
 		{
 			this.request=req;
 			this.underlying=underlying;
-			SendHeaders();
+
+			// If sendHeaderOnClose is set, then we use memory stream as
+			// underlying stream so that we can compute content length.
+			if(computeContentLength)
+			{
+				netStream = underlying;
+				this.underlying = new MemoryStream();
+			}
+			else
+			{
+				SendHeaders();
+			}
 		}
 
 		~HttpStream()
@@ -862,7 +873,19 @@ public class HttpWebRequest : WebRequest
 
 		public override void Close()
 		{
-			/* Nothing */
+			underlying.Flush();
+
+			MemoryStream ms = underlying as MemoryStream;
+			if(ms == null)
+			{
+				return;
+			}
+
+			// Update content length and send reqest over network.
+			request.ContentLength = ms.Length;
+			underlying = netStream;
+			SendHeaders();
+			ms.WriteTo(netStream);
 		}
 
 		public override bool CanRead 
@@ -1185,6 +1208,13 @@ public class HttpWebRequest : WebRequest
 			HttpStatusCode code=response.StatusCode;
 			switch(code)
 			{
+				case HttpStatusCode.Continue:
+				{
+					// Drop this response so that real one can be read.
+					request.response = null;
+					return request;
+				}
+
 				case HttpStatusCode.OK:
 				{
 					if(http==HttpAuthState.Trying) http=HttpAuthState.OK;

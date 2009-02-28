@@ -201,11 +201,10 @@ public class HttpWebResponse : WebResponse
 	{
  		get
 		{
-			throw new NotImplementedException("Cookies");
+			return null;
 		}
 		set
 		{
-				throw new NotImplementedException("Cookies");
 		}
 	}
 #endif // !ECMA_COMPAT

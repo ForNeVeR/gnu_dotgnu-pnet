@@ -1,3 +1,13 @@
+2009-03-01  Radek Polak  <psonek@seznam.cz>
+
+	* System.Xml/XmlTextWriter.cs: Fix missing separator when writing prefix.
+
+	* System/Net/HttpWebRequest.cs: Send header after request stream is closed
+	in case when content length is not specified. Implement http status 100.
+	Don't throw exceptions on TODO method.
+
+	* System/Net/HttpWebResponse.cs: Don't throw exceptions on TODO method.
+
 2009-02-27  Radek Polak  <psonek@seznam.cz>
 
 	* System.Windows.Forms/StatusBar.cs: Draw icon in panel.

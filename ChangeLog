@@ -1,5 +1,9 @@
 2009-03-01  Radek Polak  <psonek@seznam.cz>
 
+	* runtime/System/Convert.cs: Fix base64 table for '+' character.
+
+2009-03-01  Radek Polak  <psonek@seznam.cz>
+
 	* System.Xml/XmlTextWriter.cs: Fix missing separator when writing prefix.
 
 	* System/Net/HttpWebRequest.cs: Send header after request stream is closed

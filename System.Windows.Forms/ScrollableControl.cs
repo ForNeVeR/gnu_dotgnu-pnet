@@ -258,6 +258,7 @@ public class ScrollableControl : Control
 
 	private void UpdateScrollBars()
 			{
+				this.CheckAutoscrollPosition();
 				Rectangle rect = DisplayRectangle;
 
 				if( null != vScrollBar ) {
@@ -312,10 +313,9 @@ public class ScrollableControl : Control
 				if (vScrollBar != null)
 					UpdateScrollBars();
 			}
-
-	protected override void OnResize(EventArgs e)
+			
+			private void CheckAutoscrollPosition() 
 			{
-				base.OnResize(e);
 				int xOffset,yOffset;
 				if(autoScrollPosition.Y==0 && autoScrollPosition.X==0 || !autoScroll)
 				{
@@ -344,6 +344,12 @@ public class ScrollableControl : Control
 					xOffset = 0;
 				}
 				ScrollByOffset(new Size(xOffset,yOffset));
+			}
+
+	protected override void OnResize(EventArgs e)
+			{
+				base.OnResize(e);
+				this.CheckAutoscrollPosition();
 			}
 
 	// Handle a mouse wheel event.

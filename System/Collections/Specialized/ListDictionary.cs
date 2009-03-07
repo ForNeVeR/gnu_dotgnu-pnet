@@ -52,8 +52,8 @@ public class ListDictionary : IDictionary, ICollection, IEnumerable
 				this.generation = 0;
 			}
 
-	// Implement the IDictionary interface.
-	public void Add(Object key, Object value)
+	// Common function for add and set operations.
+	private void SetOrAdd(Object key, Object value, bool set)
 			{
 				if(key == null)
 				{
@@ -65,6 +65,10 @@ public class ListDictionary : IDictionary, ICollection, IEnumerable
 				{
 					if(comparer.Compare(current.key, key) == 0)
 					{
+						if(set)
+						{
+							return;
+						}
 						throw new ArgumentException(S._("Arg_ExistingEntry"));
 					}
 					prev = current;
@@ -81,6 +85,13 @@ public class ListDictionary : IDictionary, ICollection, IEnumerable
 				++count;
 				++generation;
 			}
+
+	// Implement the IDictionary interface.
+	public void Add(Object key, Object value)
+			{
+				SetOrAdd(key, value, false);
+			}
+
 	public void Clear()
 			{
 				list = null;
@@ -159,7 +170,7 @@ public class ListDictionary : IDictionary, ICollection, IEnumerable
 				}
 				set
 				{
-					Add(key, value);
+					SetOrAdd(key, value, true);
 				}
 			}
 	public ICollection Keys

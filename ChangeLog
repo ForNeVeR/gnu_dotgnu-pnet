@@ -1,7 +1,12 @@
+2009-03-01  Radek Polak  <psonek@seznam.cz>
+
+	* System/Collections/Specialized/ListDictionary.cs: Fix setter for list
+	dictionary.
+
 2009-03-02  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
-	
-	* System.Windows.Forms/ScrollableControl.cs: fixed autoscroll if controls are
-	removed or added.
+
+	* System.Windows.Forms/ScrollableControl.cs: fixed autoscroll if controls
+	are removed or added.
 
 2009-03-01  Radek Polak  <psonek@seznam.cz>
 

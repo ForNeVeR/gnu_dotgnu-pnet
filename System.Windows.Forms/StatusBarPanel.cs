@@ -51,8 +51,8 @@ namespace System.Windows.Forms
 			borderStyle = StatusBarPanelBorderStyle.Sunken;
 			minWidth = 10;
 			style = StatusBarPanelStyle.Text;
-			text = this.GetType().Name;
-			toolTipText = string.Empty;
+			text = String.Empty;
+			toolTipText = String.Empty;
 			width = 100;
 		}
 

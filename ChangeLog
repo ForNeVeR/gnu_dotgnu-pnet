@@ -1,5 +1,10 @@
 2009-03-08  Radek Polak  <psonek@seznam.cz>
 
+	* System.Windows.Forms/StatusBarPanel.cs: Text should be empty in new
+	panels.
+
+2009-03-08  Radek Polak  <psonek@seznam.cz>
+
 	* System.Windows.Forms/ListBox.cs: Implement DrawMode property.
 
 2009-03-01  Radek Polak  <psonek@seznam.cz>

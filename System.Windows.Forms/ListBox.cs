@@ -62,6 +62,7 @@ public class ListBox : ListControl
 	private bool integralHeight = true;
 	private int columnWidth = 100;
 	private int itemHeight = 15;
+	private DrawMode drawMode = DrawMode.Normal;
 
 
 	// Helpers, to replace the missing "Math" class in some profiles.
@@ -760,15 +761,19 @@ public class ListBox : ListControl
 		}
 	}
 
-	[TODO]
 	public virtual DrawMode DrawMode
 	{
 		get
 		{
-			return DrawMode.Normal;
+			return drawMode;
 		}
 		set
 		{
+			if(value != drawMode)
+			{
+				this.drawMode = value;
+				Invalidate();
+			}
 		}
 	}
 
@@ -1729,7 +1734,24 @@ public class ListBox : ListControl
 	protected internal virtual void PaintItem(Graphics g, int index, string text, Font font, Brush textBrush,
 		Rectangle itemRect, StringFormat format)
 	{
-		g.DrawString(text, this.Font, textBrush, itemRect, format);
+		if(drawMode == DrawMode.Normal)
+		{
+			g.DrawString(text, this.Font, textBrush, itemRect, format);
+			return;
+		}
+
+		DrawItemState state = DrawItemState.None;
+		foreach(int selected in selectedIndices)
+		{
+			if(selected == index)
+			{
+				state |= DrawItemState.Selected;
+				break;
+			}
+		}
+
+		OnDrawItem(new DrawItemEventArgs(g, font, itemRect, index, state,
+										 ForeColor, BackColor));
 	}
 
 	private void PaintItem(Graphics g, int dataIndex)

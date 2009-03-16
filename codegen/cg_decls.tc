@@ -1005,6 +1005,7 @@ ILNode_GenDiscard(ILNode_PropertyDeclaration)
 					     ILProperty_Signature(node->propertyInfo),
 					     IL_DUMP_QUOTE_NAMES, 0,
 						 ILProperty_Name(node->propertyInfo), 0);
+		ILDumpConstant(outstream, (ILProgramItem *)node->propertyInfo, 1);
 		fputs("\n{\n", outstream);
 		if(info->debugFlag && info->asmOutput)
 		{

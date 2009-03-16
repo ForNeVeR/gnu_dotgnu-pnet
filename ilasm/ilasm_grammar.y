@@ -982,6 +982,7 @@ static void FinishDataLabels()
 %token K_REQREFUSE			"`reqrefuse'"
 %token K_REQSECOBJ			"`reqsecobj'"
 %token K_REQUEST			"`request'"
+%token K_RETARGETABLE		"`retargetable'"
 %token K_RETVAL				"`retval'"
 %token K_RTSPECIALNAME		"`rtspecialname'"
 %token K_RUNTIME			"`runtime'"
@@ -2870,7 +2871,7 @@ MethodRefGenericParams
 
 PropertyHeading
 	: D_PROPERTY PropertyAttributes CallingConventions Type Identifier
-			'(' OptSignatureArguments ')'	{
+			'(' OptSignatureArguments ')' InitOption	{
 				ILType *sig = CreatePropertySig($3, $4, $7.paramFirst);
 				ILProperty *property;
 				property = ILPropertyCreate(ILAsmClass, 0, $5.string,
@@ -2878,6 +2879,24 @@ PropertyHeading
 				if(!property)
 				{
 					ILAsmOutOfMemory();
+				}
+				if($9.type != IL_META_ELEMTYPE_VOID)
+				{
+					/* Attach a constant to the property */
+					ILConstant *constant;
+
+					constant = ILConstantCreate(ILAsmImage, 0,
+												ILToProgramItem(property),
+												$9.type);
+					if(!constant)
+					{
+						ILAsmOutOfMemory();
+					}
+					if(!ILConstantSetValue(constant, $9.valueBlob.string,
+										   $9.valueBlob.len))
+					{
+						ILAsmOutOfMemory();
+					}
 				}
 				ILAsmBuildPushScope(property);
 			}
@@ -3728,6 +3747,7 @@ AssemblyAttributeName
 	| K_NOAPPDOMAIN			{ $$ = IL_META_ASSEM_NON_SIDE_BY_SIDE_APP_DOMAIN; }
 	| K_NOPROCESS			{ $$ = IL_META_ASSEM_NON_SIDE_BY_SIDE_PROCESS; }
 	| K_NOMACHINE			{ $$ = IL_META_ASSEM_NON_SIDE_BY_SIDE_MACHINE; }
+	| K_RETARGETABLE		{ $$ = IL_META_ASSEM_RETARGETABLE; }
 	| K_ENABLEJITTRACKING	{ $$ = IL_META_ASSEM_ENABLE_JIT_TRACKING; }
 	| K_DISABLEJITOPTIMIZER	{ $$ = IL_META_ASSEM_DISABLE_JIT_OPTIMIZER; }
 	;

@@ -489,6 +489,8 @@ const void *ILAssemblyGetHash(ILAssembly *assem, unsigned long *len);
 #define	ILAssembly_IsNotMachineCompatible(assem)	\
 	((ILAssemblyGetAttrs((assem)) & IL_META_ASSEM_COMPATIBILITY_MASK) \
 				== IL_META_ASSEM_NON_SIDE_BY_SIDE_MACHINE)
+#define	ILAssembly_Retargetable(assem)	\
+	((ILAssemblyGetAttrs((assem)) & IL_META_ASSEM_RETARGETABLE) != 0)
 #define	ILAssembly_EnableJITTracking(assem)	\
 	((ILAssemblyGetAttrs((assem)) & IL_META_ASSEM_ENABLE_JIT_TRACKING) != 0)
 #define	ILAssembly_DisableJITOptimizer(assem)	\

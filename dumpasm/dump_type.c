@@ -1350,33 +1350,18 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			DumpNativeType(stream, reader, flags);
 			putc('[', stream);
 			value = ILMetaUncompressData(reader);
+			/* Skip the multiplier as it's not available in the grammar */
+			value2 = ILMetaUncompressData(reader);
+			value2 = ILMetaUncompressData(reader);
+			if(value2 != 0)
+			{
+				fprintf(stream, "%lu", value2);
+			}
 			if(value)
 			{
-				fprintf(stream, ".size .param = %lu", value);
-				value = ILMetaUncompressData(reader);
-				value2 = ILMetaUncompressData(reader);
-				if(value != 1)
-				{
-					fprintf(stream, " * %lu]", value);
-				}
-				else
-				{
-					putc(']', stream);
-				}
+				fprintf(stream, " + %lu", value);
 			}
-			else
-			{
-				value = ILMetaUncompressData(reader);
-				value2 = ILMetaUncompressData(reader);
-				if(value2 != 0)
-				{
-					fprintf(stream, "%lu]", value2);
-				}
-				else
-				{
-					putc(']', stream);
-				}
-			}
+			putc(']', stream);
 		}
 		break;
 

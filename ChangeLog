@@ -1,4 +1,26 @@
-2009-02-22  Klaus Treichek  <ktreichel@web.de>
+2009-03-16  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_decls.tc (ILNode_GenDiscard(ILNode_PropertyDeclaration)):
+	Dump attached constant if present.
+
+	* dumpasm/dump_flags.c (ILAssemblyFlags): Add the 2.0 ECMA flag
+	retargetable.
+
+	* dumpasm/dump_type.c (DumpNativeType): Dump a native array in the
+	format type[int32 + int32] now instead of the old format.
+
+	* ilalink/link_image.c (ProcessImage): Handle the 2.0 assembly flag
+	retargetable.
+
+	* ilasm/ilasm_grammar.y: Handle constants attached to properties.
+
+	* ilasm/ilasm_scanner.l: Add the 2.0 keyword retargetable.
+
+	* include/il_meta.h: Define IL_META_ASSEM_RETARGETABLE.
+
+	* include/il_program.h: Add macro ILAssembly_Retargetable.
+
+2009-02-22  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add checking for x86_64-*-linux* when checking which
 	thread library to use if not specified.

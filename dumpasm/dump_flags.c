@@ -189,7 +189,8 @@ ILFlagInfo const ILParameterDefinitionFlags[] = {
 ILFlagInfo const ILPropertyDefinitionFlags[] = {
 	{"specialname", IL_META_PROPDEF_SPECIAL_NAME, 0},
 	{"rtspecialname", IL_META_PROPDEF_RT_SPECIAL_NAME, 0},
-	{0, IL_META_PROPDEF_RT_SPECIAL_NAME, 0xFFFFFDFF},
+	{0, IL_META_PROPDEF_RT_SPECIAL_NAME |
+		IL_META_PROPDEF_HAS_DEFAULT, 0xFFFFFDFF},
 };
 
 /*
@@ -349,9 +350,10 @@ ILFlagInfo const ILAssemblyFlags[] = {
 				IL_META_ASSEM_COMPATIBILITY_MASK},
 	{"nomachine", IL_META_ASSEM_NON_SIDE_BY_SIDE_MACHINE,
 				IL_META_ASSEM_COMPATIBILITY_MASK},
+	{"retargetable", IL_META_ASSEM_RETARGETABLE, 0},
 	{"enablejittracking", IL_META_ASSEM_ENABLE_JIT_TRACKING, 0},
 	{"disablejitoptimizer", IL_META_ASSEM_DISABLE_JIT_OPTIMIZER, 0},
-	{0, 0, 0xFFFF3F8E},
+	{0, 0, 0xFFFF3E8E},
 };
 
 /*

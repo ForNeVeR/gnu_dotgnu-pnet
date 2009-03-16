@@ -163,6 +163,13 @@ static int ProcessImage(ILLinker *linker, ILImage *image,
 							   compat);
 		}
 
+		/* Copy the retargetable flag */
+		if(ILAssembly_Retargetable(assem))
+		{
+			ILAssemblySetAttrs(thisAssem, IL_META_ASSEM_RETARGETABLE,
+							   IL_META_ASSEM_RETARGETABLE);
+		}
+
 		/* Copy the JIT flags */
 		if(ILAssembly_EnableJITTracking(assem))
 		{

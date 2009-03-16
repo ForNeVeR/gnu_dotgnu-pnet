@@ -258,6 +258,7 @@ SIGN			[+-]
 <INITIAL,JAVAMODE>"noappdomain"			{ return K_NOAPPDOMAIN; }
 <INITIAL,JAVAMODE>"noprocess"			{ return K_NOPROCESS; }
 <INITIAL,JAVAMODE>"nomachine"			{ return K_NOMACHINE; }
+<INITIAL,JAVAMODE>"retargetable"		{ return K_RETARGETABLE; }
 <INITIAL,JAVAMODE>"extern"				{ return K_EXTERN; }
 <INITIAL,JAVAMODE>"instance"			{ return K_INSTANCE; }
 <INITIAL,JAVAMODE>"explicit"			{ return K_EXPLICIT; }

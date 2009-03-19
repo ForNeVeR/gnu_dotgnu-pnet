@@ -190,20 +190,36 @@ public abstract class WaitHandle : MarshalByRefObject, IDisposable
 	// Wait until this handle receives a signal.
 	public virtual bool WaitOne()
 			{
+				if( privateData == IntPtr.Zero ) 
+				{
+					throw new ObjectDisposedException(_("WaitHandle"));
+				}
+				
 				return InternalWaitOne(privateData, -1);
 			}
 	public virtual bool WaitOne(int millisecondsTimeout,bool exitContext)
 			{
+				if( privateData == IntPtr.Zero ) 
+				{
+					throw new ObjectDisposedException(_("WaitHandle"));
+				}
+				
 				if(millisecondsTimeout < -1)
 				{
 					throw new ArgumentOutOfRangeException
 						("millisecondsTimeout",
 						 _("ArgRange_NonNegOrNegOne"));
 				}
+				
 				return InternalWaitOne(privateData, millisecondsTimeout);
 			}
 	public virtual bool WaitOne(TimeSpan timeout, bool exitContext)
 			{
+				if( privateData == IntPtr.Zero ) 
+				{
+					throw new ObjectDisposedException(_("WaitHandle"));
+				}
+
 				return InternalWaitOne(privateData,
 									   Monitor.TimeSpanToMS(timeout));
 			}

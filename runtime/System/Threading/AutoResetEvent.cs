@@ -51,6 +51,10 @@ namespace System.Threading
 		/// </summary>
 		public bool Set()
 		{
+			if( Handle == IntPtr.Zero ) 
+			{
+				throw new ObjectDisposedException(_("AutoResetEvent"));
+			}
 			return WaitEvent.InternalSetEvent(Handle);
 		}
 
@@ -59,6 +63,10 @@ namespace System.Threading
 		/// </summary>
 		public bool Reset()
 		{
+		if( Handle == IntPtr.Zero ) 
+			{
+				throw new ObjectDisposedException(_("AutoResetEvent"));
+			}
 			return WaitEvent.InternalResetEvent(Handle);
 		}
 

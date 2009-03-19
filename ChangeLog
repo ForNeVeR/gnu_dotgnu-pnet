@@ -1,3 +1,9 @@
+2009-03-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Threading/AutoResetEvent.cs,
+	runtime/System/Threading/ManualResetEvent.cs,
+	runtime/System/Threading/WaitHandle.cs: check if handle is zero before use.
+
 2009-03-08  Radek Polak  <psonek@seznam.cz>
 
 	* System.Windows.Forms/StatusBarPanel.cs: Text should be empty in new

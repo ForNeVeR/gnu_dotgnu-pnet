@@ -1,3 +1,8 @@
+2009-03-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* engine/lib_thread.c, support/wait_event.c: check if handle is zero before 
+	use for wait handles.
+
 2009-03-16  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_decls.tc (ILNode_GenDiscard(ILNode_PropertyDeclaration)):

@@ -1114,6 +1114,11 @@ ILNativeInt _IL_WaitEvent_InternalCreateEvent(ILExecThread *_thread, ILBool manu
  */
 ILBool _IL_WaitEvent_InternalResetEvent(ILExecThread *_thread, ILNativeInt event)
 {
+	if( 0 == event )
+	{
+		ILExecThreadThrowSystem(_thread, "System.ArgumentException", 0);
+	}
+	
 	return (ILBool)ILWaitEventReset((ILWaitHandle *)event);
 }
 
@@ -1122,6 +1127,11 @@ ILBool _IL_WaitEvent_InternalResetEvent(ILExecThread *_thread, ILNativeInt event
  */
 ILBool _IL_WaitEvent_InternalSetEvent(ILExecThread *_thread, ILNativeInt event)
 {
+	if( 0 == event )
+	{
+		ILExecThreadThrowSystem(_thread, "System.ArgumentException", 0);
+	}
+	
 	return (ILBool)ILWaitEventSet((ILWaitHandle *)event);
 }
 

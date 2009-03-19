@@ -150,6 +150,11 @@ int ILWaitEventSet(ILWaitHandle *handle)
 {
 	ILWaitEvent *event = (ILWaitEvent *)handle;
 
+	if( event == 0 ) 
+	{
+		return 0;
+	}
+	
 	/* Lock down the event */
 	_ILMutexLock(&(event->parent.lock));
 
@@ -196,6 +201,11 @@ int ILWaitEventPulse(ILWaitHandle *handle)
 {
 	ILWaitEvent *event = (ILWaitEvent *)handle;
 
+	if( event == 0 ) 
+	{
+		return 0;
+	}
+	
 	/* Lock down the event */
 	_ILMutexLock(&(event->parent.lock));
 
@@ -237,6 +247,11 @@ int ILWaitEventReset(ILWaitHandle *handle)
 {
 	ILWaitEvent *event = (ILWaitEvent *)handle;
 
+	if( event == 0 ) 
+	{
+		return 0;
+	}
+	
 	/* Lock down the event */
 	_ILMutexLock(&(event->parent.lock));
 

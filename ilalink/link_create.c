@@ -237,7 +237,7 @@ static void ReportUnresolved(ILLinker *linker)
 		classInfo = ILMember_Owner(member);
 		if(!ILClassIsRef(classInfo) &&
 		   (ILMember_Token(member) & IL_META_TOKEN_MASK) ==
-		   		IL_META_TOKEN_MEMBER_REF)
+			IL_META_TOKEN_MEMBER_REF)
 		{
 			/* The class has been defined, but not the member */
 			if(ILMember_IsMethod(member))

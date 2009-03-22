@@ -1,3 +1,17 @@
+2009-03-22  Klaus Treichel  <ktreichel@web.de>
+
+	* ilalink/link_class.c (CreateClass): Set new class in <Module> even if
+	the new class existed before to be able to link C style libraries to one
+	new module.
+	(ConvertClassParents, ConvertClassMembers): Return 1 even if the new
+	class is not set.
+
+	* ilalink/link_create.c (ReportUnresolved): Do some reformatting.
+
+	* ilalink/link_method.c (_ILLinkerConvertMemberRef): likewise.
+
+	* ilalink/link_module.c (ILLinkerFindAttribute): likewise.
+
 2009-03-19  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* engine/lib_thread.c, support/wait_event.c: check if handle is zero before 

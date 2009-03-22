@@ -68,9 +68,9 @@ ILAttribute *ILLinkerFindAttribute(ILProgramItem *item,
 					{
 						if(ILTypeNumParams(signature) == 2 &&
 						   ILTypeIdentical(ILTypeGetParam(signature, 1),
-						   				   arg1Type) &&
+										   arg1Type) &&
 						   ILTypeIdentical(ILTypeGetParam(signature, 2),
-						   				   arg2Type))
+										   arg2Type))
 						{
 							return attr;
 						}
@@ -79,7 +79,7 @@ ILAttribute *ILLinkerFindAttribute(ILProgramItem *item,
 					{
 						if(ILTypeNumParams(signature) == 1 &&
 						   ILTypeIdentical(ILTypeGetParam(signature, 1),
-						   				   arg1Type))
+										   arg1Type))
 						{
 							return attr;
 						}

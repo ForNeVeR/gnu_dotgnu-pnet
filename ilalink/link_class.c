@@ -118,8 +118,17 @@ static int CreateClass(ILLinker *linker, ILClass *classInfo,
 			{
 				isModule = 1;
 			}
-			else if(linker->isCLink ||
-			        !strncmp(ILClass_Name(classInfo), "$ArrayType$", 11))
+			else if(!strncmp(ILClass_Name(classInfo), "$ArrayType$", 11))
+			{
+				/* Array types are not converted */
+				if(newName)
+				{
+					ILFree(newName);
+				}
+
+				return 1;
+			}
+			else if(linker->isCLink)
 			{
 				/* Duplicate classes are valid in C objects, as they
 				   are normally definitions of the same struct type */
@@ -127,6 +136,10 @@ static int CreateClass(ILLinker *linker, ILClass *classInfo,
 				{
 					ILFree(newName);
 				}
+
+				/* Record the new class in the original class */
+				ILClassSetUserData(classInfo, (void *)newClass);
+
 				return 1;
 			}
 			else
@@ -208,7 +221,7 @@ static int ConvertClassParents(ILLinker *linker, ILClass *classInfo)
 	newClass = (ILClass *)ILClassGetUserData(classInfo);
 	if(!newClass)
 	{
-		return 0;
+		return 1;
 	}
 
 	parent = ILClass_Parent(classInfo);
@@ -279,7 +292,7 @@ static int ConvertClassMembers(ILLinker *linker, ILClass *classInfo)
 	newClass = (ILClass *)ILClassGetUserData(classInfo);
 	if(!newClass)
 	{
-		return 0;
+		return 1;
 	}
 
 	/* Convert the custom attributes */

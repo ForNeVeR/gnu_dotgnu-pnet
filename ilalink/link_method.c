@@ -930,7 +930,7 @@ ILMember *_ILLinkerConvertMemberRef(ILLinker *linker, ILMember *member)
 			   then we need to create a new reference for the method */
 			if(ILMember_IsMethod(member) &&
 			   (ILType_Kind(ILMember_Signature(member)) &
-			   		IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
+					IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
 			{
 				/* We must change the "find name", because the function
 				   may have been redirected via a strong alias */

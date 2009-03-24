@@ -401,50 +401,17 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 					throw new ArgumentException(_("Arg_MustBeEnum"));
 				}
 
-				// Extract the constant names and parse them.
-				int posn, len;
-				char ch;
-				bool sawComma = true;
-				String name;
+				value = value.Trim();
+				
 				Object finalValue = null;
 				Object newValue;
-				posn = 0;
-				while(posn < value.Length)
+				string name;
+				
+				string [] split = value.Split( ',' );
+				
+				foreach( string s in split ) 
 				{
-					// Process white space and commas.
-					ch = value[posn];
-					if(Char.IsWhiteSpace(ch))
-					{
-						++posn;
-						continue;
-					}
-					if(ch == ',')
-					{
-						if(sawComma)
-						{
-							throw new ArgumentException
-								(_("Arg_InvalidEnumName"));
-						}
-						sawComma = true;
-						++posn;
-						continue;
-					}
-
-					// Extract the next constant name.
-					len = 1;
-					while((posn + len) < value.Length)
-					{
-						ch = value[posn + len];
-						if(Char.IsWhiteSpace(ch) || ch == ',')
-						{
-							break;
-						}
-						++len;
-					}
-					name = value.Substring(posn, len);
-					posn += len;
-					sawComma = false;
-
+					name = s.Trim();
 					// Convert the name into a value.
 					newValue = GetEnumValueFromName(enumType, name, ignoreCase);
 					if(newValue == null)
@@ -452,7 +419,7 @@ public abstract class Enum : ValueType, IComparable, IFormattable
 						throw new ArgumentException
 							(_("Arg_InvalidEnumName"));
 					}
-					
+				
 					// Combine the current value with the new one.
 					if(finalValue == null)
 					{

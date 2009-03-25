@@ -347,6 +347,10 @@ static void Dump_PropertyDef(ILImage *image, FILE *outstream, int flags,
 	/* Dump the property type */
 	ILDumpMethodType(outstream, image, ILProperty_Signature(property), flags,
 					 0, ILProperty_Name(property), 0);
+	if((ILProperty_Attrs(property) & IL_META_PROPDEF_HAS_DEFAULT) != 0)
+	{
+		ILDumpConstant(outstream, (ILProgramItem *)property, 0);
+	}
 	fputs("\n\t{\n", outstream);
 
 	/* Dump the custom attributes */

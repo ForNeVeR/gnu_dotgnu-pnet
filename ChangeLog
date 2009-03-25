@@ -1,3 +1,8 @@
+2009-03-25  Klaus Treichel  <ktreichel@web.de>
+
+	* dumpasm/dump_class.c (Dump_PropertyDef): Add output of the constant
+	attached to a property.
+
 2009-03-22  Klaus Treichel  <ktreichel@web.de>
 
 	* ilalink/link_class.c (CreateClass): Set new class in <Module> even if

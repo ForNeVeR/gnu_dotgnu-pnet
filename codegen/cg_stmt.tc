@@ -1917,6 +1917,106 @@ static void GenerateBinarySwitch(ILGenInfo *info,
 	}
 }
 
+void CGSetSwitchTableType(ILNode_Switch *switchNode)
+{
+	ILMachineType type;
+	ILSwitchValue *values;
+	unsigned long numValues;
+	unsigned long range;
+
+	values = switchNode->switchValues;
+	numValues = switchNode->numSwitchValues;
+	/*
+	 * The switch statement has to substract the lowest value from the
+	 * value to switch on for calculating the index in the switch table
+	 * and check implicitely if the value is in the range lowest value
+	 * and highest value by an unsinged comparision.
+	 * So it makes sense to use a switch table only if a certain number of
+	 * entries is available.
+	 * So we are using simple "if" statements for 2 or less cases.
+	 */
+	if(numValues <= 2)
+	{
+		switchNode->tableType = ILSwitchTableType_If;
+		return;
+	}
+
+	/*
+	 * If the switch type can fit in a 32-bit integer, and the
+	 * range is less that 128 or the cases fill up at least 80% of the
+	 * range, then use an indexed table for the switch.
+	 * But the calculation is prone to overflow, hence the upper limit
+	 * check.
+	 */
+	type = ILTypeToMachineType(switchNode->switchType);
+	switch(type)
+	{
+		case ILMachineType_Int8:
+		case ILMachineType_UInt8:
+		case ILMachineType_Int16:
+		case ILMachineType_UInt16:
+		case ILMachineType_Char:
+		case ILMachineType_Int32:
+		{
+			range = (unsigned long)(values[numValues - 1].value.un.i4Value -
+									values[0].value.un.i4Value);
+			if(range < 128)
+			{
+				switchNode->tableType = ILSwitchTableType_Indexed;
+				return;
+			}
+			else if(((range * 4) / 5) <= numValues && range < 0x1fffffff)
+			{
+				switchNode->tableType = ILSwitchTableType_Indexed;
+				return;
+			}
+			else
+			{
+				switchNode->tableType = ILSwitchTableType_Lookup;
+				return;
+			}
+		}
+		/* Not reached */
+
+		case ILMachineType_UInt32:
+		{
+			range = (unsigned long)
+				(((ILUInt32)(values[numValues - 1].value.un.i4Value)) -
+				 ((ILUInt32)(values[0].value.un.i4Value)));
+			if(range < 128)
+			{
+				switchNode->tableType = ILSwitchTableType_Indexed;
+				return;
+			}
+			else if(((range * 4) / 5) <= numValues && range < 0x3fffffff)
+			{
+				switchNode->tableType = ILSwitchTableType_Indexed;
+				return;
+			}
+			else
+			{
+				switchNode->tableType = ILSwitchTableType_Lookup;
+				return;
+			}
+		}
+		/* Not reached */
+
+		default: break;
+	}
+
+	/* If we get here, then we need to use a binary tree of if statements */
+	switchNode->tableType = ILSwitchTableType_BinaryIf;
+}
+
+%}
+
+%decls %end %{
+
+/*
+ * Determine the type of table to be used for the switch statement.
+ */
+void CGSetSwitchTableType(ILNode_Switch *switchNode);
+
 %}
 
 /*

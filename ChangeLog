@@ -1,3 +1,19 @@
+2009-03-28  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_stmt.tc (CGSetSwitchTableType): Move the duplicate function
+	SwitchTableType from cscc/c/c_stmt.tc and cscc/csharp/cs_stmt.tc to here.
+	Generate simple ifs only for tables with less than 3 switchentries instead
+	of 4 and generate switch tables too if the range of the constant values
+	is less than 128.
+ 
+	cscc/c/c_stmt.tc (SwitchTableType): Move to codegen/cg_stmt.tc.
+	(ILNode_CSemAnalysis(ILNode_Switch)): Set the switch type in the node
+	and call CGSetSwitchTableType instead of SwitchTableType.
+
+	cscc/csharp/cs_stmt.tc (SwitchTableType): Move to codegen/cg_stmt.tc.
+	(ILNode_SemAnalysis(ILNode_Switch)): Call CGSetSwitchTableType instead
+	of SwitchTableType.
+
 2009-03-25  Klaus Treichel  <ktreichel@web.de>
 
 	* dumpasm/dump_class.c (Dump_PropertyDef): Add output of the constant

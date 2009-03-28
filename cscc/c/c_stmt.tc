@@ -982,71 +982,6 @@ static unsigned long CollectCaseLabels(ILGenInfo *info, ILNode *sections,
 	return size;
 }
 
-/*
- * Determine the type of table to be used for a set of switch cases.
- */
-static ILSwitchTableType SwitchTableType(ILType *switchType,
-										 ILSwitchValue *values,
-										 unsigned long numValues)
-{
-	ILMachineType type;
-	unsigned long range;
-
-	/* Use simple "if" statements for 4 or less cases */
-	if(numValues <= 4)
-	{
-		return ILSwitchTableType_If;
-	}
-
-	/* If the switch type can fit in a 32-bit integer, and the
-	   cases fill up at least 80% of the range, then use an
-	   indexed table for the switch */
-	type = ILTypeToMachineType(switchType);
-	switch(type)
-	{
-		case ILMachineType_Int8:
-		case ILMachineType_UInt8:
-		case ILMachineType_Int16:
-		case ILMachineType_UInt16:
-		case ILMachineType_Char:
-		case ILMachineType_Int32:
-		{
-			range = (unsigned long)(values[numValues - 1].value.un.i4Value -
-									values[0].value.un.i4Value);
-			if(((range * 80) / 100) <= numValues)
-			{
-				return ILSwitchTableType_Indexed;
-			}
-			else
-			{
-				return ILSwitchTableType_Lookup;
-			}
-		}
-		/* Not reached */
-
-		case ILMachineType_UInt32:
-		{
-			range = (unsigned long)
-				(((ILUInt32)(values[numValues - 1].value.un.i4Value)) -
-				 ((ILUInt32)(values[0].value.un.i4Value)));
-			if(((range * 80) / 100) <= numValues)
-			{
-				return ILSwitchTableType_Indexed;
-			}
-			else
-			{
-				return ILSwitchTableType_Lookup;
-			}
-		}
-		/* Not reached */
-
-		default: break;
-	}
-
-	/* If we get here, then we need to use a binary tree of if statements */
-	return ILSwitchTableType_BinaryIf;
-}
-
 %}
 
 /*
@@ -1118,6 +1053,8 @@ ILNode_CSemAnalysis(ILNode_Switch)
 	/* Coerce the expression to the governing type */
 	CCoerceNode(info, node->expr, &(node->expr), value, governType);
 
+	node->switchType = governType;
+
 	/* Enter the switch context */
 	PushStmtContext(info, C_STMT_SWITCH);
 
@@ -1147,8 +1084,7 @@ ILNode_CSemAnalysis(ILNode_Switch)
 											  governType, node->switchValues);
 
 	/* Determine the type of switch table to generate */
-	node->tableType = SwitchTableType(governType, node->switchValues,
-									  node->numSwitchValues);
+	CGSetSwitchTableType(node);
 
 	/* Perform semantic analysis on the switch body */
 	StmtSem(node->body, info, &(node->body), stmtLevel);

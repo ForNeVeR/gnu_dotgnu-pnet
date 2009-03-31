@@ -75,8 +75,11 @@ public sealed class BlockingOperation : IDisposable
 
 	public void Abort()
 			{
-				ThreadSigAbort(thread);
-				thread = null;
+				if( null != thread ) 
+				{
+					ThreadSigAbort(thread);
+					thread = null;
+				}
 			}
 
 }; // class BlockingOperation

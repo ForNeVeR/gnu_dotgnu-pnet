@@ -1,3 +1,8 @@
+2009-03-31  Radek Polak  <psonek2@seznam.cz>
+
+	* runtime/DotGNU/Platform/BlockingOperation.cs: Make the thread variable
+	volatile.
+
 2009-03-31  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/DotGNU/Platform/BlockingOperation.cs: fixed check for null thread.
@@ -12,16 +17,16 @@
 	runtime/System/Threading/ManualResetEvent.cs,
 	runtime/System/Threading/WaitHandle.cs: check if handle is zero before use.
 
-2009-03-08  Radek Polak  <psonek@seznam.cz>
+2009-03-08  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Windows.Forms/StatusBarPanel.cs: Text should be empty in new
 	panels.
 
-2009-03-08  Radek Polak  <psonek@seznam.cz>
+2009-03-08  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Windows.Forms/ListBox.cs: Implement DrawMode property.
 
-2009-03-01  Radek Polak  <psonek@seznam.cz>
+2009-03-01  Radek Polak  <psonek2@seznam.cz>
 
 	* System/Collections/Specialized/ListDictionary.cs: Fix setter for list
 	dictionary.
@@ -31,11 +36,11 @@
 	* System.Windows.Forms/ScrollableControl.cs: fixed autoscroll if controls
 	are removed or added.
 
-2009-03-01  Radek Polak  <psonek@seznam.cz>
+2009-03-01  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/System/Convert.cs: Fix base64 table for '+' character.
 
-2009-03-01  Radek Polak  <psonek@seznam.cz>
+2009-03-01  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Xml/XmlTextWriter.cs: Fix missing separator when writing prefix.
 
@@ -45,11 +50,11 @@
 
 	* System/Net/HttpWebResponse.cs: Don't throw exceptions on TODO method.
 
-2009-02-27  Radek Polak  <psonek@seznam.cz>
+2009-02-27  Radek Polak  <psonek2@seznam.cz>
 
 	* System.Windows.Forms/StatusBar.cs: Draw icon in panel.
 
-2009-02-27  Radek Polak  <psonek@seznam.cz>
+2009-02-27  Radek Polak  <psone2k@seznam.cz>
 
 	* DotGNU.SSL/GNUTLS.cs: Remove IDisposable interface from gnutls_datum.
 	For structs it makes no sence because calls to any interface method will

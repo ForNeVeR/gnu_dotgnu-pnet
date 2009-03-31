@@ -29,7 +29,7 @@ using System.Runtime.CompilerServices;
 public sealed class BlockingOperation : IDisposable
 {
 	// Internal state.
-	private Thread thread;
+	private volatile Thread thread;
 	private BlockingOperation next;
 
 	// Constructor.
@@ -75,10 +75,11 @@ public sealed class BlockingOperation : IDisposable
 
 	public void Abort()
 			{
-				if( null != thread ) 
+				Thread t = thread;
+				if(t != null)
 				{
-					ThreadSigAbort(thread);
 					thread = null;
+					ThreadSigAbort(t);
 				}
 			}
 

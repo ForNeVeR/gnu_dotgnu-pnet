@@ -1140,7 +1140,9 @@ ILBool _IL_WaitEvent_InternalSetEvent(ILExecThread *_thread, ILNativeInt event)
  */
 void _IL_BlockingOperation_ThreadSigAbort(ILExecThread * _thread, ILObject * thread)
 {
-	ILThreadSigAbort(((System_Thread *)thread)->privateData);
+	if( 0 != thread ) {
+		ILThreadSigAbort(((System_Thread *)thread)->privateData);
+	}
 }
 
 #ifdef	__cplusplus

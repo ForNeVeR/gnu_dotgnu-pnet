@@ -1,3 +1,8 @@
+2009-03-31  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* engine/lib_thread.c: check for thread is NULL.
+	* support/thread.c: check for thread or handle is NULL.
+
 2009-03-28  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_stmt.tc (CGSetSwitchTableType): Move the duplicate function

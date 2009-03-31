@@ -638,7 +638,10 @@ int ILThreadSelfAborting()
 void ILThreadSigAbort(ILThread *thread)
 {
 #ifdef IL_USE_PTHREADS
-	pthread_kill(thread->handle, IL_SIG_ABORT);
+	if( 0 != thread && 0 != thread->handle )
+	{
+		pthread_kill(thread->handle, IL_SIG_ABORT);
+	}
 #endif
 }
 

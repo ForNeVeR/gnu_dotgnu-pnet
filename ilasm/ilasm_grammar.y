@@ -3084,7 +3084,12 @@ TypeSpecification
 	| Type								{
 				/* Convert a type into a TypeSpec token of some kind */
 				$$.type = $1;
-				if(ILType_IsClass($1) || ILType_IsValueType($1))
+				if(ILType_IsPrimitive($1))
+				{
+					/* Convert a primitive type to a typedef or typeref */
+					$$.item = ILToProgramItem(ILClassFromType(ILAsmImage, 0, $1, 0));
+				}
+				else if(ILType_IsClass($1) || ILType_IsValueType($1))
 				{
 					/* Simple class reference */
 					$$.item = ILToProgramItem(ILType_ToClass($1));

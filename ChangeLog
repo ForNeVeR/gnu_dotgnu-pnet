@@ -1,3 +1,8 @@
+2009-04-02  Klaus Treichel  <ktreichel@web.de>
+
+	* ilasm/ilasm_grammar.y (TypeSpecification): Convert a primitive type to
+	a typedef or typeref instead of a typespec (Thanks, Ettore Speziale).
+
 2009-03-31  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* engine/lib_thread.c: check for thread is NULL.

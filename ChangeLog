@@ -1,3 +1,7 @@
+2009-04-09  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System/Uri.cs: allow Uri-names starting with digit (patch by Thomas Uxiou).
+
 2009-03-31  Radek Polak  <psonek2@seznam.cz>
 
 	* runtime/DotGNU/Platform/BlockingOperation.cs: Make the thread variable

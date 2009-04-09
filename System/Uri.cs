@@ -335,7 +335,7 @@ public class Uri : MarshalByRefObject
 	{
 		foreach(String tok in name.Split('.'))
 		{
-			if(tok.Length==0 || !Char.IsLetter(tok[0])) return false;
+			if(tok.Length==0 || !Char.IsLetterOrDigit(tok[0])) return false;
 			for(int i=1; i< tok.Length ; i++)
 			{
 				if(!Char.IsLetterOrDigit(tok[i]) && tok[i]!='-' && tok[i]!='_')

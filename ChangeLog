@@ -1,3 +1,7 @@
+2009-04-14  Thomas Uxiou  <t.uxiou@gmail.com>
+
+	* System/Net/HttpWebResponse.cs: Fix chunk extension handling (bug #26179).
+
 2009-04-09  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
 
 	* System/Uri.cs: allow Uri-names starting with digit (patch by Thomas Uxiou).

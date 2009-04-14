@@ -425,7 +425,7 @@ public class HttpWebResponse : WebResponse
 				{
 					throw new IOException("unexpected end of stream");
 				}
-				if(b == 59) // chunk extension, we don't care
+				if(b == 59 || b == 32 || b == 9) // chunk extension, we don't care
 				{
 					append = false;
 				}

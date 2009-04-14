@@ -117,7 +117,7 @@ public class HttpWebResponse : WebResponse
 	}
 	public override void Close()
 	{
-		this.req.Close();
+		this.req.Abort();
 	}
 
 	[TODO]

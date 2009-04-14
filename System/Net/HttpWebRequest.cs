@@ -93,6 +93,11 @@ public class HttpWebRequest : WebRequest
 	[TODO]
 	public override void Abort()
 	{
+		if(outStream!=null) 
+		{
+			outStream.Close();
+			outStream=null;
+		}
 	}
 	
 	public void AddRange(int from, int to)
@@ -216,15 +221,6 @@ public class HttpWebRequest : WebRequest
 			(outStream as HttpStream).ContentLength=response.ContentLength;
 		}
 		return this.response; 
-	}
-
-	public void Close()
-	{
-		if(outStream!=null) 
-		{
-			outStream.Close();
-			outStream=null;
-		}
 	}
 
 /*

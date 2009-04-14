@@ -1,5 +1,12 @@
 2009-04-14  Thomas Uxiou  <t.uxiou@gmail.com>
 
+	* System/Net/HttpWebRequest.cs: Fix api compatibility by replacing Close
+	function with Abort.
+
+	* System/Net/HttpWebResponse.cs: Use Abort instead of Close.
+
+2009-04-14  Thomas Uxiou  <t.uxiou@gmail.com>
+
 	* System/Net/HttpWebResponse.cs: Fix chunk extension handling (bug #26179).
 
 2009-04-09  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>

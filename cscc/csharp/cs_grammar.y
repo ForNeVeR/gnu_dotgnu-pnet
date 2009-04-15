@@ -61,25 +61,6 @@ extern char cs_text[];
 int CSMetadataOnly = 0;
 
 /*
- * some structs requited by the grammar and some helper functions.
- */
-typedef struct _Accessor
-{
-	int			present;	/* 0 if the acessor is not present 1 otherwise */
-	ILUInt32	modifiers;	/* Accessor modifiers */
-	ILNode	   *attributes;	/* Attributes for the acessor */
-	ILNode	   *body;		/* Body of the accessor */
-	char 	   *filename;
-	long		linenum;
-} Accessor;
-
-typedef struct _PropertyAccessors
-{
-	Accessor getAccessor;
-	Accessor setAccessor;
-} PropertyAccessors;
-
-/*
  * Global state used by the parser.
  */
 static unsigned long NestingLevel = 0;
@@ -732,7 +713,7 @@ static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
  * Create the methods needed by a property definition.
  */
 static void CreatePropertyMethods(ILNode_PropertyDeclaration *property,
-								  PropertyAccessors *accessors)
+								  struct PropertyAccessors *accessors)
 {
 	ILNode_MethodDeclaration *decl;
 	ILNode *name;
@@ -1141,9 +1122,8 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 	}					memberHeader;
 	struct ArrayRanks	arrayRanks;
 	struct ArrayType	arrayType;
-	Accessor			accessor;
-	PropertyAccessors 	propertyAccessors;
-
+	struct Accessor		accessor;
+	struct PropertyAccessors	propertyAccessors;
 }
 
 /*

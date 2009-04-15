@@ -7,6 +7,8 @@
 	Change Grammar to allow modifiers for property accessors in classes and
 	structs. Allow attributes in property accessors in interfaces.
 
+	* cscc/csharp/cs_internal.h: Add structs for handling of accessors.
+
 2009-04-02  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_grammar.y (TypeSpecification): Convert a primitive type to

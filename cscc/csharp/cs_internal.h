@@ -65,6 +65,25 @@ struct MemberAccess
 };
 
 /*
+ * Structures for accessors.
+ */
+struct Accessor
+{
+	int			present;	/* 0 if the acessor is not present 1 otherwise */
+	ILUInt32	modifiers;	/* Accessor modifiers */
+	ILNode	   *attributes;	/* Attributes for the acessor */
+	ILNode	   *body;		/* Body of the accessor */
+	char 	   *filename;
+	long		linenum;
+};
+
+struct PropertyAccessors
+{
+	struct Accessor getAccessor;
+	struct Accessor setAccessor;
+};
+
+/*
  * Modifier mask bits.
  */
 #define	CS_MODIFIER_PUBLIC			(1<<0)

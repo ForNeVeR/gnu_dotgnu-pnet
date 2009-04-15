@@ -1,3 +1,12 @@
+2009-04-15  Klaus Treichel  <ktreichel@web.de>
+
+	* cacc/csharp/cs_grammar.y (GetAccessorAttrs): Add function for handling
+	modifiers applied to property accessors.
+	(CreatePropertyMethods): Change handling of property accessor methods.
+	The methods are now allways created here.
+	Change Grammar to allow modifiers for property accessors in classes and
+	structs. Allow attributes in property accessors in interfaces.
+
 2009-04-02  Klaus Treichel  <ktreichel@web.de>
 
 	* ilasm/ilasm_grammar.y (TypeSpecification): Convert a primitive type to

@@ -61,6 +61,25 @@ extern char cs_text[];
 int CSMetadataOnly = 0;
 
 /*
+ * some structs requited by the grammar and some helper functions.
+ */
+typedef struct _Accessor
+{
+	int			present;	/* 0 if the acessor is not present 1 otherwise */
+	ILUInt32	modifiers;	/* Accessor modifiers */
+	ILNode	   *attributes;	/* Attributes for the acessor */
+	ILNode	   *body;		/* Body of the accessor */
+	char 	   *filename;
+	long		linenum;
+} Accessor;
+
+typedef struct _PropertyAccessors
+{
+	Accessor getAccessor;
+	Accessor setAccessor;
+} PropertyAccessors;
+
+/*
  * Global state used by the parser.
  */
 static unsigned long NestingLevel = 0;
@@ -574,6 +593,109 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 }
 
 /*
+ * Mask of valid property accessor modifiers
+ */
+#define CS_PROPERTY_ACCESSOR_MODIFIERS \
+		(CS_MODIFIER_PRIVATE | CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL)
+
+static ILUInt32 GetAccessorAttrs(ILUInt32 propertyAttrs,
+								 ILUInt32 accessorAttrs,
+								 const char *filename,
+								 long linenum)
+{
+	ILUInt32 attrs;
+
+	if(accessorAttrs == 0)
+	{
+		return propertyAttrs;
+	}
+	if((accessorAttrs & ~CS_PROPERTY_ACCESSOR_MODIFIERS) != 0)
+	{
+		CCErrorOnLine(filename, linenum,
+					  "Invalid modifier used for accessor");
+		return propertyAttrs;
+	}
+	if((accessorAttrs & CS_MODIFIER_PRIVATE) != 0)
+	{
+		if((accessorAttrs & CS_MODIFIER_PROTECTED) != 0)
+		{
+			CCErrorOnLine(filename, linenum,
+						  "cannot use both `private' and `protected'");
+		}
+		if((accessorAttrs & CS_MODIFIER_INTERNAL) != 0)
+		{
+			CCErrorOnLine(filename, linenum,
+						  "cannot use both `private' and `internal'");
+		}
+		attrs = IL_META_METHODDEF_PRIVATE;
+	}
+	else
+	{
+		attrs = 0;
+
+		if((accessorAttrs & CS_MODIFIER_PROTECTED) != 0)
+		{
+			if((accessorAttrs & CS_MODIFIER_INTERNAL) != 0)
+			{
+				attrs = IL_META_METHODDEF_FAM_OR_ASSEM;
+			}
+			else
+			{
+				attrs = IL_META_METHODDEF_FAMILY;
+			}
+		}
+		else
+		{
+			attrs = IL_META_METHODDEF_ASSEM;
+		}
+	}
+	/* Now validate the visibility */
+	switch(propertyAttrs & IL_META_FIELDDEF_FIELD_ACCESS_MASK)
+	{
+		case IL_META_FIELDDEF_PUBLIC:
+		{
+			/* OK every accessor modifier is allowed */			
+		}
+		break;
+
+		case IL_META_FIELDDEF_FAM_OR_ASSEM:
+		{
+			if((attrs == IL_META_METHODDEF_ASSEM) ||
+			   (attrs == IL_META_METHODDEF_FAMILY) ||
+			   (attrs == IL_META_METHODDEF_PRIVATE))
+			{
+				/* OK */
+			}
+			else
+			{
+				CCErrorOnLine(filename, linenum,
+						"cannot use `protected' `internal' in this context");
+			}
+		}
+		break;
+
+		case IL_META_FIELDDEF_FAMILY:
+		case IL_META_FIELDDEF_ASSEMBLY:
+		{
+			if(attrs != IL_META_METHODDEF_PRIVATE)
+			{
+				CCErrorOnLine(filename, linenum,
+						"only `private' is allowed in this context");
+			}
+		}
+		break;
+
+		default:
+		{
+			CCErrorOnLine(filename, linenum,
+						"no modifiers are allowed in this context");
+		}
+	}
+	attrs |= (propertyAttrs & ~IL_META_FIELDDEF_FIELD_ACCESS_MASK);
+	return attrs;
+}
+
+/*
  * Adjust the name of a property to include a "get_" or "set_" prefix.
  */
 static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
@@ -609,7 +731,8 @@ static ILNode *AdjustPropertyName(ILNode *name, char *prefix)
 /*
  * Create the methods needed by a property definition.
  */
-static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
+static void CreatePropertyMethods(ILNode_PropertyDeclaration *property,
+								  PropertyAccessors *accessors)
 {
 	ILNode_MethodDeclaration *decl;
 	ILNode *name;
@@ -618,33 +741,36 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 	ILNode *temp;
 
 	/* Create the "get" method */
-	if((property->getsetFlags & 1) != 0)
+	if(accessors->getAccessor.present != 0)
 	{
+		ILUInt32 attrs;
+
 		name = AdjustPropertyName(property->name, "get_");
-		decl = (ILNode_MethodDeclaration *)(property->getAccessor);
-		if(!decl)
-		{
-			/* Abstract interface definition */
-			decl = (ILNode_MethodDeclaration *)
+		attrs = GetAccessorAttrs(property->modifiers,
+								 accessors->getAccessor.modifiers,
+								 accessors->getAccessor.filename,
+								 accessors->getAccessor.linenum);
+		decl = (ILNode_MethodDeclaration *)
 				ILNode_MethodDeclaration_create
-						(0, property->modifiers, property->type,
-						 name, 0, property->params, 0);
-			property->getAccessor = (ILNode *)decl;
-		}
-		else
-		{
-			/* Regular class definition */
-			decl->modifiers = property->modifiers;
-			decl->type = property->type;
-			decl->name = name;
-			decl->params = property->params;
-		}
+						(accessors->getAccessor.attributes,
+						 attrs, property->type,
+						 name, 0, property->params,
+						 accessors->getAccessor.body);
+		yysetfilename(decl, accessors->getAccessor.filename);
+		yysetlinenum(decl, accessors->getAccessor.linenum);
+		property->getAccessor = (ILNode *)decl;
 	}
 
 	/* Create the "set" method */
-	if((property->getsetFlags & 2) != 0)
+	if(accessors->setAccessor.present != 0)
 	{
+		ILUInt32 attrs;
+
 		name = AdjustPropertyName(property->name, "set_");
+		attrs = GetAccessorAttrs(property->modifiers,
+								 accessors->setAccessor.modifiers,
+								 accessors->setAccessor.filename,
+								 accessors->setAccessor.linenum);
 		params = ILNode_List_create();
 		ILNode_ListIter_Init(&iter, property->params);
 		while((temp = ILNode_ListIter_Next(&iter)) != 0)
@@ -654,23 +780,14 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property)
 		ILNode_List_Add(params,
 			ILNode_FormalParameter_create(0, ILParamMod_empty, property->type,
 					ILQualIdentSimple(ILInternString("value", 5).string)));
-		decl = (ILNode_MethodDeclaration *)(property->setAccessor);
-		if(!decl)
-		{
-			/* Abstract interface definition */
-			decl = (ILNode_MethodDeclaration *)
-				ILNode_MethodDeclaration_create
-						(0, property->modifiers, 0, name, 0, params, 0);
-			property->setAccessor = (ILNode *)decl;
-		}
-		else
-		{
-			/* Regular class definition */
-			decl->modifiers = property->modifiers;
-			decl->type = 0;
-			decl->name = name;
-			decl->params = params;
-		}
+		decl = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(accessors->setAccessor.attributes,
+					 attrs, 0, name, 0, params,
+					 accessors->setAccessor.body);
+		yysetfilename(decl, accessors->setAccessor.filename);
+		yysetlinenum(decl, accessors->setAccessor.linenum);
+		property->setAccessor = (ILNode *)decl;
 	}
 }
 
@@ -1024,6 +1141,9 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 	}					memberHeader;
 	struct ArrayRanks	arrayRanks;
 	struct ArrayType	arrayType;
+	Accessor			accessor;
+	PropertyAccessors 	propertyAccessors;
+
 }
 
 /*
@@ -1281,9 +1401,9 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		OptFormalParameterList FormalParameterList FormalParameter
 %type <pmod>		ParameterModifier
 %type <node>		PropertyDeclaration 
-%type <pair>		AccessorBlock AccessorDeclarations
-%type <node>		OptGetAccessorDeclaration GetAccessorDeclaration
-%type <node>		OptSetAccessorDeclaration SetAccessorDeclaration
+%type <propertyAccessors>	AccessorBlock AccessorDeclarations
+%type <accessor>	OptGetAccessorDeclaration GetAccessorDeclaration
+%type <accessor>	OptSetAccessorDeclaration SetAccessorDeclaration
 %type <node>		AccessorBody
 %type <node>		AddAccessorDeclaration RemoveAccessorDeclaration
 %type <node>		IndexerDeclaration
@@ -1295,7 +1415,8 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <node>		InterfaceMemberDeclaration InterfaceMemberDeclarations
 %type <node>		InterfaceMethodDeclaration InterfacePropertyDeclaration
 %type <node>		InterfaceIndexerDeclaration InterfaceEventDeclaration
-%type <mask>		InterfaceAccessors OptNew InterfaceAccessorBody
+%type <propertyAccessors>	InterfaceAccessors InterfaceAccessorBody
+%type <mask>		OptNew
 %type <node>		EnumDeclaration EnumBody OptEnumMemberDeclarations
 %type <node>		EnumMemberDeclarations EnumMemberDeclaration
 %type <node>		EnumBase EnumBaseType
@@ -3846,13 +3967,13 @@ PropertyDeclaration
 				/* Create the property declaration */
 				attrs = CSModifiersToPropertyAttrs($1.type, $1.modifiers);
 				$$ = ILNode_PropertyDeclaration_create($1.attributes,
-								   attrs, $1.type, $1.identifier, 0, $3.item1, $3.item2,
-								   (($3.item1 ? 1 : 0) |
-								    ($3.item2 ? 2 : 0)));
+								   attrs, $1.type, $1.identifier, 0, 0, 0,
+								   (($3.getAccessor.present ? 1 : 0) |
+								    ($3.setAccessor.present ? 2 : 0)));
 				CloneLine($$, $1.identifier);
 
 				/* Create the property method declarations */
-				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$), &($3));
 			}
 	;
 
@@ -3868,49 +3989,83 @@ AccessorBlock
 				/*
 				 * This production recovers from errors in accessor blocks.
 				 */
-				$$.item1 = 0;
-				$$.item2 = 0;
+				$$.getAccessor.present = 0;
+				$$.getAccessor.modifiers = 0;
+				$$.getAccessor.attributes = 0;
+				$$.getAccessor.body = 0;
+				$$.getAccessor.filename = yycurrfilename();
+				$$.getAccessor.linenum = yycurrlinenum();
+				$$.setAccessor.present = 0;
+				$$.setAccessor.modifiers = 0;
+				$$.setAccessor.attributes = 0;
+				$$.setAccessor.body = 0;
+				$$.setAccessor.filename = yycurrfilename();
+				$$.setAccessor.linenum = yycurrlinenum();
 				yyerrok;
 			}
 	;
 
 AccessorDeclarations
 	: GetAccessorDeclaration OptSetAccessorDeclaration		{
-				$$.item1 = $1; 
-				$$.item2 = $2;
+				$$.getAccessor = $1; 
+				$$.setAccessor = $2;
 			}
 	| SetAccessorDeclaration OptGetAccessorDeclaration		{
-				$$.item1 = $2; 
-				$$.item2 = $1;
+				$$.getAccessor = $2; 
+				$$.setAccessor = $1;
 			}
 	;
 
 OptGetAccessorDeclaration
-	: /* empty */				{ $$ = 0; }
+	: /* empty */				{
+				$$.present = 0;
+				$$.modifiers = 0;
+				$$.attributes = 0;
+				$$.body = 0;
+				$$.filename = yycurrfilename();
+				$$.linenum = yycurrlinenum();
+			}
 	| GetAccessorDeclaration	{ $$ = $1;}
 	;
 
 GetAccessorDeclaration
-	: OptAttributes GET AccessorBody {
-				$$ = ILNode_MethodDeclaration_create
-						($1, 0, 0, 0, 0, 0, $3);
+	: OptAttributesAndModifiers GET AccessorBody {
+				$$.present = 1;
+				$$.modifiers = $1.modifiers;
+				$$.attributes = $1.attributes;
+				$$.body = $3;
+				$$.filename = yycurrfilename();
 			#ifdef YYBISON
-				yysetlinenum($$, @2.first_line);
+				$$.linenum = @2.first_line;
+			#else
+				$$.linenum = yycurrlinenum();
 			#endif
 			}
 	;
 
 OptSetAccessorDeclaration
-	: /* empty */				{ $$ = 0; }
+	: /* empty */				{
+				$$.present = 0;
+				$$.modifiers = 0;
+				$$.attributes = 0;
+				$$.body = 0;
+				$$.filename = yycurrfilename();
+				$$.linenum = yycurrlinenum();
+			}
 	| SetAccessorDeclaration	{ $$ = $1; }
 	;
 
 SetAccessorDeclaration
-	: OptAttributes SET AccessorBody {
-				$$ = ILNode_MethodDeclaration_create
-						($1, 0, 0, 0, 0, 0, $3);
+	: OptAttributesAndModifiers SET AccessorBody {
+				$$.present = 1;
+				$$.modifiers = $1.modifiers;
+				$$.attributes = $1.attributes;
+				$$.body = $3;
+				$$.filename = yycurrfilename();
 			#ifdef YYBISON
-				yysetlinenum($$, @2.first_line);
+				$$.linenum = @2.first_line;
+			#else
+				$$.linenum = yycurrlinenum();
 			#endif
 			}
 	;
@@ -4059,13 +4214,13 @@ IndexerDeclaration
 
 				$$ = ILNode_PropertyDeclaration_create($1.attributes,
 								   attrs, $1.type, name, $2.params,
-								   $4.item1, $4.item2,
-								   (($4.item1 ? 1 : 0) |
-								    ($4.item2 ? 2 : 0)));
+								   0, 0,
+								   (($4.getAccessor.present ? 1 : 0) |
+								    ($4.setAccessor.present ? 2 : 0)));
 				CloneLine($$, $2.ident);
 
 				/* Create the property method declarations */
-				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$), &($4));
 			}
 	;
 
@@ -4707,11 +4862,13 @@ InterfacePropertyDeclaration
 								 IL_META_METHODDEF_SPECIAL_NAME |
 								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_PropertyDeclaration_create
-								($1, attrs, $3, $4, 0, 0, 0, $6);
+								($1, attrs, $3, $4, 0, 0, 0,
+								 (($6.getAccessor.present ? 1 : 0) |
+								  ($6.setAccessor.present ? 2 : 0)));
 				CloneLine($$, $4);
 
 				/* Create the property method declarations */
-				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$), &($6));
 			}
 	;
 
@@ -4728,16 +4885,99 @@ InterfaceAccessorBody
 				 * This production recovers from errors in interface
 				 * accessor declarations.
 				 */
-				$$ = 0;
+				$$.getAccessor.present = 0;
+				$$.getAccessor.modifiers = 0;
+				$$.getAccessor.attributes = 0;
+				$$.getAccessor.body = 0;
+				$$.getAccessor.filename = yycurrfilename();
+				$$.getAccessor.linenum = yycurrlinenum();
+				$$.setAccessor.present = 0;
+				$$.setAccessor.modifiers = 0;
+				$$.setAccessor.attributes = 0;
+				$$.setAccessor.body = 0;
+				$$.setAccessor.filename = yycurrfilename();
+				$$.setAccessor.linenum = yycurrlinenum();
 				yyerrok;
 			}
 	;
 
 InterfaceAccessors
-	: GET ';'				{ $$ = 1; }
-	| SET ';'				{ $$ = 2; }
-	| GET ';' SET ';'		{ $$ = 3; }
-	| SET ';' GET ';'		{ $$ = 3; }
+	: OptAttributes GET ';'			{
+				$$.getAccessor.present = 1;
+				$$.getAccessor.modifiers = 0;
+				$$.getAccessor.attributes = $1;
+				$$.getAccessor.body = 0;
+				$$.getAccessor.filename = yycurrfilename();
+				$$.setAccessor.present = 0;
+				$$.setAccessor.modifiers = 0;
+				$$.setAccessor.attributes = 0;
+				$$.setAccessor.body = 0;
+				$$.setAccessor.filename = yycurrfilename();
+			#ifdef YYBISON
+				$$.getAccessor.linenum = @2.first_line;
+				$$.setAccessor.linenum = @2.first_line;
+			#else
+				$$.getAccessor.linenum = yycurrlinenum();
+				$$.setAccessor.linenum = yycurrlinenum();
+			#endif
+			}
+	| OptAttributes SET ';'			{
+				$$.getAccessor.present = 0;
+				$$.getAccessor.modifiers = 0;
+				$$.getAccessor.attributes = 0;
+				$$.getAccessor.body = 0;
+				$$.getAccessor.filename = yycurrfilename();
+				$$.setAccessor.present = 1;
+				$$.setAccessor.modifiers = 0;
+				$$.setAccessor.attributes = $1;
+				$$.setAccessor.body = 0;
+				$$.setAccessor.filename = yycurrfilename();
+			#ifdef YYBISON
+				$$.getAccessor.linenum = @2.first_line;
+				$$.setAccessor.linenum = @2.first_line;
+			#else
+				$$.getAccessor.linenum = yycurrlinenum();
+				$$.setAccessor.linenum = yycurrlinenum();
+			#endif
+			}
+	| OptAttributes GET ';' OptAttributes SET ';'	{
+				$$.getAccessor.present = 1;
+				$$.getAccessor.modifiers = 0;
+				$$.getAccessor.attributes = $1;
+				$$.getAccessor.body = 0;
+				$$.getAccessor.filename = yycurrfilename();
+				$$.setAccessor.present = 1;
+				$$.setAccessor.modifiers = 0;
+				$$.setAccessor.attributes = $4;
+				$$.setAccessor.body = 0;
+				$$.setAccessor.filename = yycurrfilename();
+			#ifdef YYBISON
+				$$.getAccessor.linenum = @2.first_line;
+				$$.setAccessor.linenum = @5.first_line;
+			#else
+				$$.getAccessor.linenum = yycurrlinenum();
+				$$.setAccessor.linenum = yycurrlinenum();
+			#endif
+			}
+	| OptAttributes SET ';' OptAttributes GET ';'	{
+				$$.getAccessor.present = 1;
+				$$.getAccessor.modifiers = 0;
+				$$.getAccessor.attributes = $4;
+				$$.getAccessor.body = 0;
+				$$.getAccessor.filename = yycurrfilename();
+				$$.setAccessor.present = 1;
+				$$.setAccessor.modifiers = 0;
+				$$.setAccessor.attributes = $1;
+				$$.setAccessor.body = 0;
+				$$.setAccessor.filename = yycurrfilename();
+			#ifdef YYBISON
+				$$.getAccessor.linenum = @5.first_line;
+				$$.setAccessor.linenum = @2.first_line;
+			#else
+				$$.getAccessor.linenum = yycurrlinenum();
+				$$.setAccessor.linenum = yycurrlinenum();
+			#endif
+			}
 	;
 
 InterfaceEventDeclaration
@@ -4769,11 +5009,13 @@ InterfaceIndexerDeclaration
 				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1,
 								ILQualIdentSimple(NULL));
 				$$ = ILNode_PropertyDeclaration_create
-								($1, attrs, $3, name, $5, 0, 0, $7);
+								($1, attrs, $3, name, $5, 0, 0,
+								 (($7.getAccessor.present ? 1 : 0) |
+								  ($7.setAccessor.present ? 2 : 0)));
 				CloneLine($$, $3);
 
 				/* Create the property method declarations */
-				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$));
+				CreatePropertyMethods((ILNode_PropertyDeclaration *)($$), &($7));
 			}
 	;
 

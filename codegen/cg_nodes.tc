@@ -991,7 +991,7 @@ struct _tagILSwitchValue
 	const char *name;
 	ILUInt32	constraint;
 	ILNode_List *typeConstraints;
-	%nocreate ILNode *attrs = {0};
+	%nocreate ILNode *attributes = {0};
 	%nocreate ILType *mainType = {0};
 	%nocreate ILGenericPar *genPar = {0};
 	%nocreate ILGenParamTarget target = {ILGenParamTarget_Class};

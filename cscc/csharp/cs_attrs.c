@@ -965,20 +965,20 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 					/* Assembly targets can be applied anywhere */
 					item = (ILProgramItem *)ILAssembly_FromToken
 						(ILProgramItem_Image(item), IL_META_TOKEN_ASSEMBLY | 1);
-					target = CS_ATTR_ASSEMBLY;
+					target = IL_ATTRIBUTE_TARGET_ASSEMBLY;
 				}
 				else if(!strcmp(targetName, "module"))
 				{
 					/* Module targets can be applied anywhere */
 					item = (ILProgramItem *)ILModule_FromToken
 						(ILProgramItem_Image(item), IL_META_TOKEN_MODULE | 1);
-					target = CS_ATTR_MODULE;
+					target = IL_ATTRIBUTE_TARGET_MODULE;
 				}
 				else if(!strcmp(targetName, "field"))
 				{
 					/* Field targets can apply to fields or events */
 					item = GetFieldTarget(info, item);
-					target = CS_ATTR_FIELD;
+					target = IL_ATTRIBUTE_TARGET_FIELD;
 				}
 				else if(!strcmp(targetName, "method"))
 				{
@@ -1001,7 +1001,7 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 						if(numParams == 1)
 						{
 							item = GetParamTarget(info, method, 1);
-							target = CS_ATTR_PARAMETER;
+							target = IL_ATTRIBUTE_TARGET_PARAMETER;
 						}
 						else
 						{
@@ -1094,7 +1094,7 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 						   "in this context"));
 					continue;
 				}
-				target = CS_ATTR_RETURNVALUE;
+				target = IL_ATTRIBUTE_TARGET_RETURNVALUE;
 			}
 			break;
 		}
@@ -1135,7 +1135,7 @@ void CSProcessAttrsForParam(ILGenInfo *info, ILMethod *method,
 	}
 
 	/* Process the attributes for the parameter */
-	return CSProcessAttrs(info, item, attributes, CS_ATTR_PARAMETER);
+	return CSProcessAttrs(info, item, attributes, IL_ATTRIBUTE_TARGET_PARAMETER);
 }
 
 void CSAddDefaultMemberAttr(ILGenInfo *info, ILClass *classInfo,

@@ -1,3 +1,36 @@
+2009-04-16  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_decls.tc (ILGenOutputGenericParamAttributes): Add support
+	function to emit custom attributes arrached to a generic parameter.
+	(ILNode_GenDiscard(ILNode_ClassDefn)): Emit custom attributes attached
+	to generic parameters.
+	(MethodGenDiscard): likewise.
+
+	* codegen/cg_gen.h: Add prototype for ILGenOutputGenericParamAttributes.
+
+	* codegen/cg_nodes.tc (ILNode_GenericTypeParameter): Rename member attrs
+	to attributes for more consistency.
+
+	* cscc/csharp/cs_attrs.c: Change usages of CS_ATTR_* to
+	IL_ATTRIBUTE_TARGET_* to use the defines moved to il_program.h.
+
+	* cscc/csharp/cs_decls.tc:  Change usages of CS_ATTR_* to
+	IL_ATTRIBUTE_TARGET_* to use the defines moved to il_program.h.
+	(ILNode_SemAnalysis(ILNode_ClassDefn)): Perform semantic analysis of the
+	generic type parameters later in the process and set the context propperly.
+	(ILNode_SemAnalysis(ILNode_GenericTypeParameter)): Process the custom
+	attributes attached to the generic parameter.
+
+	* cscc/csharp/cs_gather.c (_AddTypeFormalWithCheck): Store the generic
+	parameter created in the ILNode_GenericTypeParameter.
+
+	* cscc/csharp/cs_internal.h: Remove the CS_ATTR_* definitions.
+
+	* cscc/csharp/cs_grammar.y: Allow and handle custom attributes in
+	TypeFormals.
+
+	* include/il_program.h: Add definition of the attribute targets.
+
 2009-04-15  Klaus Treichel  <ktreichel@web.de>
 
 	* cacc/csharp/cs_grammar.y (GetAccessorAttrs): Add function for handling

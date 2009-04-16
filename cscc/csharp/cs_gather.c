@@ -227,6 +227,7 @@ static void _AddTypeFormalWithCheck(ILGenInfo *info,
 		CCOutOfMemory();
 	}
 	ILGenericParSetFlags(genPar, IL_MAX_UINT32, genParam->constraint);
+	genParam->genPar = genPar;
 
 	/* Check for duplicate names */
 	for(current = 0; current < offset; current++)

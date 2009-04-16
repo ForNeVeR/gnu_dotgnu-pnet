@@ -132,14 +132,6 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	}
 	node->visited = ILVisitMode_Processing;
 
-#if IL_VERSION_MAJOR > 1
-	/* perform the semantic analysis for the generic type parameters */
-	if(node->typeFormals)
-	{
-		ILNode_SemAnalysis(node->typeFormals, info, &(node->typeFormals));
-	}
-#endif /* IL_VERSION_MAJOR > 1 */
-
 	/* Process the attributes for the class */
 	if(node->defaultMemberName)
 	{
@@ -147,23 +139,23 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	}
 	if(ILClass_IsInterface(node->classInfo))
 	{
-		target = CS_ATTR_INTERFACE;
+		target = IL_ATTRIBUTE_TARGET_INTERFACE;
 	}
 	else if(ILTypeIsEnum(ILType_FromValueType(node->classInfo)))
 	{
-		target = CS_ATTR_ENUM;
+		target = IL_ATTRIBUTE_TARGET_ENUM;
 	}
 	else if(ILTypeIsDelegate(ILType_FromClass(node->classInfo)))
 	{
-		target = CS_ATTR_DELEGATE;
+		target = IL_ATTRIBUTE_TARGET_DELEGATE;
 	}
 	else if(ILClassIsValueType(node->classInfo))
 	{
-		target = CS_ATTR_STRUCT;
+		target = IL_ATTRIBUTE_TARGET_STRUCT;
 	}
 	else
 	{
-		target = CS_ATTR_CLASS;
+		target = IL_ATTRIBUTE_TARGET_CLASS;
 	}
 	if(node->attributes)
 	{
@@ -179,6 +171,23 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentNamespace = savedNamespace;
 		info->currentMethod = savedMethod;
 	}
+
+#if IL_VERSION_MAJOR > 1
+	/* perform the semantic analysis for the generic type parameters */
+	if(node->typeFormals)
+	{
+		savedClass = info->currentClass;
+		savedNamespace = info->currentNamespace;
+		savedMethod = info->currentMethod;
+		info->currentClass = (ILNode *)node;
+		info->currentNamespace = node->namespaceNode;
+		info->currentMethod = NULL;
+		ILNode_SemAnalysis(node->typeFormals, info, &(node->typeFormals));
+		info->currentClass = savedClass;
+		info->currentNamespace = savedNamespace;
+		info->currentMethod = savedMethod;
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* Perform semantic analysis on the node */
 	hadStaticCtorsBefore = (node->staticCtors != 0);
@@ -751,7 +760,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	if(node->owner && node->fieldInfo)
 	{
 		CSProcessAttrs(info, ILToProgramItem(node->fieldInfo),
-					   node->owner->attributes, CS_ATTR_FIELD);
+					   node->owner->attributes, IL_ATTRIBUTE_TARGET_FIELD);
 
 		/* Reset the attributes, in case there are multiple fields */
 		/* TODO: handle attrs for multiple fields in the same declaration */
@@ -908,7 +917,7 @@ ILNode_SemAnalysis(ILNode_EventDeclarator)
 	if(node->backLink)
 	{
 		CSProcessAttrs(info, ILToProgramItem(node->eventInfo),
-					   node->backLink->attributes, CS_ATTR_EVENT);
+					   node->backLink->attributes, IL_ATTRIBUTE_TARGET_EVENT);
 
 		/* Reset the attributes, in case there are multiple events */
 		/* TODO: handle attrs for multiple events in the same declaration */
@@ -968,7 +977,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	   ILMethod_IsStaticConstructor(node->methodInfo))
 	{
 		CSProcessAttrs(info, ILToProgramItem(node->methodInfo),
-					   node->attributes, CS_ATTR_CONSTRUCTOR);
+					   node->attributes, IL_ATTRIBUTE_TARGET_CONSTRUCTOR);
 
 		if (ILClassIsValueType(((ILNode_ClassDefn *)info->currentClass)->classInfo)
 										&& ILMethod_IsConstructor(node->methodInfo))
@@ -987,7 +996,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	else
 	{
 		CSProcessAttrs(info, ILToProgramItem(node->methodInfo),
-					   node->attributes, CS_ATTR_METHOD);
+					   node->attributes, IL_ATTRIBUTE_TARGET_METHOD);
 	}
 
 	/* Record the current method that we are in */
@@ -1181,7 +1190,7 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 
 	/* Process attributes on the property */
 	CSProcessAttrs(info, ILToProgramItem(node->propertyInfo),
-				   node->attributes, CS_ATTR_PROPERTY);
+				   node->attributes, IL_ATTRIBUTE_TARGET_PROPERTY);
 
 	/* Enter an unsafe context for the property if necessary */
 	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
@@ -1239,7 +1248,7 @@ ILNode_SemAnalysis(ILNode_EnumMemberDeclaration)
 
 	/* Process attributes on the enumerated value */
 	CSProcessAttrs(info, ILToProgramItem(node->fieldInfo),
-				   node->attributes, CS_ATTR_FIELD);
+				   node->attributes, IL_ATTRIBUTE_TARGET_FIELD);
 
 	/* Determine the type of the enumeration */
 	type = ILClassToType(defn->classInfo);
@@ -1437,7 +1446,7 @@ ILNode_SemAnalysis(ILNode_StandaloneAttr)
 	/* Perform semantic analysis on the attribute, relative to an assembly */
 	item = (ILProgramItem *)ILAssembly_FromToken
 				(CCCodeGen.image, IL_META_TOKEN_ASSEMBLY | 1);
-	CSProcessAttrs(info, item, node->attributes, CS_ATTR_ASSEMBLY);
+	CSProcessAttrs(info, item, node->attributes, IL_ATTRIBUTE_TARGET_ASSEMBLY);
 
 	/* Restore the previous context */
 	info->currentClass = savedClass;
@@ -1495,6 +1504,10 @@ ILNode_SemAnalysis(ILNode_GenericTypeParameter)
 				constraintClass = ILClassImport(info->image, constraintClass);
 			}
 		}
+		/* Process attributes on the generic type parameter */
+		CSProcessAttrs(info, ILToProgramItem(node->genPar),
+					   node->attributes, IL_ATTRIBUTE_TARGET_GENERICPAR);
+
 		node->visited = ILVisitMode_Done;
 	}
 #endif /* IL_VERSION_MAJOR > 1 */

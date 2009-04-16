@@ -193,6 +193,26 @@ ILProgramItem *ILProgramItemFromType(ILImage *image, ILType *type);
 										(ILAttribute *)0) != 0)
 
 /*
+ * Values for the attribute target
+ * They must be kept in sync with the System.AttributeTargets enumeration.
+ */
+#define IL_ATTRIBUTE_TARGET_ASSEMBLY		0x00000001
+#define IL_ATTRIBUTE_TARGET_MODULE			0x00000002
+#define IL_ATTRIBUTE_TARGET_CLASS			0x00000004
+#define IL_ATTRIBUTE_TARGET_STRUCT			0x00000008
+#define IL_ATTRIBUTE_TARGET_ENUM			0x00000010
+#define IL_ATTRIBUTE_TARGET_CONSTRUCTOR		0x00000020
+#define IL_ATTRIBUTE_TARGET_METHOD			0x00000040
+#define IL_ATTRIBUTE_TARGET_PROPERTY		0x00000080
+#define IL_ATTRIBUTE_TARGET_FIELD			0x00000100
+#define IL_ATTRIBUTE_TARGET_EVENT			0x00000200
+#define IL_ATTRIBUTE_TARGET_INTERFACE		0x00000400
+#define IL_ATTRIBUTE_TARGET_PARAMETER		0x00000800
+#define IL_ATTRIBUTE_TARGET_DELEGATE		0x00001000
+#define IL_ATTRIBUTE_TARGET_RETURNVALUE		0x00002000
+#define IL_ATTRIBUTE_TARGET_GENERICPAR		0x00004000
+
+/*
  * Create a custom attribute within a specific image.
  * Returns NULL if out of memory.
  */

@@ -340,6 +340,12 @@ void ILGenDumpILLocals(ILGenInfo *info, ILType *localVarSig);
  */
 void ILGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item);
 
+/*
+ * Output the attributes attached to generic parameters of a program item.
+ */
+void ILGenOutputGenericParamAttributes(ILGenInfo *info, FILE *stream,
+									   ILProgramItem *item);
+
 #ifdef	__cplusplus
 };
 #endif

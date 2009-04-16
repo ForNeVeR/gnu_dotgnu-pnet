@@ -3476,22 +3476,27 @@ TypeFormals
 	;
 
 TypeFormalList
-	: IDENTIFIER					{
+	: OptAttributes IDENTIFIER					{
+				ILNode *node;
+				ILNode_GenericTypeParameter *genPar;
+				node = ILNode_GenericTypeParameter_create(0, $2, 0, 0);
+				genPar = (ILNode_GenericTypeParameter *)node;
+				/* Set the custom attributes attached to the generic parameter */
+				genPar->attributes = $1;
 				$$.count = 1;
-				$$.list = (ILNode_List *)MakeList(0,
-						(ILNode *)ILNode_GenericTypeParameter_create(0,
-													 $1,
-													 0, 0));
+				$$.list = (ILNode_List *)MakeList(0, node);
 			}
-	| TypeFormalList ',' IDENTIFIER	{
+	| TypeFormalList ',' OptAttributes IDENTIFIER	{
 				/* Check for duplicates in the list */
-				const char *name = $3;
+				const char *name = $4;
 				ILNode_ListIter iter;
-				ILNode_GenericTypeParameter *node;
+				ILNode *node;
+				ILNode_GenericTypeParameter *genPar;
 				ILNode_ListIter_Init(&iter, $1.list);
-				while((node = (ILNode_GenericTypeParameter *)ILNode_ListIter_Next(&iter)) != 0)
+				while((node = ILNode_ListIter_Next(&iter)) != 0)
 				{
-					if(!strcmp(node->name, name))
+					genPar = (ILNode_GenericTypeParameter *)node;
+					if(!strcmp(genPar->name, name))
 					{
 						CCErrorOnLine(yygetfilename($1.list), yygetlinenum($1.list),
 						  "`%s' declared multiple times in generic parameters",
@@ -3501,10 +3506,12 @@ TypeFormalList
 				}
 
 				/* Add the generic parameter to the list */
-				$$.list = (ILNode_List *)MakeList((ILNode *)($1.list),
-						(ILNode *)ILNode_GenericTypeParameter_create($1.count,
-																	 name,
-																	 0, 0));
+				node = ILNode_GenericTypeParameter_create($1.count, name,
+														  0, 0);
+				/* Set the custom attributes attached to the generic parameter */
+				genPar = (ILNode_GenericTypeParameter *)node;
+				genPar->attributes = $3;
+				$$.list = (ILNode_List *)MakeList((ILNode *)($1.list), node);
 				$$.count = $1.count + 1;
 			}
 	;

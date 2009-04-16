@@ -106,6 +106,27 @@ void ILGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 }
 
 /*
+ * Output the attributes attached to generic parameters of a program item.
+ */
+void ILGenOutputGenericParamAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
+{
+	ILUInt32 numGenericParams = ILGenericParGetNumParams(item);
+	ILUInt32 current = 0;
+
+	for(current = 0; current < numGenericParams; current++)
+	{
+		ILGenericPar *genPar = ILGenericParGetFromOwner(item, current);
+
+		/* Check if the generic parameter has any attributes */
+		if(ILProgramItemNextAttribute(ILToProgramItem(genPar), 0) != 0)
+		{
+			fprintf(stream, ".param type [%X]\n", current + 1);
+			ILGenOutputAttributes(info, stream, ILToProgramItem(genPar));
+		}
+	}
+}
+
+/*
  * Determine if a class has no instance fields.
  */
 static int ClassIsEmpty(ILClass *classInfo)
@@ -219,6 +240,12 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 		/* Output the attributes that are attached to the class */
 		ILGenOutputAttributes
 			(info, info->asmOutput, (ILProgramItem *)classInfo);
+
+	#if IL_VERSION_MAJOR > 1
+		/* Output the attributes attached to generic parameters of the class */
+		ILGenOutputGenericParamAttributes
+			(info, info->asmOutput, (ILProgramItem *)classInfo);
+	#endif /* IL_VERSION_MAJOR > 1 */
 
 		/* Output the class layout information */
 		if(layout)
@@ -808,6 +835,12 @@ static void MethodGenDiscard(ILGenInfo *info, FILE *outstream,
 	/* Output the attributes that are attached to the field */
 	ILGenOutputAttributes(info, outstream, (ILProgramItem *)method);
 
+#if IL_VERSION_MAJOR > 1
+	/* Output the attributes attached to generic parameters of the method */
+	ILGenOutputGenericParamAttributes(info, outstream,
+									  (ILProgramItem *)method);
+#endif /* IL_VERSION_MAJOR > 1 */
+
 	/* Output the attributes that are attached to the parameters */
 	param = 0;
 	while((param = ILMethodNextParam(method, param)) != 0)
@@ -1112,7 +1145,7 @@ ILNode_GenDiscard(ILNode_GenericTypeParameter)
 #if IL_VERSION_MAJOR > 1
 	if (info->asmOutput)
 	{
-		if(node->attrs)
+		if(node->attributes)
 		{
 			if(node->target == ILGenParamTarget_Class)
 			{

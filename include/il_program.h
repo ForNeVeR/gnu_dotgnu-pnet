@@ -257,6 +257,34 @@ int ILAttributeSetValue(ILAttribute *attr, const void *blob,
 const void *ILAttributeGetValue(ILAttribute *attr, unsigned long *len);
 
 /*
+ * Opaque type for accessing the attribute usage attribute.
+ */
+typedef struct _tagILAttributeUsageAttribute ILAttributeUsageAttribute;
+
+/*
+ * Find an Attribute class and retrieve the usage information.
+ * Returns 0 if the attribute could not be found.
+ */
+ILClass *ILFindCustomAttribute(ILContext *context, const char *name,
+							   const char *namespace,
+							   ILAttributeUsageAttribute **usage);
+
+/*
+ * Get the attribute usage information for a custom attribute.
+ * If there is no attribute usage available for the attribute a default
+ * usage will be created.
+ * Returns 0 if attribute is 0.
+ */
+ILAttributeUsageAttribute *ILClassGetAttributeUsage(ILClass *attribute);
+
+/*
+ * Access the members of the attribute usage.
+ */
+ILUInt32 ILAttributeUsageAttributeGetValidOn(ILAttributeUsageAttribute *usage);
+ILBool ILAttributeUsageAttributeGetAllowMultiple(ILAttributeUsageAttribute *usage);
+ILBool ILAttributeUsageAttributeGetInherited(ILAttributeUsageAttribute *usage);
+
+/*
  * Helper macros for querying information about an attribute.
  */
 #define	ILAttribute_FromToken(image,token)	\

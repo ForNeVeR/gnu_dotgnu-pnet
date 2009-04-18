@@ -165,13 +165,60 @@ void _ILAssemblySetHashIndex(ILAssembly *assem, ILUInt32 index);
  * Extension information that is only present in some circumstances
  * (e.g. Java classes).
  */
-typedef struct _tagILClassExt ILClassExt;
+
+#define _IL_EXT_JAVA_CONSTPOOL		1
+#define _IL_EXT_CIL_CUSTOMATTR		2
+
 typedef struct _tagJavaConstEntry JavaConstEntry;
+typedef struct _tagJavaConstPool JavaConstPool;
+struct _tagJavaConstPool
+{
+	ILUInt32		size;				/* Java constant pool size */
+	JavaConstEntry *entries;			/* Constant pool entries */
+};
+
+struct _tagILAttributeUsageAttribute
+{
+	ILUInt32	validOn;
+	ILBool		inherited;
+	ILBool		allowMultiple;
+};
+
+typedef struct _tagILCustomAttribute ILCustomAttribute;
+struct _tagILCustomAttribute
+{
+	ILClass		   *attributeClass;
+	union
+	{
+		struct _tagILAttributeUsageAttribute attributeUsage;
+	} un;
+};
+
+typedef struct _tagILClassExt ILClassExt;
 struct _tagILClassExt
 {
-	ILUInt32		constPoolSize;		/* Java constant pool size */
-	JavaConstEntry *constPool;			/* Constant pool entries */
+	ILUInt32		kind;				/* Kind of the class extension */
+	ILClassExt	   *next;				/* Next entry in the linked list */
+	union
+	{
+		JavaConstPool		javaConstPool;
+		ILCustomAttribute	customAttribute;
+	} un;
 };
+
+/*
+ * Allocate a class extension block and attach it to the class given.
+ * Returns 0 if out of memory.
+ */
+ILClassExt *_ILClassExtCreate(ILClass *info, ILUInt32 kind);
+
+/*
+ * Get the first class extension block of the given kind attached to the
+ * class.
+ * Returns 0 if there is no class extenstion block of the given kind is
+ * attached to the class.
+ */
+ILClassExt *_ILClassExtFind(ILClass *info, ILUInt32 kind);
 
 /* 
  * list of java method code 
@@ -852,6 +899,8 @@ void _ILMethodSpecSetTypeIndex(ILMethodSpec *spec, ILUInt32 index);
 	        (((item)->token & IL_META_TOKEN_MASK) == IL_META_TOKEN_MODULE_REF)) ? \
 			(item) : 0)
 
+#define _ILToProgramItem(x)	(&((x)->programItem))
+
 /*
  * Internal macros for accessing members in external opaque types
  */
@@ -859,6 +908,16 @@ void _ILMethodSpecSetTypeIndex(ILMethodSpec *spec, ILUInt32 index);
 #define _ILClass_Implements(info)	((info)->implements)
 #define _ILImplements_NextImplements(impl)	((impl)->nextInterface)
 #define _ILTypeSpec_Type(spec)	((spec)->type)
+#define _ILMember_Owner(member)	((member)->owner)
+#define _ILMethod_Owner(method)	((method)->member.owner)
+
+/*
+ * Misc internal macros
+ */
+#define _ILClass_IsInterface(info)	\
+			(((info)->attributes & IL_META_TYPEDEF_CLASS_SEMANTICS_MASK) \
+					== IL_META_TYPEDEF_INTERFACE)
+
 
 #ifdef	__cplusplus
 };

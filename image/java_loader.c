@@ -866,6 +866,7 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 	unsigned char floatBuf[8];
 	ILClass *classInfo;
 	ILClass *otherClass;
+	ILClassExt *ext;
 	int error = 0;
 
 	/* Skip the 8 bytes of header, which we have already parsed */
@@ -1303,13 +1304,13 @@ static int LoadJavaClass(ILImage *image, JavaReader *reader, int flags)
 	}
 
 	/* Attach the constant pool to the class */
-	if((classInfo->ext = ILMemStackAlloc(&(image->memStack), ILClassExt)) == 0)
+	if((ext = _ILClassExtCreate(classInfo, _IL_EXT_JAVA_CONSTPOOL)) == 0)
 	{
 		error = IL_LOADERR_MEMORY;
 		goto cleanup;
 	}
-	classInfo->ext->constPoolSize = constPoolEntries;
-	classInfo->ext->constPool = constPool;
+	ext->un.javaConstPool.size = constPoolEntries;
+	ext->un.javaConstPool.entries = constPool;
 
 	/* Clean up and exit */
 cleanup:
@@ -1498,6 +1499,35 @@ static int LoadJarClasses(ILImage *image, int flags,
 	return 0;
 }
 
+/*
+ * Get the java cost pool attached to a class.
+ * Returns o if there is no java const pool attached to the class.
+ */
+static JavaConstPool *JavaGetConstPool(ILClass *info)
+{
+	ILClassExt *ext;
+
+	if((ext = _ILClassExtFind(info, _IL_EXT_JAVA_CONSTPOOL)) != 0)
+	{
+		return &(ext->un.javaConstPool);
+	}
+	return 0;
+}
+
+static JavaConstEntry *JavaGetConstEntry(ILClass *info, ILUInt32 index)
+{
+	ILClassExt *ext;
+	
+	if((ext = _ILClassExtFind(info, _IL_EXT_JAVA_CONSTPOOL)) != 0)
+	{
+		if(ext->un.javaConstPool.size > index)
+		{
+			return &(ext->un.javaConstPool.entries[index]);
+		}
+	}
+	return 0;
+}
+
 int _ILImageJavaLoad(FILE *file, const char *filename, ILContext *context,
 					 ILImage **image, int flags, char *buffer)
 {
@@ -1616,84 +1646,128 @@ int _ILImageJavaLoad(FILE *file, const char *filename, ILContext *context,
 
 int ILJavaGetConstType(ILClass *info, ILUInt32 index)
 {
-	if(info && info->ext && index < info->ext->constPoolSize)
+	if(info)
 	{
-		return info->ext->constPool[index].type;
+		JavaConstEntry *entry;
+		
+		entry = JavaGetConstEntry(info, index);
+		if(entry)
+		{
+			return entry->type;
+		}
 	}
 	return 0;
 }
 
 const char *ILJavaGetUTF8String(ILClass *info, ILUInt32 index, ILUInt32 *len)
 {
-	if(ILJavaGetConstType(info, index) != JAVA_CONST_UTF8)
+	JavaConstEntry *entry;
+
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
 	{
 		return 0;
 	}
-	*len = info->ext->constPool[index].length;
-	return info->ext->constPool[index].un.utf8String;
+	if(entry->type != JAVA_CONST_UTF8)
+	{
+		return 0;
+	}
+	*len = entry->length;
+	return entry->un.utf8String;
 }
 
 const char *ILJavaGetString(ILClass *info, ILUInt32 index, ILUInt32 *len)
 {
-	if(ILJavaGetConstType(info, index) != JAVA_CONST_STRING)
+	JavaConstEntry *entry;
+
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
 	{
 		return 0;
 	}
-	index = info->ext->constPool[index].un.strValue;
+	if(entry->type != JAVA_CONST_STRING)
+	{
+		return 0;
+	}
+	index = entry->un.strValue;
 	return ILJavaGetUTF8String(info, index, len);
 }
 
 int ILJavaGetInteger(ILClass *info, ILUInt32 index, ILInt32 *value)
 {
-	if(ILJavaGetConstType(info, index) != JAVA_CONST_INTEGER)
+	JavaConstEntry *entry;
+
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
 	{
 		return 0;
 	}
-	*value = info->ext->constPool[index].un.intValue;
+	if(entry->type != JAVA_CONST_INTEGER)
+	{
+		return 0;
+	}
+	*value = entry->un.intValue;
 	return 1;
 }
 
 int ILJavaGetLong(ILClass *info, ILUInt32 index, ILInt64 *value)
 {
-	if(ILJavaGetConstType(info, index) != JAVA_CONST_LONG)
+	JavaConstEntry *entry;
+
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
 	{
 		return 0;
 	}
-	*value = info->ext->constPool[index].un.longValue;
+	if(entry->type != JAVA_CONST_LONG)
+	{
+		return 0;
+	}
+	*value = entry->un.longValue;
 	return 1;
 }
 
 int ILJavaGetFloat(ILClass *info, ILUInt32 index, ILFloat *value)
 {
-	if(ILJavaGetConstType(info, index) != JAVA_CONST_FLOAT)
+	JavaConstEntry *entry;
+
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
 	{
 		return 0;
 	}
-	*value = info->ext->constPool[index].un.floatValue;
+	if(entry->type != JAVA_CONST_FLOAT)
+	{
+		return 0;
+	}
+	*value = entry->un.floatValue;
 	return 1;
 }
 
 int ILJavaGetDouble(ILClass *info, ILUInt32 index, ILDouble *value)
 {
-	if(ILJavaGetConstType(info, index) != JAVA_CONST_DOUBLE)
+	JavaConstEntry *entry;
+
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
 	{
 		return 0;
 	}
-	*value = info->ext->constPool[index].un.doubleValue;
+	if(entry->type != JAVA_CONST_DOUBLE)
+	{
+		return 0;
+	}
+	*value = entry->un.doubleValue;
 	return 1;
 }
 
 ILClass *ILJavaGetClass(ILClass *info, ILUInt32 index, int refOnly)
 {
+	JavaConstPool *constPool;
 	ILClass *classInfo;
 	int error;
-	if(!info || !(info->ext))
+	
+	if(!info || (constPool = JavaGetConstPool(info)) == 0)
 	{
 		return 0;
 	}
 	classInfo = ResolveJavaClass(info->programItem.image,
-								 info->ext->constPool,
-								 info->ext->constPoolSize,
+								 constPool->entries,
+								 constPool->size,
 								 index, &error,
 								 (refOnly ? IL_LOADFLAG_NO_RESOLVE : 0));
 	if(classInfo && !refOnly && ILClassIsRef(classInfo))
@@ -1711,7 +1785,11 @@ static int JavaGetNameAndType(ILClass *info, ILUInt32 index,
 							  const char **type, ILUInt32 *typeLen)
 {
 	JavaConstEntry *entry;
-	entry = &(info->ext->constPool[index]);
+
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
+	{
+		return 0;
+	}
 	*name = ILJavaGetUTF8String(info, entry->un.nameAndType.name, nameLen);
 	*type = ILJavaGetUTF8String(info, entry->un.nameAndType.type, typeLen);
 	return (*name != 0 && *type != 0);
@@ -2250,12 +2328,16 @@ ILMethod *ILJavaGetMethod(ILClass *info, ILUInt32 index,
 	char *nameCopy;
 
 	/* Make sure that the entry is of an appropriate type */
-	if((entryType = ILJavaGetConstType(info, index)) != JAVA_CONST_METHODREF &&
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
+	{
+		return 0;
+	}
+	entryType = entry->type;
+	if(entryType != JAVA_CONST_METHODREF &&
 	   entryType != JAVA_CONST_INTERFACEMETHODREF)
 	{
 		return 0;
 	}
-	entry = &(info->ext->constPool[index]);
 
 	/* Resolve the reference if necessary */
 	if(!(entry->un.refValue.item))
@@ -2345,11 +2427,14 @@ ILField *ILJavaGetField(ILClass *info, ILUInt32 index,
 	ILUInt32 typeLen;
 
 	/* Make sure that the entry is of an appropriate type */
-	if(ILJavaGetConstType(info, index) != JAVA_CONST_FIELDREF)
+	if(!info || (entry = JavaGetConstEntry(info, index)) == 0)
 	{
 		return 0;
 	}
-	entry = &(info->ext->constPool[index]);
+	if(entry->type != JAVA_CONST_FIELDREF)
+	{
+		return 0;
+	}
 
 	/* Resolve the reference if necessary */
 	if(!(entry->un.refValue.item))

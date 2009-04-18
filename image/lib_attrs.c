@@ -1365,8 +1365,8 @@ static int ConvertAttribute(ILProgramItem *item, ILAttribute *attr)
 	{
 		return 0;
 	}
-	name = ILClass_Name(ILMethod_Owner(ctor));
-	namespace = ILClass_Namespace(ILMethod_Owner(ctor));
+	name = ILClass_Name(_ILMethod_Owner(ctor));
+	namespace = ILClass_Namespace(_ILMethod_Owner(ctor));
 	if(!namespace)
 	{
 		return 0;
@@ -1448,6 +1448,270 @@ int ILProgramItemConvertAttrs(ILProgramItem *item)
 		}
 	}
 	return 1;
+}
+
+/*
+ * Deserialize a System.AttributeUsageAttribute.
+ * Returns 1 on success and 0 on error.
+ */
+static int DeSerializeAttributeUsage(ILAttributeUsageAttribute *usage,
+									 ILSerializeReader *reader)
+{
+	int type;
+	int numExtra;
+	const char *paramName;
+	int paramNameLen;
+	ILMember *member;
+
+	/* Get the first parameter, which should be int32 */
+	type = ILSerializeReaderGetParamType(reader);
+	if(type != IL_META_SERIALTYPE_I4)
+	{
+		return 0;
+	}
+	usage->validOn = (ILUInt32)(ILSerializeReaderGetInt32(reader, type));
+	/* There MUST not be a second ctor argument */
+	if(ILSerializeReaderGetParamType(reader) != 0)
+	{
+		return 0;
+	}
+	numExtra = ILSerializeReaderGetNumExtra(reader);
+	if(numExtra < 0)
+	{
+		return 0;
+	}
+	while(numExtra > 0)
+	{
+		type = ILSerializeReaderGetExtra(reader, &member, &paramName,
+										 &paramNameLen);
+		if(type == -1)
+		{
+			return 0;
+		}
+		if(IsParam("AllowMultiple", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			usage->allowMultiple = (ILSerializeReaderGetInt32(reader, type) != 0);
+		}
+		else if(IsParam("Inherited", IL_META_SERIALTYPE_BOOLEAN))
+		{
+			usage->inherited = (ILSerializeReaderGetInt32(reader, type) != 0);
+		}
+		else
+		{
+			/* Unknown property */
+			return 0;
+		}
+
+		--numExtra;
+	}
+	return 1;
+}
+
+/*
+ * Search for cached attribute information for the class.
+ * Returns 0 if there is no cached attributeClass information is found.
+ */
+static ILCustomAttribute *FindCachedCustomAttribute(ILClass *info,
+													ILClass *attributeClass)
+{
+
+	ILClassExt *ext;
+	
+	ext = _ILClassExtFind(info, _IL_EXT_CIL_CUSTOMATTR);
+	while(ext)
+	{
+		if(ext->kind == _IL_EXT_CIL_CUSTOMATTR)
+		{
+			if(ext->un.customAttribute.attributeClass == attributeClass)
+			{
+				return &(ext->un.customAttribute);
+			}
+		}
+		ext = ext->next;
+	}
+	/*
+	 *  If we get here no cached information for the custom attribute was
+	 * found
+	 */
+	return 0;
+}
+
+/*
+ * Look for a custom attribute attached to the class.
+ * Returns 0 if an attribute of this kind is not attached to the class.
+ */
+static ILAttribute *FindCustomAttribute(ILClass *info,
+										ILClass *attributeClass)
+{
+	ILAttribute *attr;
+	ILProgramItem *item;
+
+	item = _ILToProgramItem(info);
+	attr = 0;
+	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
+	{
+		ILMethod *ctor;
+
+		ctor = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+		if(ctor)
+		{
+			ILClass *currentAttrClass;
+			
+			currentAttrClass = _ILMethod_Owner(ctor);
+			currentAttrClass = ILClassResolve(currentAttrClass);
+			if(currentAttrClass == attributeClass)
+			{
+				return attr;
+			}
+		}
+		attr = ILProgramItemNextAttribute(item, attr);
+	}
+	/*
+	 * If we get here the class as no attributeClass custopm attribute.
+	 */
+	return 0;
+}
+
+static ILAttributeUsageAttribute *GetAttributeUsage(ILClass *attribute)
+{
+	ILClass *attributeUsage;
+
+	attributeUsage = ILFindCustomAttribute(attribute->programItem.image->context,
+										   "AttributeUsageAttribute", "System", 0);
+
+	if(attributeUsage)
+	{
+		ILCustomAttribute *customAttr;
+		
+		/* First look for a cached attribute */
+		customAttr = FindCachedCustomAttribute(attribute, attributeUsage);
+		if(customAttr)
+		{
+			return &(customAttr->un.attributeUsage);
+		}
+		else
+		{
+			/* Try it the hard way */
+			ILClassExt *ext;
+			ILAttribute *attr;
+			ILAttributeUsageAttribute *usage;
+
+			ext = _ILClassExtCreate(attribute, _IL_EXT_CIL_CUSTOMATTR);
+			if(!ext)
+			{
+				/* Out of memory */
+				return 0;
+			}
+			ext->un.customAttribute.attributeClass = attributeUsage;
+			usage = &(ext->un.customAttribute.un.attributeUsage);
+			/* Set the defaults */
+			/* See ECMA Version 4 paragraph 10.6 */
+#if IL_VERSION_MAJOR > 1
+			usage->validOn = 0X7FFF;
+#else
+			usage->validOn = 0X3FFF;
+#endif
+			usage->allowMultiple = (ILBool)0;
+			usage->inherited = (ILBool)1;
+			attr = 0;
+			while(attribute && !attr)
+			{
+				/*
+				 * The attribute usage is inherited from the parent attribute
+				 * class so look for it in the parents too.
+				 */
+				attr = FindCustomAttribute(attribute, attributeUsage);
+				if(!attr)
+				{
+					attribute = ILClassGetUnderlyingParentClass(attribute);
+				}
+			}
+			if(attr)
+			{
+				ILMethod *ctor;
+
+				ctor = ILProgramItemToMethod(ILAttributeTypeAsItem(attr));
+				if(ctor)
+				{
+					const void *blob;
+					unsigned long blobLen;
+					ILSerializeReader *reader;
+					int result;
+
+					/*
+					 * Get the data blob from the attribute and create a
+					 * reader for it
+					 */
+					blob = ILAttributeGetValue(attr, &blobLen);
+					if(!blob)
+					{
+						return 0;
+					}
+					reader = ILSerializeReaderInit(ctor, blob, blobLen);
+					if(!reader)
+					{
+						return 0;
+					}
+					result = DeSerializeAttributeUsage(usage, reader);
+					ILSerializeReaderDestroy(reader);
+					if(!result)
+					{
+						return 0;
+					}
+				}
+				else
+				{
+					return 0;
+				}
+			}
+			return usage;
+		}
+	}
+	return 0;
+}
+
+ILClass *ILFindCustomAttribute(ILContext *context, const char *name,
+							   const char *namespace,
+							   ILAttributeUsageAttribute **usage)
+{
+	ILClass *attribute;
+
+	attribute = ILClassLookupGlobal(context, name, namespace);
+	if(attribute)
+	{
+		attribute = ILClassResolve(attribute);
+		if(attribute && usage)
+		{
+			/* Get the attribute usage information for the attribute */
+			*usage = GetAttributeUsage(attribute);
+		}
+		return attribute;
+	}
+	return 0;
+}
+
+ILAttributeUsageAttribute *ILClassGetAttributeUsage(ILClass *attribute)
+{
+	if(attribute)
+	{
+		return GetAttributeUsage(attribute);
+	}
+	return 0;
+}
+
+ILUInt32 ILAttributeUsageAttributeGetValidOn(ILAttributeUsageAttribute *usage)
+{
+	return usage->validOn;
+}
+
+ILBool ILAttributeUsageAttributeGetAllowMultiple(ILAttributeUsageAttribute *usage)
+{
+	return usage->allowMultiple;
+}
+
+ILBool ILAttributeUsageAttributeGetInherited(ILAttributeUsageAttribute *usage)
+{
+	return usage->inherited;
 }
 
 #ifdef	__cplusplus

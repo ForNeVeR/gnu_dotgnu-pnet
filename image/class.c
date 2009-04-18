@@ -24,6 +24,38 @@
 extern	"C" {
 #endif
 
+ILClassExt *_ILClassExtCreate(ILClass *info, ILUInt32 kind)
+{
+	ILClassExt *ext;
+
+	ext = ILMemStackAlloc(&(info->programItem.image->memStack), ILClassExt);
+	if(!ext)
+	{
+		return 0;
+	}
+	ext->kind = kind;
+	ext->next = info->ext;
+	info->ext = ext;
+
+	return ext;
+}
+
+ILClassExt *_ILClassExtFind(ILClass *info, ILUInt32 kind)
+{
+	ILClassExt *ext;
+
+	ext = info->ext;
+	while(ext)
+	{
+		if(ext->kind == kind)
+		{
+			return ext;
+		}
+		ext = ext->next;
+	}
+	return 0;
+}
+
 ILClassName *_ILClassNameCreate(ILImage *image, ILToken token,
 								const char *name, const char *namespace,
 								ILProgramItem *scopeItem,
@@ -2154,7 +2186,7 @@ ILMethod *ILClassGetMethodImpl(ILClass *info, ILMethod *method)
 				goto done;
 			}
 		}
-		if(result && ILMethod_Owner(result) == parent)
+		if(result && _ILMethod_Owner(result) == parent)
 		{
 			/* We have a non-override method at this level */
 			break;

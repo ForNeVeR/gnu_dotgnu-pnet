@@ -47,31 +47,83 @@ void _ILWriteJavaHeaders(ILWriter *writer)
 
 void ILJavaInitPool(ILWriter *writer, ILClass *info)
 {
-	if(info->ext != 0)
+	ILClassExt *ext;
+
+	if(_ILClassExtFind(info, _IL_EXT_JAVA_CONSTPOOL) != 0)
 		return;
-	info->ext = (ILClassExt*)ILMalloc(sizeof(ILClassExt));
-	if(!info->ext)
+	ext = _ILClassExtCreate(info, _IL_EXT_JAVA_CONSTPOOL);
+	if(!ext)
 	{
 		writer->outOfMemory = 1;
 		return;
 	}
-	info->ext->constPoolSize = 1;
-	info->ext->constPool = ILMalloc(sizeof(JavaConstEntry));
-	if(!info->ext->constPool)
+	ext->un.javaConstPool.size = 1;
+	ext->un.javaConstPool.entries = ILMalloc(sizeof(JavaConstEntry));
+	if(!ext->un.javaConstPool.entries)
 	{
 		writer->outOfMemory = 1;
 		return;
 	}
-	info->ext->constPool[0].type = 0;
-	info->ext->constPool[0].un.codeList = 0;
-	info->ext->constPool[0].length = 0;
+	ext->un.javaConstPool.entries[0].type = 0;
+	ext->un.javaConstPool.entries[0].un.codeList = 0;
+	ext->un.javaConstPool.entries[0].length = 0;
+}
+
+/*
+ * Get the java cost pool attached to a class.
+ * Returns o if there is no java const pool attached to the class.
+ */
+static JavaConstPool *JavaGetConstPool(ILClass *info)
+{
+	ILClassExt *ext;
+
+	if((ext = _ILClassExtFind(info, _IL_EXT_JAVA_CONSTPOOL)) != 0)
+	{
+		return &(ext->un.javaConstPool);
+	}
+	return 0;
+}
+
+static JavaConstEntry *JavaGetConstEntry(ILClass *info, ILUInt32 index)
+{
+	ILClassExt *ext;
+	
+	if((ext = _ILClassExtFind(info, _IL_EXT_JAVA_CONSTPOOL)) != 0)
+	{
+		if(ext->un.javaConstPool.size > index)
+		{
+			return &(ext->un.javaConstPool.entries[index]);
+		}
+	}
+	return 0;
+}
+
+/*
+ * Adds a pool entry to the end of the pool table
+ */
+static ILUInt32 ILJavaAddPool(ILWriter *writer, JavaConstPool *constPool,
+							  JavaConstEntry *entry)
+{
+	ILUInt32 poolSize;
+
+	poolSize = constPool->size;
+	constPool->entries = ILRealloc(constPool->entries,
+								   sizeof(JavaConstEntry) * (poolSize + 1));
+	if(!constPool->entries)
+	{
+		writer->outOfMemory = 1;
+		return 0;
+	}
+	constPool->entries[poolSize] = *entry;
+	(constPool->size)++;
+	return poolSize;
 }
 
 void ILJavaAppendCode(ILWriter *writer, ILClass *info, ILMethod *method, 
 					const void *buffer, unsigned long size)
 {
 	JavaCodeList *list;
-	JavaConstEntry *entry = &(info->ext->constPool[0]);
+	JavaConstEntry *entry = JavaGetConstEntry(info, 0);
 
 	/* finds the corresponding class */
 	list = entry->un.codeList;
@@ -318,39 +370,28 @@ static int WriteJavaType(ILWriter *writer, ILType *type, char **buffer)
 	return 0;
 }
 
-/*
- * Adds a pool entry to the end of the pool table
- */
-static ILUInt32 ILJavaAddPool(ILWriter *writer, ILClass *info, 
-								JavaConstEntry *entry)
+ILUInt32 ILJavaSetUTF8String(ILWriter *writer, ILClass *info,
+							 const char *value, ILUInt32 len)
 {
-	ILUInt32 poolSize = info->ext->constPoolSize;
+	JavaConstPool *constPool;
+	ILUInt32 constPoolEntries;
+	JavaConstEntry *entries;
+	JavaConstEntry *poolEntry;
+	int index;
 
-	info->ext->constPool = ILRealloc(info->ext->constPool,
-									 sizeof(JavaConstEntry) * (poolSize + 1));
-	if(!info->ext->constPool)
+	constPool = JavaGetConstPool(info);
+	if(!constPool)
 	{
 		writer->outOfMemory = 1;
 		return 0;
 	}
-	info->ext->constPool[poolSize] = *entry;
-	(info->ext->constPoolSize)++;
-	return poolSize;
-}
-
-ILUInt32 ILJavaSetUTF8String(ILWriter *writer, ILClass *info,
-							 const char *value, ILUInt32 len)
-{
-	ILUInt32 constPoolEntries = info->ext->constPoolSize;
-	JavaConstEntry *constPool = info->ext->constPool;
-	JavaConstEntry *poolEntry;
-	int index;
-
+	constPoolEntries = constPool->size;
+	entries = constPool->entries;
 	for(index = 0; index < constPoolEntries; index++)
 	{
-		if(constPool[index].type == JAVA_CONST_UTF8 &&
-			constPool[index].length == len &&
-		   !ILMemCmp(constPool[index].un.utf8String, value, len))
+		if(entries[index].type == JAVA_CONST_UTF8 &&
+			entries[index].length == len &&
+		   !ILMemCmp(entries[index].un.utf8String, value, len))
 		{
 			return index;
 		}
@@ -370,7 +411,7 @@ ILUInt32 ILJavaSetUTF8String(ILWriter *writer, ILClass *info,
 		return 0;
 	}
 	ILMemCpy(poolEntry->un.utf8String, value, len);
-	return ILJavaAddPool(writer, info, poolEntry);
+	return ILJavaAddPool(writer, constPool, poolEntry);
 }
 
 
@@ -407,38 +448,49 @@ ILUInt32 ILJavaSetSignature(ILWriter *writer, ILClass *info, ILType *sig)
 
 #define ADD_POOL(constName, unionName, fieldName1, fieldVal1, fieldName2,\
                  fieldVal2)\
-\
-    for(index = 0; index < constPoolEntries; index++)\
-    {\
-        if(constPool[index].type == JAVA_CONST_##constName &&\
-            constPool[index].un.unionName.fieldName1 == (fieldVal1)  &&\
-            constPool[index].un.unionName.fieldName2 == (fieldVal2))\
-        {\
-            return index;\
-        }\
-    }\
-    poolEntry = (JavaConstEntry*)ILMalloc(sizeof(JavaConstEntry));\
-\
-    if(!poolEntry)\
-    {\
-        writer->outOfMemory = 1;\
-        return 0;\
-    }\
-    poolEntry->type = JAVA_CONST_##constName;\
-    poolEntry->un.unionName.fieldName1 = (fieldVal1);\
-    poolEntry->un.unionName.fieldName2 = (fieldVal2);\
-\
-    return ILJavaAddPool(writer, info, poolEntry);
+	do { \
+		ILUInt32 constPoolEntries; \
+		JavaConstEntry *entries; \
+		JavaConstEntry *poolEntry; \
+		int index; \
+		\
+		constPoolEntries = constPool->size; \
+		entries = constPool->entries; \
+	    for(index = 0; index < constPoolEntries; index++)\
+    	{\
+	        if(entries[index].type == JAVA_CONST_##constName &&\
+        	    entries[index].un.unionName.fieldName1 == (fieldVal1)  &&\
+    	        entries[index].un.unionName.fieldName2 == (fieldVal2))\
+	        {\
+        	    return index;\
+    	    }\
+	    }\
+	    poolEntry = (JavaConstEntry*)ILMalloc(sizeof(JavaConstEntry));\
+	\
+	    if(!poolEntry)\
+	    {\
+	        writer->outOfMemory = 1;\
+    	    return 0;\
+	    }\
+	    poolEntry->type = JAVA_CONST_##constName;\
+	    poolEntry->un.unionName.fieldName1 = (fieldVal1);\
+	    poolEntry->un.unionName.fieldName2 = (fieldVal2);\
+		\
+	    return ILJavaAddPool(writer, constPool, poolEntry);\
+	} while(0);
 
 ILUInt32 ILJavaSetClass(ILWriter *writer, ILClass *info, ILClass *class)
 {
-	ILUInt32 constPoolEntries = info->ext->constPoolSize;
-	JavaConstEntry *constPool = info->ext->constPool;
-	JavaConstEntry *poolEntry;
-	int index;
+	JavaConstPool *constPool;
 	ILUInt32 nameIndex;
 	char *name = JavaGetClassName(writer, class);
 
+	constPool = JavaGetConstPool(info);
+	if(!constPool)
+	{
+		writer->outOfMemory = 1;
+		return 0;
+	}
 	nameIndex = ILJavaSetUTF8String(writer, info, name, strlen(name));
 	if(!nameIndex)
 		return 0;
@@ -448,14 +500,16 @@ ILUInt32 ILJavaSetClass(ILWriter *writer, ILClass *info, ILClass *class)
 
 ILUInt32 ILJavaSetClassFromType(ILWriter *writer, ILClass *info, ILType *type)
 {
-	ILUInt32 constPoolEntries = info->ext->constPoolSize;
-	JavaConstEntry *constPool = info->ext->constPool;
-	JavaConstEntry *poolEntry;
-
-	int index;
+	JavaConstPool *constPool;
 	ILUInt32 nameIndex;
 	char *name = 0;
 
+	constPool = JavaGetConstPool(info);
+	if(!constPool)
+	{
+		writer->outOfMemory = 1;
+		return 0;
+	}
 	WriteJavaType(writer, type, &name);
 
 	nameIndex = ILJavaSetUTF8String(writer, info, name, strlen(name));
@@ -468,12 +522,15 @@ ILUInt32 ILJavaSetClassFromType(ILWriter *writer, ILClass *info, ILType *type)
 ILUInt32 ILJavaSetClassFromName(ILWriter *writer, ILClass *info,
 								const char *name)
 {
-	ILUInt32 constPoolEntries = info->ext->constPoolSize;
-	JavaConstEntry *constPool = info->ext->constPool;
-	JavaConstEntry *poolEntry;
-	int index;
+	JavaConstPool *constPool;
 	ILUInt32 nameIndex;
 
+	constPool = JavaGetConstPool(info);
+	if(!constPool)
+	{
+		writer->outOfMemory = 1;
+		return 0;
+	}
 	nameIndex = ILJavaSetUTF8String(writer, info, name, strlen(name));
 	if(!nameIndex)
 		return 0;
@@ -484,26 +541,32 @@ ILUInt32 ILJavaSetClassFromName(ILWriter *writer, ILClass *info,
 ILUInt32 ILJavaSetNameAndType(ILWriter *writer, ILClass *info, 
 								ILUInt32 nameIndex, ILUInt32 sigIndex)
 {
-	ILUInt32 constPoolEntries = info->ext->constPoolSize;
-	JavaConstEntry *constPool = info->ext->constPool;
-	JavaConstEntry *poolEntry;
-	ILUInt32 index;
+	JavaConstPool *constPool;
 
+	constPool = JavaGetConstPool(info);
+	if(!constPool)
+	{
+		writer->outOfMemory = 1;
+		return 0;
+	}
 	ADD_POOL(NAMEANDTYPE, nameAndType, name, nameIndex, type, sigIndex);
 }
 
 ILUInt32 ILJavaSetref(ILWriter *writer, ILClass *info, int type, 
 						ILClass *owner,char *name, ILType *sig)
 {
-	ILUInt32 constPoolEntries = info->ext->constPoolSize;
-	JavaConstEntry *constPool = info->ext->constPool;
-	JavaConstEntry *poolEntry;
-	ILUInt32 index;
+	JavaConstPool *constPool;
 	ILUInt32 nameIndex;
 	ILUInt32 sigIndex;
 	ILUInt32 classIndex;
 	ILUInt32 nameAndType;
 
+	constPool = JavaGetConstPool(info);
+	if(!constPool)
+	{
+		writer->outOfMemory = 1;
+		return 0;
+	}
 	classIndex = ILJavaSetClass(writer, info, owner);
 	name = ILMethodNameToJava(name);
 	nameIndex = ILJavaSetUTF8String(writer, info, name, strlen(name));
@@ -531,15 +594,18 @@ ILUInt32 ILJavaSetrefFromName(ILWriter *writer, ILClass *info, int type,
 							  const char *className, const char *refName,
 							  const char *sigName)
 {
-	ILUInt32 constPoolEntries = info->ext->constPoolSize;
-	JavaConstEntry *constPool = info->ext->constPool;
-	JavaConstEntry *poolEntry;
-	ILUInt32 index;
+	JavaConstPool *constPool;
 	ILUInt32 refIndex;
 	ILUInt32 sigIndex;
 	ILUInt32 classIndex;
 	ILUInt32 nameAndType;
 
+	constPool = JavaGetConstPool(info);
+	if(!constPool)
+	{
+		writer->outOfMemory = 1;
+		return 0;
+	}
 	classIndex = ILJavaSetClassFromName(writer, info, className);
 	refIndex = ILJavaSetUTF8String(writer, info, refName, strlen(refName));
 	sigIndex = ILJavaSetUTF8String(writer, info, sigName, strlen(sigName));
@@ -565,15 +631,24 @@ ILUInt32 ILJavaSetrefFromName(ILWriter *writer, ILClass *info, int type,
 #define ILJAVA_SET(name, typeName, fieldName, constName)\
 int ILJavaSet##name(ILWriter *writer, ILClass *info, typeName value)\
 {\
-    ILUInt32 constPoolEntries = info->ext->constPoolSize;\
-    JavaConstEntry *constPool = info->ext->constPool;\
+	JavaConstPool *constPool;\
+    ILUInt32 constPoolEntries;\
+    JavaConstEntry *entries;\
     JavaConstEntry *poolEntry;\
     int index, index2;\
 \
+	constPool = JavaGetConstPool(info);\
+	if(!constPool)\
+	{\
+		writer->outOfMemory = 1;\
+		return 0;\
+	}\
+    constPoolEntries = constPool->size;\
+    entries = constPool->entries;\
     for(index = 0; index < constPoolEntries; index++)\
     {\
-        if(constPool[index].type == JAVA_CONST_##constName &&\
-            constPool[index].un.fieldName == value)\
+        if(entries[index].type == JAVA_CONST_##constName &&\
+            entries[index].un.fieldName == value)\
         {\
             return index;\
         }\
@@ -588,7 +663,7 @@ int ILJavaSet##name(ILWriter *writer, ILClass *info, typeName value)\
     poolEntry->type = JAVA_CONST_##constName;\
     poolEntry->un.fieldName = value;\
 \
-    index = ILJavaAddPool(writer, info, poolEntry);\
+    index = ILJavaAddPool(writer, constPool, poolEntry);\
     /* add an empty pool entry  */\
     if(poolEntry->type == JAVA_CONST_LONG ||\
        poolEntry->type == JAVA_CONST_DOUBLE)\
@@ -601,7 +676,7 @@ int ILJavaSet##name(ILWriter *writer, ILClass *info, typeName value)\
             return 0;\
         }\
         emptyEntry->type = 0;\
-        index2 = ILJavaAddPool(writer, info, emptyEntry);\
+        index2 = ILJavaAddPool(writer, constPool, emptyEntry);\
     }\
     return index;\
 }
@@ -889,7 +964,7 @@ static void WriteJavaMember(ILWriter *writer, ILClass *class, ILMember *member,
 	/* Write method attributes */
 	if(isMethod)
 	{
-		JavaConstEntry *entry =  &(class->ext->constPool[0]);
+		JavaConstEntry *entry = JavaGetConstEntry(class, 0);
 		JavaCodeList *list;
 
 		numMemberAttrs = 1; /* only code for the moment */
@@ -926,7 +1001,7 @@ static void WriteJavaMember(ILWriter *writer, ILClass *class, ILMember *member,
  */
 void WriteJavaClass(ILWriter *writer, ILClass *class)
 {
-
+	JavaConstPool *constPool;
 	ILUInt32 accessFlags;
 	ILUInt32 javaAccessFlags;
 	ILUInt32 thisIndex;
@@ -1164,8 +1239,13 @@ void WriteJavaClass(ILWriter *writer, ILClass *class)
 	numClassAttrs = 0;
 	OUT_UINT16(numClassAttrs);
 
-	JavaWriteConstantPool(writer, class->ext->constPool,
-						  class->ext->constPoolSize);
+
+	constPool = JavaGetConstPool(class);
+	if(constPool)
+	{
+		JavaWriteConstantPool(writer, constPool->entries,
+							  constPool->size);
+	}
 	ILWriterTextWrite(writer, buffer, offset);
 
 cleanup:

@@ -1,3 +1,25 @@
+2009-04-18  Klaus Treichel  <ktreichel@web.de>
+
+	* image/class.c (_ILClassExtCreate): Add function to create class
+	extensions (cache or java strings).
+	(_ILClassExtFind): Add function to find the first cached entry of a
+	given kind.
+
+	* image/java_loader.c, image/java_writer.c, writer.c: Change to use
+	the new	functions in class.c instead of accessing the ext member of
+	the class directly.
+
+	* image/lib_attrs.c: Add functions for deserializing an
+	AttributeUsageAttribute, caching the result and retrieving the members.
+
+	* include/il_program.h: Add opaque type ILAttributeUsageAttribute.
+	Add declarations for ILFindCustomAttribute, ILClassGetAttributeUsage,
+	ILAttributeUsageAttributeGetValidOn,
+	ILAttributeUsageAttributeGetAllowMultiple, and
+	ILAttributeUsageAttributeGetInherited.
+
+	* include/il_varargs.h: Add include file for general vararg handling.
+
 2009-04-16  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_decls.tc (ILGenOutputGenericParamAttributes): Add support

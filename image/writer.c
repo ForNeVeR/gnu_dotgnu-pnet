@@ -363,6 +363,22 @@ static void SortClasses(ILImage *image)
 	}
 }
 
+#ifdef IL_CONFIG_JAVA
+/*
+ * Check if the class has a java const pool.
+ */
+static ILBool JavaHasConstPool(ILClass *info)
+{
+	ILClassExt *ext;
+
+	if((ext = _ILClassExtFind(info, _IL_EXT_JAVA_CONSTPOOL)) != 0)
+	{
+		return (ext->un.javaConstPool.entries != 0);
+	}
+	return 0;
+}
+#endif
+
 void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 {
 	unsigned long start;
@@ -394,7 +410,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 
 			if(!strcmp(ILClass_Name(class), "<Module>") ||
 			   (!ILClass_IsPublic(class) && !ILClass_IsPrivate(class)) ||
-			   !class->ext || !class->ext->constPool) 
+			   !JavaHasConstPool(class))
 			{
 				continue;
 			}
@@ -414,7 +430,7 @@ void ILWriterOutputMetadata(ILWriter *writer, ILImage *image)
 
 			if(!strcmp(ILClass_Name(class), "<Module>") ||
 			   (!ILClass_IsPublic(class) && !ILClass_IsPrivate(class)) ||
-			   !class->ext || !class->ext->constPool) 
+			   !JavaHasConstPool(class))
 			{
 				continue;
 			}

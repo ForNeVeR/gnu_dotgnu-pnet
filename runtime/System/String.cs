@@ -686,18 +686,18 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				{
 					throw new ArgumentNullException("destination");
 				}
-				if(sourceIndex < 0 || sourceIndex > length)
+				if(sourceIndex < 0 || sourceIndex >= length)
 				{
 					throw new ArgumentOutOfRangeException
 						("sourceIndex", _("ArgRange_StringIndex"));
 				}
 				else if(destinationIndex < 0 ||
-						destinationIndex > destination.Length)
+						destinationIndex >= destination.Length)
 				{
 					throw new ArgumentOutOfRangeException
 						("destinationIndex", _("ArgRange_Array"));
 				}
-				else if((length - sourceIndex) < count ||
+				else if(count < 0 || (length - sourceIndex) < count ||
 						(destination.Length - destinationIndex) < count)
 				{
 					throw new ArgumentOutOfRangeException

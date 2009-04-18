@@ -1,3 +1,13 @@
+2009-04-18  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/String.cs: Check for negative count and throw an
+	ArgumentOutOfRangeException in this case.
+	(thanks Thomas Uxiou bug# 26222).
+	Fix off by one bugs in checks of sourceIndex and destinationIndex.
+
+	* tests/runtime/System/TestString.cs: Add additional testcases for
+	the rangechecks in String.CopyTo.
+
 2009-04-14  Thomas Uxiou  <t.uxiou@gmail.com>
 
 	* System/Net/HttpWebRequest.cs: Fix api compatibility by replacing Close

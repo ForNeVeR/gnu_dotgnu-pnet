@@ -224,7 +224,7 @@ public class TestString : TestCase
 		try
 		{
 			str1.CopyTo(0,(char[])null,0,0);
-			Fail("str1.CopyTo(0,(char[])null,0,0) should have throws a ArgumentNullException");
+			Fail("str1.CopyTo(0,(char[])null,0,0) should throw an ArgumentNullException");
 		}
 		catch(ArgumentNullException err)
 		{
@@ -235,6 +235,33 @@ public class TestString : TestCase
 			str1.CopyTo(i, c, i, 1); // copy 1 char at a time
 		String str2 = new String(c);
 		AssertEquals("str1.CopyTo() char by char",str1,str2);
+		try
+		{
+			str1.CopyTo(0, c, 0, -1);
+			Fail("str1.CopyTo(0, char[], 0, -1) should throw an ArgumentOutOfRangeException");
+		}
+		catch(ArgumentOutOfRangeException e)
+		{
+			//worked !
+		}
+		try
+		{
+			str1.CopyTo(0, c, c.Length, 1);
+			Fail("str1.CopyTo(0, char[], char[].Length, 1) should throw an ArgumentOutOfRangeException");
+		}
+		catch(ArgumentOutOfRangeException e)
+		{
+			//worked !
+		}
+		try
+		{
+			str1.CopyTo(str1.Length, c, 0, 1);
+			Fail("str1.CopyTo(str1.Length, char[], 0, 1) should throw an ArgumentOutOfRangeException");
+		}
+		catch(ArgumentOutOfRangeException e)
+		{
+			//worked !
+		}
 		// must find a better error message :)
 	}
 

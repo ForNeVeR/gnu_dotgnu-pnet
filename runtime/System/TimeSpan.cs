@@ -138,20 +138,28 @@ public struct TimeSpan : IComparable
 	// Formatting.
 	public override String ToString()
 			{
-				int days = Days;
-				int hours = Hours;
-				int minutes = Minutes;
-				int seconds = Seconds;
+				int days = (int) Math.Abs(Days);
+				int hours = (int) Math.Abs(Hours);
+				int minutes = (int) Math.Abs(Minutes);
+				int seconds = (int) Math.Abs(Seconds);
 				int fractional = unchecked((int)(value_ % TicksPerSecond));
+				fractional = (int) Math.Abs(fractional);
+
 				String result;
-				if(days != 0)
+				if(value_ < 0)
 				{
-					result = days.ToString() + ".";
+					result = "-";
 				}
 				else
 				{
 					result = String.Empty;
 				}
+
+				if(days != 0)
+				{
+					result += days.ToString() + ".";
+				}
+
 				result = result + TwoDigits(hours) + ":" +
 						 TwoDigits(minutes) + ":" + TwoDigits(seconds);
 				if(fractional != 0)

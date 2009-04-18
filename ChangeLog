@@ -1,3 +1,8 @@
+2009-04-18  Thomas Uxiou  <t.uxiou@gmail.com>
+
+	* runtime/System/TimeSpan.cs: Fix incorrect result for
+	System.TimeSpan.MinValue.ToString() (bug #26199).
+
 2009-04-18  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/String.cs: Check for negative count and throw an

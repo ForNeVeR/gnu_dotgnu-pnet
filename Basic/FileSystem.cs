@@ -772,7 +772,7 @@ public sealed class FileSystem
 	[TODO]
 	public static void FilePutObject
 				(int FileNumber, Object Value,
-			     [Optional] [DefaultValue(null)] long RecordNumber)
+			     [Optional] [DefaultValue(0)] long RecordNumber)
 			{
 				// TODO
 			}

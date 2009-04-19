@@ -72,22 +72,20 @@ public interface IAccessible
 			 [In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 			 	Object varChild);
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC76))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.IDispatch)]
 	[IndexerName("accChild")]
 	Object this[[In] [MarshalAs(UnmanagedType.Struct)] Object varChild]
 			{
+				[TypeLibFunc(0x0040)]
 				get;
 			}
-
-	[TypeLibFunc(0x0040)]
+	
 	[DispId(unchecked((int)0xFFFFEC77))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
-	int accChildCount { get; }
+	int accChildCount { [TypeLibFunc(0x0040)] get; }
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC6B))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.BStr)]
@@ -95,10 +93,10 @@ public interface IAccessible
 	String this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
+				[TypeLibFunc(0x0040)]
 				get;
 			}
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC73))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.BStr)]
@@ -106,16 +104,15 @@ public interface IAccessible
 	String this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
+				[TypeLibFunc(0x0040)]
 				get;
 			}
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC77))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.Struct)]
-	Object accFocus { get; }
+	Object accFocus { [TypeLibFunc(0x0040)] get; }
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC70))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.BStr)]
@@ -123,6 +120,7 @@ public interface IAccessible
 	String this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
+				[TypeLibFunc(0x0040)]
 				get;
 			}
 
@@ -133,7 +131,6 @@ public interface IAccessible
 			 			 [In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 			 			 Object varChild);
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC6E))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.BStr)]
@@ -141,10 +138,10 @@ public interface IAccessible
 	String this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
+				[TypeLibFunc(0x0040)]
 				get;
 			}
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC75))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.BStr)]
@@ -152,16 +149,17 @@ public interface IAccessible
 	String this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
-				get; set;
+				[TypeLibFunc(0x0040)]
+				get;
+				[TypeLibFunc(0x0040)]
+				set;
 			}
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC78))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.IDispatch)]
-	Object accParent { get; }
+	Object accParent { [TypeLibFunc(0x0040)] get; }
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC72))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.Struct)]
@@ -169,16 +167,17 @@ public interface IAccessible
 	Object this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
-				get; set;
+				[TypeLibFunc(0x0040)]
+				get;
+				[TypeLibFunc(0x0040)]
+				set;
 			}
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC6C))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.Struct)]
-	Object accSelection { get; }
+	Object accSelection { [TypeLibFunc(0x0040)] get; }
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC71))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.Struct)]
@@ -186,10 +185,12 @@ public interface IAccessible
 	Object this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
-				get; set;
+				[TypeLibFunc(0x0040)]
+				get;
+				[TypeLibFunc(0x0040)]
+				set;
 			}
 
-	[TypeLibFunc(0x0040)]
 	[DispId(unchecked((int)0xFFFFEC74))]
 	//[MethodImpl(MethodImplOptions.InternalCall)]
 	//[return: MarshalAs(UnmanagedType.BStr)]
@@ -197,7 +198,10 @@ public interface IAccessible
 	String this[[In] [Optional] [MarshalAs(UnmanagedType.Struct)]
 					Object varChild]
 			{
-				get; set;
+				[TypeLibFunc(0x0040)]
+				get;
+				[TypeLibFunc(0x0040)]
+				set;
 			}
 
 }; // interface IAccessible

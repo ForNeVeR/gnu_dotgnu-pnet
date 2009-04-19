@@ -47,6 +47,14 @@ public sealed class AssemblyFlagsAttribute : Attribute
 				flagValues = flags;
 			}
 
+#if CONFIG_FRAMEWORK_2_0
+	public AssemblyFlagsAttribute(AssemblyNameFlags flags)
+			: base()
+			{
+				flagValues = (uint)flags;
+			}
+#endif // CONFIG_FRAMEWORK_2_0
+
 	// Properties.
 	public int AssemblyFlags
 			{

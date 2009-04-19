@@ -1,3 +1,16 @@
+2009-04-19  Klaus Treichel  <ktreichel@web.de>
+
+	* Basic/FileSystem.cs (FilePutObject): Fix the DefaulValueAttribute.
+
+	* compat/Accessibility.cs: Move the TypeLibFuncAttributes to the
+	getters and setters where they belong to instead of the property or
+	indexer.
+
+	* runtime/System/Reflection/AssemblyFlagsAttribute.cs: Add the new
+	2.0 constructor using AssemblyNameFlags as argument.
+
+	* System.Windows.Forms/RichTextBox.cs (Rtf): Fix the DefaulValueAttribute.
+
 2009-04-18  Thomas Uxiou  <t.uxiou@gmail.com>
 
 	* runtime/System/TimeSpan.cs: Fix incorrect result for

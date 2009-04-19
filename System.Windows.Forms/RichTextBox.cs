@@ -475,7 +475,7 @@ public class RichTextBox: TextBoxBase
 
 	[TODO]
 #if CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
-	[DefaultValue(0)]
+	[DefaultValue(null)]
 	[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
 #endif // CONFIG_COMPONENT_MODEL || CONFIG_EXTENDED_DIAGNOSTICS
 	public String Rtf

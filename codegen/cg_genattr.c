@@ -1812,6 +1812,20 @@ setOwnerFlags:
 }
 
 /*
+ * Process an "IndexerName" attribute on a property (or better indexer).
+ */
+static int IndexerNameAttribute(ILGenInfo *info,
+								CGAttributeInfo *attributeInfo)
+{
+	/*
+	 * We do nothing here.
+	 * The reason for this function is that no custom attribute has to be
+	 * created because this attribute should have been processed before.
+	 */
+	return 1;
+}
+
+/*
  * Process a "MethodImpl" attribute on a method.
  */
 static int MethodImplAttribute(ILGenInfo *info,
@@ -2069,6 +2083,7 @@ static CGAttrConvertInfo const reflectionAttrs[] = {
 	{0, 0}
 };
 static CGAttrConvertInfo const compilerAttrs[] = {
+	{"IndexerNameAttribute", IndexerNameAttribute},
 	{"MethodImplAttribute", MethodImplAttribute},
 	{0, 0}
 };
@@ -2265,6 +2280,30 @@ static int AttributeTargetIsValid(ILGenInfo *info, ILProgramItem *owner,
 }
 
 /*
+ * Check if there is allready an instance of the given attribute class
+ * collected for the owner. (Check for AllowMultiple).
+ * Returns the attributeInfo of the instance found or 0 if none was found.
+ */
+CGAttributeInfo *AttributeExistsForOwner(CGAttributeInfos *attributeInfos,
+										 ILProgramItem *owner,
+										 ILClass *attribute)
+{
+	CGAttributeInfo *attributeInfo;
+
+	attributeInfo = attributeInfos->attributes;
+	while(attributeInfo)
+	{
+		if(attributeInfo->owner == owner &&
+		   ILMethod_Owner(attributeInfo->ctor) == attribute)
+		{
+			return attributeInfo;
+		}
+		attributeInfo = attributeInfo->next;
+	}
+	return 0;
+}
+
+/*
  * Add an attribute to the attribute infos.
  */
 int CGAttributeInfosAddAttribute(CGAttributeInfos *attributeInfos,
@@ -2306,6 +2345,22 @@ int CGAttributeInfosAddAttribute(CGAttributeInfos *attributeInfos,
 		return 1;
 	}
 	allowMultiple = ILAttributeUsageAttributeGetAllowMultiple(attributeUsage);
+	if(allowMultiple == 0)
+	{
+		CGAttributeInfo *checkInfo;
+
+		checkInfo = AttributeExistsForOwner(attributeInfos, owner,
+											ILMethod_Owner(ctor));
+		if(checkInfo)
+		{
+			CGErrorForNode(attributeInfos->info, node,
+				_("The `%s' must not be applied multiple times to an owner."
+				  " The previous application was in line %lu"),
+				CGClassToName(attribute),
+				yygetlinenum(checkInfo->node));
+			return 1;
+		}
+	}
 
 	attributeInfo = ILMemStackAlloc(&(attributeInfos->memstack),
 									CGAttributeInfo);

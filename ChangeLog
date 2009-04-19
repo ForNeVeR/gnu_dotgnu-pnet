@@ -10,7 +10,7 @@
 	ILGenInfo structure.
 
 	* codegen/cg_genattr.c, codegen/cg_genattr.h: Add handling of custom
-	attributes.
+	attributes. Add check for AllowMultiple and the IndexerNameAttribute.
 
 	* codegen/cg_intl.h: Add include for internationalization.
 

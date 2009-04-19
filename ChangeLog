@@ -1,3 +1,40 @@
+2009-04-19  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_errors.c, codegen/cg_errors.h: Add codegen functions to
+	handle errors and warnings.
+
+	* codegen/cg_gen.c (ILGenInfoInit): Initialize the new members
+	errFunc and warnFunc of the ILGenInfo structure.
+
+	* codegen/cg_gen.h: Add the new members errFunc and warnFunc to the
+	ILGenInfo structure.
+
+	* codegen/cg_genattr.c, codegen/cg_genattr.h: Add handling of custom
+	attributes.
+
+	* codegen/cg_intl.h: Add include for internationalization.
+
+	* codegen/cg_output.c (ILGenModulesAndAssemblies): Add output of the
+	assembly hash algorithm, version and locale.
+
+	* codegen/Makefile.am: Add the new files cg_errors.c, cg_errors.h,
+	cg_genattr.c, cg_genattr.h and cg_intl.h to the codegen sources.
+
+	* cscc/common/cc_errors.c (CCErrorOnLineV, CCWarningOnLineV): Add
+	versions of the error and warning functions with a va_list as last
+	argument instead of an elypsis for callbacks from codegen.
+	Use the vararg definitions from il_vararg.h instead of defining our own.
+
+	* cscc/common/cc_errors.h (CCErrorOnLineV, CCWarningOnLineV): Add
+	declarations.
+	Use the IL_PRINTF from il_vararg.h instead of defining CC_PRINTF.
+
+	* cscc/common/cc_main.c (InitCodeGen): Set errFunc and warnFunc in the
+	ILGenInfo structure.
+
+	* cscc/csharp/cs_attrs.c: Use the new custom attribute handling in
+	codegen.
+
 2009-04-18  Klaus Treichel  <ktreichel@web.de>
 
 	* image/class.c (_ILClassExtCreate): Add function to create class

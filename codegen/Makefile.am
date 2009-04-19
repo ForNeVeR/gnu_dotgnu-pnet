@@ -56,9 +56,14 @@ EXTRA_DIST = $(TREECC_INPUTS)
 libILCodeGen_a_SOURCES = cg_coerce.c \
 						 cg_coerce.h \
 						 cg_defs.h \
+						 cg_errors.c \
+						 cg_errors.h \
 						 cg_gen.c \
 						 cg_gen.h \
+						 cg_genattr.c \
+						 cg_genattr.h \
 						 cg_interface.c \
+						 cg_intl.h \
 						 cg_library.c \
 						 cg_nodemap.c \
 						 cg_nodemap.h \

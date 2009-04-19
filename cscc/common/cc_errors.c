@@ -20,26 +20,6 @@
 
 #include "cc_errors.h"
 #include "cc_options.h"
-#ifdef HAVE_STDARG_H
-#include <stdarg.h>
-#define	VA_LIST				va_list
-#define	VA_START			va_list va; va_start(va, format)
-#define	VA_END				va_end(va)
-#define	VA_GET_LIST			va
-#else
-#ifdef HAVE_VARARGS_H
-#include <varargs.h>
-#define	VA_LIST				va_list
-#define	VA_START			va_list va; va_start(va)
-#define	VA_END				va_end(va)
-#define	VA_GET_LIST			va
-#else
-#define	VA_LIST				int
-#define	VA_START
-#define	VA_END
-#define	VA_GET_LIST			0
-#endif
-#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -52,7 +32,7 @@ int CCHaveWarnings = 0;
  * Print an error or warning message to stderr.
  */
 static void PrintMessage(const char *filename, unsigned long linenum, int warning,
-						 const char *format, VA_LIST va)
+						 const char *format, IL_VA_LIST va)
 {
 	/* Print the filename and line number information */
 	if(filename)
@@ -82,18 +62,25 @@ static void PrintMessage(const char *filename, unsigned long linenum, int warnin
 
 void CCError(const char *format, ...)
 {
-	VA_START;
-	PrintMessage(yycurrfilename(), yycurrlinenum(), 0, format, VA_GET_LIST);
-	VA_END;
+	IL_VA_START(format);
+	PrintMessage(yycurrfilename(), yycurrlinenum(), 0, format, IL_VA_GET_LIST);
+	IL_VA_END;
+	CCHaveErrors = 1;
+}
+
+void CCErrorOnLineV(const char *filename, unsigned long linenum,
+					const char *format, IL_VA_LIST va)
+{
+	PrintMessage(filename, linenum, 0, format, va);
 	CCHaveErrors = 1;
 }
 
 void CCErrorOnLine(const char *filename, unsigned long linenum,
 				   const char *format, ...)
 {
-	VA_START;
-	PrintMessage(filename, linenum, 0, format, VA_GET_LIST);
-	VA_END;
+	IL_VA_START(format);
+	PrintMessage(filename, linenum, 0, format, IL_VA_GET_LIST);
+	IL_VA_END;
 	CCHaveErrors = 1;
 }
 
@@ -101,10 +88,10 @@ void CCWarning(const char *format, ...)
 {
 	if(!inhibit_warnings)
 	{
-		VA_START;
+		IL_VA_START(format);
 		PrintMessage(yycurrfilename(), yycurrlinenum(), 1,
-					 format, VA_GET_LIST);
-		VA_END;
+					 format, IL_VA_GET_LIST);
+		IL_VA_END;
 		CCHaveWarnings = 1;
 		if(warnings_as_errors)
 		{
@@ -162,10 +149,24 @@ void CCTypedWarning(const char *type, const char *format, ...)
 {
 	if(WarningEnabled(type))
 	{
-		VA_START;
+		IL_VA_START(format);
 		PrintMessage(yycurrfilename(), yycurrlinenum(), 1,
-					 format, VA_GET_LIST);
-		VA_END;
+					 format, IL_VA_GET_LIST);
+		IL_VA_END;
+		CCHaveWarnings = 1;
+		if(warnings_as_errors)
+		{
+			CCHaveErrors = 1;
+		}
+	}
+}
+
+void CCWarningOnLineV(const char *filename, unsigned long linenum,
+					  const char *format, IL_VA_LIST va)
+{
+	if(!inhibit_warnings)
+	{
+		PrintMessage(filename, linenum, 1, format, va);
 		CCHaveWarnings = 1;
 		if(warnings_as_errors)
 		{
@@ -179,9 +180,9 @@ void CCWarningOnLine(const char *filename, unsigned long linenum,
 {
 	if(!inhibit_warnings)
 	{
-		VA_START;
-		PrintMessage(filename, linenum, 1, format, VA_GET_LIST);
-		VA_END;
+		IL_VA_START(format);
+		PrintMessage(filename, linenum, 1, format, IL_VA_GET_LIST);
+		IL_VA_END;
 		CCHaveWarnings = 1;
 		if(warnings_as_errors)
 		{
@@ -195,9 +196,9 @@ void CCTypedWarningOnLine(const char *filename, unsigned long linenum,
 {
 	if(WarningEnabled(type))
 	{
-		VA_START;
-		PrintMessage(filename, linenum, 1, format, VA_GET_LIST);
-		VA_END;
+		IL_VA_START(format);
+		PrintMessage(filename, linenum, 1, format, IL_VA_GET_LIST);
+		IL_VA_END;
 		CCHaveWarnings = 1;
 		if(warnings_as_errors)
 		{

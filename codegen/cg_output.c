@@ -662,16 +662,33 @@ void ILGenModulesAndAssemblies(ILGenInfo *info)
 	while((assem = (ILAssembly *)ILImageNextToken
 				(info->image, IL_META_TOKEN_ASSEMBLY, assem)) != 0)
 	{
+		ILInt32 hashAlgorithm;
+		const ILUInt16 *assemblyVersion;
+		const char *locale;
+
 		fputs(".assembly ", info->asmOutput);
 		ILDumpFlags(info->asmOutput, ILAssembly_Attrs(assem),
 					ILAssemblyFlags, 0);
 		ILDumpIdentifier(info->asmOutput, ILAssembly_Name(assem), 0,
 						 IL_DUMP_QUOTE_NAMES);
 		fputs("\n{\n", info->asmOutput);
-		version = ILAssemblyGetVersion(assem);
-		fprintf(info->asmOutput, "\t.ver %lu:%lu:%lu:%lu\n",
-				(unsigned long)(version[0]), (unsigned long)(version[1]),
-				(unsigned long)(version[2]), (unsigned long)(version[3]));
+		hashAlgorithm = ILAssemblyGetHashAlgorithm(assem);
+		if(hashAlgorithm)
+		{
+			fprintf(info->asmOutput, "\t.hash algorithm %u\n",
+					(unsigned)hashAlgorithm);
+		}
+		locale = ILAssemblyGetLocale(assem);
+		if(locale)
+		{
+			fprintf(info->asmOutput, "\t.locale \"%s\"\n", locale);
+		}
+		assemblyVersion = ILAssemblyGetVersion(assem);
+		fprintf(info->asmOutput, "\t.ver %u:%u:%u:%u\n",
+				(unsigned)(assemblyVersion[0]),
+				(unsigned)(assemblyVersion[1]),
+				(unsigned)(assemblyVersion[2]),
+				(unsigned)(assemblyVersion[3]));
 		if(info->hasUnsafe)
 		{
 			/* Output the "SkipVerification" permissions block */

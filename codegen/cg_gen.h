@@ -21,7 +21,9 @@
 #ifndef	_CODEGEN_CG_GEN_H
 #define	_CODEGEN_CG_GEN_H
 
+#include "il_varargs.h"
 #include "il_profile.h"
+#include "il_utils.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -89,6 +91,12 @@ typedef struct _tagILJavaGenInfo ILJavaGenInfo;
  * Access/Inheritance check function.
  */
 typedef int (*ILClassAccessCheck)(ILClass *info, ILClass *scope);
+
+/*
+ * Error/Warning handling function
+ */
+typedef void (*ILErrorFunc)(const char *filename, unsigned long linenum,
+							const char *format, IL_VA_LIST va);
 
 /*
  * Structure of the code generation context.
@@ -160,6 +168,8 @@ struct _tagILGenInfo
 #endif	/* IL_VERSION_MAJOR > 1 */
 	ILLabel			gotoPtrLabel;		/* Label for "goto *" operations */
 	ILClassAccessCheck accessCheck;		/* Function for checking access permissions. */
+	ILErrorFunc		errFunc;			/* Function to print and handle errors */
+	ILErrorFunc		warnFunc;			/* Function to print and handle warnings */
 };
 
 /*

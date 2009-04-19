@@ -147,6 +147,8 @@ void ILGenInfoInit(ILGenInfo *info, char *progname,
 #endif	/* IL_VERSION_MAJOR > 1 */
 	info->gotoPtrLabel = ILLabel_Undefined;
 	info->accessCheck = ILClassAccessible;
+	info->errFunc = 0;
+	info->warnFunc = 0;
 	if(useBuiltinLibrary)
 	{
 		ILGenMakeLibrary(info);

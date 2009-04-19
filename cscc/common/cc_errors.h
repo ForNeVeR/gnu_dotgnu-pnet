@@ -21,22 +21,12 @@
 #ifndef	_CSCC_CC_ERRORS_H
 #define	_CSCC_CC_ERRORS_H
 
+#include "il_varargs.h"
 #include <codegen/cg_nodes.h>
 #include <cscc/common/cc_intl.h>
 
 #ifdef	__cplusplus
 extern	"C" {
-#endif
-
-/*
- * Some gcc magic to make it check for correct printf
- * arguments when using the error reporting functions.
- */
-#if defined(__GNUC__)
-	#define	CC_PRINTF(str,arg) \
-		__attribute__((__format__ (__printf__, str, arg)))
-#else
-	#define	CC_PRINTF(str,arg)
 #endif
 
 /*
@@ -48,30 +38,42 @@ extern int CCHaveWarnings;
 /*
  * Report an error on the current line.
  */
-void CCError(const char *format, ...) CC_PRINTF(1, 2);
+void CCError(const char *format, ...) IL_PRINTF(1, 2);
 
 /*
  * Report an error on a specific line.
  */
 void CCErrorOnLine(const char *filename, unsigned long linenum,
-				   const char *format, ...) CC_PRINTF(3, 4);
+				   const char *format, ...) IL_PRINTF(3, 4);
+
+/*
+ * Same as CCErrorOnLine except it takes an IL_VA_LIST as variable argument.
+ */
+void CCErrorOnLineV(const char *filename, unsigned long linenum,
+					const char *format, IL_VA_LIST va);
 
 /*
  * Report a warning on the current line.
  */
-void CCWarning(const char *format, ...) CC_PRINTF(1, 2);
+void CCWarning(const char *format, ...) IL_PRINTF(1, 2);
 
 /*
  * Report a typed warning on the current line.  The warning
  * will only be reported if the "type" is enabled.
  */
-void CCTypedWarning(const char *type, const char *format, ...) CC_PRINTF(2, 3);
+void CCTypedWarning(const char *type, const char *format, ...) IL_PRINTF(2, 3);
 
 /*
  * Report a warning on a specific line.
  */
 void CCWarningOnLine(const char *filename, unsigned long linenum,
-				     const char *format, ...) CC_PRINTF(3, 4);
+				     const char *format, ...) IL_PRINTF(3, 4);
+
+/*
+ * Same as CCWarningOnLine except it takes an IL_VAL_LIST as variable argument.
+ */
+void CCWarningOnLineV(const char *filename, unsigned long linenum,
+					  const char *format, IL_VA_LIST va);
 
 /*
  * Report a typed warning on a specific line.  The warning
@@ -79,7 +81,7 @@ void CCWarningOnLine(const char *filename, unsigned long linenum,
  */
 void CCTypedWarningOnLine(const char *filename, unsigned long linenum,
 				     	  const char *type, const char *format, ...)
-						  CC_PRINTF(4, 5);
+						  IL_PRINTF(4, 5);
 
 /*
  * Report either a warning or an error about unsafe constructs.

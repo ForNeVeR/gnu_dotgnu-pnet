@@ -19,7 +19,9 @@
  */
 
 #include "cs_internal.h"
+#include <codegen/cg_genattr.h>
 #include <codegen/cg_nodemap.h>
+#include "il_program.h"
 #include "il_serialize.h"
 
 #ifdef	__cplusplus
@@ -196,16 +198,19 @@ static ILProgramItem *LookupAttrField(ILGenInfo *info, ILType *type,
 /*
  * Get the type that is associated with a field or property.
  */
-static ILType *GetAttrFieldType(ILProgramItem *item)
+static ILType *GetAttrFieldType(ILMember *member)
 {
-	ILField *field = ILProgramItemToField(item);
-	ILProperty *property = ILProgramItemToProperty(item);
+	ILProgramItem *item;
+	ILField *field;
+	ILProperty *property;
 	ILMethod *setter;
-	if(field)
+
+	item = ILToProgramItem(member);
+	if((field = ILProgramItemToField(item)) != 0)
 	{
 		return ILField_Type(field);
 	}
-	else if(property)
+	else if((property = ILProgramItemToProperty(item)) != 0)
 	{
 		setter = ILProperty_Setter(property);
 		return ILTypeGetParam(ILMethod_Signature(setter), 1);
@@ -247,196 +252,11 @@ static int IsAttributeTargetDistinct(ILGenInfo *info, ILProgramItem *item,
 }
 
 /*
- * Convert a type into a name, formatted for use in attribute values.
- */
-static const char *CSTypeToAttrName(ILGenInfo *info, ILType *type)
-{
-	ILClass *classInfo = ILTypeToClass(info, type);
-	const char *name = ILClass_Name(classInfo);
-	const char *namespace = ILClass_Namespace(classInfo);
-	const char *finalName;
-	if(namespace)
-	{
-		finalName = ILInternAppendedString
-					(ILInternAppendedString
-						(ILInternString((char *)namespace, -1),
-						 ILInternString((char *)".", 1)),
-					 ILInternString((char *)name, -1)).string;
-	}
-	else
-	{
-		finalName = name;
-	}
-	if(ILClass_NestedParent(classInfo) != 0)
-	{
-		/* Prepend the name of the enclosing nesting class */
-		const char *parentName = CSTypeToAttrName
-			(info, ILType_FromClass(ILClass_NestedParent(classInfo)));
-		finalName = ILInternAppendedString
-					(ILInternAppendedString
-						(ILInternString((char *)parentName, -1),
-						 ILInternString((char *)"+", 1)),
-					 ILInternString((char *)finalName, -1)).string;
-	}
-	return finalName;
-}
-
-/* 
- * write an entry into the serialized stream using the provide paramType and
- * argValue and serialType. 
- */
-
-static void WriteSerializedEntry(ILGenInfo *info,
-								 ILSerializeWriter *writer, 
-								 ILType *paramType,
-								 ILEvalValue *argValue,
-								 ILType *argType,
-								 int serialType)
-{	
-	ILType *systemType=ILFindSystemType(info,"Type");
-
-	switch(serialType)
-	{
-		case IL_META_SERIALTYPE_BOOLEAN:
-		case IL_META_SERIALTYPE_I1:
-		case IL_META_SERIALTYPE_U1:
-		case IL_META_SERIALTYPE_I2:
-		case IL_META_SERIALTYPE_U2:
-		case IL_META_SERIALTYPE_CHAR:
-		case IL_META_SERIALTYPE_I4:
-		case IL_META_SERIALTYPE_U4:
-		{
-			ILSerializeWriterSetInt32(writer, argValue->un.i4Value,
-									  serialType);
-		}
-		break;
-
-		case IL_META_SERIALTYPE_I8:
-		case IL_META_SERIALTYPE_U8:
-		{
-			ILSerializeWriterSetInt64(writer, argValue->un.i8Value);
-		}
-		break;
-
-		case IL_META_SERIALTYPE_R4:
-		{
-			ILSerializeWriterSetFloat32(writer, argValue->un.r4Value);
-		}
-		break;
-
-		case IL_META_SERIALTYPE_R8:
-		{
-			ILSerializeWriterSetFloat64(writer, argValue->un.r8Value);
-		}
-		break;
-
-		case IL_META_SERIALTYPE_STRING:
-		{
-			if(argValue->valueType == ILMachineType_String)
-			{
-				ILSerializeWriterSetString(writer, argValue->un.strValue.str,
-										   argValue->un.strValue.len);
-			}
-			else
-			{
-				ILSerializeWriterSetString(writer, 0, 0);
-			}
-		}
-		break;
-
-		case IL_META_SERIALTYPE_TYPE:
-		{
-			const char *name = CSTypeToAttrName
-				(info, (ILType *)(argValue->un.strValue.str));
-			ILSerializeWriterSetString(writer, name, strlen(name));
-		}
-		break;
-
-		case IL_META_SERIALTYPE_VARIANT:
-		{
-			/* Note : We assume the values are castable and
-			 * do not provide any checks here */
-			if(ILType_IsPrimitive(argType))
-			{
-				switch(argValue->valueType)
-				{	
-					case ILMachineType_Boolean:
-					case ILMachineType_Int8:
-					case ILMachineType_UInt8:
-					case ILMachineType_Int16:
-					case ILMachineType_UInt16:
-					case ILMachineType_Char:
-					case ILMachineType_Int32:
-					case ILMachineType_UInt32:
-					case ILMachineType_Int64:
-					case ILMachineType_UInt64:
-					case ILMachineType_Float32:
-					case ILMachineType_Float64:
-					case ILMachineType_Decimal:
-					{
-						serialType=ILSerializeGetType(argType);
-						
-						ILSerializeWriterSetBoxedPrefix(writer, 
-														   serialType);
-
-						WriteSerializedEntry(info, writer, paramType, 
-											 argValue, argType, serialType);
-					}
-					break;
-					
-					case ILMachineType_String:
-					{
-						/* TODO */
-					}
-					break;
-					
-					default:
-					{
-					}
-					break;
-				}
-			}
-			else if(ILTypeIdentical(argType, systemType))
-			{ 
-				ILSerializeWriterSetBoxedPrefix(writer,
-										IL_META_SERIALTYPE_TYPE);
-				
-				WriteSerializedEntry(info, writer, paramType, 
-									 argValue, argType,
-									 IL_META_SERIALTYPE_TYPE);
-			}
-			else if(ILTypeIsEnum(argType))
-			{
-				const char *name = CSTypeToAttrName(info, (ILType *)(argType));
-				ILSerializeWriterSetBoxedPrefix(writer,
-										IL_META_SERIALTYPE_ENUM);
-				ILSerializeWriterSetString(writer, name, strlen(name));
-
-				serialType=ILSerializeGetType(argType);
-
-				WriteSerializedEntry(info, writer, paramType,
-										argValue, argType,
-										serialType);	
-			}
-		}
-		break;
-
-		default:
-		{
-			if(ILType_IsArray(paramType))
-			{
-				/* TODO: arrays */
-			}
-		}
-		break;
-	}
-}
-
-/*
  * Process a single attribute in a section.
  */
-static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
-						int target, ILNode_Attribute *attr)
+static void ProcessAttr(ILGenInfo *info, CGAttributeInfos *attributeInfos,
+						ILProgramItem *item, ILUInt32 target,
+						ILNode_Attribute *attr)
 {
 	ILType *type;
 	ILClass *classInfo;
@@ -446,10 +266,8 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	ILNode_ListIter iter;
 	ILNode *arg;
 	CSEvalArg *evalArgs;
-	ILEvalValue *evalValues;
-	CSEvalArg *namedArgs;
-	ILEvalValue *namedValues;
-	ILProgramItem **namedFields;
+	CGAttrCtorArg *ctorArgs;
+	CGAttrNamedArg *namedArgs;
 	CSSemValue value;
 	int haveErrors;
 	CSSemValue method;
@@ -459,16 +277,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	ILMethod *methodInfo;
 	ILType *signature;
 	ILType *paramType;
-	int allowMultiple;
-	int inherited;
-	ILSerializeWriter *writer = 0;
-	ILEvalValue *argValue;
-	int serialType;
-	const void *blob;
-	unsigned long blobLen;
-	ILAttribute *attribute;
 	int skipConst;
-	ILType *argType;
 
 	/* Modify the name so as to correctly handle "Attribute" suffixes,
 	   and then perform semantic analysis on the type */
@@ -493,47 +302,15 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 		return;
 	}
 
-	/* Check that that the attribute can be applied to this kind of target.
-	   We use a different algorithm for "AttributeUsageAttribute", to avoid
-	   circularities in the semantic analysis network */
+	/* Perform semantic analysis on the attribute type, but only
+	   if we aren't trying to apply the attribute to itself */
 	if(!IsAttributeUsage(classInfo))
 	{
-		/* Perform semantic analysis on the attribute type, but only
-		   if we aren't trying to apply the attribute to itself */
-		if(IsAttributeTargetDistinct(info,item,classInfo))
+		if(IsAttributeTargetDistinct(info, item, classInfo))
 		{
 			CSSemProgramItem(info, ILToProgramItem(classInfo));
 		}
-
-		/* Get the usage information for the attribute */
-		allowMultiple = 1;
-		inherited = 1;
 	}
-	else
-	{
-		/* We can only use "AttributeUsageAttribute" on classes
-		   that inherit from "System.Attribute" */
-		classInfo = ILProgramItemToClass(item);
-		if(!classInfo)
-		{
-			CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
-		     _("`System.AttributeUsageAttribute' may only be used on classes"));
-			return;
-		}
-		if(!ILTypeAssignCompatible(info->image, ILClassToType(classInfo),
-		   						   ILFindSystemType(info, "Attribute")))
-		{
-			CCErrorOnLine(yygetfilename(attr), yygetlinenum(attr),
-						  _("`%s' does not inherit from `System.Attribute'"),
-						  CSTypeToName(ILClassToType(classInfo)));
-			return;
-		}
-		allowMultiple = 0;
-		inherited = 1;
-	}
-
-	/* Check the "AllowMultiple" and "Inherited" states of the attribute */
-	/* TODO */
 
 	/* Perform semantic analysis on the positional attributes */
 	if(attr->args)
@@ -553,8 +330,8 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 		{
 			CCOutOfMemory();
 		}
-		evalValues = (ILEvalValue *)ILMalloc(sizeof(ILEvalValue) * numArgs);
-		if(!evalValues)
+		ctorArgs = CGAttrCtorArgAlloc(attributeInfos, numArgs);
+		if(!ctorArgs)
 		{
 			CCOutOfMemory();
 		}
@@ -584,14 +361,15 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			/* Evaluate the constant value of the argument */
 			if(CSSemIsType(value))
 			{
-				evalValues[argNum].valueType = ILMachineType_Void;
-				evalValues[argNum].un.oValue = CSSemGetType(value);
+				ctorArgs[argNum].evalValue.valueType = ILMachineType_Void;
+				ctorArgs[argNum].evalValue.un.oValue = CSSemGetType(value);
 				evalArgs[argNum].type = ILFindSystemType(info, "Type");
 			}
 			else
 			{
 				if(!haveErrors &&
-				   !ILNode_EvalConst(*(iter.last), info, &(evalValues[argNum])))
+				   !ILNode_EvalConst(*(iter.last), info,
+									 &(ctorArgs[argNum].evalValue)))
 				{
 					haveErrors = 1;
 				}
@@ -604,7 +382,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	else
 	{
 		evalArgs = 0;
-		evalValues = 0;
+		ctorArgs = 0;
 	}
 
 	/* Perform semantic analysis on the named arguments */
@@ -619,20 +397,8 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	numNamedArgs = ILNode_List_Length(namedArgList);
 	if(numNamedArgs)
 	{
-		namedArgs = (CSEvalArg *)ILMalloc(sizeof(CSEvalArg) * numNamedArgs);
+		namedArgs = CGAttrNamedArgAlloc(attributeInfos, numNamedArgs);
 		if(!namedArgs)
-		{
-			CCOutOfMemory();
-		}
-		namedValues = (ILEvalValue *)ILMalloc
-			(sizeof(ILEvalValue) * numNamedArgs);
-		if(!namedValues)
-		{
-			CCOutOfMemory();
-		}
-		namedFields = (ILProgramItem **)ILMalloc
-			(sizeof(ILProgramItem *) * numNamedArgs);
-		if(!namedFields)
 		{
 			CCOutOfMemory();
 		}
@@ -641,7 +407,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 		while((arg = ILNode_ListIter_Next(&iter)) != 0)
 		{
 			/* Convert the name into a field or property */
-			if((namedFields[argNum] = LookupAttrField
+			if((namedArgs[argNum].member = (ILMember *)LookupAttrField
 					(info, type, ((ILNode_NamedArg *)arg)->name)) == 0)
 			{
 				CCErrorOnLine
@@ -670,13 +436,12 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			}
 			namedArgs[argNum].node = ((ILNode_NamedArg *)arg)->value;
 			namedArgs[argNum].parent = &(((ILNode_NamedArg *)arg)->value);
-			namedArgs[argNum].modifier = ILParamMod_empty;
 
 			/* Evaluate the constant value of the argument */
 			if(CSSemIsType(value))
 			{
-				namedValues[argNum].valueType = ILMachineType_Void;
-				namedValues[argNum].un.oValue = CSSemGetType(value);
+				namedArgs[argNum].evalValue.valueType = ILMachineType_Void;
+				namedArgs[argNum].evalValue.un.oValue = CSSemGetType(value);
 				namedArgs[argNum].type = ILFindSystemType(info, "Type");
 				skipConst = 1;
 			}
@@ -684,7 +449,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 			{
 				if(!haveErrors &&
 				   !ILNode_EvalConst(namedArgs[argNum].node, info,
-				   					 &(namedValues[argNum])))
+									 &(namedArgs[argNum].evalValue)))
 				{
 					haveErrors = 1;
 				}
@@ -697,12 +462,12 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 				if(ILCoerce(info, namedArgs[argNum].node,
 							namedArgs[argNum].parent,
 							namedArgs[argNum].type,
-							GetAttrFieldType(namedFields[argNum]),1) &&
+							GetAttrFieldType(namedArgs[argNum].member),1) &&
 				   (skipConst || ILGenCastConst
-				   		(info, &(namedValues[argNum]),
-				   		 namedValues[argNum].valueType,
+						(info, &(namedArgs[argNum].evalValue),
+						 namedArgs[argNum].evalValue.valueType,
 						 ILTypeToMachineType
-								(GetAttrFieldType(namedFields[argNum])))))
+								(GetAttrFieldType(namedArgs[argNum].member)))))
 				{
 					namedArgs[argNum].node = *(namedArgs[argNum].parent);
 				}
@@ -713,7 +478,7 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 								  "cannot coerce from `%s' to `%s'",
 								  CSTypeToName(namedArgs[argNum].type),
 								  CSTypeToName(GetAttrFieldType
-								  		(namedFields[argNum])));
+								  		(namedArgs[argNum].member)));
 					haveErrors = 1;
 				}
 			}
@@ -725,8 +490,6 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 	else
 	{
 		namedArgs = 0;
-		namedValues = 0;
-		namedFields = 0;
 	}
 
 	/* Bail out if we had errors during analysis of the arguments */
@@ -786,24 +549,18 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 		}
 	}
 
-	/* Import the constructor method into this image */
-	methodInfo = (ILMethod *)ILMemberImport
-						(info->image, (ILMember *)itemInfo);
-	if(!methodInfo)
-	{
-		CCOutOfMemory();
-	}
-
 	/* Coerce the positional arguments to their final types */
+	methodInfo = (ILMethod *)itemInfo;
 	signature = ILMethod_Signature(methodInfo);
 	haveErrors = 0;
 	for(argNum = 0; argNum < numArgs; ++argNum)
 	{
 		paramType = ILTypeGetParam(signature, argNum + 1);
-		if(evalValues[argNum].valueType != ILMachineType_Void)
+		if(ctorArgs[argNum].evalValue.valueType != ILMachineType_Void)
 		{
-			if(!ILGenCastConst(info, &(evalValues[argNum]),
-				   evalValues[argNum].valueType,ILTypeToMachineType(paramType))
+			if(!ILGenCastConst(info, &(ctorArgs[argNum].evalValue),
+							   ctorArgs[argNum].evalValue.valueType,
+							   ILTypeToMachineType(paramType))
 			   && !ILCanCastKind(info, evalArgs[argNum].type,
 								paramType, IL_CONVERT_STANDARD,0))
 			{
@@ -823,104 +580,30 @@ static void ProcessAttr(ILGenInfo *info, ILProgramItem *item,
 				haveErrors = 1;
 			}
 		}
+		ctorArgs[argNum].node = evalArgs[argNum].node;
+		ctorArgs[argNum].parent = evalArgs[argNum].parent;
+		ctorArgs[argNum].type = evalArgs[argNum].type;
 	}
 	if(haveErrors)
 	{
 		goto cleanup;
 	}
 
-	/* Build the serialized attribute value */
-	writer = ILSerializeWriterInit();
-	if(!writer)
-	{
-		CCOutOfMemory();
-	}
-	for(argNum = 0; argNum < numArgs; ++argNum)
-	{
-		paramType = ILTypeGetParam(signature, argNum + 1);
-		argValue = &(evalValues[argNum]);
-		argType = evalArgs[argNum].type;
-		serialType = ILSerializeGetType(paramType);
-		WriteSerializedEntry(info,writer,paramType,argValue,argType,serialType);
-	}
-	ILSerializeWriterSetNumExtra(writer, numNamedArgs);
-	for(argNum = 0; argNum < numNamedArgs; ++argNum)
-	{
-		argValue = &(namedValues[argNum]);
-		if(argValue->valueType == ILMachineType_Void)
-		{
-			serialType = IL_META_SERIALTYPE_TYPE;
-			paramType = NULL;
-		}
-		else
-		{
-			paramType = ILValueTypeToType(info, argValue->valueType);
-			serialType = ILSerializeGetType(paramType);
-		}
-		if(ILMember_IsField(((ILMember *)(namedFields[argNum]))))
-		{
-			ILSerializeWriterSetField
-				(writer, ILMember_Name((ILMember *)(namedFields[argNum])),
-				 serialType);
-		}
-		else
-		{
-			ILSerializeWriterSetProperty
-				(writer, ILMember_Name((ILMember *)(namedFields[argNum])),
-				 serialType);
-		}
-		argType=namedArgs[argNum].type;
-		WriteSerializedEntry(info,writer,paramType,argValue,argType,serialType);
-	}
-	blob = ILSerializeWriterGetBlob(writer, &blobLen);
-	if(!blob)
-	{
-		CCOutOfMemory();
-	}
-
-	/* Add the attribute value to the program item */
-	attribute = ILAttributeCreate(info->image, 0);
-	if(!attribute)
-	{
-		CCOutOfMemory();
-	}
-	ILAttributeSetType(attribute, ILToProgramItem(methodInfo));
-	if(!ILAttributeSetValue(attribute, blob, blobLen))
-	{
-		CCOutOfMemory();
-	}
-	ILProgramItemAddAttribute(item, attribute);
+	CGAttributeInfosAddAttribute(attributeInfos, (ILNode *)attr, item,
+								 methodInfo, ctorArgs, numArgs,
+								 namedArgs, numNamedArgs, target);
 
 cleanup:
 	if(evalArgs)
 	{
 		ILFree(evalArgs);
 	}
-	if(evalValues)
-	{
-		ILFree(evalValues);
-	}
-	if(namedArgs)
-	{
-		ILFree(namedArgs);
-	}
-	if(namedValues)
-	{
-		ILFree(namedValues);
-	}
-	if(namedFields)
-	{
-		ILFree(namedFields);
-	}
-	if(writer)
-	{
-		ILSerializeWriterDestroy(writer);
-	}
 }
 
 void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 					ILNode *attributes, int mainTarget)
 {
+	CGAttributeInfos attributeInfos;
 	ILProgramItem *item;
 	int target;
 	ILNode_ListIter iter;
@@ -937,6 +620,9 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 	{
 		return;
 	}
+
+	/* Initislize the attribute infos. */
+	CGAttributeInfosInit(info, &attributeInfos);
 
 	/* Scan through the attribute sections */
 	ILNode_ListIter_Init(&iter, ((ILNode_AttributeTree *)attributes)
@@ -1099,11 +785,18 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 			break;
 		}
 
+		if(target == 0)
+		{
+			CCErrorOnLine(yygetfilename(section), yygetlinenum(section),
+						  _("This is not a valid attribute target"));
+			continue;
+		}
+
 		/* Process the attributes in this section */
 		ILNode_ListIter_Init(&iter2, section->attrs);
 		while((attr = (ILNode_Attribute *)ILNode_ListIter_Next(&iter2)) != 0)
 		{
-			ProcessAttr(info, item, target, attr);
+			ProcessAttr(info, &attributeInfos, item, target, attr);
 		}
 
 		/* Convert system library attributes into metadata structures */
@@ -1112,6 +805,11 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 			CCOutOfMemory();
 		}
 	}
+	/* Process tha collected attributes */
+	CGAttributeInfosProcess(&attributeInfos);
+
+	/* Destroy the attribute infos. */
+	CGAttributeInfosDestroy(&attributeInfos);
 }
 
 void CSProcessAttrsForParam(ILGenInfo *info, ILMethod *method,

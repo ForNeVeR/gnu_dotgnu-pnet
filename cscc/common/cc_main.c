@@ -523,6 +523,8 @@ static int InitCodeGen(void)
 				  					   "target-assembly-name"),
 				  outfile, useBuiltinLibrary);
 	CCCodeGen.debugFlag = debug_flag ? -1 : 0;
+	CCCodeGen.errFunc = CCErrorOnLineV;
+	CCCodeGen.warnFunc = CCWarningOnLineV;
 
 	/* Set the default "checked" state */
 	if(CCStringListContains(extension_flags, num_extension_flags, "checked"))

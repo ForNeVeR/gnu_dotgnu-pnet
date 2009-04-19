@@ -6,10 +6,18 @@
 	getters and setters where they belong to instead of the property or
 	indexer.
 
+	* runtime/System/String.cs (ToCharArray): Handle empty strings and the
+	case where the passed lenght is 0 correctly.
+	This fixes bug #26225 too. (thanks Thomas Uxiou)
+
 	* runtime/System/Reflection/AssemblyFlagsAttribute.cs: Add the new
 	2.0 constructor using AssemblyNameFlags as argument.
 
+	* samples/developers/MainForm.cs: Fix the assembly version.
+
 	* System.Windows.Forms/RichTextBox.cs (Rtf): Fix the DefaulValueAttribute.
+
+	* tests/runtime/System/TestString.cs: Add tests for ToCharArray.
 
 2009-04-18  Thomas Uxiou  <t.uxiou@gmail.com>
 

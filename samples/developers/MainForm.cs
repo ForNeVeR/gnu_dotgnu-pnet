@@ -12,7 +12,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 using System.Text.RegularExpressions;
 
-[assembly:AssemblyVersion("0.0.1")]
+[assembly:AssemblyVersion("0.0.0.1")]
 
 namespace ThreadsDemo
 {

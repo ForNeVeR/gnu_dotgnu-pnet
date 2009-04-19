@@ -1346,5 +1346,15 @@ public class TestString : TestCase
 		AssertEquals("\"Foo Bar\".Length","Foo Bar".Length,7);
 		AssertEquals("\"\".Length","".Length,0);
 	}
-
+	public void TestStringToCharArray()
+	{
+		char[] foo;
+		String bar;
+		foo = String.Empty.ToCharArray();
+		/* If length is 0 the startindex has to be ignored */
+		foo = String.Empty.ToCharArray(10, 0);
+		bar = "abc";
+		foo = bar.ToCharArray(2, 0);
+		AssertEquals("\"abc\".ToCharArray(2, 0)",foo.Length, 3);
+	}
 }; // class TestString

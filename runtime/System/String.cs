@@ -45,6 +45,9 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 
 	// Private constants
 	private static readonly char[] curlyBraces = { '{', '}' };
+	// Arrays with a length of 0 are immutable so we can use the same one
+	// whenever an empty chararray has to be returned.
+	private static readonly char[] emptyCharArray = new char[0];
 
 	// Public constants.
 	public static readonly String Empty = "";
@@ -676,7 +679,7 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Internal version of "CopyTo".
 	[MethodImpl(MethodImplOptions.InternalCall)]
 	extern private void CopyToChecked(int sourceIndex, char[] destination,
-					   		          int destinationIndex, int count);
+									  int destinationIndex, int count);
 
 	// Copy the contents of a string to an array.
 	public void CopyTo(int sourceIndex, char[] destination,
@@ -1500,12 +1503,26 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 	// Convert this string into a character array.
 	public char[] ToCharArray()
 			{
-				return ToCharArray(0, length);
+				if(length > 0)
+				{
+					char[] result;
+					result = new char [length];
+					CopyToChecked(0, result, 0, length);
+					return result;
+				}
+				else
+				{
+					return emptyCharArray;
+				}
 			}
 	public char[] ToCharArray(int startIndex, int ilength)
 			{
-				char[] result;
-				if(startIndex < 0 || startIndex > length)
+				if(ilength == 0)
+				{
+					ilength = length;
+					startIndex = 0;
+				}
+				else if(startIndex < 0 || startIndex >= length)
 				{
 					throw new ArgumentOutOfRangeException
 						("startIndex", _("ArgRange_StringIndex"));
@@ -1515,9 +1532,17 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 					throw new ArgumentOutOfRangeException
 						("length", _("ArgRange_StringRange"));
 				}
-				result = new char [ilength];
-				CopyToChecked(startIndex, result, 0, ilength);
-				return result;
+				if(ilength > 0)
+				{
+					char[] result;
+					result = new char [ilength];
+					CopyToChecked(startIndex, result, 0, ilength);
+					return result;
+				}
+				else
+				{
+					return emptyCharArray;
+				}
 			}
 
 	// Convert a string into lower case.

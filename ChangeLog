@@ -1,3 +1,8 @@
+2009-04-19  Thomas Uxiou  <t.uxiou@gmail.com>
+
+	* runtime/System/String.cs (Split(count)): Return an empty string array
+	if count is 0. (bug #26227)
+
 2009-04-19  Klaus Treichel  <ktreichel@web.de>
 
 	* Basic/FileSystem.cs (FilePutObject): Fix the DefaulValueAttribute.

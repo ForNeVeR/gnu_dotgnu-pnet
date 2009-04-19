@@ -1397,10 +1397,8 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 				}
 				else if(count == 0)
 				{
-					// Return the entire string in a single-element array.
-					array = new String [1];
-					array[0] = this;
-					return array;
+					// Return an empty string array
+					return new String[0];
 				}
 
 				// Count the number of sub-strings.

@@ -28,6 +28,7 @@ libILinclude_HEADERS = il_align.h \
 					   il_types.h \
 					   il_utils.h \
 					   il_values.h \
+					   il_varargs.h \
 					   il_writer.h \
 					   il_xml.h
 

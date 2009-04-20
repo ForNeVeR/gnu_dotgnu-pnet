@@ -1,3 +1,7 @@
+2009-04-20  Klaus Treichel  <ktreichel@web.de>
+
+	* include/Makefile.am: Add il_varargs.h to the sources.
+
 2009-04-19  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_errors.c, codegen/cg_errors.h: Add codegen functions to

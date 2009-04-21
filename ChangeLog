@@ -1,3 +1,7 @@
+2009-04-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* System/Uri.cs: fixed CheckHostName, failed with IP-Addresses.
+
 2009-04-19  Thomas Uxiou  <t.uxiou@gmail.com>
 
 	* runtime/System/String.cs (Split(sep, count)): Return an empty string

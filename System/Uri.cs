@@ -352,11 +352,6 @@ public class Uri : MarshalByRefObject
 		if (name == null || name.Length == 0)
 			return UriHostNameType.Unknown;
 		
-		if(IsDnsName(name))
-		{
-			return UriHostNameType.Dns;
-		}
-		
 		try
 		{
 			switch(IPAddress.Parse(name).AddressFamily)
@@ -370,6 +365,12 @@ public class Uri : MarshalByRefObject
 		catch (FormatException)
 		{
 		}
+
+		if(IsDnsName(name))
+		{
+			return UriHostNameType.Dns;
+		}
+
 		return UriHostNameType.Unknown;
 	}
 

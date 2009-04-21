@@ -1,3 +1,9 @@
+2009-04-21  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_genattr.c (DefaultValueAttribute): Use the ctor argument
+	type if the value cannot be casted to the type of the field, property
+	or parameter.
+
 2009-04-20  Klaus Treichel  <ktreichel@web.de>
 
 	* include/Makefile.am: Add il_varargs.h to the sources.

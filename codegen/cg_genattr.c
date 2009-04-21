@@ -1591,9 +1591,11 @@ static int DefaultValueAttribute(ILGenInfo *info,
 	   !ILCanCastKind(info, attributeInfo->ctorArgs[0].type,
 					  type, IL_CONVERT_STANDARD ,0))
 	{
-		CGErrorForNode(info, attributeInfo->ctorArgs[0].node,
-					   _("could not coerce constant argument %d"), 1);
-		return 0;
+		/*
+		 * could not cast to the desired type so simply use the type of the
+		 * arg and hope that the application can handle this.
+		 */
+		type = attributeInfo->ctorArgs[0].type;
 	}
 	type = ILTypeGetEnumType(type);
 	if(ILType_IsPrimitive(type))

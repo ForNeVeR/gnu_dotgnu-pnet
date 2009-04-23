@@ -934,11 +934,13 @@ static int DllImportAttribute(ILGenInfo *info,
 	ILField *field = 0;
 	ILModule *module;
 	ILUInt32 attrMask = 0;
-	ILUInt32 attrs = 0;
+	ILUInt32 attrs;
 	const char *dllName = 0;
 	const char *entryPoint = 0;
 	int currentNamedArg;
 
+	/* Set the default value for the attributes */
+	attrs = IL_META_PINVOKE_CHAR_SET_ANSI | IL_META_PINVOKE_CALL_CONV_STDCALL;
 	if((method = ILProgramItemToMethod(attributeInfo->owner)) != 0)
 	{
 		/* Nothing to do here */
@@ -1005,6 +1007,7 @@ static int DllImportAttribute(ILGenInfo *info,
 				continue;
 			}
 			attrMask |= IL_META_PINVOKE_CALL_CONV_MASK;
+			attrs &= ~IL_META_PINVOKE_CALL_CONV_MASK;
 			attrs |= (callConv << 8);
 		}
 		else if(!strcmp(attrFieldName, "CharSet"))
@@ -1012,6 +1015,7 @@ static int DllImportAttribute(ILGenInfo *info,
 			ILUInt32 charSet;
 	
 			attrMask |= IL_META_PINVOKE_CHAR_SET_MASK;
+			attrs &= ~IL_META_PINVOKE_CHAR_SET_MASK;
 			charSet = attributeInfo->namedArgs[currentNamedArg].evalValue.un.i4Value;
 			switch(charSet)
 			{

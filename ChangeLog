@@ -1,3 +1,8 @@
+2009-04-23  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_genattr.c (DllImportAttribute): Set the correct default
+	values for calling convention and characterset.
+	
 2009-04-21  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_genattr.c (DefaultValueAttribute): Use the ctor argument

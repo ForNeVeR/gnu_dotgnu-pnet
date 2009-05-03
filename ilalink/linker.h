@@ -311,6 +311,13 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field,
 						  ILClass *newClass);
 
 /*
+ * Convert constant data from an old item in a link
+ * image, and attach them to a new item in the final image.
+ */
+int _ILLinkerConvertConstant(ILLinker *linker, ILProgramItem *oldItem,
+							 ILProgramItem *newItem);
+
+/*
  * Convert field marshal and constant data from an old item in a link
  * image, and attach them to a new item in the final image.
  */

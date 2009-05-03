@@ -77,6 +77,13 @@ int _ILLinkerConvertProperty(ILLinker *linker, ILProperty *property,
 		return 0;
 	}
 
+	/* Convert the constant attached to the property */
+	if(!_ILLinkerConvertConstant(linker, (ILProgramItem *)property,
+								 (ILProgramItem *)newProperty))
+	{
+		return 0;
+	}
+
 	/* Convert the method semantics on the property */
 	if(!ConvertSemantics(linker, (ILProgramItem *)property,
 						 (ILProgramItem *)newProperty))

@@ -1,3 +1,19 @@
+2009-05-03  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_decls.tc (ILGenOutputAttributes): Print the .permissionset
+	instead of the .capability keyword for decarative security attributes.
+
+	* dumpasm/dump_utils.c (ILDAsmDumpSecurity): likewise.
+
+	* ilalink/linker.h (_ILLinkerConvertConstant): Add prototype.
+
+	* ilalink/link_field.c (_ILLinkerConvertConstant): Move logic for
+	converting constants from _ILLinkerConvertMarshal to here and call
+	_ILLinkerConvertConstant in _ILLinkerConvertMarshal instead.
+
+	* ilalink/link_misc.c (_ILLinkerConvertProperty): Add conversion of
+	constants attached to a property.
+
 2009-04-23  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_genattr.c (DllImportAttribute): Set the correct default

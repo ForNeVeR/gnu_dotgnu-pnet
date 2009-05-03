@@ -83,7 +83,7 @@ void ILGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 				"prejitdeny", "noncasdemand", "noncaslinkdemand",
 				"nocasinheritance"
 			};
-			fputs(".capability ", stream);
+			fputs(".permissionset ", stream);
 			fputs(actionNames[ILDeclSecurity_Type(decl) &
 							  IL_META_SECURITY_ACTION_MASK], stream);
 			fputs(" = (", stream);

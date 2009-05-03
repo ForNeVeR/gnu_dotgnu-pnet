@@ -141,7 +141,7 @@ void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 	}
 
 	/* Dump the security header */
-	fputs("\t.capability ", outstream);
+	fputs("\t.permissionset ", outstream);
 
 	/* Dump the type of security blob */
 	ILDumpFlags(outstream, ILDeclSecurity_Type(security), ILSecurityFlags, 0);

@@ -172,13 +172,43 @@ int _ILLinkerConvertField(ILLinker *linker, ILField *field, ILClass *newClass)
 	return 1;
 }
 
+int _ILLinkerConvertConstant(ILLinker *linker, ILProgramItem *oldItem,
+							 ILProgramItem *newItem)
+{
+	ILConstant *constant;
+
+	constant = ILConstantGetFromOwner(oldItem);
+	if(constant)
+	{
+		ILConstant *newConstant;
+		const void *blob;
+		unsigned long blobLen;
+
+		newConstant = ILConstantCreate(linker->image, 0, newItem,
+									   ILConstant_ElemType(constant));
+		if(!newConstant)
+		{
+			_ILLinkerOutOfMemory(linker);
+			return 0;
+		}
+		blob = ILConstantGetValue(constant, &blobLen);
+		if(blob)
+		{
+			if(!ILConstantSetValue(newConstant, blob, blobLen))
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
+		}
+	}
+	return 1;
+}
+
 int _ILLinkerConvertMarshal(ILLinker *linker, ILProgramItem *oldItem,
 						    ILProgramItem *newItem, int isParam)
 {
 	ILFieldMarshal *marshal;
 	ILFieldMarshal *newMarshal;
-	ILConstant *constant;
-	ILConstant *newConstant;
 	ILFieldLayout *layout;
 	ILFieldRVA *rva;
 	const void *blob;
@@ -211,25 +241,9 @@ int _ILLinkerConvertMarshal(ILLinker *linker, ILProgramItem *oldItem,
 	}
 
 	/* Convert the constant information */
-	constant = ILConstantGetFromOwner(oldItem);
-	if(constant)
+	if(!_ILLinkerConvertConstant(linker, oldItem, newItem))
 	{
-		newConstant = ILConstantCreate(linker->image, 0, newItem,
-									   ILConstant_ElemType(constant));
-		if(!newConstant)
-		{
-			_ILLinkerOutOfMemory(linker);
-			return 0;
-		}
-		blob = ILConstantGetValue(constant, &blobLen);
-		if(blob)
-		{
-			if(!ILConstantSetValue(newConstant, blob, blobLen))
-			{
-				_ILLinkerOutOfMemory(linker);
-				return 0;
-			}
-		}
+		return 0;
 	}
 
 	/* Bail out now if we are processing a parameter */

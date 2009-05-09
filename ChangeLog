@@ -3,6 +3,8 @@
 	* codegen/cg_decls.tc (ILGenOutputAttributes): Iterate over the security
 	items attached to a program item instead of dumping only the first one.
 
+	* dumpasm/dump_utils.c (ILDAsmDumpSecurity): likewise.
+
 	* ilalink/link_attrs.c (_ILLinkerConvertSecurity): Iterate over the
 	security items attached to a program item instead of converting only the
 	first one.

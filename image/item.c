@@ -157,6 +157,39 @@ unsigned long ILProgramItemNumAttributes(ILProgramItem *item)
 	return count;
 }
 
+ILDeclSecurity *ILProgramItemNextDeclSecurity(ILProgramItem *item,
+											  ILDeclSecurity *security)
+{
+	ILToken token;
+	ILImage *image;
+	ILDeclSecurity *newSecurity;
+
+	if(!security)
+	{
+		return ILDeclSecurityGetFromOwner(item);
+	}
+	image = security->ownedItem.programItem.image;
+	token = security->ownedItem.programItem.token;
+	++token;
+	while((newSecurity = ILDeclSecurity_FromToken(image, token)) != 0)
+	{
+		if(newSecurity->ownedItem.owner == security->ownedItem.owner)
+		{
+			return newSecurity;
+		}
+		if(image->type != IL_IMAGETYPE_BUILDING)
+		{
+			/*
+			 * In loaded images the security records have to be sorted on
+			 * owner. So if the owner changes we are at the end of the list.
+			 */
+			return 0;
+		}
+		++token;
+	}
+	return 0;
+}
+
 ILImage *ILProgramItemGetImage(ILProgramItem *item)
 {
 	return item->image;

@@ -381,8 +381,8 @@ static void GetMetadataSizeWithAttrs(ILSizeInfo *info, ILProgramItem *item)
 	}
 
 	/* Account for the security declaration if there is one */
-	decl = ILDeclSecurityGetFromOwner(item);
-	if(decl)
+	decl = 0;
+	while((decl = ILProgramItemNextDeclSecurity(item, decl)) != 0)
 	{
 		GetMetadataSize(info, ILToProgramItem(decl));
 	}

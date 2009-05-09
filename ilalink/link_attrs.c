@@ -85,34 +85,33 @@ int _ILLinkerConvertSecurity(ILLinker *linker, ILProgramItem *oldItem,
 						     ILProgramItem *newItem)
 {
 	ILDeclSecurity *decl;
-	ILDeclSecurity *newDecl;
-	const void *blob;
-	unsigned long blobLen;
 
 	/* Get the security declaration from the old item */
-	decl = ILDeclSecurityGetFromOwner(oldItem);
-	if(!decl)
+	decl = 0;
+	while((decl = ILProgramItemNextDeclSecurity(oldItem, decl)) != 0)
 	{
-		return 1;
-	}
+		ILDeclSecurity *newDecl;
+		const void *blob;
+		unsigned long blobLen;
 
-	/* Create a security declaration on the new item */
-	newDecl = ILDeclSecurityCreate(linker->image, 0, newItem,
-								   ILDeclSecurity_Type(decl));
-	if(!newDecl)
-	{
-		_ILLinkerOutOfMemory(linker);
-		return 0;
-	}
-
-	/* Copy the security blob */
-	blob = ILDeclSecurityGetBlob(decl, &blobLen);
-	if(blob)
-	{
-		if(!ILDeclSecuritySetBlob(newDecl, blob, blobLen))
+		/* Create a security declaration on the new item */
+		newDecl = ILDeclSecurityCreate(linker->image, 0, newItem,
+									   ILDeclSecurity_Type(decl));
+		if(!newDecl)
 		{
 			_ILLinkerOutOfMemory(linker);
 			return 0;
+		}
+
+		/* Copy the security blob */
+		blob = ILDeclSecurityGetBlob(decl, &blobLen);
+		if(blob)
+		{
+			if(!ILDeclSecuritySetBlob(newDecl, blob, blobLen))
+			{
+				_ILLinkerOutOfMemory(linker);
+				return 0;
+			}
 		}
 	}
 

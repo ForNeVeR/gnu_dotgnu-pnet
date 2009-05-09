@@ -363,7 +363,12 @@ static void *SearchForOwnedItem(ILImage *image, ILToken tokenType,
 	num = _ILSearchForRawToken(image, OwnedItemCompareRaw, tokenType, &token,
 							   ((ILProgramItem *)owner)->token,
 							   valueField);
-	if(num != 1)
+	/*
+	 * Check if the number of owned items of this token type is valid or no
+	 * owned item was found.
+	 */
+	if((num < 1) ||
+	   ((num > 1) && (tokenType != IL_META_TOKEN_DECL_SECURITY)))
 	{
 		return 0;
 	}

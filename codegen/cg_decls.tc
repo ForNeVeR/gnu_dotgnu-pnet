@@ -35,7 +35,6 @@ void ILGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 	const void *value;
 	unsigned long valueLen;
 	unsigned long posn;
-	ILDeclSecurity *decl;
 
 	attr = 0;
 	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)
@@ -73,8 +72,9 @@ void ILGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 	   ILProgramItemToClass(item) ||
 	   ILProgramItemToMethod(item))
 	{
-		decl = ILDeclSecurityGetFromOwner(item);
-		if(decl)
+		ILDeclSecurity *decl = 0;
+
+		while((decl = ILProgramItemNextDeclSecurity(item, decl)) != 0)
 		{
 			static char * const actionNames[] = {
 				"demand /*nil*/", "request", "demand", "assert",

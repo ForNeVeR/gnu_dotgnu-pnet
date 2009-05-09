@@ -2368,10 +2368,20 @@ int ILDeclSecuritySetBlob(ILDeclSecurity *security, const void *blob,
 const void *ILDeclSecurityGetBlob(ILDeclSecurity *security, unsigned long *len);
 
 /*
- * Get the security record that is associated with a program item.
+ * Get the first security record that is associated with a program item.
  * Returns NULL if no such security record.
  */
 ILDeclSecurity *ILDeclSecurityGetFromOwner(ILProgramItem *owner);
+
+/*
+ * Iterate over the list of security records that are associated
+ * with a program item.  If "security" is NULL, then return the
+ * first security record in the list.  Otherwise return the next
+ * security record in the list after "security".  Returns NULL at the
+ * end of the list.
+ */
+ILDeclSecurity *ILProgramItemNextDeclSecurity(ILProgramItem *item,
+											  ILDeclSecurity *security);
 
 /*
  * Helper macros for querying information about security records.

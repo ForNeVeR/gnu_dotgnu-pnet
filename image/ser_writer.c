@@ -67,7 +67,6 @@ static unsigned char *GetSpace(ILSerializeWriter *writer, int len)
 ILSerializeWriter *ILSerializeWriterInit(void)
 {
 	ILSerializeWriter *writer;
-	unsigned char *buf;
 
 	/* Allocate space for the writer */
 	writer = (ILSerializeWriter *)ILMalloc(sizeof(ILSerializeWriter));
@@ -81,13 +80,6 @@ ILSerializeWriter *ILSerializeWriterInit(void)
 	writer->blobLen = 0;
 	writer->blobMax = 0;
 	writer->outOfMemory = 0;
-
-	/* Write the version number to the blob */
-	buf = GetSpace(writer, 2);
-	if(buf)
-	{
-		IL_WRITE_UINT16(buf, 1);
-	}
 
 	/* The writer is ready to go */
 	return writer;

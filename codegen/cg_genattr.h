@@ -64,6 +64,21 @@ struct _tagCGAttributeInfo
 		
 };
 
+typedef struct _tagCGSecurityAttributeInfo CGSecurityAttributeInfo;
+struct _tagCGSecurityAttributeInfo
+{
+	ILNode					   *node;				/* only for error output */
+	ILClass					   *securityAttribute;
+	CGAttrNamedArg			   *namedArgs;
+	ILUInt32					numNamed;
+	CGSecurityAttributeInfo	   *next;
+};
+
+/*
+ * Opaque type to reference permissionsets.
+ */
+typedef struct _tagCGPermissionSets CGPermissionSets;
+
 /*
  * Block to hold the information for the custom attributes
  * to be emitted for a program item.
@@ -71,10 +86,10 @@ struct _tagCGAttributeInfo
 typedef struct _tagCGAttributeInfos  CGAttributeInfos;
 struct _tagCGAttributeInfos
 {
-	ILMemStack		memstack;
-	ILGenInfo	   *info;
-	CGAttributeInfo	*attributes;
-		
+	ILMemStack			memstack;
+	ILGenInfo		   *info;
+	CGAttributeInfo	   *attributes;
+	CGPermissionSets   *permissionSets;
 };
 
 /*

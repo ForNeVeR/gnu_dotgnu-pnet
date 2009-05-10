@@ -29,6 +29,13 @@
 extern	"C" {
 #endif
 
+struct _tagCGPermissionSets
+{
+	ILProgramItem			   *owner;
+	CGSecurityAttributeInfo	   *permissionSet[9];	/* For the values 2 ... 10 */
+	CGPermissionSets		   *next;				/* Next entry for am other owner in the list */
+};
+
 typedef struct _tagCGAttrConvertInfo CGAttrConvertInfo;
 struct _tagCGAttrConvertInfo
 {
@@ -47,6 +54,7 @@ void CGAttributeInfosInit(ILGenInfo *info,
 	ILMemStackInit(&(attributeInfos->memstack), 0);
 	attributeInfos->info = info;
 	attributeInfos->attributes = 0;
+	attributeInfos->permissionSets = 0;
 }
 
 void CGAttributeInfosDestroy(CGAttributeInfos *attributeInfos)
@@ -104,6 +112,43 @@ CGAttrNamedArg *CGAttrNamedArgAlloc(CGAttributeInfos *attributeInfos,
 	}
 	return namedArg;
 }
+
+static CGPermissionSets *CGPermissionSetsAlloc(CGAttributeInfos *attributeInfos,
+											   ILProgramItem *owner)
+{
+	CGPermissionSets *permissionSets;
+
+	if(attributeInfos == 0)
+	{
+		return 0;
+	}
+	if(owner == 0)
+	{
+		return 0;
+	}
+	/* Look for a permissionset for that owner */
+	permissionSets = attributeInfos->permissionSets;
+	while(permissionSets != 0)
+	{
+		if(permissionSets->owner == owner)
+		{
+			return permissionSets;
+		}
+		permissionSets = permissionSets->next;
+	}
+	/* We need a new one */
+	permissionSets = ILMemStackAlloc(&(attributeInfos->memstack),
+									 CGPermissionSets);
+	if(permissionSets == 0)
+	{
+		ILGenOutOfMemory(attributeInfos->info);
+		return 0;
+	}
+	permissionSets->owner = owner;
+	permissionSets->next = attributeInfos->permissionSets;
+	attributeInfos->permissionSets = permissionSets;
+	return permissionSets;
+}	
 
 /*
  * Get the target name for an attribute target.
@@ -206,6 +251,67 @@ static const char *AttributeTargetToName(ILUInt32 target)
 	return "Unknown";
 }
 
+static const char *SecurityActionToName(ILUInt32 action)
+{
+	switch(action)
+	{
+		case IL_META_SECURITY_DEMAND:
+		{
+			return "Demand";
+		}
+		break;
+
+		case IL_META_SECURITY_ASSERT:
+		{
+			return "Assert";
+		}
+		break;
+
+		case IL_META_SECURITY_DENY:
+		{
+			return "Deny";
+		}
+		break;
+
+		case IL_META_SECURITY_PERMIT_ONLY:
+		{
+			return "PermitOnly";
+		}
+		break;
+
+		case IL_META_SECURITY_LINK_TIME_CHECK:
+		{
+			return "LinkDemand";
+		}
+		break;
+
+		case IL_META_SECURITY_INHERITANCE_CHECK:
+		{
+			return "InheritanceDemand";
+		}
+		break;
+
+		case IL_META_SECURITY_REQUEST_MINIMUM:
+		{
+			return "RequestMinimum";
+		}
+		break;
+
+		case IL_META_SECURITY_REQUEST_OPTIONAL:
+		{
+			return "RequestOptional";
+		}
+		break;
+
+		case IL_META_SECURITY_REQUEST_REFUSE:
+		{
+			return "RequestRefuse";
+		}
+		break;
+	}
+	return "Unknown";
+}
+
 /*
  * Convert a string from UTF-8 to UTF-16.
  */
@@ -275,11 +381,21 @@ static const char *CGClassToName(ILClass *classInfo)
 }
 
 /*
- * Convert a type into a name, formatted for use in attribute values.
+ * Convert a type into a name used by error messages.
  */
-static const char *CGTypeToAttrName(ILGenInfo *info, ILType *type)
+static const char *CGTypeToName(ILGenInfo *info, ILType *type)
 {
-	ILClass *classInfo = ILTypeToClass(info, type);
+	ILClass *classInfo;
+
+	classInfo = ILTypeToClass(info, type);
+	return CGClassToName(classInfo);
+}
+
+/*
+ * Convert a class into a name, formatted for use in attribute values.
+ */
+static const char *CGClassToAttrName(ILGenInfo *info, ILClass *classInfo)
+{
 	const char *name = ILClass_Name(classInfo);
 	const char *namespace = ILClass_Namespace(classInfo);
 	const char *finalName;
@@ -297,8 +413,8 @@ static const char *CGTypeToAttrName(ILGenInfo *info, ILType *type)
 	if(ILClass_NestedParent(classInfo) != 0)
 	{
 		/* Prepend the name of the enclosing nesting class */
-		const char *parentName = CGTypeToAttrName
-			(info, ILType_FromClass(ILClass_NestedParent(classInfo)));
+		const char *parentName = CGClassToAttrName
+			(info, ILClass_NestedParent(classInfo));
 		finalName = ILInternStringConcat3
 						(ILInternString(parentName, -1),
 						 ILInternString("+", 1),
@@ -307,16 +423,26 @@ static const char *CGTypeToAttrName(ILGenInfo *info, ILType *type)
 	return finalName;
 }
 
-/* 
- * write an entry into the serialized stream using the provide paramType and
- * argValue and serialType. 
+/*
+ * Convert a type into a name, formatted for use in attribute values.
  */
-static void WriteSerializedEntry(ILGenInfo *info,
-								 ILSerializeWriter *writer, 
-								 ILType *paramType,
-								 ILEvalValue *argValue,
-								 ILType *argType,
-								 int serialType)
+static const char *CGTypeToAttrName(ILGenInfo *info, ILType *type)
+{
+	ILClass *classInfo = ILTypeToClass(info, type);
+
+	return CGClassToAttrName(info, classInfo);
+}
+
+/* 
+ * write a fixed ctor argument entry into the serialized stream using the
+ * provided paramType, argValue and serialType.
+ */
+static void WriteFixedArgument(ILGenInfo *info,
+							   ILSerializeWriter *writer, 
+							   ILType *paramType,
+							   ILEvalValue *argValue,
+							   ILType *argType,
+							   int serialType)
 {	
 	ILType *systemType=ILFindSystemType(info,"Type");
 
@@ -404,17 +530,17 @@ static void WriteSerializedEntry(ILGenInfo *info,
 						ILSerializeWriterSetBoxedPrefix(writer, 
 														   serialType);
 
-						WriteSerializedEntry(info, writer, paramType, 
+						WriteFixedArgument(info, writer, paramType, 
 											 argValue, argType, serialType);
 					}
 					break;
-					
+
 					case ILMachineType_String:
 					{
 						/* TODO */
 					}
 					break;
-					
+
 					default:
 					{
 					}
@@ -425,8 +551,8 @@ static void WriteSerializedEntry(ILGenInfo *info,
 			{ 
 				ILSerializeWriterSetBoxedPrefix(writer,
 										IL_META_SERIALTYPE_TYPE);
-				
-				WriteSerializedEntry(info, writer, paramType, 
+
+				WriteFixedArgument(info, writer, paramType, 
 									 argValue, argType,
 									 IL_META_SERIALTYPE_TYPE);
 			}
@@ -439,9 +565,9 @@ static void WriteSerializedEntry(ILGenInfo *info,
 
 				serialType=ILSerializeGetType(argType);
 
-				WriteSerializedEntry(info, writer, paramType,
+				WriteFixedArgument(info, writer, paramType,
 										argValue, argType,
-										serialType);	
+										serialType);
 			}
 		}
 		break;
@@ -458,19 +584,138 @@ static void WriteSerializedEntry(ILGenInfo *info,
 }
 
 /*
+ * Write fixed attribute ctor arguments into the serialized stream.
+ */
+static int WriteFixedAttributeArguments(ILGenInfo *info,
+										ILSerializeWriter *writer,
+										ILType *ctorSignature,
+										CGAttrCtorArg *ctorArgs,
+										ILUInt32 numArgs)
+{
+	ILUInt32 argNum;
+
+	for(argNum = 0; argNum < numArgs; ++argNum)
+	{
+		ILType *argType;
+		ILType *paramType;
+		ILEvalValue *argValue;
+		int serialType;
+
+		paramType = ILTypeGetParam(ctorSignature, argNum + 1);
+		argValue = &(ctorArgs[argNum].evalValue);
+		argType = ctorArgs[argNum].type;
+		serialType = ILSerializeGetType(paramType);
+		WriteFixedArgument(info, writer, paramType, argValue, argType,
+							 serialType);
+	}
+	return 1;
+}
+
+/* 
+ * write a named argument entry into the serialized stream.
+ */
+static void WriteNamedArgument(ILGenInfo *info,
+							   ILSerializeWriter *writer,
+							   CGAttrNamedArg *namedArg)
+{	
+	ILType *argType;
+	ILType *paramType;
+	ILEvalValue *argValue;
+	int serialType;
+
+	argType = namedArg->type;
+	if(ILType_IsArray(argType))
+	{
+		/* TODO: arrays */
+		return;
+	}
+	else if(ILTypeIsEnum(argType))
+	{
+		const char *name = CGTypeToAttrName(info, argType);
+		const char *memberName = ILMember_Name(namedArg->member);
+
+		if(ILMember_IsField(namedArg->member))
+		{
+			ILSerializeWriterSetInt32(writer, IL_META_SERIALTYPE_FIELD,
+									  IL_META_SERIALTYPE_U1);
+		}
+		else
+		{
+			ILSerializeWriterSetInt32(writer, IL_META_SERIALTYPE_PROPERTY,
+									  IL_META_SERIALTYPE_U1);
+		}
+		ILSerializeWriterSetInt32(writer, IL_META_SERIALTYPE_ENUM,
+								  IL_META_SERIALTYPE_U1);
+		ILSerializeWriterSetString(writer, name, strlen(name));
+		ILSerializeWriterSetString(writer, memberName, strlen(memberName));
+		argType = ILTypeGetEnumType(argType);
+		argValue = &(namedArg->evalValue);
+		if(argValue->valueType == ILMachineType_Void)
+		{
+			serialType = IL_META_SERIALTYPE_TYPE;
+			paramType = NULL;
+		}
+		else
+		{
+			paramType = ILValueTypeToType(info, argValue->valueType);
+			serialType = ILSerializeGetType(paramType);
+		}
+	}
+	else
+	{
+		argValue = &(namedArg->evalValue);
+		if(argValue->valueType == ILMachineType_Void)
+		{
+			serialType = IL_META_SERIALTYPE_TYPE;
+			paramType = NULL;
+		}
+		else
+		{
+			paramType = ILValueTypeToType(info, argValue->valueType);
+			serialType = ILSerializeGetType(paramType);
+		}
+		if(ILMember_IsField(namedArg->member))
+		{
+			ILSerializeWriterSetField
+				(writer, ILMember_Name(namedArg->member), serialType);
+		}
+		else
+		{
+			ILSerializeWriterSetProperty
+				(writer, ILMember_Name(namedArg->member), serialType);
+		}
+	}
+	WriteFixedArgument(info, writer, paramType, argValue, argType, serialType);
+}
+
+/*
+ * Write named attribute arguments.
+ */
+static int WriteNamedAttributeArguments(ILGenInfo *info,
+										ILSerializeWriter *writer,
+										CGAttrNamedArg *namedArgs,
+										ILUInt32 numNamed)
+{
+	ILUInt32 argNum;
+
+	for(argNum = 0; argNum < numNamed; ++argNum)
+	{
+		WriteNamedArgument(info, writer, &(namedArgs[argNum]));
+	}
+	return 1;
+}
+
+/*
  * Write a custom attribute.
  */
 static int WriteCustomAttribute(ILGenInfo *info,
 								CGAttributeInfo *attributeInfo)
 {
 	int argNum;
-	int serialType;
 	ILType *signature;
 	ILType *paramType;
-	ILType *argType;
 	ILAttribute *attribute;
 	ILMethod *methodInfo;
-	ILEvalValue *argValue;
 	const void *blob;
 	unsigned long blobLen;
 	int haveErrors = 0;
@@ -529,44 +774,22 @@ static int WriteCustomAttribute(ILGenInfo *info,
 	{
 		ILGenOutOfMemory(info);
 	}
-	for(argNum = 0; argNum < attributeInfo->numArgs; ++argNum)
+	/* Set the header for a custom attribute */
+	ILSerializeWriterSetInt32(writer, 1, IL_META_SERIALTYPE_U2);
+
+	if(!WriteFixedAttributeArguments(info, writer, signature,
+									 attributeInfo->ctorArgs,
+									 attributeInfo->numArgs))
 	{
-		paramType = ILTypeGetParam(signature, argNum + 1);
-		argValue = &(attributeInfo->ctorArgs[argNum].evalValue);
-		argType = attributeInfo->ctorArgs[argNum].type;
-		serialType = ILSerializeGetType(paramType);
-		WriteSerializedEntry(info, writer, paramType, argValue, argType,
-							 serialType);
+		ILSerializeWriterDestroy(writer);
+		return 0;
 	}
 	ILSerializeWriterSetNumExtra(writer, attributeInfo->numNamed);
-	for(argNum = 0; argNum < attributeInfo->numNamed; ++argNum)
+	if(!WriteNamedAttributeArguments(info, writer, attributeInfo->namedArgs,
+									 attributeInfo->numNamed))
 	{
-		argValue = &(attributeInfo->namedArgs[argNum].evalValue);
-		if(argValue->valueType == ILMachineType_Void)
-		{
-			serialType = IL_META_SERIALTYPE_TYPE;
-			paramType = NULL;
-		}
-		else
-		{
-			paramType = ILValueTypeToType(info, argValue->valueType);
-			serialType = ILSerializeGetType(paramType);
-		}
-		if(ILMember_IsField(attributeInfo->namedArgs[argNum].member))
-		{
-			ILSerializeWriterSetField
-				(writer, ILMember_Name(attributeInfo->namedArgs[argNum].member),
-				 serialType);
-		}
-		else
-		{
-			ILSerializeWriterSetProperty
-				(writer, ILMember_Name(attributeInfo->namedArgs[argNum].member),
-				 serialType);
-		}
-		argType = attributeInfo->namedArgs[argNum].type;
-		WriteSerializedEntry(info, writer, paramType, argValue, argType,
-							 serialType);
+		ILSerializeWriterDestroy(writer);
+		return 0;
 	}
 	blob = ILSerializeWriterGetBlob(writer, &blobLen);
 	if(!blob)
@@ -2170,6 +2393,310 @@ static int HandlePseudoCustomAttribute(ILGenInfo *info,
 	return 0;
 }
 
+static int HandleSecurityPermissionAttribute(ILGenInfo *info,
+											 CGAttrNamedArg *namedArgs,
+											 ILUInt32 numNamed,
+											 ILSerializeWriter *writer)
+{
+	ILUInt32 flags = 0;
+	ILUInt32 arg;
+	unsigned char buf[IL_META_COMPRESS_MAX_SIZE];
+	int compressLen;
+	int index;
+
+	for(arg = 0; arg < numNamed; ++arg)
+	{
+		const char *attrFieldName;
+
+		attrFieldName = ILMember_Name(namedArgs[arg].member);
+		if(!strcmp(attrFieldName, "Flags"))
+		{
+			flags = (ILUInt32)namedArgs[arg].evalValue.un.i4Value;
+		}
+		else if(!strcmp(attrFieldName, "Assertion"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_ASSERTION;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_ASSERTION;
+			}
+		}
+		else if(!strcmp(attrFieldName, "UnmanagedCode"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_UNMANAGEDCODE;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_UNMANAGEDCODE;
+			}
+		}
+		else if(!strcmp(attrFieldName, "SkipVerification"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_SKIPVERIFICATION;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_SKIPVERIFICATION;
+			}
+		}
+		else if(!strcmp(attrFieldName, "Execution"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_EXECUTION;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_EXECUTION;
+			}
+		}
+		else if(!strcmp(attrFieldName, "ControlThread"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_CONTROLTHREAD;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_CONTROLTHREAD;
+			}
+		}
+		else if(!strcmp(attrFieldName, "ControlEvidence"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_CONTROLEVIDENCE;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_CONTROLEVIDENCE;
+			}
+		}
+		else if(!strcmp(attrFieldName, "ControlPolicy"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_CONTROLPOLICY;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_CONTROLPOLICY;
+			}
+		}
+		else if(!strcmp(attrFieldName, "SerializationFormatter"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_SERIALIZATIONFORMATTER;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_SERIALIZATIONFORMATTER;
+			}
+		}
+		else if(!strcmp(attrFieldName, "ControlDomainPolicy"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_CONTROLDOMAINPOLICY;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_CONTROLDOMAINPOLICY;
+			}
+		}
+		else if(!strcmp(attrFieldName, "ControlPrincipal"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_CONTROLPRINCIPAL;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_CONTROLPRINCIPAL;
+			}
+		}
+		else if(!strcmp(attrFieldName, "ControlAppDomain"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_CONTROLAPPDOMAIN;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_CONTROLAPPDOMAIN;
+			}
+		}
+		else if(!strcmp(attrFieldName, "RemotingConfiguration"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_REMOTINGCONFIGURATION;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_REMOTINGCONFIGURATION;
+			}
+		}
+		else if(!strcmp(attrFieldName, "Infrastructure"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_INFRASTRUCTURE;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_INFRASTRUCTURE;
+			}
+		}
+		else if(!strcmp(attrFieldName, "BindingRedirects"))
+		{
+			ILInt32 value;
+
+			value = namedArgs[arg].evalValue.un.i4Value;
+			if(value)
+			{
+				flags |= IL_META_SECURITYPERMISSION_BINDINGREDIRECTS;
+			}
+			else
+			{
+				flags &= ~IL_META_SECURITYPERMISSION_BINDINGREDIRECTS;
+			}
+		}
+		else
+		{
+			CGErrorForNode(info, namedArgs[arg].node,
+				_("unknown named SecurityPermissionAttribute argument"));
+		}
+	}
+	/*
+	 * Now write the resulting named Flags argument.
+	 */
+	compressLen = ILMetaCompressData(buf, 1);
+	for(index = 0; index < compressLen; ++index)
+	{
+		ILSerializeWriterSetInt32(writer, (ILInt32)buf[index],
+								  IL_META_SERIALTYPE_I1);
+	}
+	ILSerializeWriterSetInt32(writer, IL_META_SERIALTYPE_PROPERTY,
+							  IL_META_SERIALTYPE_U1);
+	ILSerializeWriterSetInt32(writer, IL_META_SERIALTYPE_ENUM,
+							  IL_META_SERIALTYPE_U1);
+	ILSerializeWriterSetString(writer, "System.Security.Permissions.SecurityPermissionFlag", 50);
+	ILSerializeWriterSetString(writer, "Flags", 5);
+	ILSerializeWriterSetInt32(writer, flags,
+							  IL_META_SERIALTYPE_I4);
+
+	return 1;
+}
+/*
+ * TODO: Check if the classes are defined in the core library too.
+ */
+
+/*
+ * Determine if a class is a security attribute
+ * (derives from System.Security.Permissions.SecurityAttribute)
+ */
+static int IsSecurityAttribute(ILGenInfo *info, ILClass *classInfo)
+{
+	ILClass *securityInfo;
+
+	securityInfo = ILClassLookupGlobal(info->context, "SecurityAttribute",
+									   "System.Security.Permissions");
+	if(securityInfo)
+	{
+		return ILClassInheritsFrom(classInfo, securityInfo);
+	}
+	return 0;
+}
+
+/*
+ * Determine if a class is a code access attribute
+ * (derives from System.Security.Permissions.CodeAccessSecurityAttribute)
+ */
+static int IsCodeAccessSecurityAttribute(ILGenInfo *info, ILClass *classInfo)
+{
+	ILClass *securityInfo;
+
+	securityInfo = ILClassLookupGlobal(info->context,
+									   "CodeAccessSecurityAttribute",
+									   "System.Security.Permissions");
+	if(securityInfo)
+	{
+		return ILClassInheritsFrom(classInfo, securityInfo);
+	}
+	return 0;
+}
+
+/*
+ * Determine if a class is a SecurityPermissionAttribute
+ */
+static int IsSecurityPermissionAttribute(ILGenInfo *info, ILClass *classInfo)
+{
+	const char *namespace;
+
+	if(strcmp(ILClass_Name(classInfo), "SecurityPermissionAttribute") != 0)
+	{
+		return 0;
+	}
+	namespace = ILClass_Namespace(classInfo);
+	if(!namespace || strcmp(namespace, "System.Security.Permissions") != 0)
+	{
+		return 0;
+	}
+	if(ILClass_NestedParent(classInfo) != 0)
+	{
+		return 0;
+	}
+	return 1;
+}
+
 /*
  * Determine if a class is "AttributeUsageAttribute".
  */
@@ -2212,6 +2739,211 @@ static int IsConditionalAttribute(ILClass *classInfo)
 	if(ILClass_NestedParent(classInfo) != 0)
 	{
 		return 0;
+	}
+	return 1;
+}
+
+/*
+ * Determine if a type is a System.Security.Permissions.SecurityAction.
+ */
+static int IsSecurityAction(ILType *type)
+{
+	if(ILType_IsClass(type) || ILType_IsValueType(type))
+	{
+		const char *namespace;
+		ILClass *classInfo = ILType_ToClass(type);
+
+		if(strcmp(ILClass_Name(classInfo), "SecurityAction") != 0)
+		{
+			return 0;
+		}
+		namespace = ILClass_Namespace(classInfo);
+		if(!namespace || strcmp(namespace, "System.Security.Permissions") != 0)
+		{
+			return 0;
+		}
+		if(ILClass_NestedParent(classInfo) != 0)
+		{
+			return 0;
+		}
+		return 1;
+	}
+	return 0;
+}
+
+/*
+ * Get the number of security attributes
+ */
+static ILInt32 NumSecurityAttributes(CGSecurityAttributeInfo *securityAttribute)
+{
+	ILInt32 count = 0;
+
+	while(securityAttribute)
+	{
+		++count;
+		securityAttribute = securityAttribute->next;
+	}
+	return count;
+}
+
+/*
+ * Write one permissionset
+ */
+static int WritePermissionSet(ILGenInfo *info, ILProgramItem *owner,
+							  ILUInt32 action,
+							  CGSecurityAttributeInfo *securityAttribute)
+{
+	ILInt32 numAttributes;
+
+	numAttributes = NumSecurityAttributes(securityAttribute);
+	if(numAttributes > 0)
+	{
+		ILSerializeWriter *writer = 0;
+		ILDeclSecurity *decl;
+		const void *blob;
+		unsigned long blobLen;
+		unsigned char buf[IL_META_COMPRESS_MAX_SIZE];
+		int compressLen;
+		int index;
+		
+		writer = ILSerializeWriterInit();
+		if(!writer)
+		{
+			ILGenOutOfMemory(info);
+		}
+#if IL_VERSION_MAJOR > 1
+		/* Set the leading '.' */
+		ILSerializeWriterSetInt32(writer, (ILInt32)'.', IL_META_SERIALTYPE_I1);
+		/* Set the compressed number of security attributes in the permissionset */
+		compressLen = ILMetaCompressData(buf, numAttributes);
+		for(index = 0; index < compressLen; ++index)
+		{
+			ILSerializeWriterSetInt32(writer, (ILInt32)buf[index],
+									  IL_META_SERIALTYPE_I1);
+		}
+		/* Now add the security attributes */
+		while(securityAttribute)
+		{
+			const char *attributeName;
+			ILSerializeWriter *namedWriter = 0;
+			const void *namedBlob;
+			unsigned long namedLen;
+
+			attributeName = CGClassToAttrName(info,
+											  securityAttribute->securityAttribute);
+			if(!attributeName)
+			{
+				ILGenOutOfMemory(info);
+			}
+			ILSerializeWriterSetString(writer, attributeName, strlen(attributeName));
+
+			namedWriter = ILSerializeWriterInit();
+			if(!namedWriter)
+			{
+				ILGenOutOfMemory(info);
+			}
+			if(IsSecurityPermissionAttribute(info, 
+											 securityAttribute->securityAttribute))
+			{
+				/*
+				 * Compress all properties so that we emit only the
+				 * Flags property because the other properties might not
+				 * be available.in other implementations.
+				 */
+				if(!HandleSecurityPermissionAttribute(info,
+													  securityAttribute->namedArgs,
+													  securityAttribute->numNamed,
+													  namedWriter))
+				{
+					return 0;
+				}
+			}
+			else
+			{
+				/* Here we need numExtra as a packed value */
+				/* I couldn't find any doc about this */
+				compressLen = ILMetaCompressData(buf, 
+												 securityAttribute->numNamed);
+				for(index = 0; index < compressLen; ++index)
+				{
+					ILSerializeWriterSetInt32(namedWriter,
+											  (ILInt32)buf[index],
+											  IL_META_SERIALTYPE_I1);
+				}
+
+				if(!WriteNamedAttributeArguments(info, namedWriter,
+												 securityAttribute->namedArgs,
+												 securityAttribute->numNamed))
+				{
+					ILSerializeWriterDestroy(namedWriter);
+					ILSerializeWriterDestroy(writer);
+					return 0;
+				}
+			}
+			namedBlob = ILSerializeWriterGetBlob(namedWriter, &namedLen);
+			if(!namedBlob)
+			{
+				ILGenOutOfMemory(info);
+			}
+			ILSerializeWriterSetString(writer, (const char *)namedBlob, namedLen);
+			ILSerializeWriterDestroy(namedWriter);
+
+			securityAttribute = securityAttribute->next;
+		}
+
+		blob = ILSerializeWriterGetBlob(writer, &blobLen);
+		if(!blob)
+		{
+			ILGenOutOfMemory(info);
+		}
+
+		/* Create a security declaration and attach it to the item */
+		decl = ILDeclSecurityCreate(ILProgramItem_Image(owner), 0, owner,
+									action);
+		if(!decl)
+		{
+			ILGenOutOfMemory(info);
+		}
+		if(!ILDeclSecuritySetBlob(decl, blob, blobLen))
+		{
+			ILGenOutOfMemory(info);
+		}
+#else
+		/*
+		 * TODO: Write the 1.x XML blob
+		 */
+#endif
+		ILSerializeWriterDestroy(writer);
+	}
+	return 1;
+}
+/*
+ * Write the permissionsets
+ */
+static int WritePermissionSets(CGAttributeInfos *attributeInfos)
+{
+	CGPermissionSets *permissionSets;
+
+	permissionSets = attributeInfos->permissionSets;
+	while(permissionSets)
+	{
+		int index;
+
+		for(index = 0; index < 9; ++index)
+		{
+			if(permissionSets->permissionSet[index])
+			{
+				/* Write the permission set */
+				if(!WritePermissionSet(attributeInfos->info,
+									   permissionSets->owner,
+									   index + 2,
+									   permissionSets->permissionSet[index]))
+				{
+					return 0;
+				}
+			}
+		}
+		permissionSets = permissionSets->next;
 	}
 	return 1;
 }
@@ -2290,9 +3022,9 @@ static int AttributeTargetIsValid(ILGenInfo *info, ILProgramItem *owner,
  * collected for the owner. (Check for AllowMultiple).
  * Returns the attributeInfo of the instance found or 0 if none was found.
  */
-CGAttributeInfo *AttributeExistsForOwner(CGAttributeInfos *attributeInfos,
-										 ILProgramItem *owner,
-										 ILClass *attribute)
+static CGAttributeInfo *AttributeExistsForOwner(CGAttributeInfos *attributeInfos,
+												ILProgramItem *owner,
+												ILClass *attribute)
 {
 	CGAttributeInfo *attributeInfo;
 
@@ -2307,6 +3039,168 @@ CGAttributeInfo *AttributeExistsForOwner(CGAttributeInfos *attributeInfos,
 		attributeInfo = attributeInfo->next;
 	}
 	return 0;
+}
+
+static int CGPermissionSetsAddAttribute(CGAttributeInfos *attributeInfos,
+										CGPermissionSets *permissionSets,
+										ILInt32 action,
+										ILNode *node,
+										ILClass *securityAttribute,
+										CGAttrNamedArg *namedArgs,
+										ILUInt32 numNamed)
+{
+	ILInt32 index = action - 2;
+	CGSecurityAttributeInfo *attributeInfo;
+
+	attributeInfo = ILMemStackAlloc(&(attributeInfos->memstack),
+									CGSecurityAttributeInfo);
+	if(attributeInfo == 0)
+	{
+		ILGenOutOfMemory(attributeInfos->info);
+		return 0;
+	}
+	attributeInfo->node = node;
+	attributeInfo->securityAttribute = securityAttribute;
+	attributeInfo->namedArgs = namedArgs;
+	attributeInfo->numNamed = numNamed;
+	attributeInfo->next = permissionSets->permissionSet[index];
+	permissionSets->permissionSet[index] = attributeInfo;
+
+	return 1;
+}
+
+static int AddSecurityAttribute(CGAttributeInfos *attributeInfos,
+								ILNode *node,
+								ILProgramItem *owner,
+								ILMethod *ctor,
+								CGAttrCtorArg *ctorArgs,
+								ILUInt32 numArgs,
+								CGAttrNamedArg *namedArgs,
+								ILUInt32 numNamed,
+								ILUInt32 target)
+{
+	ILInt32 action;
+	ILClass *securityAttribute;
+	CGPermissionSets *permissionSets;
+
+	/*
+	 * Constructors of attributes derieved from
+	 * System.Security.Permissions.SecurityAttribute must have only one
+	 * argument.
+	 */
+	if(numArgs != 1)
+	{
+		CGErrorForNode(attributeInfos->info, node,
+			_("Constructors for security attributes must have one argument"));
+		return 0;
+	}
+	/*
+	 * The argument must be a System.Security.Permissions.SecurityAction.
+	 */
+	if(!IsSecurityAction(ctorArgs[0].type))
+	{
+		CGErrorForNode(attributeInfos->info, node,
+		_("The argument for the constructor of a security attribute must be a `%s' and not a `%s'"),
+					   "System.Security.Permissions.SecurityAction",
+					   CGTypeToName(attributeInfos->info, ctorArgs[0].type));
+		return 0;
+	}
+	action = ctorArgs[0].evalValue.un.i4Value;
+	if(action < 2 || action > 10)
+	{
+		CGErrorForNode(attributeInfos->info, ctorArgs[0].node,
+			_("Invalid SecurityAction %i"), action);
+		return 0;
+	}
+	/* Check if the target is valid for the supplied security action */
+	switch(action)
+	{
+		/* Actions allowed on methods and types */
+		case IL_META_SECURITY_DEMAND:
+		case IL_META_SECURITY_ASSERT:
+		case IL_META_SECURITY_DENY:
+		case IL_META_SECURITY_PERMIT_ONLY:
+		case IL_META_SECURITY_LINK_TIME_CHECK:
+		case IL_META_SECURITY_INHERITANCE_CHECK:
+		{
+			switch(target)
+			{
+				case IL_ATTRIBUTE_TARGET_CLASS:
+				case IL_ATTRIBUTE_TARGET_STRUCT:
+				case IL_ATTRIBUTE_TARGET_ENUM:
+				case IL_ATTRIBUTE_TARGET_DELEGATE:
+				case IL_ATTRIBUTE_TARGET_INTERFACE:
+				case IL_ATTRIBUTE_TARGET_METHOD:
+				case IL_ATTRIBUTE_TARGET_CONSTRUCTOR:
+				{
+					/* OK */
+				}
+				break;
+
+				default:
+				{
+					CGErrorForNode(attributeInfos->info, ctorArgs[0].node,
+									_("`%s' not allowed on `%s'"),
+									SecurityActionToName(action),
+									AttributeTargetToName(target));
+				return 0;
+				}
+			}
+		}
+		break;
+
+		/* Actions allowed only on assemblies */
+		case IL_META_SECURITY_REQUEST_MINIMUM:
+		case IL_META_SECURITY_REQUEST_OPTIONAL:
+		case IL_META_SECURITY_REQUEST_REFUSE:
+		{
+			if(target != IL_ATTRIBUTE_TARGET_ASSEMBLY)
+			{
+				CGErrorForNode(attributeInfos->info, ctorArgs[0].node,
+							   _("`%s' not allowed on `%s'"),
+							   SecurityActionToName(action),
+							   AttributeTargetToName(target));
+				return 0;
+			}
+		}
+		break;
+	}
+
+	/* Check if the security attribute is valid for the action */
+	securityAttribute = ILMethod_Owner(ctor);
+	switch(action)
+	{
+		/* Attribute must derive from CodeAccessSecurityAttribute */
+		case IL_META_SECURITY_DEMAND:
+		case IL_META_SECURITY_ASSERT:
+		case IL_META_SECURITY_DENY:
+		case IL_META_SECURITY_LINK_TIME_CHECK:
+		case IL_META_SECURITY_INHERITANCE_CHECK:
+		case IL_META_SECURITY_PERMIT_ONLY:
+		{
+			if(!IsCodeAccessSecurityAttribute(attributeInfos->info,
+											  securityAttribute))
+			{
+				CGErrorForNode(attributeInfos->info, node,
+							   _("`%s' not allowed for security action `%s'"),
+							   CGClassToName(securityAttribute),
+							   SecurityActionToName(action));
+				return 0;
+			}
+		}
+		break;
+	}
+	/* Get the permissionsets for the owner */
+	permissionSets = CGPermissionSetsAlloc(attributeInfos, owner);
+	if(permissionSets == 0)
+	{
+		/* The out of memory should have been raised before */
+		return 0;
+	}
+	/* Now add the attribute to the permissionsets */
+	return CGPermissionSetsAddAttribute(attributeInfos, permissionSets,
+										action, node, securityAttribute,
+										namedArgs, numNamed);
 }
 
 /*
@@ -2349,6 +3243,12 @@ int CGAttributeInfosAddAttribute(CGAttributeInfos *attributeInfos,
 							   attributeUsage, node, target))
 	{
 		return 1;
+	}
+	if(IsSecurityAttribute(attributeInfos->info, attribute))
+	{
+		return AddSecurityAttribute(attributeInfos, node, owner, ctor,
+									ctorArgs, numArgs, namedArgs, numNamed,
+									target);
 	}
 	allowMultiple = ILAttributeUsageAttributeGetAllowMultiple(attributeUsage);
 	if(allowMultiple == 0)
@@ -2399,6 +3299,7 @@ int CGAttributeInfosProcess(CGAttributeInfos *attributeInfos)
 		return 0;
 	}
 
+	/* Write the custom attributes */
 	attributeInfo = attributeInfos->attributes;
 	while(attributeInfo)
 	{
@@ -2410,7 +3311,8 @@ int CGAttributeInfosProcess(CGAttributeInfos *attributeInfos)
 
 		attributeInfo = attributeInfo->next;
 	}
-	return 1;
+	/* Write the security attributes */
+	return WritePermissionSets(attributeInfos);
 }
 
 #ifdef	__cplusplus

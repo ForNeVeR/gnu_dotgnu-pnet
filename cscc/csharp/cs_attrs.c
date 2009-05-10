@@ -876,6 +876,8 @@ void CSAddDefaultMemberAttr(ILGenInfo *info, ILClass *classInfo,
 	{
 		CCOutOfMemory();
 	}
+	/* Set the header for a custom attribute */
+	ILSerializeWriterSetInt32(writer, 1, IL_META_SERIALTYPE_U2);
 	ILSerializeWriterSetString(writer, name, strlen(name));
 	ILSerializeWriterSetNumExtra(writer, 0);
 	blob = ILSerializeWriterGetBlob(writer, &blobLen);

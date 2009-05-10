@@ -1,3 +1,16 @@
+2009-05-10  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_genattr.c, codegen/cg_genattr.h: Add handling of security
+	attributes.
+
+	* cscc/csharp/cs_attrs.c (CSAddDefaultMemberAttr): Set the custom
+	attribute blob header here now.
+
+	* image/ser_writer.c (ILSerializeWriterInit): Don't write a custom
+	attribute header here.
+
+	* include/il_meta.h: Add definition of the security permission flags.
+
 2009-05-09  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_decls.tc (ILGenOutputAttributes): Iterate over the security

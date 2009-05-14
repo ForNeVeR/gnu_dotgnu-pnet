@@ -1,3 +1,7 @@
+2009-05-14  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+
+	* support/time.c: use tzset() to get timezone changes.
+
 2009-05-10  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_genattr.c, codegen/cg_genattr.h: Add handling of security

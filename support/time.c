@@ -165,36 +165,32 @@ int ILGetSinceRebootTime(ILCurrTime *timeValue)
 ILInt32 ILGetTimeZoneAdjust(void)
 {
 #if !defined(__palmos__)
-	static int initialized = 0;
-	static int isdst = 0;
-	static long timezone = 0;
+	int isdst = 0;
+	long timezone = 0;
 
-	if(!initialized)
-	{
 #ifdef IL_WIN32_PLATFORM
-		TIME_ZONE_INFORMATION temp;
-		DWORD tmz = GetTimeZoneInformation(&temp);
-		isdst = (tmz == TIME_ZONE_ID_DAYLIGHT) ? 1 : 0;
-		/* we expect the adjustment to be in seconds, not minutes */
-		if(isdst)
-		{
-			timezone = (temp.Bias + temp.DaylightBias) * 60;
-		}
-		else
-		{
-			timezone = temp.Bias * 60;
-		}
+	TIME_ZONE_INFORMATION temp;
+	DWORD tmz = GetTimeZoneInformation(&temp);
+	isdst = (tmz == TIME_ZONE_ID_DAYLIGHT) ? 1 : 0;
+	/* we expect the adjustment to be in seconds, not minutes */
+	if(isdst)
+	{
+		timezone = (temp.Bias + temp.DaylightBias) * 60;
+	}
+	else
+	{
+		timezone = temp.Bias * 60;
+	}
 #else
 #ifdef HAVE_TM_GMTOFF
-		/* Call "localtime", which will set the global "timezone" for us */
-		time_t temp = time(0);
-		struct tm *tms = localtime(&temp);
-		isdst = tms->tm_isdst;
-		timezone = -(tms->tm_gmtoff);
+	/* Call "localtime", which will set the global "timezone" for us */
+	time_t temp = time(0);
+	tzset(); /* call this to get timezone changes */
+	struct tm *tms = localtime(&temp);
+	isdst = tms->tm_isdst;
+	timezone = -(tms->tm_gmtoff);
 #endif
 #endif
-		//initialized = 1;
-	}
 	return (ILInt32)timezone;
 #else
 	/* TODO */

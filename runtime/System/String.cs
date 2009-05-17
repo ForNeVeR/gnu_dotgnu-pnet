@@ -222,56 +222,48 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  String strB, int indexB,
 							  int length)
 			{
-#if !ECMA_COMPAT
 				int lengthA = length;
 				int lengthB = length;
 
+				// We check only for negative length here.
+				// The more precise checks on the indexes will be done in
+				// CompareInfo.Compare anyways.
+				if(length < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_StringRange"));
+				}
 				if(strA == null)
 				{
-					if(indexA != 0)
-					{
-						throw new ArgumentOutOfRangeException
-							("indexA", _("ArgRange_StringIndex"));
-					}
 					lengthA = 0;
 				}
 				else
 				{
-					if(indexA < 0 || indexA >= strA.length)
-					{
-						throw new ArgumentOutOfRangeException
-							("indexA", _("ArgRange_StringIndex"));
-					}
-					int adj = strA.length - indexA - lengthA;
-					if(adj < 0)
+					// Limit lengthA to the actual remaining characters in
+					// strA.
+					int remaining = strA.length - indexA;
+					if(remaining < lengthA)
 					{ 
-						lengthA += adj;
-					}
-					if(lengthA < 0)
-					{
-						lengthA = 0;
+						lengthA = remaining;
+						if(lengthA < 0)
+						{
+							lengthA = 0;
+						}
 					}
 				}
 
 				if(strB == null)
 				{
-					indexB = 0;
 					lengthB = 0;
 				}
 				else
 				{
-					if(indexB < 0 || indexB >= strB.length)
-					{
-						indexB = 0;
-						lengthB = 0;
-					}
-					else
-					{
-						int adj = strB.length - indexB - lengthB;
-						if(adj < 0)
-						{ 
-							lengthB += adj;
-						}
+					// Limit lengthB to the actual remaining characters in
+					// strB.
+					int remaining = strB.length - indexB;
+					if(remaining < lengthB)
+					{ 
+						lengthB = remaining;
 						if(lengthB < 0)
 						{
 							lengthB = 0;
@@ -282,12 +274,6 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							.Compare(strA, indexA, lengthA,
 									 strB, indexB, lengthB,
 									 CompareOptions.None);
-#else
-				return CultureInfo.CurrentCulture.CompareInfo
-							.Compare(strA, indexA, length,
-									 strB, indexB, length,
-									 CompareOptions.None);
-#endif
 			}
 
 	// Compare two sub-strings while optionally ignoring case.
@@ -295,56 +281,48 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 							  String strB, int indexB,
 							  int length, bool ignoreCase)
 			{
-#if !ECMA_COMPAT
 				int lengthA = length;
 				int lengthB = length;
 
+				// We check only for negative length here.
+				// The more precise checks on the indexes will be done in
+				// CompareInfo.Compare anyways.
+				if(length < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_StringRange"));
+				}
 				if(strA == null)
 				{
-					if(indexA != 0)
-					{
-						throw new ArgumentOutOfRangeException
-							("indexA", _("ArgRange_StringIndex"));
-					}
 					lengthA = 0;
 				}
 				else
 				{
-					if(indexA < 0 || indexA >= strA.length)
-					{
-						throw new ArgumentOutOfRangeException
-							("indexA", _("ArgRange_StringIndex"));
-					}
-					int adj = strA.length - indexA - lengthA;
-					if(adj < 0)
+					// Limit lengthA to the actual remaining characters in
+					// strA.
+					int remaining = strA.length - indexA;
+					if(remaining < lengthA)
 					{ 
-						lengthA += adj;
-					}
-					if(lengthA < 0)
-					{
-						lengthA = 0;
+						lengthA = remaining;
+						if(lengthA < 0)
+						{
+							lengthA = 0;
+						}
 					}
 				}
 
 				if(strB == null)
 				{
-					indexB = 0;
 					lengthB = 0;
 				}
 				else
 				{
-					if(indexB < 0 || indexB >= strB.length)
-					{
-						indexB = 0;
-						lengthB =0;
-					}
-					else
-					{
-						int adj = strB.length - indexB - lengthB;
-						if(adj < 0)
-						{ 
-							lengthB += adj;
-						}
+					// Limit lengthB to the actual remaining characters in
+					// strB.
+					int remaining = strB.length - indexB;
+					if(remaining < lengthB)
+					{ 
+						lengthB = remaining;
 						if(lengthB < 0)
 						{
 							lengthB = 0;
@@ -356,13 +334,6 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 									 strB, indexB, lengthB,
 									 (ignoreCase ? CompareOptions.IgnoreCase
 									 			 : CompareOptions.None));
-#else
-				return CultureInfo.CurrentCulture.CompareInfo
-							.Compare(strA, indexA, length,
-									 strB, indexB, length,
-									 (ignoreCase ? CompareOptions.IgnoreCase
-									 			 : CompareOptions.None));
-#endif
 			}
 
 	// Compare two sub-strings with a particular culture's comparison rules.
@@ -376,13 +347,65 @@ public sealed class String : IComparable, ICloneable, IEnumerable
 			  		   int length, bool ignoreCase,
 			  		   CultureInfo culture)
 			{
+				int lengthA;
+				int lengthB;
+
 				if(culture == null)
 				{
 					throw new ArgumentNullException("culture");
 				}
+				// We check only for negative length here.
+				// The more precise checks on the indexes will be done in
+				// CompareInfo.Compare anyways.
+				if(length < 0)
+				{
+					throw new ArgumentOutOfRangeException
+						("length", _("ArgRange_StringRange"));
+				}
+
+				lengthA = length;
+				lengthB = length;
+				if(strA == null)
+				{
+					lengthA = 0;
+				}
+				else
+				{
+					// Limit lengthA to the actual remaining characters in
+					// strA.
+					int remaining = strA.length - indexA;
+					if(remaining < lengthA)
+					{ 
+						lengthA = remaining;
+						if(lengthA < 0)
+						{
+							lengthA = 0;
+						}
+					}
+				}
+
+				if(strB == null)
+				{
+					lengthB = 0;
+				}
+				else
+				{
+					// Limit lengthB to the actual remaining characters in
+					// strB.
+					int remaining = strB.length - indexB;
+					if(remaining < lengthB)
+					{ 
+						lengthB = remaining;
+						if(lengthB < 0)
+						{
+							lengthB = 0;
+						}
+					}
+				}
+
 				return culture.CompareInfo
-							.Compare(strA, indexA, length,
-									 strB, indexB, length,
+							.Compare(strA, indexA, lengthA,
+									 strB, indexB, lengthB,
 									 (ignoreCase ? CompareOptions.IgnoreCase
 									 			 : CompareOptions.None));
 			}

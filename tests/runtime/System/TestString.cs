@@ -178,6 +178,21 @@ public class TestString : TestCase
 	*/
 	}
 
+	public void TestStringCompare1()
+	{
+		AssertEquals("String.Compare(null, 0, null , 0 , 0)",
+			String.Compare(null, 0, null, 0, 0), 0);
+
+		AssertEquals("String.Compare(null, 0, String.Empty , 0 , 0)",
+			String.Compare(null, 0, String.Empty, 0, 0), -1);
+
+		AssertEquals("String.Compare(String.Empty, 0, null , 0 , 0)",
+			String.Compare(String.Empty, 0, null, 0, 0), 1);
+
+		AssertEquals("String.Compare(String.Empty, 0, String.Empty , 0 , 0)",
+			String.Compare(String.Empty, 0, String.Empty, 0, 0), 0);
+	}
+
 	public void TestStringCompareTo()
 	{
 	/*

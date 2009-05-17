@@ -126,6 +126,12 @@ public class TestCompareInfo : TestCase
 								compareInfo.Compare(string1, string2));
 			}
 
+	public void TestStringCompare11()
+			{
+				AssertEquals("Comparing two String.Empty", 0,
+								compareInfo.Compare(String.Empty, String.Empty));
+			}
+
 	public void TestStringCompareIgnoreCase1()
 			{
 				String string1 = "ABCDE";
@@ -265,10 +271,6 @@ public class TestCompareInfo : TestCase
 													string2, offset2);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing Null from " +
-									offset1.ToString() +
-									" with " + string2 + " from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -317,10 +319,6 @@ public class TestCompareInfo : TestCase
 													string2, offset2);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing " + string1 + " from " +
-									offset1.ToString() +
-									" with Null from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -346,10 +344,6 @@ public class TestCompareInfo : TestCase
 													string2, offset2);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing " + string1 + " from " +
-									offset1.ToString() +
-									" with " + string2 + " from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -375,10 +369,6 @@ public class TestCompareInfo : TestCase
 													string2, offset2);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing " + string1 + " from " +
-									offset1.ToString() +
-									" with " + string2 + " from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -452,6 +442,20 @@ public class TestCompareInfo : TestCase
 								offset1.ToString() +
 								" with " + string2 + " from offset " +
 								offset2.ToString(), 1, result);
+			}
+
+	public void TestStringCompareOffset14()
+			{
+				int offset1 = 0;
+				int offset2 = 0;
+				int result;
+
+				result = compareInfo.Compare(String.Empty, offset1,
+											 String.Empty, offset2);
+				AssertEquals("Comparing String.Empty from " +
+								offset1.ToString() +
+								" with String.Empty from offset " +
+								offset2.ToString(), 0, result);
 			}
 
 	public void TestStringCompareOffsetIgnoreCase1()
@@ -565,10 +569,6 @@ public class TestCompareInfo : TestCase
 													CompareOptions.IgnoreCase);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing Null from " +
-									offset1.ToString() +
-									" with " + string2 + " from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -593,7 +593,7 @@ public class TestCompareInfo : TestCase
 					result = compareInfo.Compare(string1, offset1,
 													string2, offset2,
 													CompareOptions.IgnoreCase);
-						AssertEquals("Comparing " + string1 + " from " +
+					AssertEquals("Comparing " + string1 + " from " +
 									offset1.ToString() +
 									" with Null from offset " +
 									offset2.ToString(), 1, result);
@@ -619,10 +619,6 @@ public class TestCompareInfo : TestCase
 													CompareOptions.IgnoreCase);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing " + string1 + " from " +
-									offset1.ToString() +
-									" with Null from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -649,10 +645,6 @@ public class TestCompareInfo : TestCase
 													CompareOptions.IgnoreCase);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing " + string1 + " from " +
-									offset1.ToString() +
-									" with " + string2 + " from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -679,14 +671,32 @@ public class TestCompareInfo : TestCase
 													CompareOptions.IgnoreCase);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing " + string1 + " from " +
-									offset1.ToString() +
-									" with " + string2 + " from offset " +
-									offset2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
 					// success
+				}
+				catch(Exception e)
+				{
+					Fail("Test should not throw an " + e.ToString());
+				}
+			}
+
+	public void TestStringCompareOffsetIgnoreCase10()
+			{
+				int offset1 = 0;
+				int offset2 = 0;
+				int result;
+
+				try
+				{
+					result = compareInfo.Compare(String.Empty, offset1,
+												 String.Empty, offset2,
+												 CompareOptions.IgnoreCase);
+					AssertEquals("Comparing String.Empty from " +
+									offset1.ToString() +
+									" with String.Empty from offset " +
+									offset2.ToString(), 0, result);
 				}
 				catch(Exception e)
 				{
@@ -811,12 +821,6 @@ public class TestCompareInfo : TestCase
 													string2, offset2, length2);
 					Fail("Test should have thrown an ArgumentOutOfRangeException" +
 							" but returned " + result.ToString());
-					AssertEquals("Comparing Null from " +
-									offset1.ToString() + " and length " +
-									length1.ToString() +
-									"with " + string2 + " from offset " +
-									offset2.ToString() + " and length " +
-									length2.ToString(), -1, result);
 				}
 				catch(ArgumentOutOfRangeException)
 				{
@@ -1283,6 +1287,64 @@ public class TestCompareInfo : TestCase
 								"with " + string2 + " from offset " +
 								offset2.ToString() + " and length " +
 								length2.ToString(), 1, result);
+			}
+
+	public void TestStringCompareOffsetLength24()
+			{
+				int offset1 = 0;
+				int offset2 = 0;
+				int length1 = 0;
+				int length2 = 0;
+				int result;
+
+				result = compareInfo.Compare(String.Empty, offset1, length1,
+											 String.Empty, offset2, length2);
+				AssertEquals("Comparing String.Empty from " +
+								offset1.ToString() + " and length " +
+								length1.ToString() +
+								"with String.Empty from offset " +
+								offset2.ToString() + " and length " +
+								length2.ToString(), 0, result);
+			}
+
+	public void TestStringCompareOffsetLength25()
+			{
+				String string1 = "ab";
+				String string2 = "abcd";
+				int offset1 = 1;
+				int offset2 = 4;
+				int length1 = 1;
+				int length2 = 0;
+				int result;
+
+				result = compareInfo.Compare(string1, offset1, length1,
+												string2, offset2, length2);
+				AssertEquals("Comparing " + string1 + " from " +
+								offset1.ToString() + " and length " +
+								length1.ToString() +
+								"with " + string2 + " from offset " +
+								offset2.ToString() + " and length " +
+								length2.ToString(), 1, result);
+			}
+
+	public void TestStringCompareOffsetLength26()
+			{
+				String string1 = "abcd";
+				String string2 = "ab";
+				int offset1 = 4;
+				int offset2 = 1;
+				int length1 = 0;
+				int length2 = 1;
+				int result;
+
+				result = compareInfo.Compare(string1, offset1, length1,
+												string2, offset2, length2);
+				AssertEquals("Comparing " + string1 + " from " +
+								offset1.ToString() + " and length " +
+								length1.ToString() +
+								"with " + string2 + " from offset " +
+								offset2.ToString() + " and length " +
+								length2.ToString(), -1, result);
 			}
 
 	public void TestStringCompareOffsetLengthIgnoreCase1()

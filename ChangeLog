@@ -1,4 +1,24 @@
-2009-04-21  Heiko Weiss <heiko.weiss@de.trumpf-laser.com>
+2009-ß5-17  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System.String.cs (Compare): Let CompareInfo.Compare do the
+	index validation. Use the not ECMA code for ECMA too because ECMA
+	should behave similar according to the specs.
+
+	* runtime/System/Globalization/CompareInfo.cs (DefaultCompare): Allow
+	index == string.Length if the given length is 0 not only for
+	string.Length == 0 but for all lengths.
+
+	* System/Uri.cs (CheckSchemeName, EscapeStringInternal, FromHex,
+	IsBadFileSystemCharacter, IsExcludedCharacter): Replace various
+	conditional statements by switch statements.
+
+	* tests/runtime/System/TestString.cs: Add additional tests for the
+	Compare methods with empty strings.
+
+	* tests/runtime/System/Globalization/TestCompareInfo.cs: Add additional
+	tests for the Compare methods with zero lengths.
+
+2009-04-21  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* System/Uri.cs: fixed CheckHostName, failed with IP-Addresses.
 

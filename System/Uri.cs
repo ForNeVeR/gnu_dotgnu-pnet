@@ -386,10 +386,23 @@ public class Uri : MarshalByRefObject
 
 		for (int i = 1; i < schemeName.Length ; i++) 
 		{
-			if((!Char.IsLetterOrDigit(schemeName[i])) && 
-				("+.-".IndexOf(schemeName[i]) == -1))
+			if(!Char.IsLetterOrDigit(schemeName[i]))
 			{
-				return false;
+				switch(schemeName[i])
+				{
+					case '+':
+					case '.':
+					case '-':
+					{
+						// Nothing to do 
+					}
+					break;
+
+					default:
+					{
+						return false;
+					}
+				}
 			}
 		}
 		return true;
@@ -468,16 +481,64 @@ public class Uri : MarshalByRefObject
 		for(int i=0; i < str.Length; i++)
 		{
 			char c = str[i];
-			if((c <= 0x20 || c>=0x7f) || /* non-ascii */
-				(("<>%\"{}|\\^`").IndexOf(c) != -1) ||
-				(escapeHex && c=='#') ||
-				(escapeBrackets && (c=='[' || c==']')))
+
+			if(c <= 0x20 || c >= 0x7f)
 			{
+				/* non-ascii */
 				sb.Append(HexEscape(c));
 			}
 			else
 			{
-				sb.Append(c);
+				switch(c)
+				{
+					case '<':
+					case '>':
+					case '%':
+					case '"':
+					case '{':
+					case '}':
+					case '|':
+					case '\\':
+					case '^':
+					case '`':
+					{
+						sb.Append(HexEscape(c));
+					}
+					break;
+
+					case '#':
+					{
+						if(escapeHex)
+						{
+							sb.Append(HexEscape(c));
+						}
+						else
+						{
+							sb.Append(c);
+						}
+					}
+					break;
+
+					case '[':
+					case ']':
+					{
+						if(escapeBrackets)
+						{
+							sb.Append(HexEscape(c));
+						}
+						else
+						{
+							sb.Append(c);
+						}
+					}
+					break;
+
+					default:
+					{
+						sb.Append(c);
+					}
+					break;
+				}
 			}
 		}
 		return sb.ToString();
@@ -485,14 +546,46 @@ public class Uri : MarshalByRefObject
 
 	public static int FromHex(char digit)
 	{
-		if (digit >= '0' && digit <= '9')
-			return digit - '0';
-		else if (digit >= 'A' && digit <= 'F')
-			return digit - 55;
-		else if (digit >= 'a' && digit <= 'f')
-			return digit - 87;
-		else
-			throw new ArgumentException(S._("Arg_HexDigit"), "digit");
+		switch(digit)
+		{
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+			{
+				return digit - '0';
+			}
+			break;
+
+			case 'A':
+			case 'B':
+			case 'C':
+			case 'D':
+			case 'E':
+			case 'F':
+			{
+				return digit - 'A' + 10;
+			}
+			break;
+
+			case 'a':
+			case 'b':
+			case 'c':
+			case 'd':
+			case 'e':
+			case 'f':
+			{
+				return digit - 'a' + 10;
+			}
+			break;
+		}
+		throw new ArgumentException(S._("Arg_HexDigit"), "digit");
 	}
 
 	public override int GetHashCode()
@@ -570,14 +663,50 @@ public class Uri : MarshalByRefObject
 
 	protected virtual bool IsBadFileSystemCharacter(char character)
 	{
-		return ("\"<>|\r\n".IndexOf(character) != -1);
+		switch(character)
+		{
+			case '"':
+			case '<':
+			case '>':
+			case '|':
+			case '\r':
+			case '\n':
+			{
+				return true;
+			}
+			break;
+		}
+		return false;
 	}
 
 	protected static bool IsExcludedCharacter(char character)
 	{
-		return 
-		((character < 0x20 || character > 0x7F)  /* non-ascii */
-		|| ("<>#%\"{}|\\^[]`".IndexOf(character) != -1)); /* excluded ascii */
+		if(character < 0x20 || character > 0x7F)
+		{
+			/* non-ascii */
+			return true;
+		}
+		switch(character)
+		{
+			case '<':
+			case '>':
+			case '#':
+			case '%':
+			case '"':
+			case '{':
+			case '}':
+			case '|':
+			case '\\':
+			case '^':
+			case '[':
+			case ']':
+			case '`':
+			{
+				/* excluded ascii */
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public static bool IsHexDigit(char character)

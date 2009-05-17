@@ -196,14 +196,15 @@ public class CompareInfo : IDeserializationCallback
 					throw new ArgumentOutOfRangeException
 						("length2", _("ArgRange_StringRange"));
 				}
-				if(string1 != null && string1.Length != 0)
+				if(string1 == null)
 				{
-					if(offset1 >= string1.Length)
+					// Index and length must be 0
+					if(offset1 != 0)
 					{
 						throw new ArgumentOutOfRangeException
 							("offset1", _("ArgRange_StringIndex"));
 					}
-					if(length1 > (string1.Length - offset1))
+					if(length1 != 0)
 					{
 						throw new ArgumentOutOfRangeException
 							("length1", _("ArgRange_StringRange"));
@@ -211,41 +212,66 @@ public class CompareInfo : IDeserializationCallback
 				}
 				else
 				{
-					if(offset1 > 0)
+					if(length1 == 0)
+					{
+						// Offset must not be greater than length
+						if(offset1 > string1.Length)
+						{
+							throw new ArgumentOutOfRangeException
+								("offset1", _("ArgRange_StringIndex"));
+						}
+					}
+					else
+					{
+						if(offset1 >= string1.Length)
+						{
+							throw new ArgumentOutOfRangeException
+								("offset1", _("ArgRange_StringIndex"));
+						}
+						if(length1 > (string1.Length - offset1))
+						{
+							throw new ArgumentOutOfRangeException
+								("length1", _("ArgRange_StringRange"));
+						}
+					}
+				}
+				if(string2 == null)
+				{
+					// Index and length must be 0
+					if(offset2 != 0)
 					{
 						throw new ArgumentOutOfRangeException
 							("offset1", _("ArgRange_StringIndex"));
 					}
-					if(length1 > 0)
+					if(length2 != 0)
 					{
 						throw new ArgumentOutOfRangeException
 							("length1", _("ArgRange_StringRange"));
 					}
 				}
-				if(string2 != null && string2.Length != 0)
-				{
-					if(offset2 >= string2.Length)
-					{
-						throw new ArgumentOutOfRangeException
-							("offset2", _("ArgRange_StringIndex"));
-					}
-					if(length2 > (string2.Length - offset2))
-					{
-						throw new ArgumentOutOfRangeException
-							("length2", _("ArgRange_StringRange"));
-					}
-				}
 				else
 				{
-					if(offset2 > 0)
+					if(length2 == 0)
 					{
-						throw new ArgumentOutOfRangeException
-							("offset2", _("ArgRange_StringIndex"));
+						// Offset must not be greater than length
+						if(offset2 > string2.Length)
+						{
+							throw new ArgumentOutOfRangeException
+								("offset2", _("ArgRange_StringIndex"));
+						}
 					}
-					if(length2 > 0)
+					else
 					{
-						throw new ArgumentOutOfRangeException
-							("length2", _("ArgRange_StringRange"));
+						if(offset2 >= string2.Length)
+						{
+							throw new ArgumentOutOfRangeException
+								("offset2", _("ArgRange_StringIndex"));
+						}
+						if(length2 > (string2.Length - offset2))
+						{
+							throw new ArgumentOutOfRangeException
+								("length2", _("ArgRange_StringRange"));
+						}
 					}
 				}
 			#if CONFIG_REFLECTION

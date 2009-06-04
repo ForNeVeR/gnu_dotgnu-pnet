@@ -32,6 +32,7 @@ extern	"C" {
 #define	IL_VA_LIST			va_list
 #define	IL_VA_START(arg)	va_list va; va_start(va, arg)
 #define	IL_VA_END			va_end(va)
+#define	IL_VA_ARG(va, type)	va_arg(va, type)
 #define	IL_VA_GET_LIST		va
 #else
 #ifdef HAVE_VARARGS_H
@@ -39,11 +40,13 @@ extern	"C" {
 #define	IL_VA_LIST			va_list
 #define	IL_VA_START(arg)	va_list va; va_start(va)
 #define	IL_VA_END			va_end(va)
+#define	IL_VA_ARG(va, type)	va_arg(va, type)
 #define	IL_VA_GET_LIST		va
 #else
 #define	IL_VA_LIST			int
 #define	IL_VA_START(arg)
 #define	IL_VA_END
+#define	IL_VA_ARG(va, type)	((type)0)
 #define	IL_VA_GET_LIST		0
 #endif
 #endif

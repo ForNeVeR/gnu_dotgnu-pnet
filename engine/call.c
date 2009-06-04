@@ -58,29 +58,7 @@ this automatically, but the explicit casts are recommended.
 
 #include "engine_private.h"
 #include "lib_defs.h"
-#ifdef HAVE_STDARG_H
-#include <stdarg.h>
-#define	VA_LIST				va_list
-#define	VA_START(arg)		va_list va; va_start(va, arg)
-#define	VA_END				va_end(va)
-#define	VA_ARG(va,type)		va_arg(va, type)
-#define	VA_GET_LIST			va
-#else
-#ifdef HAVE_VARARGS_H
-#include <varargs.h>
-#define	VA_LIST				va_list
-#define	VA_START(arg)		va_list va; va_start(va)
-#define	VA_END				va_end(va)
-#define	VA_ARG(va,type)		va_arg(va, type)
-#define	VA_GET_LIST			va
-#else
-#define	VA_LIST				int
-#define	VA_START
-#define	VA_END
-#define	VA_ARG(va,type)		((type)0)
-#define	VA_GET_LIST			0
-#endif
-#endif
+#include <il_varargs.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -104,12 +82,12 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 						int isCtor, void *_this,
 					    void *argBuffer, void **jitArgs, void *userData)
 {
-	VA_LIST va;
+	IL_VA_LIST va;
 	ILUInt32 param, numParams;
 	ILType *paramType;
 
 	/* Copy the incoming "va_list" value */
-	ILMemCpy(&va, userData, sizeof(VA_LIST));
+	ILMemCpy(&va, userData, sizeof(IL_VA_LIST));
 
 	/* Push the arguments onto the evaluation stack */
 	if(ILType_HasThis(signature) && !isCtor)
@@ -125,7 +103,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 		{
 			/* Get the "this" parameter from the varargs list */
 			*jitArgs = argBuffer;
-			*((void **)argBuffer) = (void *)(VA_ARG(va, ILObject *));
+			*((void **)argBuffer) = (void *)(IL_VA_ARG(va, ILObject *));
 		}
 		argBuffer += sizeof(void *);
 		++jitArgs;
@@ -145,7 +123,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_I1:
 				{
 					*jitArgs = argBuffer;
-					*((ILInt8 *)argBuffer) = (ILInt8)VA_ARG(va, ILVaInt);
+					*((ILInt8 *)argBuffer) = (ILInt8)IL_VA_ARG(va, ILVaInt);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -154,7 +132,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_I2:
 				{
 					*jitArgs = argBuffer;
-					*((ILInt16 *)argBuffer) = (ILInt16)VA_ARG(va, ILVaInt);
+					*((ILInt16 *)argBuffer) = (ILInt16)IL_VA_ARG(va, ILVaInt);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -166,7 +144,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			#endif
 				{
 					*jitArgs = argBuffer;
-					*((ILInt32 *)argBuffer) = (ILInt32)VA_ARG(va, ILVaInt);
+					*((ILInt32 *)argBuffer) = (ILInt32)IL_VA_ARG(va, ILVaInt);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -175,7 +153,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_U1:
 				{
 					*jitArgs = argBuffer;
-					*((ILUInt8 *)argBuffer) = (ILUInt8)VA_ARG(va, ILVaUInt);
+					*((ILUInt8 *)argBuffer) = (ILUInt8)IL_VA_ARG(va, ILVaUInt);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -185,7 +163,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_CHAR:
 				{
 					*jitArgs = argBuffer;
-					*((ILUInt16 *)argBuffer) = (ILUInt16)VA_ARG(va, ILVaUInt);
+					*((ILUInt16 *)argBuffer) = (ILUInt16)IL_VA_ARG(va, ILVaUInt);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -197,7 +175,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			#endif
 				{
 					*jitArgs = argBuffer;
-					*((ILUInt32 *)argBuffer) = (ILUInt32)VA_ARG(va, ILVaUInt);
+					*((ILUInt32 *)argBuffer) = (ILUInt32)IL_VA_ARG(va, ILVaUInt);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -209,7 +187,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			#endif
 				{
 					*jitArgs = argBuffer;
-					*((ILInt64 *)argBuffer) = VA_ARG(va, ILInt64);
+					*((ILInt64 *)argBuffer) = IL_VA_ARG(va, ILInt64);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -221,7 +199,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			#endif
 				{
 					*jitArgs = argBuffer;
-					*((ILUInt64 *)argBuffer) = VA_ARG(va, ILUInt64);
+					*((ILUInt64 *)argBuffer) = IL_VA_ARG(va, ILUInt64);
 					argBuffer += sizeof(ILUInt64);
 					++jitArgs;
 				}
@@ -230,7 +208,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_R4:
 				{
 					*jitArgs = argBuffer;
-					*((ILFloat *)argBuffer) = (ILFloat)VA_ARG(va, ILVaDouble);
+					*((ILFloat *)argBuffer) = (ILFloat)IL_VA_ARG(va, ILVaDouble);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -239,7 +217,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_R8:
 				{
 					*jitArgs = argBuffer;
-					*((ILDouble *)argBuffer) = (ILDouble)VA_ARG(va, ILVaDouble);
+					*((ILDouble *)argBuffer) = (ILDouble)IL_VA_ARG(va, ILVaDouble);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -248,7 +226,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 				case IL_META_ELEMTYPE_R:
 				{
 					*jitArgs = argBuffer;
-					*((ILNativeFloat *)argBuffer) = (ILNativeFloat)VA_ARG(va, ILVaDouble);
+					*((ILNativeFloat *)argBuffer) = (ILNativeFloat)IL_VA_ARG(va, ILVaDouble);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -259,7 +237,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 					/* We assume that typed references are passed to us
 					   as a pointer to a temporary typedref structure */
 					*jitArgs = argBuffer;
-					*((void **)argBuffer) = VA_ARG(va, void *);
+					*((void **)argBuffer) = IL_VA_ARG(va, void *);
 					argBuffer += sizeof(ILNativeFloat);
 					++jitArgs;
 				}
@@ -270,7 +248,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 		{
 			/* Process an object reference */
 			*jitArgs = argBuffer;
-			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
+			*((ILObject **)argBuffer) = IL_VA_ARG(va, ILObject *);
 			argBuffer += sizeof(ILNativeFloat);
 			++jitArgs;
 		}
@@ -279,7 +257,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 			/* Process a value type: we assume that the caller has
 			   put the value into a temporary location and then
 			   passed a pointer to the temporary to us */
-			*jitArgs = (void *)(VA_ARG(va, void *));
+			*jitArgs = (void *)(IL_VA_ARG(va, void *));
 			++jitArgs;
 		}
 		else if(paramType != 0 && ILType_IsComplex(paramType) &&
@@ -287,7 +265,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 		{
 			/* Process a value that is being passed by reference */
 			*jitArgs = argBuffer;
-			*((void **)argBuffer) = VA_ARG(va, void *);
+			*((void **)argBuffer) = IL_VA_ARG(va, void *);
 			argBuffer += sizeof(ILNativeFloat);
 			++jitArgs;
 		}
@@ -295,7 +273,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 		{
 			/* Assume that everything else is an object reference */
 			*jitArgs = argBuffer;
-			*((ILObject **)argBuffer) = VA_ARG(va, ILObject *);
+			*((ILObject **)argBuffer) = IL_VA_ARG(va, ILObject *);
 			argBuffer += sizeof(ILNativeFloat);
 			++jitArgs;
 		}
@@ -307,7 +285,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILType *signature,
 int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 					    int isCtor, void *_this, void *userData)
 {
-	VA_LIST va;
+	IL_VA_LIST va;
 	ILType *signature = ILMethod_Signature(method);
 	CVMWord *stacktop, *stacklimit;
 	ILUInt32 param, numParams;
@@ -318,7 +296,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 	ILNativeFloat fValue;
 
 	/* Copy the incoming "va_list" value */
-	ILMemCpy(&va, userData, sizeof(VA_LIST));
+	ILMemCpy(&va, userData, sizeof(IL_VA_LIST));
 
 	/* Get the top and extent of the stack */
 	stacktop = thread->stackTop;
@@ -337,7 +315,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 		else
 		{
 			/* Get the "this" parameter from the varargs list */
-			stacktop->ptrValue = (void *)(VA_ARG(va, ILObject *));
+			stacktop->ptrValue = (void *)(IL_VA_ARG(va, ILObject *));
 		}
 		++stacktop;
 	}
@@ -364,7 +342,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 			#endif
 				{
 					CHECK_SPACE(1);
-					stacktop->intValue = (ILInt32)(VA_ARG(va, ILVaInt));
+					stacktop->intValue = (ILInt32)(IL_VA_ARG(va, ILVaInt));
 					++stacktop;
 				}
 				break;
@@ -375,7 +353,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 			#endif
 				{
 					CHECK_SPACE(1);
-					stacktop->uintValue = (ILUInt32)(VA_ARG(va, ILVaUInt));
+					stacktop->uintValue = (ILUInt32)(IL_VA_ARG(va, ILVaUInt));
 					++stacktop;
 				}
 				break;
@@ -388,7 +366,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 			#endif
 				{
 					CHECK_SPACE(CVM_WORDS_PER_LONG);
-					int64Value = VA_ARG(va, ILInt64);
+					int64Value = IL_VA_ARG(va, ILInt64);
 					ILMemCpy(stacktop, &int64Value, sizeof(int64Value));
 					stacktop += CVM_WORDS_PER_LONG;
 				}
@@ -399,7 +377,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 				case IL_META_ELEMTYPE_R:
 				{
 					CHECK_SPACE(CVM_WORDS_PER_NATIVE_FLOAT);
-					fValue = (ILNativeFloat)(VA_ARG(va, ILVaDouble));
+					fValue = (ILNativeFloat)(IL_VA_ARG(va, ILVaDouble));
 					ILMemCpy(stacktop, &fValue, sizeof(fValue));
 					stacktop += CVM_WORDS_PER_NATIVE_FLOAT;
 				}
@@ -410,7 +388,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 					/* We assume that typed references are passed to us
 					   as a pointer to a temporary typedref structure */
 					CHECK_SPACE(CVM_WORDS_PER_TYPED_REF);
-					ptr = (void *)(VA_ARG(va, void *));
+					ptr = (void *)(IL_VA_ARG(va, void *));
 					ILMemCpy(stacktop, ptr, sizeof(ILTypedRef));
 					stacktop += CVM_WORDS_PER_TYPED_REF;
 				}
@@ -421,7 +399,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 		{
 			/* Process an object reference */
 			CHECK_SPACE(1);
-			stacktop->ptrValue = (void *)(VA_ARG(va, ILObject *));
+			stacktop->ptrValue = (void *)(IL_VA_ARG(va, ILObject *));
 			++stacktop;
 		}
 		else if(ILType_IsValueType(paramType))
@@ -429,7 +407,7 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 			/* Process a value type: we assume that the caller has
 			   put the value into a temporary location and then
 			   passed a pointer to the temporary to us */
-			ptr = (void *)(VA_ARG(va, void *));
+			ptr = (void *)(IL_VA_ARG(va, void *));
 			size = ILSizeOfType(thread, paramType);
 			sizeInWords = ((size + sizeof(CVMWord) - 1) / sizeof(CVMWord));
 			CHECK_SPACE(sizeInWords);
@@ -441,14 +419,14 @@ int _ILCallPackVaParams(ILExecThread *thread, ILMethod *method,
 		{
 			/* Process a value that is being passed by reference */
 			CHECK_SPACE(1);
-			stacktop->ptrValue = (void *)(VA_ARG(va, void *));
+			stacktop->ptrValue = (void *)(IL_VA_ARG(va, void *));
 			++stacktop;
 		}
 		else
 		{
 			/* Assume that everything else is an object reference */
 			CHECK_SPACE(1);
-			stacktop->ptrValue = (void *)(VA_ARG(va, ILObject *));
+			stacktop->ptrValue = (void *)(IL_VA_ARG(va, ILObject *));
 			++stacktop;
 		}
 	}
@@ -1313,7 +1291,7 @@ static void ThrowMethodMissing(ILExecThread *thread)
 }
 
 static int CallVirtualMethod(ILExecThread *thread, ILMethod *method,
-					  		 void *result, void *_this, VA_LIST va)
+					  		 void *result, void *_this, IL_VA_LIST va)
 {
 	ILClass *classInfo;
 	ILClass *objectClass;
@@ -1449,12 +1427,12 @@ int ILExecThreadCall(ILExecThread *thread, ILMethod *method,
 					 void *result, ...)
 {
 	int threwException;
-	VA_START(result);
+	IL_VA_START(result);
 	threwException = _ILCallMethod(thread, method,
 								   _ILCallUnpackDirectResult, result,
 								   0, 0,
-								   _ILCallPackVaParams, &VA_GET_LIST);
-	VA_END;
+								   _ILCallPackVaParams, &IL_VA_GET_LIST);
+	IL_VA_END;
 	return threwException;
 }
 
@@ -1488,10 +1466,10 @@ int ILExecThreadCallVirtual(ILExecThread *thread, ILMethod *method,
 							void *result, void *_this, ...)
 {
 	int threwException;
-	VA_START(_this);
+	IL_VA_START(_this);
 	threwException = CallVirtualMethod
-						(thread, method, result, _this, VA_GET_LIST);
-	VA_END;
+						(thread, method, result, _this, IL_VA_GET_LIST);
+	IL_VA_END;
 	return threwException;
 }
 
@@ -1508,13 +1486,13 @@ int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 {
 	int threwException;
 	ILMethod *method;
-	VA_START(result);
+	IL_VA_START(result);
 	method = ILExecThreadLookupMethod(thread, typeName,
 									  methodName, signature);
 	if(!method)
 	{
 		/* End argument processing */
-		VA_END;
+		IL_VA_END;
 
 		/* Construct and throw a "MissingMethodException" object */
 		ThrowMethodMissing(thread);
@@ -1525,8 +1503,8 @@ int ILExecThreadCallNamed(ILExecThread *thread, const char *typeName,
 	threwException = _ILCallMethod(thread, method,
 								   _ILCallUnpackDirectResult, result,
 								   0, 0,
-								   _ILCallPackVaParams, &VA_GET_LIST);
-	VA_END;
+								   _ILCallPackVaParams, &IL_VA_GET_LIST);
+	IL_VA_END;
 	return threwException;
 }
 
@@ -1557,13 +1535,13 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 {
 	int threwException;
 	ILMethod *method;
-	VA_START(_this);
+	IL_VA_START(_this);
 	method = ILExecThreadLookupMethod(thread, typeName,
 									  methodName, signature);
 	if(!method)
 	{
 		/* End argument processing */
-		VA_END;
+		IL_VA_END;
 
 		/* Construct and throw a "MissingMethodException" object */
 		ThrowMethodMissing(thread);
@@ -1572,8 +1550,8 @@ int ILExecThreadCallNamedVirtual(ILExecThread *thread, const char *typeName,
 		return 1;
 	}
 	threwException = CallVirtualMethod
-						(thread, method, result, _this, VA_GET_LIST);
-	VA_END;
+						(thread, method, result, _this, IL_VA_GET_LIST);
+	IL_VA_END;
 	return threwException;
 }
 
@@ -1602,14 +1580,14 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	ILMethod *ctor;
 	ILClass *classInfo;
 	ILObject *result;
-	VA_START(signature);
+	IL_VA_START(signature);
 
 	/* Find the constructor */
 	ctor = ILExecThreadLookupMethod(thread, typeName, ".ctor", signature);
 	if(!ctor)
 	{
 		/* Throw a "MissingMethodException" */
-		VA_END;
+		IL_VA_END;
 		ThrowMethodMissing(thread);
 		return 0;
 	}
@@ -1621,7 +1599,7 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	{
 		/* Throw a "TypeLoadException" */
 		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
-		VA_END;
+		IL_VA_END;
 		ILExecThreadThrowSystem(thread, "System.TypeLoadException",
 								(const char *)0);
 		return 0;
@@ -1633,13 +1611,13 @@ ILObject *ILExecThreadNew(ILExecThread *thread, const char *typeName,
 	if(_ILCallMethod(thread, ctor,
 					 _ILCallUnpackDirectResult, &result,
 					 1, 0,
-					 _ILCallPackVaParams, &VA_GET_LIST))
+					 _ILCallPackVaParams, &IL_VA_GET_LIST))
 	{
 		/* The constructor threw an exception */
-		VA_END;
+		IL_VA_END;
 		return 0;
 	}
-	VA_END;
+	IL_VA_END;
 	return result;
 }
 

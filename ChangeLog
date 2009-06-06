@@ -1,4 +1,11 @@
-2009-ß5-17  Klaus Treichel  <ktreichel@web.de>
+2009-06-06  Klaus Treichel  <ktreichel@web.de>
+
+	* JScript/.gitignore, Xsharp/.gitignore: Add more compiler generated
+	files.
+
+	* DotGNU.Misc/.gitignore, tests/System.Windows.Forms/.gitignore: Added
+
+2009-05-17  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System.String.cs (Compare): Let CompareInfo.Compare do the
 	index validation. Use the not ECMA code for ECMA too because ECMA

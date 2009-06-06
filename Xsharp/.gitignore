@@ -9,4 +9,5 @@ Makefile.in
 *.xml
 *.lo
 *.la
+*.o
 Xlib.cs

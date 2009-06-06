@@ -20,3 +20,5 @@ jv_nodes.c
 jv_arith.c
 jv_assign.c
 jv_cast.c
+*.o
+*.a

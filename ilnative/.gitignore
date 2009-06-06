@@ -5,3 +5,4 @@ Makefile.in
 ilcheck
 ilinternal
 ilnative
+*.o

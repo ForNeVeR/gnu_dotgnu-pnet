@@ -11,3 +11,5 @@ config.log
 .deps
 ffitest
 autom4te.cache
+fficonfig.h.in
+stamp-h1

@@ -11,3 +11,4 @@ csdocvalil
 cssrc2html
 il2doc
 src2xml
+*.o

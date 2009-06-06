@@ -6,3 +6,5 @@ ilasm
 ilasm_grammar.c
 ilasm_grammar.h
 ilasm_scanner.c
+*.o
+*.a

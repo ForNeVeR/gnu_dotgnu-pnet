@@ -6,3 +6,5 @@ mkcategory
 mknumber
 mkcase
 errno_map.c
+*.o
+*.a

@@ -1,3 +1,7 @@
+2009-06-07  Klaus Treichel  <ktreichel@web.de>
+
+	* .gitignore: Add autom4te.cache to the ignored files.
+
 2006-02-20  Russell Stuart  <russell-savannah@stuart.id.au>
 
 	* minor re-work of build-debian-packages.

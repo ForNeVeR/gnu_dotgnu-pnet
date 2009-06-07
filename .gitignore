@@ -9,3 +9,4 @@ confdefs.h
 libtool
 aclocal.m4
 pnetc.spec
+autom4te.cache

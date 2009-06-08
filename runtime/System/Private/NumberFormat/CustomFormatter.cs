@@ -148,6 +148,8 @@ internal class CustomFormatter : Formatter
 	private string FormatRawNumber(string value, string format, int sign,
 									               IFormatProvider provider)
 	{
+		if( value.StartsWith( "." ) ) value = "0" + value;
+
 		string rawnumber;
 		int firstzero, lastzero;
 		int scale = 0;

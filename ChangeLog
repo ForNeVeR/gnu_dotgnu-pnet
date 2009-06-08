@@ -1,3 +1,8 @@
+2009-06-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
+
+	* runtime/System/Private/NumberFormat/CustomFormatter.cs: fixed exception 
+	formatting values between 0 and -1.
+
 2009-06-06  Klaus Treichel  <ktreichel@web.de>
 
 	* JScript/.gitignore, Xsharp/.gitignore: Add more compiler generated

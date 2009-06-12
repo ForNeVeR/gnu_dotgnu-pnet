@@ -1,7 +1,7 @@
 /*
  * dump_type.c - Dump types in assembly format.
  *
- * Copyright (C) 2001-2004  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2004, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1067,8 +1067,8 @@ static void DumpVariantType(FILE *stream, ILUInt32 type, int flags)
  */
 static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 {
-	unsigned long value;
-	unsigned long value2;
+	ILUInt32 value;
+	ILUInt32 value2;
 	if(reader->len == 0)
 	{
 		fputs("UNKNOWN", stream);
@@ -1214,7 +1214,7 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 		{
 			fputs("fixed sysstring [", stream);
 			value = ILMetaUncompressData(reader);
-			fprintf(stream, "%lu]", value);
+			fprintf(stream, "%u]", value);
 		}
 		break;
 
@@ -1252,7 +1252,7 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 		{
 			fputs("safearray ", stream);
 			value = ILMetaUncompressData(reader);
-			DumpVariantType(stream, (ILUInt32)value, flags);
+			DumpVariantType(stream, value, flags);
 		}
 		break;
 
@@ -1270,11 +1270,11 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			{
 				fputs("fixed array ", stream);
 				DumpNativeType(stream, reader, flags);
-				fprintf(stream, "[%lu]", value);
+				fprintf(stream, "[%u]", value);
 			}
 			else
 			{
-				fprintf(stream, "fixed array [%lu]", value);
+				fprintf(stream, "fixed array [%u]", value);
 			}
 		}
 		break;
@@ -1355,11 +1355,11 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			value2 = ILMetaUncompressData(reader);
 			if(value2 != 0)
 			{
-				fprintf(stream, "%lu", value2);
+				fprintf(stream, "%u", value2);
 			}
 			if(value)
 			{
-				fprintf(stream, " + %lu", value);
+				fprintf(stream, " + %u", value);
 			}
 			putc(']', stream);
 		}

@@ -1,7 +1,7 @@
 /*
  * link_attrs.c - Convert custom attributes and copy them to the final image.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,9 +129,9 @@ int _ILLinkerConvertDebug(ILLinker *linker, ILProgramItem *oldItem,
 	unsigned long len;
 	const char *name;
 	unsigned long nameIndex;
-	unsigned long temp1;
-	unsigned long temp2;
-	unsigned long temp3;
+	ILUInt32 temp1;
+	ILUInt32 temp2;
+	ILUInt32 temp3;
 
 	/* Bail out if no debug information for the old image */
 	if(!ILDebugPresent(ILProgramItem_Image(oldItem)))

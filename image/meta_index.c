@@ -1,7 +1,7 @@
 /*
  * meta_index.c - Handle metadata index parsing for an image.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -678,7 +678,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 							reader.len = image->blobPoolSize - temp;
 							reader.error = 0;
 							temp = values[index++] =
-								(ILUInt32)(ILMetaUncompressData(&reader));
+								ILMetaUncompressData(&reader);
 							if(temp > reader.len || reader.error)
 							{
 								META_VAL_ERROR("invalid blob length");

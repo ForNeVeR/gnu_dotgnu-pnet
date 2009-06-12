@@ -1,7 +1,7 @@
 /*
  * sig_parse.c - Signature parsing for IL image handling.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,11 +36,11 @@ static ILType *ParseArrayShape(ILContext *context,
 							   ILMetaDataRead *reader,
 							   ILType *elemType)
 {
-	unsigned long rank;
-	unsigned long numSizes;
-	unsigned long numLowBounds;
-	unsigned long dim;
-	long value;
+	ILUInt32 rank;
+	ILUInt32 numSizes;
+	ILUInt32 numLowBounds;
+	ILUInt32 dim;
+	ILInt32 value;
 	ILType *array;
 
 	/* Parse the rank value */
@@ -72,7 +72,7 @@ static ILType *ParseArrayShape(ILContext *context,
 		{
 			return ILType_Invalid;
 		}
-		ILTypeSetSize(array, dim, (ILInt32)value);
+		ILTypeSetSize(array, dim, value);
 	}
 
 	/* Parse the number of specified low bounds */
@@ -87,7 +87,7 @@ static ILType *ParseArrayShape(ILContext *context,
 	for(dim = 0; dim < numLowBounds; ++dim)
 	{
 		value = ILMetaUncompressInt(reader);
-		ILTypeSetLowBound(array, dim, (ILInt32)value);
+		ILTypeSetLowBound(array, dim, value);
 	}
 
 	/* Done */
@@ -132,7 +132,7 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 							 ILMetaDataRead *reader, int depth,
 							 int categories)
 {
-	unsigned long value;
+	ILUInt32 value;
 	ILType *modifiers = 0;
 	ILType *type = 0;
 	ILType *tempType;
@@ -146,6 +146,8 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 	while(value == IL_META_ELEMTYPE_CMOD_REQD ||
 	      value == IL_META_ELEMTYPE_CMOD_OPT)
 	{
+		ILToken token;
+
 		if((categories & CATEGORY_CMOD) == 0)
 		{
 			/* Compiler modifiers cannot be used here */
@@ -159,8 +161,8 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 		{
 			sigKind = IL_TYPE_COMPLEX_CMOD_OPT;
 		}
-		value = ILMetaUncompressToken(reader);
-		info = (ILClass *)ILImageTokenInfo(image, value);
+		token = ILMetaUncompressToken(reader);
+		info = (ILClass *)ILImageTokenInfo(image, token);
 		if(!info)
 		{
 			/* Not a valid type reference */
@@ -247,11 +249,13 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 
 		case IL_META_ELEMTYPE_VALUETYPE:
 		{
+			ILToken token;
+
 			/* Parse a type token reference as a value type */
-			value = ILMetaUncompressToken(reader);
-			if(value != 0)
+			token = ILMetaUncompressToken(reader);
+			if(token != 0)
 			{
-				info = (ILClass *)ILImageTokenInfo(image, value);
+				info = (ILClass *)ILImageTokenInfo(image, token);
 				if(info != 0)
 				{
 					type = ILType_FromValueType(info);
@@ -262,11 +266,13 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 
 		case IL_META_ELEMTYPE_CLASS:
 		{
+			ILToken token;
+
 			/* Parse a type token reference as a class */
-			value = ILMetaUncompressToken(reader);
-			if(value != 0)
+			token = ILMetaUncompressToken(reader);
+			if(token != 0)
 			{
-				info = (ILClass *)ILImageTokenInfo(image, value);
+				info = (ILClass *)ILImageTokenInfo(image, token);
 				if(info == 0)
 				{
 					int error;
@@ -274,12 +280,12 @@ static ILType *ParseElemType(ILContext *context, ILImage *image,
 					 * When this class is referenced as a actual generic parameter for a base class,
 					 * and it is not already loaded we can get to this point.
 					 */
-					error = LoadForwardTypeDef(image, value);
+					error = LoadForwardTypeDef(image, token);
 					if(error != 0)
 					{
 						return 0;
 					}
-					info = (ILClass *)ILImageTokenInfo(image, value);
+					info = (ILClass *)ILImageTokenInfo(image, token);
 				}
 				if(info != 0)
 				{
@@ -478,10 +484,10 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 							  ILMetaDataRead *reader, int *kind,
 							  int depth)
 {
-	unsigned long sigKind;
-	unsigned long numGenericParams;
-	unsigned long numParams;
-	unsigned long param;
+	ILUInt32 sigKind;
+	ILUInt32 numGenericParams;
+	ILUInt32 numParams;
+	ILUInt32 param;
 	int sawSentinel;
 	ILType *paramType;
 	ILType *type;
@@ -505,7 +511,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 			if((sigKind & IL_META_CALLCONV_GENERIC) != 0)
 			{
 				numGenericParams = ILMetaUncompressData(reader);
-				if(numGenericParams > (unsigned long)0xFF)
+				if(numGenericParams > (ILUInt32)0xFF)
 				{
 					/* Cannot have this many parameters, because "with"
 					   types use a single byte for parameter counts */
@@ -519,7 +525,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 
 			/* Parse the number of method parameters */
 			numParams = ILMetaUncompressData(reader);
-			if(numParams > (unsigned long)0xFFFF)
+			if(numParams > (ILUInt32)0xFFFF)
 			{
 				/* Cannot have this many parameters, because the parameter
 				   numbers in ParamDef records don't support it */
@@ -634,7 +640,7 @@ static ILType *ParseSignature(ILContext *context, ILImage *image,
 		{
 			/* Parse the number of getter parameters */
 			numParams = ILMetaUncompressData(reader);
-			if(numParams > (unsigned long)0xFFFD)
+			if(numParams > (ILUInt32)0xFFFD)
 			{
 				/* Cannot have this many parameters, because the parameter
 				   numbers in ParamDef records don't support it, and we
@@ -779,7 +785,7 @@ ILType *ILTypeFromFieldSig(ILContext *context, ILImage *image,
 						   unsigned long blobStart, unsigned long blobLen)
 {
 	ILMetaDataRead reader;
-	unsigned long kind;
+	ILUInt32 kind;
 
 	/* Initialize the metadata reader */
 	reader.data = (unsigned char *)(image->blobPool + blobStart);
@@ -856,7 +862,7 @@ ILType *ILTypeFromLocalVarSig(ILImage *image, unsigned long blobOffset)
 {
 	ILContext *context = image->context;
 	ILMetaDataRead reader;
-	unsigned long kind;
+	ILUInt32 kind;
 	ILType *locals;
 	ILType *nextLocal;
 	int isPinned;
@@ -879,7 +885,7 @@ ILType *ILTypeFromLocalVarSig(ILImage *image, unsigned long blobOffset)
 
 	/* Parse the number of local variables */
 	kind = ILMetaUncompressData(&reader);
-	if(reader.error || kind > (unsigned long)0xFFFF)
+	if(reader.error || kind > (ILUInt32)0xFFFF)
 	{
 		return ILType_Invalid;
 	}

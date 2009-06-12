@@ -1,7 +1,7 @@
 /*
  * uncompress.c - Support routines for uncompressing metadata items.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ extern	"C" {
  * 4-byte encoding, I am being paranoid and betting that a
  * 5-byte encoding will slip in later.  Better safe than sorry.
  */
-unsigned long ILMetaUncompressData(ILMetaDataRead *meta)
+ILUInt32 ILMetaUncompressData(ILMetaDataRead *meta)
 {
 	unsigned char ch;
 	unsigned char ch2;
@@ -47,7 +47,7 @@ unsigned long ILMetaUncompressData(ILMetaDataRead *meta)
 		if(ch < (unsigned char)0x80)
 		{
 			/* Single-byte form of the item */
-			return (unsigned long)ch;
+			return (ILUInt32)ch;
 		}
 		else if((ch & 0xC0) == 0x80)
 		{
@@ -55,8 +55,8 @@ unsigned long ILMetaUncompressData(ILMetaDataRead *meta)
 			if(meta->len > 0)
 			{
 				--(meta->len);
-				return (((unsigned long)(ch & 0x3F)) << 8) |
-					    ((unsigned long)(*((meta->data)++)));
+				return (((ILUInt32)(ch & 0x3F)) << 8) |
+					    ((ILUInt32)(*((meta->data)++)));
 			}
 			else
 			{
@@ -74,10 +74,10 @@ unsigned long ILMetaUncompressData(ILMetaDataRead *meta)
 				ch4 = meta->data[2];
 				meta->len -= 3;
 				meta->data += 3;
-				return (((unsigned long)(ch & 0x1F)) << 24) |
-					   (((unsigned long)ch2) << 16) |
-					   (((unsigned long)ch3) << 8) |
-					    ((unsigned long)ch4);
+				return (((ILUInt32)(ch & 0x1F)) << 24) |
+					   (((ILUInt32)ch2) << 16) |
+					   (((ILUInt32)ch3) << 8) |
+					    ((ILUInt32)ch4);
 			}
 			else
 			{
@@ -97,10 +97,10 @@ unsigned long ILMetaUncompressData(ILMetaDataRead *meta)
 				ch4 = meta->data[3];
 				meta->len -= 4;
 				meta->data += 4;
-				return (((unsigned long)ch) << 24) |
-					   (((unsigned long)ch2) << 16) |
-					   (((unsigned long)ch3) << 8) |
-					    ((unsigned long)ch4);
+				return (((ILUInt32)ch) << 24) |
+					   (((ILUInt32)ch2) << 16) |
+					   (((ILUInt32)ch3) << 8) |
+					    ((ILUInt32)ch4);
 			}
 			else
 			{
@@ -124,27 +124,39 @@ unsigned long ILMetaUncompressData(ILMetaDataRead *meta)
 	}
 }
 
-unsigned long ILMetaUncompressToken(ILMetaDataRead *meta)
+ILToken ILMetaUncompressToken(ILMetaDataRead *meta)
 {
-	unsigned long item = ILMetaUncompressData(meta);
-	unsigned long type = (item & 0x03);
+	ILUInt32 item;
+
+	item = ILMetaUncompressData(meta);
 	if(!(meta->error))
 	{
-		if(type == 0x00)
+		ILUInt32 type = (item & 0x03);
+
+		switch(type)
 		{
-			return ((item >> 2) | IL_META_TOKEN_TYPE_DEF);
-		}
-		else if(type == 0x01)
-		{
-			return ((item >> 2) | IL_META_TOKEN_TYPE_REF);
-		}
-		else if(type == 0x02)
-		{
-			return ((item >> 2) | IL_META_TOKEN_TYPE_SPEC);
-		}
-		else
-		{
-			return ((item >> 2) | IL_META_TOKEN_BASE_TYPE);
+			case 0x00:
+			{
+				return (ILToken)((item >> 2) | IL_META_TOKEN_TYPE_DEF);
+			}
+			break;
+
+			case 0x01:
+			{
+				return (ILToken)((item >> 2) | IL_META_TOKEN_TYPE_REF);
+			}
+			break;
+
+			case 0x02:
+			{
+				return (ILToken)((item >> 2) | IL_META_TOKEN_TYPE_SPEC);
+			}
+			break;
+
+			default:
+			{
+				return (ILToken)((item >> 2) | IL_META_TOKEN_BASE_TYPE);
+			}
 		}
 	}
 	else
@@ -153,25 +165,25 @@ unsigned long ILMetaUncompressToken(ILMetaDataRead *meta)
 	}
 }
 
-long ILMetaUncompressInt(ILMetaDataRead *meta)
+ILInt32 ILMetaUncompressInt(ILMetaDataRead *meta)
 {
-	unsigned char ch;
-	unsigned char ch2;
-	unsigned char ch3;
-	unsigned char ch4;
-	unsigned long value;
-
 	if(meta->len > 0)
 	{
+		unsigned char ch;
+		unsigned char ch2;
+		unsigned char ch3;
+		unsigned char ch4;
+		ILUInt32 value;
+
 		ch = *((meta->data)++);
 		--(meta->len);
 		if((ch & 0x80) == 0x00)
 		{
 			/* One-byte form of the item */
 			if((ch & 0x01) == 0x00)
-				return (long)(ch >> 1);
+				return (ILInt32)(ch >> 1);
 			else
-				return (long)(signed char)((ch >> 1) | 0xC0);
+				return (ILInt32)(signed char)((ch >> 1) | 0xC0);
 		}
 		else if((ch & 0xC0) == 0x80)
 		{
@@ -179,12 +191,12 @@ long ILMetaUncompressInt(ILMetaDataRead *meta)
 			if(meta->len > 0)
 			{
 				--(meta->len);
-				value = (((unsigned long)(ch & 0x3F)) << 8) |
-					     ((unsigned long)(*((meta->data)++)));
+				value = (((ILUInt32)(ch & 0x3F)) << 8) |
+					     ((ILUInt32)(*((meta->data)++)));
 				if((value & 0x01) == 0x00)
-					return (long)(value >> 1);
+					return (ILInt32)(value >> 1);
 				else
-					return (long)(ILInt32)((value >> 1) | 0xFFFFE000);
+					return (ILInt32)((value >> 1) | 0xFFFFE000);
 			}
 			else
 			{
@@ -202,14 +214,14 @@ long ILMetaUncompressInt(ILMetaDataRead *meta)
 				ch4 = meta->data[2];
 				meta->len -= 3;
 				meta->data += 3;
-				value = (((unsigned long)(ch & 0x1F)) << 24) |
-					    (((unsigned long)ch2) << 16) |
-					    (((unsigned long)ch3) << 8) |
-					     ((unsigned long)ch4);
+				value = (((ILUInt32)(ch & 0x1F)) << 24) |
+					    (((ILUInt32)ch2) << 16) |
+					    (((ILUInt32)ch3) << 8) |
+					     ((ILUInt32)ch4);
 				if((value & 0x01) == 0x00)
-					return (long)(value >> 1);
+					return (ILInt32)(value >> 1);
 				else
-					return (long)(ILInt32)((value >> 1) | 0xF0000000);
+					return (ILInt32)((value >> 1) | 0xF0000000);
 			}
 			else
 			{
@@ -229,11 +241,11 @@ long ILMetaUncompressInt(ILMetaDataRead *meta)
 				ch4 = meta->data[3];
 				meta->len -= 4;
 				meta->data += 4;
-				value = (((unsigned long)ch) << 24) |
-					    (((unsigned long)ch2) << 16) |
-					    (((unsigned long)ch3) << 8) |
-					     ((unsigned long)ch4);
-				return (long)(ILInt32)value;
+				value = (((ILUInt32)ch) << 24) |
+					    (((ILUInt32)ch2) << 16) |
+					    (((ILUInt32)ch3) << 8) |
+					     ((ILUInt32)ch4);
+				return (ILInt32)value;
 			}
 			else
 			{

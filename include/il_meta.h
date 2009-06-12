@@ -1,7 +1,7 @@
 /*
  * il_meta.h - Definitions related to IL metadata.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #ifndef	_IL_META_H
 #define	_IL_META_H
+
+#include "il_values.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -587,6 +589,11 @@ extern	"C" {
 #define	IL_META_MARSHAL_REF_UTF16_ARRAY			0x000C
 
 /*
+ * Token identifier.
+ */
+typedef ILUInt32	ILToken;
+
+/*
  * Control data structure for reading from the metadata section.
  */
 typedef struct _tagILMetaDataRead
@@ -605,17 +612,17 @@ typedef struct _tagILMetaDataRead
 /*
  * Uncompress a data item within the metadata section.
  */
-unsigned long ILMetaUncompressData(ILMetaDataRead *meta);
+ILUInt32 ILMetaUncompressData(ILMetaDataRead *meta);
 
 /*
  * Uncompress a token from within the metadata section.
  */
-unsigned long ILMetaUncompressToken(ILMetaDataRead *meta);
+ILToken ILMetaUncompressToken(ILMetaDataRead *meta);
 
 /*
  * Uncompress a signed integer from within the metadata section.
  */
-long ILMetaUncompressInt(ILMetaDataRead *meta);
+ILInt32 ILMetaUncompressInt(ILMetaDataRead *meta);
 
 /*
  * Compress a data item within the metadata section into a buffer.

@@ -1,7 +1,7 @@
 /*
  * debug_reader.c - Read debug symbol information from within an IL binary.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -136,7 +136,7 @@ ILToken ILDebugGetPseudo(const char *name)
 	return (token | (ILUInt32)0x80000000);
 }
 
-const char *ILDebugGetString(ILDebugContext *dbg, unsigned long offset)
+const char *ILDebugGetString(ILDebugContext *dbg, ILUInt32 offset)
 {
 	if(offset < dbg->stringsLen)
 	{

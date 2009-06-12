@@ -1,7 +1,7 @@
 /*
  * marshal.c - Determine how to marshal PInvoke method parameters.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ ILUInt32 ILPInvokeGetCharSet(ILPInvoke *pinvoke, ILMethod *method)
  */
 #define	ExtractCustomString(name,namelen)	\
 			do { \
-				unsigned long size = ILMetaUncompressData(&reader); \
+				ILUInt32 size = ILMetaUncompressData(&reader); \
 				*(name) = (char *)(reader.data); \
 				*(namelen) = (int)size; \
 				reader.data += size; \

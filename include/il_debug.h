@@ -1,7 +1,7 @@
 /*
  * il_debug.h - Routines for manipulating debug symbol information.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ ILToken ILDebugGetPseudo(const char *name);
  * Get a string from the debug string table.  Returns NULL
  * if the string table offset is invalid.
  */
-const char *ILDebugGetString(ILDebugContext *dbg, unsigned long offset);
+const char *ILDebugGetString(ILDebugContext *dbg, ILUInt32 offset);
 
 /*
  * Initialize a debug information block iterator for a token.

@@ -1,7 +1,7 @@
 /*
  * method_cache.c - Method cache implementation.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -910,9 +910,10 @@ static void InitDebugIter(ILCacheDebugIter *iter, ILCache *cache, void *start)
 static int GetNextDebug(ILCacheDebugIter *iter, ILUInt32 *offset,
 						ILUInt32 *nativeOffset)
 {
-	long value;
 	while(iter->list)
 	{
+		ILInt32 value;
+
 		value = ILMetaUncompressInt(&(iter->reader));
 		if(value == -1)
 		{

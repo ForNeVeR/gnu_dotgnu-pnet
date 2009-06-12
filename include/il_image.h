@@ -1,7 +1,7 @@
 /*
  * il_image.h - Routines for manipulating IL executable images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,8 @@
 #ifndef	_IL_IMAGE_H
 #define	_IL_IMAGE_H
 
-#include <stdio.h>
 #include "il_meta.h"
-#include "il_values.h"
+#include <stdio.h>
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -91,11 +90,6 @@ typedef struct _tagILContext ILContext;
  * Opaque data structure for a loaded executable image.
  */
 typedef struct _tagILImage ILImage;
-
-/*
- * Token identifier.
- */
-typedef ILUInt32	ILToken;
 
 /*
  * Create an IL context into which multiple images can be loaded.

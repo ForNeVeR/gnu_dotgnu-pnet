@@ -1,7 +1,7 @@
 /*
  * image.c - Utility routines for manipulting IL images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -298,7 +298,7 @@ const void *ILImageGetBlob(ILImage *image, unsigned long offset,
 
 	/* Extract the length of the blob */
 	meta.error = 0;
-	*len = ILMetaUncompressData(&meta);
+	*len = (unsigned long)ILMetaUncompressData(&meta);
 	if(meta.error)
 	{
 		return 0;
@@ -353,7 +353,7 @@ const char *ILImageGetUserString(ILImage *image, unsigned long offset,
 
 		/* Extract the length of the string */
 		reader.error = 0;
-		slen = ILMetaUncompressData(&reader);
+		slen = (unsigned long)ILMetaUncompressData(&reader);
 		if((slen & 1) == 0 || slen > reader.len || reader.error)
 		{
 			return 0;

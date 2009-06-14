@@ -1,7 +1,7 @@
 /*
  * cs_lvalue.tc - Semantic analysis for C# identifiers and l-values.
  *
- * Copyright (C) 2001, 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -129,7 +129,7 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 			/* Convert the constant into an appropriate node */
 			ILType *baseType = ILTypeGetEnumType(ILField_Type(field));
 			const unsigned char *value;
-			unsigned long valueLen;
+			ILUInt32 valueLen;
 			value = ILConstantGetValue(constValue, &valueLen);
 			switch(ILConstantGetElemType(constValue))
 			{
@@ -392,7 +392,7 @@ static ILNode *FieldToConstant(ILGenInfo *info, ILNode *node, ILField *field)
 			ILMethod *ctor;
 			const char *namespace;
 			const unsigned char *value;
-			unsigned long valueLen;
+			ILUInt32 valueLen;
 			ILDecimal decValue;
 
 			while((attr = ILProgramItemNextAttribute(ILToProgramItem(field),

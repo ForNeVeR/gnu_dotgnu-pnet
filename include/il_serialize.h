@@ -1,7 +1,7 @@
 /*
  * il_serialize.h - Routines for serializing attribute values.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ typedef struct _tagILSerializeWriter ILSerializeWriter;
  */
 ILSerializeReader *ILSerializeReaderInit(ILMethod *method,
 									     const void *blob,
-										 unsigned long len);
+										 ILUInt32 len);
 
 /*
  * Destroy a serialization reader's temporary storage.
@@ -143,7 +143,7 @@ void ILSerializeWriterDestroy(ILSerializeWriter *writer);
  * Returns NULL if out of memory.
  */
 const void *ILSerializeWriterGetBlob(ILSerializeWriter *writer,
-									 unsigned long *blobLen);
+									 ILUInt32 *blobLen);
 
 /*
  * Write an integer value of 32 bits or less to a writer.

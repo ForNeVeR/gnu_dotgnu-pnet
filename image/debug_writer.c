@@ -1,7 +1,7 @@
 /*
  * debug_writer.c - Write debug informtion to an image.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,9 +50,9 @@ static int Debug_MatchFunc(const void *elem, const void *key)
 	return !strcmp(((ILDebugHashItem *)elem)->name, (const char *)key);
 }
 
-unsigned long ILWriterDebugString(ILWriter *writer, const char *str)
+ILUInt32 ILWriterDebugString(ILWriter *writer, const char *str)
 {
-	unsigned long offset;
+	ILUInt32 offset;
 	ILDebugHashItem *item;
 
 	/* Search the hash table for an identical string */
@@ -106,7 +106,7 @@ unsigned long ILWriterDebugString(ILWriter *writer, const char *str)
 
 static void WriterDebugAdd(ILWriter *writer, ILProgramItem *item,
 						   unsigned long pseudo, int type,
-					       const void *info, unsigned long len)
+					       const void *info, ILUInt32 len)
 {
 	unsigned char header[IL_META_COMPRESS_MAX_SIZE * 2];
 	int posn;
@@ -114,7 +114,7 @@ static void WriterDebugAdd(ILWriter *writer, ILProgramItem *item,
 	ILDebugToken *newTokens;
 
 	/* Write the debug data to the section */
-	posn = ILMetaCompressData(header, (unsigned long)type);
+	posn = ILMetaCompressData(header, (ILUInt32)type);
 	posn += ILMetaCompressData(header + posn, len);
 	offset = writer->debugData.offset + IL_DEBUG_HEADER_SIZE;
 	if(!_ILWBufferListAdd(&(writer->debugData), header, posn) ||
@@ -153,13 +153,13 @@ static void WriterDebugAdd(ILWriter *writer, ILProgramItem *item,
 }
 
 void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
-					  const void *info, unsigned long len)
+					  const void *info, ILUInt32 len)
 {
 	WriterDebugAdd(writer, item, 0, type, info, len);
 }
 
 void ILWriterDebugAddPseudo(ILWriter *writer, unsigned long token, int type,
-					  		const void *info, unsigned long len)
+					  		const void *info, ILUInt32 len)
 {
 	WriterDebugAdd(writer, 0, token, type, info, len);
 }

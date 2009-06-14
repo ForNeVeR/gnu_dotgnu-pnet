@@ -1,7 +1,7 @@
 /*
  * link_image.c - Process object images within a linker context.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,11 +52,11 @@ static int ProcessImage(ILLinker *linker, ILImage *image,
 	const ILUInt16 *version;
 	const char *locale;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	ILUInt32 thisCompat;
 	ILUInt32 compat;
 	void *dataSection;
-	unsigned long dataLen;
+	ILUInt32 dataLen;
 	char *attrVersionString;
 	ILUInt16 attrVersion[4];
 
@@ -275,9 +275,7 @@ int ILLinkerPerformLink(ILLinker *linker)
 	ILLinkImage *image = linker->images;
 	ILImage *initImage;
 	char *curdir;
-	unsigned long curdirOffset;
 	unsigned char buffer[IL_META_COMPRESS_MAX_SIZE];
-	int buflen;
 	int ok = 1;
 
 	/* Process the main images */
@@ -308,11 +306,14 @@ int ILLinkerPerformLink(ILLinker *linker)
 		curdir = ILGetCwd();
 		if(curdir)
 		{
+			ILUInt32 curdirOffset;
+			ILUInt32 buflen;
+
 			curdirOffset = ILWriterDebugString(linker->writer, curdir);
 			buflen = ILMetaCompressData(buffer, curdirOffset);
 			ILWriterDebugAddPseudo(linker->writer,
 								   ILDebugGetPseudo("LDIR"), 0,
-								   buffer, (unsigned long)(long)buflen);
+								   buffer, buflen);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /*
  * image.h - Internal definitions for IL image handling.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -127,12 +127,12 @@ typedef struct _tagILClassName ILClassName;
 typedef struct
 {
 	const char	   *name;
-	int				nameLen;
 	const char	   *namespace;
-	int				namespaceLen;
 	ILProgramItem  *scopeItem;
 	ILClassName    *scopeName;
 	ILImage		   *image;
+	int				nameLen;
+	int				namespaceLen;
 	int				wantGlobal;
 	int				ignoreCase;
 
@@ -203,38 +203,38 @@ struct _tagILImage
 	void		   *mapAddress;		/* Address file is mmap'ed to */
 	unsigned long	mapLength;		/* Length of mmap'ed region */
 	unsigned long	headerAddr;		/* Virtual address of the header */
-	unsigned long	headerSize;		/* Size of the runtime header */
+	ILUInt32		headerSize;		/* Size of the runtime header */
 	unsigned long	realStart;		/* Real file offset of "data" */
 	unsigned long	debugRVA;		/* RVA for the start of the debug data */
-	unsigned long	debugSize;		/* Size of the debug data */
+	ILUInt32		debugSize;		/* Size of the debug data */
 	unsigned long	dataRVA;		/* RVA for the start of ".sdata" */
-	unsigned long	dataSize;		/* Size of ".sdata" */
+	ILUInt32		dataSize;		/* Size of ".sdata" */
 	unsigned long	tlsRVA;			/* RVA for the start of ".tls" */
-	unsigned long	tlsSize;		/* Size of ".tls" */
+	ILUInt32		tlsSize;		/* Size of ".tls" */
 	unsigned long	rsrcRVA;		/* RVA for the start of ".rsrc" */
-	unsigned long	rsrcSize;		/* Size of ".rsrc" */
+	ILUInt32		rsrcSize;		/* Size of ".rsrc" */
 
 	/* Memory stack that is used to allocate program objects */
 	ILMemStack		memStack;
 
 	/* String pool information from the metadata section */
 	char		   *stringPool;
-	unsigned long	stringPoolSize;
+	ILUInt32		stringPoolSize;
 	ILStringBlock  *stringBlocks;
 	ILStringBlock  *extraStrings;
 
 	/* Blob pool information from the metadata section */
 	char		   *blobPool;
-	unsigned long	blobPoolSize;
+	ILUInt32		blobPoolSize;
 	ILStringBlock  *blobBlocks;
 
 	/* User string pool information from the metadata section */
 	char		   *userStringPool;
-	unsigned long	userStringPoolSize;
+	ILUInt32		userStringPoolSize;
 	ILStringBlock  *userStringBlocks;
 
 	/* Token table */
-	unsigned long	tokenCount[64];	/* Number of tokens of each type */
+	ILUInt32		tokenCount[64];	/* Number of tokens of each type */
 	unsigned char	tokenSize[64];	/* Size of each token's record */
 	unsigned char  *tokenStart[64];	/* Start of each token table */
 	void		  **tokenData[64];	/* Data associated with the tokens */
@@ -277,8 +277,8 @@ struct _tagILResourceEntry
 	ILResourceEntry	   *children;
 	ILResourceEntry	   *next;
 	unsigned char	   *data;
-	unsigned long		length;
-	unsigned long		rva;
+	ILUInt32			length;
+	ILUInt32			rva;
 
 };
 
@@ -289,8 +289,8 @@ struct _tagILResourceSection
 {
 	ILImage			   *image;
 	unsigned char	   *data;
-	unsigned long		length;
 	ILResourceEntry	   *rootDirectory;
+	ILUInt32			length;
 
 };
 
@@ -316,8 +316,8 @@ struct _tagILWSection
 {
 	char			name[9];		/* Name of the section */
 	unsigned char  *buffer;			/* Buffer containing section data */
-	unsigned long	length;			/* Length of the buffer */
-	unsigned long	maxLength;		/* Maximum length of the buffer */
+	ILUInt32		length;			/* Length of the buffer */
+	ILUInt32		maxLength;		/* Maximum length of the buffer */
 	unsigned long	flags;			/* Flags associated with the section */
 	ILWSection	   *next;			/* Next section in the section list */
 
@@ -354,7 +354,7 @@ typedef struct _tagILDebugToken
 {
 	ILProgramItem  *item;
 	unsigned long	pseudo;
-	unsigned long	offset;
+	ILUInt32		offset;
 
 } ILDebugToken;
 
@@ -365,11 +365,11 @@ typedef struct _tagILFixup ILFixup;
 struct _tagILFixup
 {
 	int					kind;
-	unsigned long		rva;
+	ILUInt32			rva;
 	union
 	{
 		ILProgramItem  *item;
-		unsigned long	value;
+		ILUInt32		value;
 	} un;
 	ILFixup        *next;
 
@@ -390,12 +390,12 @@ struct _tagILWriter
 	unsigned long	currSeek;		/* Current seek offset */
 
 	/* Offset information for the various image sections */
-	unsigned long	peOffset;		/* Offset of PE/COFF header */
-	unsigned long	optOffset;		/* Offset of optional header */
-	unsigned long	sectOffset;		/* Offset of the section table */
-	unsigned long	firstSection;	/* Offset of first section */
-	unsigned long	runtimeOffset;	/* Offset of the IL runtime header */
-	unsigned long	indexRVA;		/* RVA of the index blob */
+	ILUInt32		peOffset;		/* Offset of PE/COFF header */
+	ILUInt32		optOffset;		/* Offset of optional header */
+	ILUInt32		sectOffset;		/* Offset of the section table */
+	ILUInt32		firstSection;	/* Offset of first section */
+	ILUInt32		runtimeOffset;	/* Offset of the IL runtime header */
+	ILUInt32		indexRVA;		/* RVA of the index blob */
 
 	/* Entry point token */
 	ILMethod	   *entryPoint;
@@ -418,8 +418,8 @@ struct _tagILWriter
 	ILWBufferList	debugData;
 	ILWBufferList	debugStrings;
 	ILDebugToken   *debugTokens;
-	unsigned long	numDebugTokens;
-	unsigned long	maxDebugTokens;
+	ILUInt32		numDebugTokens;
+	ILUInt32		maxDebugTokens;
 	ILHashTable	   *debugHash;
 
 	/* Fixup information */
@@ -489,7 +489,7 @@ void _ILImageFreeMemory(ILImage *image);
  * Get the starting address and size of a particular image section.
  */
 int _ILImageGetSection(ILImage *image, int section,
-				  	   unsigned long *address, unsigned long *size);
+				  	   unsigned long *address, ILUInt32 *size);
 
 /*
  * Parse metadata and other information from a PE/COFF image
@@ -600,7 +600,7 @@ void _ILWBufferListDestroy(ILWBufferList *list);
 /*
  * Add a block of bytes to a buffer list.  Returns zero if out of memory.
  */
-int _ILWBufferListAdd(ILWBufferList *list, const void *buffer, unsigned size);
+int _ILWBufferListAdd(ILWBufferList *list, const void *buffer, ILUInt32 size);
 
 #endif /* IL_USE_WRITER */
 

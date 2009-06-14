@@ -599,7 +599,7 @@ typedef ILUInt32	ILToken;
 typedef struct _tagILMetaDataRead
 {
 	const unsigned char *data;		/* Current data position */
-	unsigned long		 len;		/* Length remaining to read */
+	ILUInt32			 len;		/* Length remaining to read */
 	int					 error;		/* Set to non-zero if error encountered */
 
 } ILMetaDataRead;
@@ -628,20 +628,20 @@ ILInt32 ILMetaUncompressInt(ILMetaDataRead *meta);
  * Compress a data item within the metadata section into a buffer.
  * Returns the length of the compressed data.
  */
-int ILMetaCompressData(unsigned char *buf, unsigned long data);
+int ILMetaCompressData(unsigned char *buf, ILUInt32 data);
 
 /*
  * Compress a token within the metadata section into a buffer.
  * Returns the length of the compressed data.  Returns zero if
  * the token does not have a compressed representation.
  */
-int ILMetaCompressToken(unsigned char *buf, unsigned long data);
+int ILMetaCompressToken(unsigned char *buf, ILToken token);
 
 /*
  * Compress a signed integer within the metadata section into a buffer.
  * Returns the length of the compressed data.
  */
-int ILMetaCompressInt(unsigned char *buf, long data);
+int ILMetaCompressInt(unsigned char *buf, ILInt32 data);
 
 #ifdef	__cplusplus
 };

@@ -1,7 +1,7 @@
 /*
  * ser_writer.c - Write serialized attribute values.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,7 +95,7 @@ void ILSerializeWriterDestroy(ILSerializeWriter *writer)
 }
 
 const void *ILSerializeWriterGetBlob(ILSerializeWriter *writer,
-									 unsigned long *blobLen)
+									 ILUInt32 *blobLen)
 {
 	*blobLen = writer->blobLen;
 	return writer->blob;
@@ -192,7 +192,7 @@ void ILSerializeWriterSetString(ILSerializeWriter *writer,
 	if(str)
 	{
 		unsigned char header[IL_META_COMPRESS_MAX_SIZE];
-		int headerLen = ILMetaCompressData(header, len);
+		int headerLen = ILMetaCompressData(header, (ILUInt32)len);
 		unsigned char *buf = GetSpace(writer, headerLen + len);
 		if(buf)
 		{

@@ -1,7 +1,7 @@
 /*
  * compress.c - Support routines for compressing metadata items.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "il_values.h"
 #include "il_meta.h"
 #include "il_system.h"
 
@@ -34,20 +33,20 @@ extern	"C" {
  * 4-byte encoding, I am being paranoid and betting that a
  * 5-byte encoding will slip in later.  Better safe than sorry.
  */
-int ILMetaCompressData(unsigned char *buf, unsigned long data)
+int ILMetaCompressData(unsigned char *buf, ILUInt32 data)
 {
-	if(data < (unsigned long)0x80)
+	if(data < (ILUInt32)0x80)
 	{
 		buf[0] = (unsigned char)data;
 		return 1;
 	}
-	else if(data < (unsigned long)(1 << 14))
+	else if(data < (ILUInt32)(1 << 14))
 	{
 		buf[0] = (unsigned char)((data >> 8) | 0x80);
 		buf[1] = (unsigned char)data;
 		return 2;
 	}
-	else if(data < (unsigned long)(1L << 29))
+	else if(data < (ILUInt32)(1L << 29))
 	{
 		buf[0] = (unsigned char)((data >> 24) | 0xC0);
 		buf[1] = (unsigned char)(data >> 16);
@@ -66,10 +65,10 @@ int ILMetaCompressData(unsigned char *buf, unsigned long data)
 	}
 }
 
-int ILMetaCompressToken(unsigned char *buf, unsigned long data)
+int ILMetaCompressToken(unsigned char *buf, ILToken token)
 {
-	unsigned long tokenId = (data & 0x00FFFFFF);
-	unsigned long tokenClass = (data & 0xFF000000);
+	ILUInt32 tokenId = (token & ~IL_META_TOKEN_MASK);
+	ILUInt32 tokenClass = (token & IL_META_TOKEN_MASK);
 	if(tokenClass == IL_META_TOKEN_TYPE_DEF)
 	{
 		tokenId = (tokenId << 2) | 0x00;
@@ -93,22 +92,22 @@ int ILMetaCompressToken(unsigned char *buf, unsigned long data)
 	return ILMetaCompressData(buf, tokenId);
 }
 
-int ILMetaCompressInt(unsigned char *buf, long data)
+int ILMetaCompressInt(unsigned char *buf, ILInt32 data)
 {
 	if(data >= 0)
 	{
-		if(data < (long)0x40)
+		if(data < (ILInt32)0x40)
 		{
 			buf[0] = (unsigned char)(data << 1);
 			return 1;
 		}
-		else if(data < (long)(1 << 13))
+		else if(data < (ILInt32)(1 << 13))
 		{
 			buf[0] = (unsigned char)(((data >> 7) & 0x3F) | 0x80);
 			buf[1] = (unsigned char)(data << 1);
 			return 2;
 		}
-		else if(data < (unsigned long)(1L << 28))
+		else if(data < (ILInt32)(1 << 28))
 		{
 			buf[0] = (unsigned char)((data >> 23) | 0xC0);
 			buf[1] = (unsigned char)(data >> 15);
@@ -128,18 +127,18 @@ int ILMetaCompressInt(unsigned char *buf, long data)
 	}
 	else
 	{
-		if(data >= ((long)-0x40))
+		if(data >= ((ILInt32)-0x40))
 		{
 			buf[0] = ((((unsigned char)(data << 1)) & 0x7E) | 0x01);
 			return 1;
 		}
-		else if(data >= ((long)-(1 << 13)))
+		else if(data >= ((ILInt32)-(1 << 13)))
 		{
 			buf[0] = (unsigned char)(((data >> 7) & 0x3F) | 0x80);
 			buf[1] = (unsigned char)((data << 1) | 0x01);
 			return 2;
 		}
-		else if(data >= ((long)-(1L << 29)))
+		else if(data >= ((ILInt32)-(1 << 29)))
 		{
 			buf[0] = (unsigned char)(((data >> 23) & 0x1F) | 0xC0);
 			buf[1] = (unsigned char)(data >> 15);

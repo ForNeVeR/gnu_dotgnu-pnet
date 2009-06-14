@@ -1,7 +1,7 @@
 /*
  * create.c - Routines for creating images in memory.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ static ILStringHash *LookupHash(ILImageBuilder *builder,
  * Add a string to a block list and return the offset.
  * The supplied length must include the NUL terminator.
  */
-static unsigned long AddString(ILStringBlock **list,
+static ILUInt32 AddString(ILStringBlock **list,
 							   const void *str, ILUInt32 len,
 							   const void *header, ILUInt32 headerLen,
 							   char **finalStr)
@@ -184,7 +184,7 @@ static unsigned long AddString(ILStringBlock **list,
 	}
 }
 
-unsigned long ILImageAddString(ILImage *image, const char *str)
+ILUInt32 ILImageAddString(ILImage *image, const char *str)
 {
 	ILImageBuilder *builder = (ILImageBuilder *)image;
 	ILUInt32 len;
@@ -232,8 +232,8 @@ unsigned long ILImageAddString(ILImage *image, const char *str)
 	return offset;
 }
 
-unsigned long ILImageAddBlob(ILImage *image, const void *blob,
-							 unsigned long len)
+ILUInt32 ILImageAddBlob(ILImage *image, const void *blob,
+							 ILUInt32 len)
 {
 	ILImageBuilder *builder = (ILImageBuilder *)image;
 	unsigned long offset;
@@ -286,10 +286,10 @@ unsigned long ILImageAddBlob(ILImage *image, const void *blob,
 	return offset;
 }
 
-unsigned long ILImageAddUserString(ILImage *image, const char *str, int len)
+ILUInt32 ILImageAddUserString(ILImage *image, const char *str, int len)
 {
 	int posn;
-	unsigned long wlen;
+	ILUInt32 wlen;
 	unsigned char *buf;
 	int outposn;
 	ILImageBuilder *builder = (ILImageBuilder *)image;
@@ -369,11 +369,11 @@ unsigned long ILImageAddUserString(ILImage *image, const char *str, int len)
 	return offset;
 }
 
-unsigned long ILImageAddEncodedUserString(ILImage *image,
+ILUInt32 ILImageAddEncodedUserString(ILImage *image,
 										  const void *str, int len)
 {
 	ILImageBuilder *builder = (ILImageBuilder *)image;
-	unsigned long offset;
+	ILUInt32 offset;
 	char *finalStr;
 	ILStringHash *entry;
 	unsigned long hash;

@@ -1,7 +1,7 @@
 /*
  * cs_attrs.c - Attribute handling.
  *
- * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -845,7 +845,7 @@ void CSAddDefaultMemberAttr(ILGenInfo *info, ILClass *classInfo,
 	ILType *args[1];
 	ILSerializeWriter *writer;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	ILAttribute *attribute;
 
 	/* Find the constructor for "DefaultMemberAttribute" */

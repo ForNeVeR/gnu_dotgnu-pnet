@@ -1,7 +1,7 @@
 /*
  * ilsize.c - Print information about section sizes for IL binaries.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -252,8 +252,8 @@ static void version(void)
  * Load an IL image and get general size information.
  */
 static ILImage *loadImage(const char *filename, ILContext *context, int flags,
-						  unsigned long *total, unsigned long *code,
-						  unsigned long *meta, unsigned long *res,
+						  unsigned long *total, ILUInt32 *code,
+						  ILUInt32 *meta, ILUInt32 *res,
 						  unsigned long *other)
 {
 	ILImage *image;
@@ -292,9 +292,9 @@ static int printSizes(const char *filename, ILContext *context, int radix)
 {
 	ILImage *image;
 	unsigned long total;
-	unsigned long code;
-	unsigned long meta;
-	unsigned long res;
+	ILUInt32 code;
+	ILUInt32 meta;
+	ILUInt32 res;
 	unsigned long other;
 
 	/* Attempt to load the image into memory */
@@ -310,17 +310,20 @@ static int printSizes(const char *filename, ILContext *context, int radix)
 	if(radix == 10)
 	{
 		printf("%7lu %7lu %7lu %7lu %7lu %7lx %s\n",
-			   code, meta, res, other, total, total, filename);
+			   (unsigned long)code, (unsigned long)meta, (unsigned long)res,
+			   other, total, total, filename);
 	}
 	else if(radix == 8)
 	{
 		printf("%7lo %7lo %7lo %7lo %7lo %7lx %s\n",
-			   code, meta, res, other, total, total, filename);
+			   (unsigned long)code, (unsigned long)meta, (unsigned long)res,
+			   other, total, total, filename);
 	}
 	else
 	{
 		printf("%7lx %7lx %7lx %7lx %7lx %7lu %s\n",
-			   code, meta, res, other, total, total, filename);
+			   (unsigned long)code, (unsigned long)meta, (unsigned long)res,
+			   other, total, total, filename);
 	}
 
 	/* Clean up and exit */
@@ -414,9 +417,9 @@ static int printDetailed(const char *filename, ILContext *context, int radix)
 {
 	ILImage *image;
 	unsigned long total;
-	unsigned long code;
-	unsigned long meta;
-	unsigned long res;
+	ILUInt32 code;
+	ILUInt32 meta;
+	ILUInt32 res;
 	unsigned long other;
 	int index;
 	unsigned long num;
@@ -472,9 +475,9 @@ static int printClassSizes(const char *filename, ILContext *context)
 {
 	ILImage *image;
 	unsigned long total;
-	unsigned long code;
-	unsigned long meta;
-	unsigned long res;
+	ILUInt32 code;
+	ILUInt32 meta;
+	ILUInt32 res;
 	unsigned long other;
 
 	/* Attempt to load the image into memory */

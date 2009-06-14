@@ -1,7 +1,7 @@
 /*
  * dump_attrs.c - Dump custom attributes.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -196,7 +196,7 @@ static int DumpAttrValue(FILE *outstream, ILSerializeReader *reader, int type)
  * Dump the readable form of an attribute blob.
  */
 static void DumpAttrBlob(FILE *outstream, ILImage *image, ILMethod *method,
-						 const void *blob, unsigned long blobLen)
+						 const void *blob, ILUInt32 blobLen)
 {
 	ILClass *classInfo;
 	const char *name;
@@ -292,7 +292,7 @@ void ILDAsmDumpCustomAttrs(ILImage *image, FILE *outstream, int flags,
 	ILAttribute *attr = 0;
 	ILProgramItem *type;
 	const void *value;
-	unsigned long valueLen;
+	ILUInt32 valueLen;
 	ILClass *classInfo;
 	ILMethod *method;
 	ILTypeSpec *spec;

@@ -1,7 +1,7 @@
 /*
  * dump_const.c - Dump constant information for a field, parameter, etc.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ void ILDumpConstant(FILE *stream, ILProgramItem *item, int hexFloats)
 {
 	ILConstant *constant;
 	const unsigned char *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 
 	/* Get the constant information block for the item */
 	constant = ILConstantGetFromOwner(item);

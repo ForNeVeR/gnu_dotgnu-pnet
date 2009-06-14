@@ -1,7 +1,7 @@
 /*
  * lib_string.c - Internalcall methods for "System.String".
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1992,7 +1992,7 @@ ILString *_ILStringInternFromImage(ILExecThread *thread, ILImage *image,
 								   ILToken token)
 {
 	const char *str;
-	unsigned long len;
+	ILUInt32 len;
 
 	/* Get the string from the image's "#US" blob */
 	str = ILImageGetUserString(image, token & ~IL_META_TOKEN_MASK, &len);

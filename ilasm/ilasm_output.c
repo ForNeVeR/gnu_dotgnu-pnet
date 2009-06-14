@@ -1,7 +1,7 @@
 /*
  * ilasm_output.c - Output method code.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1684,7 +1684,7 @@ static void OutputDebugInfo(ILMethod *method)
 	unsigned char buf[256];
 	const char *prevFilename = 0;
 	LabelInfo *label = labels;
-	unsigned long len = 0;
+	ILUInt32 len = 0;
 	int type;
 	LocalInfo *local;
 	LocalBlock *lastBlock;

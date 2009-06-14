@@ -1,7 +1,7 @@
 /*
  * ilsize_est.c - Size estimation for metadata classes.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ static void GetStringSize(ILSizeInfo *info, const char *str)
  */
 static void GetBlobSize(ILSizeInfo *info, ILProgramItem *item, ILUInt32 offset)
 {
-	unsigned long len;
+	ILUInt32 len;
 	unsigned char lenbuf[IL_META_COMPRESS_MAX_SIZE];
 	if(ILImageGetBlob(ILProgramItem_Image(item), offset, &len))
 	{

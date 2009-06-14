@@ -1,7 +1,7 @@
 /*
  * dump_global.c - Disassemble global information.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -105,8 +105,8 @@ static void Dump_OSDef(ILImage *image, FILE *outstream, int flags,
  * Dump information about a processor definition.
  */
 static void Dump_ProcessorDef(ILImage *image, FILE *outstream, int flags,
-					   		  unsigned long token, ILProcessorInfo *procinfo,
-					   		  unsigned long refToken)
+							  unsigned long token, ILProcessorInfo *procinfo,
+							  unsigned long refToken)
 {
 	fprintf(outstream, "\t.processor %lu\n",
 			(unsigned long)ILProcessorInfo_Number(procinfo));
@@ -121,7 +121,7 @@ static void Dump_Assembly(ILImage *image, FILE *outstream, int flags,
 {
 	const ILUInt16 *version;
 	const void *orig;
-	unsigned long origLen;
+	ILUInt32 origLen;
 	fputs(".assembly ", outstream);
 	if((flags & IL_DUMP_SHOW_TOKENS) != 0)
 	{
@@ -205,7 +205,7 @@ static void Dump_AssemblyRef(ILImage *image, FILE *outstream, int flags,
 {
 	const ILUInt16 *version;
 	const void *orig;
-	unsigned long origLen;
+	ILUInt32 origLen;
 	fputs(".assembly extern ", outstream);
 	if((flags & IL_DUMP_SHOW_TOKENS) != 0)
 	{
@@ -254,7 +254,7 @@ static void Dump_File(ILImage *image, FILE *outstream, int flags,
 					  unsigned long refToken)
 {
 	const void *hash;
-	unsigned long len;
+	ILUInt32 len;
 	fputs(".file ", outstream);
 	ILDumpFlags(outstream, ILFileDecl_Attrs(decl), ILFileFlags, 0);
 	ILDumpIdentifier(outstream, ILFileDecl_Name(decl), 0, flags);

@@ -1,7 +1,7 @@
 /*
  * c_typeout.c - Send types to an assembly output stream.
  *
- * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -133,8 +133,8 @@ void CGenOutputAttributes(ILGenInfo *info, FILE *stream, ILProgramItem *item)
 	ILAttribute *attr;
 	ILMethod *ctor;
 	const void *value;
-	unsigned long valueLen;
-	unsigned long posn;
+	ILUInt32 valueLen;
+	ILUInt32 posn;
 
 	attr = 0;
 	while((attr = ILProgramItemNextAttribute(item, attr)) != 0)

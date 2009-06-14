@@ -1,7 +1,7 @@
 /*
  * lib_attrs.c - Builtin library attributes with special meanings.
  *
- * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -628,8 +628,7 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 		{
 			/* Safe variant array */
 			buf[0] = IL_META_NATIVETYPE_SAFEARRAY;
-			blobLen = 1 + ILMetaCompressData
-				(buf + 1, (unsigned long)safeArraySubType);
+			blobLen = 1 + ILMetaCompressData(buf + 1, safeArraySubType);
 			blob = buf;
 		}
 		break;
@@ -638,16 +637,14 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 		{
 			/* Fixed length array */
 			buf[0] = IL_META_NATIVETYPE_FIXEDARRAY;
-			blobLen = 1 + ILMetaCompressData
-				(buf + 1, (unsigned long)sizeValue);
+			blobLen = 1 + ILMetaCompressData(buf + 1, (ILUInt32)sizeValue);
 			if(arraySubType == IL_META_NATIVETYPE_END)
 			{
 				buf[blobLen++] = IL_META_NATIVETYPE_MAX;
 			}
 			else
 			{
-				blobLen += ILMetaCompressData
-					(buf + blobLen, (unsigned long)arraySubType);
+				blobLen += ILMetaCompressData(buf + blobLen, arraySubType);
 			}
 			blob = buf;
 		}
@@ -662,10 +659,9 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 				arraySubType = IL_META_NATIVETYPE_MAX;
 			}
 			buf[0] = IL_META_NATIVETYPE_ARRAY;
-			blobLen = 1 + ILMetaCompressData
-				(buf + 1, (unsigned long)arraySubType);
+			blobLen = 1 + ILMetaCompressData(buf + 1, arraySubType);
 			blobLen += ILMetaCompressData
-				(buf + blobLen, (unsigned long)sizeParamIndex);
+				(buf + blobLen, (ILUInt32)sizeParamIndex);
 			buf[blobLen++] = 1;		/* Multiplier */
 			buf[blobLen++] = 0;		/* Number of elements */
 			blob = buf;
@@ -686,14 +682,14 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 			blob[2] = 0;	/* Length of native type name string (unused) */
 			blobLen = 3;
 			blobLen += ILMetaCompressData
-				(blob + blobLen, (unsigned long)marshalTypeLen);
+				(blob + blobLen, (ILUInt32)marshalTypeLen);
 			if(marshalTypeLen > 0)
 			{
 				ILMemCpy(blob + blobLen, marshalType, marshalTypeLen);
 				blobLen += marshalTypeLen;
 			}
 			blobLen += ILMetaCompressData
-				(blob + blobLen, (unsigned long)marshalCookieLen);
+				(blob + blobLen, (ILUInt32)marshalCookieLen);
 			if(marshalCookieLen > 0)
 			{
 				ILMemCpy(blob + blobLen, marshalCookie, marshalCookieLen);
@@ -705,7 +701,7 @@ static int MarshalAsAttribute(ILProgramItem *item, ILSerializeReader *reader)
 		default:
 		{
 			/* This native type is represented as a simple value */
-			blobLen = ILMetaCompressData(buf, (unsigned long)unmanagedType);
+			blobLen = ILMetaCompressData(buf, unmanagedType);
 			blob = buf;
 			blobLen = 1;
 		}
@@ -810,11 +806,11 @@ static int IndexerNameAttribute(ILProgramItem *item, ILSerializeReader *reader)
 /*
  * Convert a string from UTF-8 to UTF-16.
  */
-static void *StringToUTF16(const char *str, unsigned long *len, int slen)
+static void *StringToUTF16(const char *str, ILUInt32 *len, int slen)
 {
 	int posn = 0;
 	unsigned long ch;
-	unsigned long index;
+	ILUInt32 index;
 	char *utf16;
 
 	/* Determine the length of the UTF-16 string in bytes */
@@ -822,7 +818,7 @@ static void *StringToUTF16(const char *str, unsigned long *len, int slen)
 	while(posn < slen)
 	{
 		ch = ILUTF8ReadChar(str, slen, &posn);
-		*len += (unsigned long)ILUTF16WriteCharAsBytes(0, ch);
+		*len += (ILUInt32)ILUTF16WriteCharAsBytes(0, ch);
 	}
 
 	/* Allocate space for the UTF-16 string */
@@ -838,7 +834,7 @@ static void *StringToUTF16(const char *str, unsigned long *len, int slen)
 	while(posn < slen)
 	{
 		ch = ILUTF8ReadChar(str, slen, &posn);
-		index += (unsigned long)ILUTF16WriteCharAsBytes(utf16 + index, ch);
+		index += (ILUInt32)ILUTF16WriteCharAsBytes(utf16 + index, ch);
 	}
 	return utf16;
 }
@@ -852,7 +848,7 @@ static int DefaultValueAttribute(ILProgramItem *item, ILSerializeReader *reader)
 {
 	int type, elemType;
 	unsigned char blob[8];
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	int len;
 	const char *str;
 	ILConstant *constant;
@@ -1118,7 +1114,7 @@ static int SecurityPermissionAttribute(ILProgramItem *item,
 	char *result;
 	int comma;
 	void *utf16;
-	unsigned long utf16Len;
+	ILUInt32 utf16Len;
 	ILDeclSecurity *decl;
 
 	/* The item must be a class, method, or assembly */
@@ -1355,7 +1351,7 @@ static int ConvertAttribute(ILProgramItem *item, ILAttribute *attr)
 	const char *namespace;
 	const AttrConvertInfo *info;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	ILSerializeReader *reader;
 	int result;
 
@@ -1634,7 +1630,7 @@ static ILAttributeUsageAttribute *GetAttributeUsage(ILClass *attribute)
 				if(ctor)
 				{
 					const void *blob;
-					unsigned long blobLen;
+					ILUInt32 blobLen;
 					ILSerializeReader *reader;
 					int result;
 

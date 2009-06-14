@@ -1,7 +1,7 @@
 /*
  * doc_valil.c - Validate that an IL program implements a csdoc specification.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1935,7 +1935,7 @@ static char *AttributeToName(ILAttribute *attr)
 	ILMethod *method;
 	char *name;
 	const void *value;
-	unsigned long len;
+	ILUInt32 len;
 	ILSerializeReader *reader;
 	ILUInt32 numParams;
 	ILUInt32 numExtras;

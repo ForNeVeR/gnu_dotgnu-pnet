@@ -152,7 +152,7 @@ const char *ILImageGetFileName(ILImage *image)
 unsigned long ILImageGetSectionAddr(ILImage *image, int section)
 {
 	unsigned long virtAddr = 0;
-	unsigned long virtSize = 0;
+	ILUInt32 virtSize = 0;
 	if(!_ILImageGetSection(image, section, &virtAddr, &virtSize))
 	{
 		return 0;
@@ -160,10 +160,10 @@ unsigned long ILImageGetSectionAddr(ILImage *image, int section)
 	return virtAddr;
 }
 
-unsigned long ILImageGetSectionSize(ILImage *image, int section)
+ILUInt32 ILImageGetSectionSize(ILImage *image, int section)
 {
 	unsigned long virtAddr = 0;
-	unsigned long virtSize = 0;
+	ILUInt32 virtSize = 0;
 	if(!_ILImageGetSection(image, section, &virtAddr, &virtSize))
 	{
 		return 0;
@@ -172,10 +172,10 @@ unsigned long ILImageGetSectionSize(ILImage *image, int section)
 }
 
 int ILImageGetSection(ILImage *image, int section,
-					  void **address, unsigned long *size)
+					  void **address, ILUInt32 *size)
 {
 	unsigned long virtAddr = 0;
-	unsigned long virtSize = 0;
+	ILUInt32 virtSize = 0;
 
 	/* We cannot extract sections if we are building an image */
 	if(image->type == IL_IMAGETYPE_BUILDING)
@@ -223,7 +223,7 @@ ILToken ILImageGetEntryPoint(ILImage *image)
 	}
 }
 
-const char *ILImageGetString(ILImage *image, unsigned long offset)
+const char *ILImageGetString(ILImage *image, ILUInt32 offset)
 {
 	if(offset < image->stringPoolSize)
 	{
@@ -238,7 +238,7 @@ const char *ILImageGetString(ILImage *image, unsigned long offset)
 			ILStringBlock *block = image->stringBlocks;
 			while(block != 0 && offset >= (unsigned long)(block->used))
 			{
-				offset -= (unsigned long)(block->used);
+				offset -= block->used;
 				block = block->next;
 			}
 			if(block != 0)
@@ -255,8 +255,8 @@ const char *ILImageGetString(ILImage *image, unsigned long offset)
 	return 0;
 }
 
-const void *ILImageGetBlob(ILImage *image, unsigned long offset,
-						   unsigned long *len)
+const void *ILImageGetBlob(ILImage *image, ILUInt32 offset,
+						   ILUInt32 *len)
 {
 	ILMetaDataRead meta;
 
@@ -274,9 +274,9 @@ const void *ILImageGetBlob(ILImage *image, unsigned long offset,
 			/* This is an image we are building, so walk the
 			   block list to find the blob */
 			ILStringBlock *block = image->blobBlocks;
-			while(block != 0 && offset >= (unsigned long)(block->used))
+			while(block != 0 && offset >= block->used)
 			{
-				offset -= (unsigned long)(block->used);
+				offset -= block->used;
 				block = block->next;
 			}
 			if(block != 0)
@@ -314,12 +314,12 @@ const void *ILImageGetBlob(ILImage *image, unsigned long offset,
 	return (const void *)(meta.data);
 }
 
-const char *ILImageGetUserString(ILImage *image, unsigned long offset,
-								 unsigned long *len)
+const char *ILImageGetUserString(ILImage *image, ILUInt32 offset,
+								 ILUInt32 *len)
 {
 	ILStringBlock *block;
 	ILMetaDataRead reader;
-	unsigned long slen;
+	ILUInt32 slen;
 
 	if(offset > 0 && offset < image->userStringPoolSize)
 	{
@@ -334,9 +334,9 @@ const char *ILImageGetUserString(ILImage *image, unsigned long offset,
 			/* This is an image we are building, so walk the
 			   block list to find the user string */
 			block = image->userStringBlocks;
-			while(block != 0 && offset >= (unsigned long)(block->used))
+			while(block != 0 && offset >= block->used)
 			{
-				offset -= (unsigned long)(block->used);
+				offset -= block->used;
 				block = block->next;
 			}
 			if(!block)
@@ -353,7 +353,7 @@ const char *ILImageGetUserString(ILImage *image, unsigned long offset,
 
 		/* Extract the length of the string */
 		reader.error = 0;
-		slen = (unsigned long)ILMetaUncompressData(&reader);
+		slen = ILMetaUncompressData(&reader);
 		if((slen & 1) == 0 || slen > reader.len || reader.error)
 		{
 			return 0;

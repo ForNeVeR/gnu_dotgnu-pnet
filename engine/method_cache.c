@@ -366,7 +366,7 @@ static void FlushCacheDebug(ILCachePosn *posn)
  * Write a debug pair to the cache.  The pair (-1, -1)
  * terminates the debug information for a method.
  */
-static void WriteCacheDebug(ILCachePosn *posn, long offset, long nativeOffset)
+static void WriteCacheDebug(ILCachePosn *posn, ILInt32 offset, ILInt32 nativeOffset)
 {
 	ILCache *cache = posn->cache;
 
@@ -702,8 +702,8 @@ void _ILCacheAlignMethod(ILCachePosn *posn, int align, int diff, int nop)
 
 void _ILCacheMarkBytecode(ILCachePosn *posn, ILUInt32 offset)
 {
-	WriteCacheDebug(posn, (long)offset,
-				    (long)(posn->ptr - posn->cache->start));
+	WriteCacheDebug(posn, (ILInt32)offset,
+				    (ILInt32)(posn->ptr - posn->cache->start));
 }
 
 void _ILCacheNewRegion(ILCachePosn *posn, void *cookie)

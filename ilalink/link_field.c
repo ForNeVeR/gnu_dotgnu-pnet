@@ -1,7 +1,7 @@
 /*
  * link_field.c - Convert a field and copy it to the final image.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -182,7 +182,7 @@ int _ILLinkerConvertConstant(ILLinker *linker, ILProgramItem *oldItem,
 	{
 		ILConstant *newConstant;
 		const void *blob;
-		unsigned long blobLen;
+		ILUInt32 blobLen;
 
 		newConstant = ILConstantCreate(linker->image, 0, newItem,
 									   ILConstant_ElemType(constant));
@@ -212,12 +212,7 @@ int _ILLinkerConvertMarshal(ILLinker *linker, ILProgramItem *oldItem,
 	ILFieldLayout *layout;
 	ILFieldRVA *rva;
 	const void *blob;
-	unsigned long blobLen;
-	unsigned long rvaValue;
-	unsigned long dataRVA;
-	unsigned long dataSize;
-	unsigned long tlsRVA;
-	unsigned long tlsSize;
+	ILUInt32 blobLen;
 
 	/* Convert the marshalling information */
 	marshal = ILFieldMarshalGetFromOwner(oldItem);
@@ -269,6 +264,12 @@ int _ILLinkerConvertMarshal(ILLinker *linker, ILProgramItem *oldItem,
 	rva = ILFieldRVAGetFromOwner((ILField *)oldItem);
 	if(rva)
 	{
+		unsigned long rvaValue;
+		unsigned long dataRVA;
+		ILUInt32 dataSize;
+		unsigned long tlsRVA;
+		ILUInt32 tlsSize;
+
 		/* Convert the RVA value from the old image to the new one */
 		rvaValue = ILFieldRVA_RVA(rva);
 		dataRVA = ILImageGetSectionAddr(ILProgramItem_Image(oldItem),

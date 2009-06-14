@@ -1,7 +1,7 @@
 /*
  * ser_parse.c - Parse serialized attribute values.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ struct _tagILSerializeReader
 
 ILSerializeReader *ILSerializeReaderInit(ILMethod *method,
 									     const void *blob,
-										 unsigned long len)
+										 ILUInt32 len)
 {
 	ILSerializeReader *reader;
 
@@ -223,7 +223,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 			}
 			length = IL_READ_INT32(reader->meta.data);
 			if(length < 0 ||
-			   ((unsigned long)length) > (reader->meta.len - 4))
+			   ((ILUInt32)length) > (reader->meta.len - 4))
 			{
 				return 0;
 			}
@@ -241,7 +241,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 			}
 			length = IL_READ_INT32(reader->meta.data);
 			if(length < 0 ||
-			   ((unsigned long)length) > ((reader->meta.len - 4) / 2))
+			   ((ILUInt32)length) > ((reader->meta.len - 4) / 2))
 			{
 				return 0;
 			}
@@ -259,7 +259,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 			}
 			length = IL_READ_INT32(reader->meta.data);
 			if(length < 0 ||
-			   ((unsigned long)length) > ((reader->meta.len - 4) / 4))
+			   ((ILUInt32)length) > ((reader->meta.len - 4) / 4))
 			{
 				return 0;
 			}
@@ -277,7 +277,7 @@ static int HasSufficientSpace(ILSerializeReader *reader, int type)
 			}
 			length = IL_READ_INT32(reader->meta.data);
 			if(length < 0 ||
-			   ((unsigned long)length) > ((reader->meta.len - 4) / 8))
+			   ((ILUInt32)length) > ((reader->meta.len - 4) / 8))
 			{
 				return 0;
 			}
@@ -471,7 +471,7 @@ ILDouble ILSerializeReaderGetFloat64(ILSerializeReader *reader)
 
 int ILSerializeReaderGetString(ILSerializeReader *reader, const char **str)
 {
-	unsigned long length;
+	ILUInt32 length;
 	if(reader->meta.len > 0 && reader->meta.data[0] == (unsigned char)0xFF)
 	{
 		/* Encoding of the null string */

@@ -521,7 +521,7 @@ static void DumpParamType(FILE *stream, ILImage *image,
 	ILParameter *param;
 	ILFieldMarshal *marshal;
 	const void *type;
-	unsigned long typeLen;
+	ILUInt32 typeLen;
 	const char *name;
 
 	/* Get the parameter information block, if one is present */
@@ -1214,7 +1214,7 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 		{
 			fputs("fixed sysstring [", stream);
 			value = ILMetaUncompressData(reader);
-			fprintf(stream, "%u]", value);
+			fprintf(stream, "%lu]", (unsigned long)value);
 		}
 		break;
 
@@ -1270,11 +1270,11 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			{
 				fputs("fixed array ", stream);
 				DumpNativeType(stream, reader, flags);
-				fprintf(stream, "[%u]", value);
+				fprintf(stream, "[%lu]", (unsigned long)value);
 			}
 			else
 			{
-				fprintf(stream, "fixed array [%u]", value);
+				fprintf(stream, "fixed array [%lu]", (unsigned long)value);
 			}
 		}
 		break;
@@ -1355,11 +1355,11 @@ static void DumpNativeType(FILE *stream, ILMetaDataRead *reader, int flags)
 			value2 = ILMetaUncompressData(reader);
 			if(value2 != 0)
 			{
-				fprintf(stream, "%u", value2);
+				fprintf(stream, "%lu", (unsigned long)value2);
 			}
 			if(value)
 			{
-				fprintf(stream, " + %u", value);
+				fprintf(stream, " + %lu", (unsigned long)value);
 			}
 			putc(']', stream);
 		}

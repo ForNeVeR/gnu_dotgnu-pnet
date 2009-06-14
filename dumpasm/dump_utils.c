@@ -1,7 +1,7 @@
 /*
  * dump_utils.c - Utilities used by the disassembler.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -135,7 +135,7 @@ void ILDAsmDumpSecurity(ILImage *image, FILE *outstream,
 	while((security = ILProgramItemNextDeclSecurity(item, security)) != 0)
 	{
 		const void *blob;
-		unsigned long blobLen;
+		ILUInt32 blobLen;
 
 		/* Dump the security header */
 		fputs("\t.permissionset ", outstream);

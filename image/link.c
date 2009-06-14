@@ -1,7 +1,7 @@
 /*
  * link.c - Dynamic linking support for IL images.
  *
- * Copyright (C) 2001, 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1151,7 +1151,7 @@ static int SearchForDllMap(ILProgramItem *item, const char *name,
 	ILAttribute *attr;
 	ILMethod *method;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	ILSerializeReader *reader;
 	const char *platform;
 	int platformLen;

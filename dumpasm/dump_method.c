@@ -1,7 +1,7 @@
 /*
  * dump_method.c - Disassemble method contents.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -734,7 +734,7 @@ static int DumpInstructions(ILImage *image, FILE *outstream,
 				if((dest & IL_META_TOKEN_MASK) == IL_META_TOKEN_STRING)
 				{
 					const char *str;
-					unsigned long strLen;
+					ILUInt32 strLen;
 					dest &= ~IL_META_TOKEN_MASK;
 					str = ILImageGetUserString(image, dest, &strLen);
 					if(str)

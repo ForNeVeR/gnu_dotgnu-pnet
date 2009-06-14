@@ -1,7 +1,7 @@
 /*
  * attr.c - Process attribute information from an image file.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -80,12 +80,11 @@ ILProgramItem *ILAttributeTypeAsItem(ILAttribute *attr)
 }
 
 int ILAttributeSetValue(ILAttribute *attr, const void *blob,
-						unsigned long len)
+						ILUInt32 len)
 {
 	if(attr->programItem.image->type == IL_IMAGETYPE_BUILDING)
 	{
-		attr->value = (ILUInt32)(ILImageAddBlob(attr->programItem.image,
-												blob, len));
+		attr->value = ILImageAddBlob(attr->programItem.image, blob, len);
 		return (attr->value != 0);
 	}
 	else
@@ -101,7 +100,7 @@ void _ILAttributeSetValueIndex(ILAttribute *attr, ILUInt32 index)
 	attr->value = index;
 }
 
-const void *ILAttributeGetValue(ILAttribute *attr, unsigned long *len)
+const void *ILAttributeGetValue(ILAttribute *attr, ILUInt32 *len)
 {
 	return ILImageGetBlob(attr->programItem.image, attr->value, len);
 }

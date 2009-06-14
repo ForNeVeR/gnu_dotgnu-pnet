@@ -1,7 +1,7 @@
 /*
  * assembly.c - Process assembly information from an image file.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ ILAssembly *ILAssemblyCreateImport(ILImage *image, ILImage *fromImage)
 	if(assem->originator)
 	{
 		const void *orig;
-		unsigned long len;
+		ILUInt32 len;
 		orig = ILAssemblyGetOriginator(assem, &len);
 		if(!ILAssemblySetOriginator(newAssem, orig, len))
 		{
@@ -243,7 +243,7 @@ ILUInt32 ILAssemblyGetRefAttrs(ILAssembly *assem)
 }
 
 int ILAssemblySetOriginator(ILAssembly *assem, const void *key,
-						    unsigned long len)
+						    ILUInt32 len)
 {
 	if(assem->programItem.image->type == IL_IMAGETYPE_BUILDING)
 	{
@@ -264,7 +264,7 @@ void _ILAssemblySetOrigIndex(ILAssembly *assem, ILUInt32 index)
 	assem->originator = index;
 }
 
-const void *ILAssemblyGetOriginator(ILAssembly *assem, unsigned long *len)
+const void *ILAssemblyGetOriginator(ILAssembly *assem, ILUInt32 *len)
 {
 	return ILImageGetBlob(assem->programItem.image, assem->originator, len);
 }
@@ -291,7 +291,7 @@ const char *ILAssemblyGetLocale(ILAssembly *assem)
 	return assem->locale;
 }
 
-int ILAssemblySetHash(ILAssembly *assem, const void *hash, unsigned long len)
+int ILAssemblySetHash(ILAssembly *assem, const void *hash, ILUInt32 len)
 {
 	if(assem->programItem.image->type == IL_IMAGETYPE_BUILDING)
 	{
@@ -313,7 +313,7 @@ void _ILAssemblySetHashIndex(ILAssembly *assem, ILUInt32 index)
 	assem->hashValue = index;
 }
 
-const void *ILAssemblyGetHash(ILAssembly *assem, unsigned long *len)
+const void *ILAssemblyGetHash(ILAssembly *assem, ILUInt32 *len)
 {
 	return ILImageGetBlob(assem->programItem.image,
 						  assem->hashValue, len);

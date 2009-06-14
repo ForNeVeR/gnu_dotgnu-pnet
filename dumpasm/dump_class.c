@@ -1,7 +1,7 @@
 /*
  * dump_class.c - Disassemble class information.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -204,7 +204,7 @@ static void Dump_FieldDef(ILImage *image, FILE *outstream, int flags,
 		if(marshal)
 		{
 			const void *type;
-			unsigned long typeLen;
+			ILUInt32 typeLen;
 			type = ILFieldMarshalGetType(marshal, &typeLen);
 			if(type)
 			{

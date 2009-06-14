@@ -1,7 +1,7 @@
 /*
  * lib_emit.c - Internalcall methods for the "Reflection.Emit" classes.
  *
- * Copyright (C) 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2003, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -400,7 +400,7 @@ ILNativeInt _IL_AssemblyBuilder_ClrAttributeCreate
 		}
 		ILAttributeSetType(attr, ILToProgramItem(member));
 		if(!ILAttributeSetValue(attr, ArrayToBuffer(blob),
-								(unsigned long)(long)(ArrayLength(blob))))
+								(ILUInt32)(ArrayLength(blob))))
 		{
 			return 0;
 		}
@@ -547,7 +547,7 @@ void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
 	ILUInt32 elemType;
 	ILConstant *constant;
 	ILExecValue blob;
-	unsigned long len;
+	ILUInt32 len;
 
 	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
@@ -602,7 +602,7 @@ void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
 		case IL_META_ELEMTYPE_U:
 		case IL_META_ELEMTYPE_R:
 		{
-			len = (unsigned long)ILSizeOfType(_thread, type);
+			len = (ILUInt32)ILSizeOfType(_thread, type);
 		}
 		break;
 
@@ -610,7 +610,7 @@ void _IL_FieldBuilder_ClrFieldSetConstant(ILExecThread *_thread,
 		{
 			ILUInt16 *chars;
 			ILUInt16 *ptr;
-			unsigned long i;
+			ILUInt32 i;
 
 			len = (((System_String *)value)->length);
 			if (!(blob.ptrValue = (ILUInt16 *)ILMalloc(len*2)))
@@ -800,7 +800,7 @@ ILInt32 _IL_ModuleBuilder_ClrModuleCreateString(ILExecThread *_thread,
                                                 ILNativeInt module,
                                                 ILString *str)
 {
-	unsigned long retval;
+	ILUInt32 retval;
 	ILProgramItem *item;
 	ILImage *image;
 	const char *string;
@@ -932,7 +932,7 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 	ILUInt32 elemType;
 	ILConstant *constant;
 	ILExecValue blob;
-	unsigned long len;
+	ILUInt32 len;
 
 	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
@@ -987,7 +987,7 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 		case IL_META_ELEMTYPE_U:
 		case IL_META_ELEMTYPE_R:
 		{
-			len = (unsigned long)ILSizeOfType(_thread, type);
+			len = (ILUInt32)ILSizeOfType(_thread, type);
 		}
 		break;
 
@@ -995,7 +995,7 @@ void _IL_PropertyBuilder_ClrPropertySetConstant(ILExecThread *_thread,
 		{
 			ILUInt16 *chars;
 			ILUInt16 *ptr;
-			unsigned long i;
+			ILUInt32 i;
 
 			len = (((System_String *)value)->length);
 			if (!(blob.ptrValue = (ILUInt16 *)ILMalloc(len*2)))
@@ -1928,15 +1928,15 @@ System_Array *_IL_SignatureHelper_ClrSigGetBytes(ILExecThread *_thread,
 	ILImage *image;
 	ILUInt8 *buf;
 	System_Array *bytes;
-	unsigned long blobOffset;
-	unsigned long length;
+	ILUInt32 blobOffset;
+	ILUInt32 length;
 	unsigned char *blob;
 
 	IL_METADATA_WRLOCK(_ILExecThreadProcess(_thread));
 
 	item = (ILProgramItem *)module;
 	image = ILProgramItem_Image(item);
-	blobOffset = (unsigned long)offset;
+	blobOffset = (ILUInt32)offset;
 	blob = (unsigned char *)ILImageGetBlob(image, blobOffset, &length);
 	bytes = (System_Array *)ILExecThreadNew(_thread, "[B", "(Ti)V", (ILVaInt)length);
 	if (!bytes)

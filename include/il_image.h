@@ -413,14 +413,14 @@ unsigned long ILImageGetSectionAddr(ILImage *image, int section);
 /*
  * Get the virtual size of a particular section.
  */
-unsigned long ILImageGetSectionSize(ILImage *image, int section);
+ILUInt32 ILImageGetSectionSize(ILImage *image, int section);
 
 /*
  * Get the address and size of a particular image section.
  * Returns zero if the section was not found.
  */
 int ILImageGetSection(ILImage *image, int section,
-					  void **address, unsigned long *size);
+					  void **address, ILUInt32 *size);
 
 /*
  * Get the entry point token for the image.  Returns zero if
@@ -435,13 +435,13 @@ ILToken ILImageGetEntryPoint(ILImage *image);
  * of the entry is returned in "*size" if the entry is found.
  */
 void *ILImageGetMetaEntry(ILImage *image, const char *name,
-						  unsigned long *size);
+						  ILUInt32 *size);
 
 /*
  * Get the number of entries in the directory that is stored
  * in the metadata section of an IL image.
  */
-unsigned long ILImageNumMetaEntries(ILImage *image);
+ILUInt32 ILImageNumMetaEntries(ILImage *image);
 
 /*
  * Information about a numbered entry in the directory that is
@@ -450,7 +450,7 @@ unsigned long ILImageNumMetaEntries(ILImage *image);
  */
 void *ILImageMetaEntryInfo(ILImage *image, unsigned long entry,
 						   char **name, unsigned long *virtAddr,
-						   unsigned long *size);
+						   ILUInt32 *size);
 
 /*
  * Get the size in bytes of the directory header that is stored in
@@ -468,30 +468,30 @@ const char *ILImageMetaRuntimeVersion(ILImage *image, int *length);
  * Get a string from the string pool.  Returns NULL if "offset" is invalid.
  * The return pointer is guaranteed to be fixed for the lifetime of the image.
  */
-const char *ILImageGetString(ILImage *image, unsigned long offset);
+const char *ILImageGetString(ILImage *image, ILUInt32 offset);
 
 /*
  * Add a string to the string pool.  This can only be used if
  * the image is being built.  Returns the offset, or zero if
  * the string is empty or we are out of memory.
  */
-unsigned long ILImageAddString(ILImage *image, const char *str);
+ILUInt32 ILImageAddString(ILImage *image, const char *str);
 
 /*
  * Get a blob from the blob pool.  Returns NULL if "offset" is invalid.
  * The return pointer is guaranteed to be fixed for the lifetime of the image.
  * The length of the blob is returned in "*len".
  */
-const void *ILImageGetBlob(ILImage *image, unsigned long offset,
-						   unsigned long *len);
+const void *ILImageGetBlob(ILImage *image, ILUInt32 offset,
+						   ILUInt32 *len);
 
 /*
  * Add a blob to the blob pool.  This can only be used if
  * the image is being built.  Returns the offset, or zero if
  * we are out of memory.
  */
-unsigned long ILImageAddBlob(ILImage *image, const void *blob,
-							 unsigned long len);
+ILUInt32 ILImageAddBlob(ILImage *image, const void *blob,
+							 ILUInt32 len);
 
 /*
  * Get a Unicode string from the user string pool.  Returns NULL if
@@ -500,15 +500,15 @@ unsigned long ILImageAddBlob(ILImage *image, const void *blob,
  * the string is returned in "*len".  The characters themselves are
  * stored in little-endian order beginning at the return pointer.
  */
-const char *ILImageGetUserString(ILImage *image, unsigned long offset,
-								 unsigned long *len);
+const char *ILImageGetUserString(ILImage *image, ILUInt32 offset,
+								 ILUInt32 *len);
 
 /*
  * Add a UTF-8 string to the user string pool.  This can only be
  * used if the image is being built.  Returns the offset, or zero
  * if we are out of memory.
  */
-unsigned long ILImageAddUserString(ILImage *image, const char *str, int len);
+ILUInt32 ILImageAddUserString(ILImage *image, const char *str, int len);
 
 /*
  * Add a string to the user string pool that is already encoded
@@ -516,7 +516,7 @@ unsigned long ILImageAddUserString(ILImage *image, const char *str, int len);
  * be "len" Unicode characters in length, and be followed by a
  * '\0' byte. Returns the offset, or zero if we are out of memory.
  */
-unsigned long ILImageAddEncodedUserString(ILImage *image,
+ILUInt32 ILImageAddEncodedUserString(ILImage *image,
 										  const void *str, int len);
 
 /*

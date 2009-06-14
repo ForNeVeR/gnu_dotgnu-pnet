@@ -1,7 +1,7 @@
 /*
  * link_module.c - Module linking routines for C-style applications.
  *
- * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -213,7 +213,7 @@ void _ILLinkerCreateAttribute(ILLinker *linker, ILProgramItem *item,
 	}
 	ILProgramItemAddAttribute(item, attr);
 	ILAttributeSetType(attr, (ILProgramItem *)method);
-	if(!ILAttributeSetValue(attr, data, (unsigned)len))
+	if(!ILAttributeSetValue(attr, data, (ILUInt32)len))
 	{
 		_ILLinkerOutOfMemory(linker);
 		return;
@@ -223,7 +223,7 @@ void _ILLinkerCreateAttribute(ILLinker *linker, ILProgramItem *item,
 ILSerializeReader *ILLinkerReadAttribute(ILAttribute *attr)
 {
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	blob = ILAttributeGetValue(attr, &blobLen);
 	if(!blob || !blobLen)
 	{

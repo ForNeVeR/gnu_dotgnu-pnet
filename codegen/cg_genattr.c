@@ -315,11 +315,11 @@ static const char *SecurityActionToName(ILUInt32 action)
 /*
  * Convert a string from UTF-8 to UTF-16.
  */
-static void *StringToUTF16(const char *str, unsigned long *len, int slen)
+static void *StringToUTF16(const char *str, ILUInt32 *len, int slen)
 {
 	int posn = 0;
 	unsigned long ch;
-	unsigned long index;
+	ILUInt32 index;
 	char *utf16;
 
 	/* Determine the length of the UTF-16 string in bytes */
@@ -327,7 +327,7 @@ static void *StringToUTF16(const char *str, unsigned long *len, int slen)
 	while(posn < slen)
 	{
 		ch = ILUTF8ReadChar(str, slen, &posn);
-		*len += (unsigned long)ILUTF16WriteCharAsBytes(0, ch);
+		*len += (ILUInt32)ILUTF16WriteCharAsBytes(0, ch);
 	}
 
 	/* Allocate space for the UTF-16 string */
@@ -343,7 +343,7 @@ static void *StringToUTF16(const char *str, unsigned long *len, int slen)
 	while(posn < slen)
 	{
 		ch = ILUTF8ReadChar(str, slen, &posn);
-		index += (unsigned long)ILUTF16WriteCharAsBytes(utf16 + index, ch);
+		index += (ILUInt32)ILUTF16WriteCharAsBytes(utf16 + index, ch);
 	}
 	return utf16;
 }
@@ -717,7 +717,7 @@ static int WriteCustomAttribute(ILGenInfo *info,
 	ILAttribute *attribute;
 	ILMethod *methodInfo;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	int haveErrors = 0;
 	ILSerializeWriter *writer = 0;
 
@@ -1592,13 +1592,12 @@ static int MarshalAsAttribute(ILGenInfo *info,
 			int blobLen = 0;
 
 			buf[0] = IL_META_NATIVETYPE_ARRAY;
-			blobLen = 1 + ILMetaCompressData
-				(buf + 1, (unsigned long)arraySubType);
+			blobLen = 1 + ILMetaCompressData(buf + 1, arraySubType);
 			blobLen += ILMetaCompressData
-				(buf + blobLen, (unsigned long)sizeParamIndex);
+				(buf + blobLen, (ILUInt32)sizeParamIndex);
 			buf[blobLen++] = 1;		/* Multiplier */
 			blobLen += ILMetaCompressData
-				(buf + blobLen, (unsigned long)sizeValue);
+				(buf + blobLen, (ILUInt32)sizeValue);
 
 			if(!AddMarshalling(info, attributeInfo->owner, buf, blobLen))
 			{
@@ -1614,8 +1613,7 @@ static int MarshalAsAttribute(ILGenInfo *info,
 			int blobLen = 0;
 
 			buf[0] = IL_META_NATIVETYPE_SAFEARRAY;
-			blobLen = 1 + ILMetaCompressData
-				(buf + 1, (unsigned long)safeArraySubType);
+			blobLen = 1 + ILMetaCompressData(buf + 1, safeArraySubType);
 
 			if(!AddMarshalling(info, attributeInfo->owner, buf, blobLen))
 			{
@@ -1631,10 +1629,8 @@ static int MarshalAsAttribute(ILGenInfo *info,
 			int blobLen = 0;
 
 			buf[0] = IL_META_NATIVETYPE_FIXEDARRAY;
-			blobLen = 1 + ILMetaCompressData
-				(buf + 1, (unsigned long)sizeValue);
-			blobLen += ILMetaCompressData
-					(buf + blobLen, (unsigned long)arraySubType);
+			blobLen = 1 + ILMetaCompressData(buf + 1, (ILUInt32)sizeValue);
+			blobLen += ILMetaCompressData(buf + blobLen, arraySubType);
 
 			if(!AddMarshalling(info, attributeInfo->owner, buf, blobLen))
 			{
@@ -1655,14 +1651,14 @@ static int MarshalAsAttribute(ILGenInfo *info,
 			buf[2] = 0;	/* Length of native type name string (unused) */
 			blobLen = 3;
 			blobLen += ILMetaCompressData
-				(buf + blobLen, (unsigned long)marshalTypeLen);
+				(buf + blobLen, (ILUInt32)marshalTypeLen);
 			if(marshalTypeLen > 0)
 			{
 				ILMemCpy(buf + blobLen, marshalType, marshalTypeLen);
 				blobLen += marshalTypeLen;
 			}
 			blobLen += ILMetaCompressData
-				(buf + blobLen, (unsigned long)marshalCookieLen);
+				(buf + blobLen, (ILUInt32)marshalCookieLen);
 			if(marshalCookieLen > 0)
 			{
 				ILMemCpy(buf + blobLen, marshalCookie, marshalCookieLen);
@@ -1683,7 +1679,7 @@ static int MarshalAsAttribute(ILGenInfo *info,
 			int blobLen = 0;
 
 			/* This native type is represented as a simple value */
-			blobLen = ILMetaCompressData(buf, (unsigned long)unmanagedType);
+			blobLen = ILMetaCompressData(buf, unmanagedType);
 
 			if(!AddMarshalling(info, attributeInfo->owner, buf, blobLen))
 			{
@@ -1723,7 +1719,7 @@ static int DefaultValueAttribute(ILGenInfo *info,
 	ILConstant *constant;
 	ILNativeUInt elementType;
 	unsigned char blob[8];
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	
 	if((field = ILProgramItemToField(attributeInfo->owner)) != 0)
 	{
@@ -2801,7 +2797,7 @@ static int WritePermissionSet(ILGenInfo *info, ILProgramItem *owner,
 		ILSerializeWriter *writer = 0;
 		ILDeclSecurity *decl;
 		const void *blob;
-		unsigned long blobLen;
+		ILUInt32 blobLen;
 		unsigned char buf[IL_META_COMPRESS_MAX_SIZE];
 		int compressLen;
 		int index;
@@ -2827,7 +2823,7 @@ static int WritePermissionSet(ILGenInfo *info, ILProgramItem *owner,
 			const char *attributeName;
 			ILSerializeWriter *namedWriter = 0;
 			const void *namedBlob;
-			unsigned long namedLen;
+			ILUInt32 namedLen;
 
 			attributeName = CGClassToAttrName(info,
 											  securityAttribute->securityAttribute);

@@ -1,7 +1,7 @@
 /*
  * il_writer.h - Routines for writing IL executable images.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -183,19 +183,19 @@ void ILWriterSetFixup(ILWriter *writer, unsigned long rva,
  * Add a string to the debug section's string table.
  * Returns the string offset.
  */
-unsigned long ILWriterDebugString(ILWriter *writer, const char *str);
+ILUInt32 ILWriterDebugString(ILWriter *writer, const char *str);
 
 /*
  * Add debug information for a token to the debug section.
  */
 void ILWriterDebugAdd(ILWriter *writer, ILProgramItem *item, int type,
-					  const void *info, unsigned long len);
+					  const void *info, ILUInt32 len);
 
 /*
  * Add debug information for a pseudo-token to the debug section.
  */
 void ILWriterDebugAddPseudo(ILWriter *writer, unsigned long token, int type,
-					  		const void *info, unsigned long len);
+					  		const void *info, ILUInt32 len);
 
 /*
  * Create a resource section handler for an image, in writing mode.

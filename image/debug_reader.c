@@ -32,7 +32,7 @@ struct _tagILDebugContext
 {
 	ILImage				   *image;
 	const unsigned char    *section;
-	unsigned long			sectionLen;
+	ILUInt32				sectionLen;
 	const unsigned char    *index;
 	unsigned long			indexSize;
 	const unsigned char    *strings;

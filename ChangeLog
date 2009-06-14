@@ -1,3 +1,199 @@
+2009-06-13  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_image.h (ILImageGetSectionSize, ILImageNumMetaEntries):
+	Change return type to ILUInt32.
+	(ILImageGetSection, ILImageGetMetaEntry, ILImageMetaEntryInfo): Change
+	size parameter to ILUInt32 *.
+	(ILImageGetString, ILImageGetBlob, ILImageGetUserString): Change offset
+	parameter to ILUInt32 and the size parameter to ILUInt32 *.
+	(ILImageAddString, ILImageAddBlob, ILImageAddUserString,
+	ILImageAddEncodedUserString): Change returned offset to ILUInt32.
+	(ILImageAddBlob): Change len parameter to ILUInt32.
+
+	* image/assembly.c: Adjust parameters according to changed prototypea.
+
+	* image/attr.c: likewise
+
+	* image/create.c: likewise
+
+	* image/image.c: likewise
+
+	* include/il_meta.h (ILMetaDataRead): Change len member to ILUInt32.
+	(ILMetaCompressData): Change data parameter to ILUInt32.
+	(ILMetaCompressToken): Change data parameter to ILToken.
+	(ILMetaCompressInt): Change data parameter to ILInt32.
+
+	* image/compress.c: Adjust parameters according to changed prototypea.
+	Perform compression using 32 bit values.
+: 
+	* include/il_program.h (ILAttributeGetValue. ILAssemblyGetOriginator,
+	ILAssemblyGetHash, ILConstantGetValue, ILFieldMarshalGetType,
+	ILDeclSecurityGetBlob, ILFileDeclGetHash): Change len parameter to ILUInt32 *.
+	(ILAttributeSetValue, ILAssemblySetOriginator, ILAssemblySetHash,
+	ILConstantSetValue, ILDeclSecuritySetBlob, ILFileDeclSetHash): Change len
+	parameter to ILUInt32.
+	
+	* image/misc_token.c:  Adjust parameters according to changed prototypea.
+
+	* include/il_serialize.h (ILSerializeReaderInit): Change len parameter
+	to ILUInt32.
+	(ILSerializeWriterGetBlob): Change blobLen parameter to ILUInt32 *.
+
+	* image/ser_parse.c: Adjust parameters according to changed prototypea.
+
+	* image/ser_writer.c: Adjust parameters according to changed prototypea.
+
+	* include/il_writer.h (ILWriterDebugString): Change return type to
+	ILUInt32.
+	(ILWriterDebugAdd, ILWriterDebugAddPseudo): Change len parameter to
+	ILUInt32.
+
+	* image/debug_writer.c: Adjust parameters according to changed prototypea.
+
+	* codegen/cg_decls.tc (ILGenOutputAttributes): Use ILUInt32 values for
+	processing blobs instead of unsigned long.
+
+	* codegen/cg_genattr.c (StringToUTF16): Change len parameter to
+	ILUInt32 *.
+	(WriteCustomAttribute, MarshalAsAttribute, DefaultValueAttribute,
+	WritePermissionSet): Use ILUInt32 values for blob processing instead of
+	unsigned longs.
+
+	* cscc/c/c_typeout.c (CGGenOutputAttributes): Use ILUInt32 values for blob
+	processing instead of unsigned longs.
+
+	* cscc/c/c_types.c (BitFieldLeftOver, BitFieldAdd, CloneStruct,
+	CTypeLookupField): Use ILUInt32 values for blob processing instead of
+	unsigned longs.
+
+	* cscc/csharp/cs_attrs.c (CSAddDefaultMemberAttribute): likewise
+
+	* cscc/csharp/cs_lvalue.tc (FieldToConstant): likewise
+
+	* cscc/java/java_lvalue.tc (FieldToConstant): likewise
+
+	* csdoc/doc_valil.c (AttributeToName): likewise
+
+	* csdoc/il2doc.c (DumpParamType, AttributeToName): likewise
+
+	* dumpasm/dump_attrs.c (DumpAttrBlob, ILDasmDumpCustomAttrs): likewise
+
+	* dumpasm/dump_class.c (Dump_FieldDef): likewise
+
+	* dumpasm/dump_const.c (ILDumpConstant): likewise
+
+	* dumpasm/dump_global.c (Dump_Assembly, Dump_AssemblyRef, Dump_File):
+	likewise
+
+	* dumpasm/dump_method.c (DumpInstructions): likewise
+
+	* dumpasm/dump_type.c (DumpParamType): likewise
+
+	* dumpasm/dump_utils.c (ILDasmDumpSecurity): likewise
+
+	* dumpasm/dump_data.c (ILDasmDumpDataSections): Use ILUInt2 values for
+	section sizes instead of unsigned longs.
+
+	* engine/cvm_dasm.c (_ILDumpCVMInsn): Use ILUInt32 values for blob
+	processing instead of unsigned longs and ILToken for tokens.
+
+	* engine/lib_emit.c (_IL_AssemblyBuilder_ClrAttributeCreate,
+	_IL_FieldBuilder_CleFieldSetConstant,
+	_IL_ModuleBuilder_ClrModuleCreateString,
+	ILPropertyBuilder_ClrPropertySetConstant,
+	IL_SignatureHelper_ClrSigGetBytes): Use ILUInt32 values for blob
+	processing instead of unsigned longs.
+
+	* engine/lib_enum.c (GetNextEnumField): likewise
+
+	* engine/lib_string.c (_ILStringInternFromImage): likewise
+
+	* engine/verify_const.c: likewise
+
+	* ilalink/link_attrs.c (_ILLinkerConvertAttrs, _ILLinkerConvertSecurity,
+	_ILLinkerConvertDebug): likewise
+
+	* ilalink/link_create.c (ILLinkerCreateModuleAndAssembly): likewise
+
+	* ilalink/link_field.c (_ILLinkerConvertConstant): likewise
+
+	* engine/lib_reflect.c (DeSerializeAttribute, _IL_Assembly_GetFullName,
+	FillAssemblyNameFromImage, _IL_FieldInfo_GetFieldFromHandle): likewise
+	(CreateResourceStream, _IL_ClrResourceStream_ResourceRead,
+	_IL_ClrResourceStream_ResourceReadByte,
+	_IL_ClrResourceStream_ResourceGetAddress): Use ILUInt2 values for
+	section sizes instead of unsigned longs.
+
+	* ilalink/link_field.c (_ILLinkerConvertMarshal): Use ILUInt32 values for blob
+	processing instead of unsigned longs and
+	Use ILUInt2 values for section sizes instead of unsigned longs.
+
+	* engine/method_cache.c _ILCacheMarkByteCode): Use ILUInt32 values for
+	writing debug info to the cache instead of unsigned longs.
+
+	* ilalink/link_image.c (ProcessImage, ILLinkerPerformLink): Use ILUInt32
+	values for blob	processing instead of unsigned longs.
+
+	* ilalink/link_library.c (ScanAssemblies): likewise
+
+	* ilalink/link_method.c (ConvertCode): likewise
+
+	* ilalink/link_module.c (_ILLinkerCreateAttribute, ILLinkerReadAttribute):
+	likewise
+
+	* ilasm/ilasm_grammar.y (PackString, PackLength, SetOriginator): likewise
+
+	* ilasm/ilasm_output.c (OutputDebugInfo): likewise
+
+	* ildasm/ildasm_main.c (dumpSectionInHex, dumpMetadataSection): Use
+	ILUInt2 values for section sizes instead of unsigned longs.
+
+	* ilsize/ilsize.c (loadImage, printSizes, printDetailed, printClassSizes):
+	likewise
+
+	* ilsize/ilsize_est.c (GetBlobSize): Use ILUInt32 values for blob
+	processing instead of unsigned longs.
+
+	* image/context.c (_ILContextPersistString): likewise
+
+	* image/debug_reader.c (ILDebugContext): Change member offset to ILUInt32.
+
+	* image/image.h: Change various members for section sizes and blob offsets
+	from unsigned long to ILUInt32.
+
+	* image/lib_attrs.c  (StringToUTF16): Change len parameter to
+	ILUInt32 *.
+	(ConvertAttribute, MarshalAsAttribute, DefaultValueAttribute,
+	SecurityPermissionAttribute, GetAttributeUsage): Use ILUInt32 values for
+	blob processing instead of unsigned longs.
+
+	* image/link.c (SearchForDllMap): likewise
+
+	* image/marshal.c (ILPinvokeGetMarshalType): likewise
+
+	* image/meta_build.c (Load_Module): Use ILUInt2 values for section sizes
+	instead of unsigned longs.
+
+	* image/meta_header.c (GetMetaData): Change parameters len and headerLen
+	to ILUInt32 *. Change return type to ILUInt32.
+	(GetNextEntry): Change parameters numEntries, entryOffset and entrySize
+	to ILUInt32 *.
+	(ILImageGetMetaEntry): Change parameter size to ILUInt32 *.
+	(ILImageNumMetaEntries): Change return type to ILUInt32.
+	(ILImageMetaEntryInfo): Change parameter size to ILUInt32 *.
+
+	* image/meta_index.c (TokenSize, ParseToken): Change to process 32bit
+	token counts.
+
+	* image/pecoff_loader.c (_ILImageGetSection): Change size parameter to
+	ILUInt32 *.
+
+	* image/sig_writer.c: Use ILUInt32 values for blob processing instead
+	of unsigned longs.
+
+	* resgen/resgen.c (loadResources, extractResource): Use ILUInt32 values
+	for blob processing instead of unsigned longs.
+
 2009-06-12  Klaus Treichel  <ktreichel@web.de>
 
 	* dumpasm/dump_type.c (DumpVariantType, DumpNativeType): Use ILUInt32

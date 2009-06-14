@@ -1,7 +1,7 @@
 /*
  * c_types.c - Type representation for the C programming language.
  *
- * Copyright (C) 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -888,7 +888,7 @@ static ILUInt32 BitFieldLeftOver(ILGenInfo *info, ILClass *classInfo,
 	ILMethod *ctor = BitFieldCtor(info);
 	ILAttribute *attr;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	ILSerializeReader *reader;
 	const char *str;
 	int slen;
@@ -979,15 +979,15 @@ static ILUInt32 BitFieldLeftOver(ILGenInfo *info, ILClass *classInfo,
  */
 static void BitFieldAdd(ILGenInfo *info, ILClass *classInfo,
 						const char *fieldName,
-						unsigned long fieldLen,
+						ILUInt32 fieldLen,
 						const char *storageName,
-						unsigned long storageLen,
+						ILUInt32 storageLen,
 						ILUInt32 posn, ILUInt32 numBits)
 {
 	unsigned char fieldHeader[IL_META_COMPRESS_MAX_SIZE];
 	unsigned char storageHeader[IL_META_COMPRESS_MAX_SIZE];
 	int fieldHeaderLen, storageHeaderLen;
-	unsigned long totalLen;
+	ILUInt32 totalLen;
 	unsigned char *buf;
 	ILAttribute *attr;
 
@@ -1351,14 +1351,14 @@ static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
 	ILMethod *ctor;
 	ILAttribute *attr;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	ILSerializeReader *reader;
 	const char *str;
 	int slen;
 	const char *fieldName;
-	unsigned long fieldLen;
+	ILUInt32 fieldLen;
 	const char *storageName;
-	unsigned long storageLen;
+	ILUInt32 storageLen;
 	ILUInt32 bitFieldStart;
 	ILUInt32 bitFieldSize;
 
@@ -1419,7 +1419,7 @@ static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
 			continue;
 		}
 		fieldName = str;
-		fieldLen = (unsigned long)(long)slen;
+		fieldLen = (ILUInt32)slen;
 		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_STRING)
 		{
 			ILSerializeReaderDestroy(reader);
@@ -1431,7 +1431,7 @@ static void CloneStruct(ILGenInfo *info, ILClass *dest, ILClass *src)
 			continue;
 		}
 		storageName = str;
-		storageLen = (unsigned long)(long)slen;
+		storageLen = (ILUInt32)slen;
 		if(ILSerializeReaderGetParamType(reader) != IL_META_SERIALTYPE_I4)
 		{
 			ILSerializeReaderDestroy(reader);
@@ -1509,7 +1509,7 @@ ILField *CTypeLookupField(ILGenInfo *info, ILType *structType,
 	ILMethod *ctor;
 	ILAttribute *attr;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 	ILSerializeReader *reader;
 	const char *str;
 	int slen;

@@ -1,7 +1,7 @@
 /*
  * meta_build.c - Build metadata structures from a metadata index.
  *
- * Copyright (C) 2001, 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -763,7 +763,7 @@ static int Load_Module(ILImage *image, ILUInt32 *values,
 {
 	const char *name;
 	unsigned char *guidBase;
-	unsigned long guidSize;
+	ILUInt32 guidSize;
 	ILModule *module;
 
 	/* Unpack the token values */

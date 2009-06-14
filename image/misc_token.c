@@ -1,7 +1,7 @@
 /*
  * misc_token.c - Handle miscellaneous tokens within images.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -275,7 +275,7 @@ void _ILConstantSetValueIndex(ILConstant *constant, ILUInt32 index)
 	constant->value = index;
 }
 
-const void *ILConstantGetValue(ILConstant *constant, unsigned long *len)
+const void *ILConstantGetValue(ILConstant *constant, ILUInt32 *len)
 {
 	return ILImageGetBlob(constant->ownedItem.programItem.image,
 						  constant->value, len);
@@ -599,7 +599,7 @@ void _ILFieldMarshalSetTypeIndex(ILFieldMarshal *marshal, ILUInt32 index)
 	marshal->type = index;
 }
 
-const void *ILFieldMarshalGetType(ILFieldMarshal *marshal, unsigned long *len)
+const void *ILFieldMarshalGetType(ILFieldMarshal *marshal, ILUInt32 *len)
 {
 	return ILImageGetBlob(marshal->ownedItem.programItem.image,
 						  marshal->type, len);
@@ -755,13 +755,12 @@ ILUInt32 ILDeclSecurityGetType(ILDeclSecurity *security)
 }
 
 int ILDeclSecuritySetBlob(ILDeclSecurity *security, const void *blob,
-					      unsigned long len)
+					      ILUInt32 len)
 {
 	if(security->ownedItem.programItem.image->type == IL_IMAGETYPE_BUILDING)
 	{
-		security->blob = (ILUInt32)(ILImageAddBlob
-										(security->ownedItem.programItem.image,
-									  	 blob, len));
+		security->blob = ILImageAddBlob(security->ownedItem.programItem.image,
+									  	blob, len);
 		return (security->blob != 0);
 	}
 	else
@@ -777,7 +776,7 @@ void _ILDeclSecuritySetBlobIndex(ILDeclSecurity *security, ILUInt32 index)
 	security->blob = index;
 }
 
-const void *ILDeclSecurityGetBlob(ILDeclSecurity *security, unsigned long *len)
+const void *ILDeclSecurityGetBlob(ILDeclSecurity *security, ILUInt32 *len)
 {
 	return ILImageGetBlob(security->ownedItem.programItem.image,
 						  security->blob, len);
@@ -829,12 +828,11 @@ ILUInt32 ILFileDeclGetAttrs(ILFileDecl *decl)
 	return decl->attributes;
 }
 
-int ILFileDeclSetHash(ILFileDecl *decl, const void *hash, unsigned long len)
+int ILFileDeclSetHash(ILFileDecl *decl, const void *hash, ILUInt32 len)
 {
 	if(decl->programItem.image->type == IL_IMAGETYPE_BUILDING)
 	{
-		decl->hash = (ILUInt32)(ILImageAddBlob(decl->programItem.image,
-									  	 	   hash, len));
+		decl->hash = ILImageAddBlob(decl->programItem.image, hash, len);
 		return (decl->hash != 0);
 	}
 	else
@@ -850,7 +848,7 @@ void _ILFileDeclSetHashIndex(ILFileDecl *decl, ILUInt32 index)
 	decl->hash = index;
 }
 
-const void *ILFileDeclGetHash(ILFileDecl *decl, unsigned long *len)
+const void *ILFileDeclGetHash(ILFileDecl *decl, ILUInt32 *len)
 {
 	return ILImageGetBlob(decl->programItem.image, decl->hash, len);
 }

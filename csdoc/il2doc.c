@@ -1,7 +1,7 @@
 /*
  * il2doc.c - Convert an IL binary into XML documentation form.
  *
- * Copyright (C) 2003, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -878,7 +878,7 @@ static void DumpParamType(FILE *stream, ILImage *image,
 	ILParameter *param;
 	ILFieldMarshal *marshal;
 	const void *type;
-	unsigned long typeLen;
+	ILUInt32 typeLen;
 	const char *name;
 
 	/* Get the parameter information block, if one is present */
@@ -1415,7 +1415,7 @@ static char *AttributeToName(ILAttribute *attr)
 	ILMethod *method;
 	char *name;
 	const void *value;
-	unsigned long len;
+	ILUInt32 len;
 	ILSerializeReader *reader;
 	ILUInt32 numParams;
 	ILUInt32 numExtras;

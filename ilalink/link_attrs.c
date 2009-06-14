@@ -32,7 +32,7 @@ int _ILLinkerConvertAttrs(ILLinker *linker, ILProgramItem *oldItem,
 	ILProgramItem *item;
 	ILMethod *method;
 	const void *blob;
-	unsigned long blobLen;
+	ILUInt32 blobLen;
 
 	/* Scan through the attributes on the old item */
 	attr = 0;
@@ -92,7 +92,7 @@ int _ILLinkerConvertSecurity(ILLinker *linker, ILProgramItem *oldItem,
 	{
 		ILDeclSecurity *newDecl;
 		const void *blob;
-		unsigned long blobLen;
+		ILUInt32 blobLen;
 
 		/* Create a security declaration on the new item */
 		newDecl = ILDeclSecurityCreate(linker->image, 0, newItem,
@@ -126,9 +126,9 @@ int _ILLinkerConvertDebug(ILLinker *linker, ILProgramItem *oldItem,
 	ILDebugIter iter;
 	ILMetaDataRead reader;
 	unsigned char buf[1024];
-	unsigned long len;
+	ILUInt32 len;
 	const char *name;
-	unsigned long nameIndex;
+	ILUInt32 nameIndex;
 	ILUInt32 temp1;
 	ILUInt32 temp2;
 	ILUInt32 temp3;

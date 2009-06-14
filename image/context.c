@@ -1,7 +1,7 @@
 /*
  * context.c - Utility routines for manipulting IL contexts.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -336,7 +336,7 @@ const char *_ILContextPersistString(ILImage *image, const char *str)
 		if(image->type == IL_IMAGETYPE_BUILDING)
 		{
 			/* We need to create a persistent version in the "#Strings" blob */
-			unsigned long offset;
+			ILUInt32 offset;
 			offset = ILImageAddString(image, str);
 			if(offset)
 			{

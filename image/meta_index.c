@@ -473,7 +473,6 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 {
 	int size = 0;
 	const ILUInt32 *type;
-	unsigned long limit;
 	ILUInt32 token;
 	if(desc)
 	{
@@ -518,7 +517,7 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 					{
 						if(image->tokenCount
 								[IL_META_TOKEN_FIELD_DEF >> 24]
-									> (unsigned long)0xFFFE)
+									> (ILUInt32)0xFFFE)
 						{
 							size += 4;
 						}
@@ -533,7 +532,7 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 					{
 						if(image->tokenCount
 								[IL_META_TOKEN_METHOD_DEF >> 24]
-									> (unsigned long)0xFFFE)
+									> (ILUInt32)0xFFFE)
 						{
 							size += 4;
 						}
@@ -548,7 +547,7 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 					{
 						if(image->tokenCount
 								[IL_META_TOKEN_PARAM_DEF >> 24]
-									> (unsigned long)0xFFFE)
+									> (ILUInt32)0xFFFE)
 						{
 							size += 4;
 						}
@@ -575,7 +574,7 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 					{
 						if(image->tokenCount
 								[((ILUInt32)(ILNativeUInt)type) >> 24]
-									> (unsigned long)0xFFFF)
+									> (ILUInt32)0xFFFF)
 						{
 							size += 4;
 						}
@@ -590,7 +589,9 @@ static int TokenSize(ILImage *image, int strRefSize, int blobRefSize,
 			else
 			{
 				/* Mixed reference type */
-				limit = (((unsigned long)0xFFFF) >> *type++);
+				ILUInt32 limit;
+
+				limit = (((ILUInt32)0xFFFF) >> *type++);
 				size += 2;
 				while((token = *type++) != END_DESC)
 				{
@@ -620,7 +621,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 	int index = 0;
 	const ILUInt32 *type;
 	const ILUInt32 *start;
-	unsigned long limit;
+	ILUInt32 limit;
 	ILUInt32 temp;
 	ILMetaDataRead reader;
 	if(desc)
@@ -700,7 +701,8 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 					case (ILUInt32)(ILNativeUInt)GUIDREF_FIELD:
 					{
 						/* Read an index into the "#GUID" entry */
-						unsigned long size;
+						ILUInt32 size;
+
 						if(guidRefSize == 2)
 						{
 							temp = IL_READ_UINT16(ptr);
@@ -755,7 +757,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						   indicates a type with no fields */
 						limit = image->tokenCount
 									[IL_META_TOKEN_FIELD_DEF >> 24];
-						if(limit > (unsigned long)0xFFFE)
+						if(limit > (ILUInt32)0xFFFE)
 						{
 							temp = IL_READ_UINT32(ptr);
 							ptr += 4;
@@ -769,7 +771,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						{
 							values[index++] = 0;
 						}
-						else if(temp > 0 && temp <= (ILUInt32)limit)
+						else if(temp > 0 && temp <= limit)
 						{
 							values[index++] = IL_META_TOKEN_FIELD_DEF | temp;
 						}
@@ -788,7 +790,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						   indicates a type with no method */
 						limit = image->tokenCount
 									[IL_META_TOKEN_METHOD_DEF >> 24];
-						if(limit > (unsigned long)0xFFFE)
+						if(limit > (ILUInt32)0xFFFE)
 						{
 							temp = IL_READ_UINT32(ptr);
 							ptr += 4;
@@ -802,7 +804,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						{
 							values[index++] = 0;
 						}
-						else if(temp > 0 && temp <= (ILUInt32)limit)
+						else if(temp > 0 && temp <= limit)
 						{
 							values[index++] = IL_META_TOKEN_METHOD_DEF | temp;
 						}
@@ -821,7 +823,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						   indicates a method with no parameters */
 						limit = image->tokenCount
 									[IL_META_TOKEN_PARAM_DEF >> 24];
-						if(limit > (unsigned long)0xFFFE)
+						if(limit > (ILUInt32)0xFFFE)
 						{
 							temp = IL_READ_UINT32(ptr);
 							ptr += 4;
@@ -835,7 +837,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						{
 							values[index++] = 0;
 						}
-						else if(temp > 0 && temp <= (ILUInt32)limit)
+						else if(temp > 0 && temp <= limit)
 						{
 							values[index++] = IL_META_TOKEN_PARAM_DEF | temp;
 						}
@@ -865,7 +867,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 						/* Read a normal token table index */
 						limit = image->tokenCount
 							[((ILUInt32)(ILNativeUInt)type) >> 24];
-						if(limit <= (unsigned long)0xFFFF)
+						if(limit <= (ILUInt32)0xFFFF)
 						{
 							temp = IL_READ_UINT16(ptr);
 							ptr += 2;
@@ -875,7 +877,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 							temp = IL_READ_UINT32(ptr);
 							ptr += 4;
 						}
-						if(temp > 0 && temp <= (ILUInt32)limit)
+						if(temp > 0 && temp <= limit)
 						{
 							values[index++] =
 								((((ILUInt32)(ILNativeUInt)type)
@@ -895,7 +897,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 			{
 				/* Mixed reference type */
 				start = type;
-				limit = (((unsigned long)0xFFFF) >> *type++);
+				limit = (((ILUInt32)0xFFFF) >> *type++);
 				while((temp = *type++) != END_DESC)
 				{
 					if(temp != 1 && temp != 2 &&
@@ -968,7 +970,7 @@ static int ParseToken(ILImage *image, int strRefSize, int blobRefSize,
 static int ParseMetaIndex(ILImage *image, int loadFlags)
 {
 	unsigned char *index;
-	unsigned long size;
+	ILUInt32 size;
 	unsigned long len;
 	ILUInt8 sizeBits;
 	ILUInt64 typesPresent;
@@ -1058,7 +1060,7 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 							fprintf(stderr, "metadata error: uses %ld "
 											"instances of undocumented "
 											"token type 0x%08lX\n",
-									image->tokenCount[type],
+									(unsigned long)(image->tokenCount[type]),
 								    (((unsigned long)type) << 24));
 						}
 						++type;
@@ -1084,7 +1086,7 @@ static int ParseMetaIndex(ILImage *image, int loadFlags)
 							fprintf(stderr, "metadata warning: uses %ld "
 											"instances of undocumented token "
 											"type 0x%08lX - continuing\n",
-									image->tokenCount[type],
+									(unsigned long)(image->tokenCount[type]),
 								    (((unsigned long)type) << 24));
 						}
 					#endif
@@ -1557,7 +1559,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 	ILUInt32 val;
 	ILUInt32 val2;
 	ILUInt32 temp;
-	unsigned long limit;
+	ILUInt32 limit;
 	int bigToken;
 
 	/* Get the descriptor to use to pack the data */
@@ -1661,7 +1663,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 					{
 						val = IL_META_TOKEN_FIELD_DEF | limit;
 					}
-					if(limit > (unsigned long)0xFFFE)
+					if(limit > (ILUInt32)0xFFFE)
 					{
 						WRITE32(ptr, val);
 						ptr += 4;
@@ -1684,7 +1686,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 					{
 						val = IL_META_TOKEN_METHOD_DEF | limit;
 					}
-					if(limit > (unsigned long)0xFFFE)
+					if(limit > (ILUInt32)0xFFFE)
 					{
 						WRITE32(ptr, val);
 						ptr += 4;
@@ -1707,7 +1709,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 					{
 						val = IL_META_TOKEN_PARAM_DEF | limit;
 					}
-					if(limit > (unsigned long)0xFFFE)
+					if(limit > (ILUInt32)0xFFFE)
 					{
 						WRITE32(ptr, val);
 						ptr += 4;
@@ -1739,7 +1741,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 					limit = image->tokenCount
 						[((ILUInt32)(ILNativeUInt)type) >> 24];
 					val = values[index++];
-					if(limit <= (unsigned long)0xFFFF)
+					if(limit <= (ILUInt32)0xFFFF)
 					{
 						WRITE16(ptr, val);
 						ptr += 2;
@@ -1757,7 +1759,7 @@ void _ILImageRawTokenEncode(ILImage *image, unsigned char *ptr,
 		{
 			/* Mixed reference type */
 			start = type;
-			limit = (((unsigned long)0xFFFF) >> *type++);
+			limit = (((ILUInt32)0xFFFF) >> *type++);
 			bigToken = 0;
 			val = 0;
 			val2 = 0;

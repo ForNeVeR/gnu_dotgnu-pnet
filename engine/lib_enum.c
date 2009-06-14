@@ -1,7 +1,7 @@
 /*
  * lib_enum.c - Internalcall methods for the "System.Enum" class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -197,7 +197,7 @@ static ILField *GetNextEnumField(ILClass *classInfo, ILField *last,
 {
 	ILConstant *constValue;
 	const void *constBuf;
-	unsigned long constBufLen;
+	ILUInt32 constBufLen;
 
 	while((last = (ILField *)ILClassNextMemberByKind
 					(classInfo, (ILMember *)last,

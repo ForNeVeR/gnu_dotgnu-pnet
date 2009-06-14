@@ -1,7 +1,7 @@
 /*
  * ildasm_main.c - Main entry point for "ildasm".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -371,7 +371,7 @@ static void dumpSectionInHex(ILImage *image, int section,
 							 const char *name, int realOffsets)
 {
 	void *address;
-	unsigned long size;
+	ILUInt32 size;
 	unsigned long virtAddr;
 
 	/* Get the section data */
@@ -387,7 +387,7 @@ static void dumpSectionInHex(ILImage *image, int section,
 	}
 
 	/* Output the section header */
-	fprintf(outstream, "%s (%lu bytes):\n\n", name, size);
+	fprintf(outstream, "%s (%lu bytes):\n\n", name, (unsigned long)size);
 
 	/* Dump the section data in hex */
 	dumpBlockInHex(virtAddr, (unsigned char *)address, size);
@@ -402,10 +402,10 @@ static void dumpSectionInHex(ILImage *image, int section,
 static void dumpMetadataSection(ILImage *image, int realOffsets)
 {
 	void *address;
-	unsigned long size;
+	ILUInt32 size;
 	unsigned long virtAddr;
-	unsigned long numEntries;
-	unsigned long entry;
+	ILUInt32 numEntries;
+	ILUInt32 entry;
 	char *name;
 
 	/* Dump the header */
@@ -416,7 +416,7 @@ static void dumpMetadataSection(ILImage *image, int realOffsets)
 	}
 	virtAddr = ILImageGetSectionAddr(image, IL_SECTION_METADATA);
 	size = ILImageMetaHeaderSize(image);
-	fprintf(outstream, "Metadata Header (%lu bytes):\n\n", size);
+	fprintf(outstream, "Metadata Header (%lu bytes):\n\n", (unsigned long)size);
 	if(realOffsets)
 	{
 		virtAddr = ILImageRealOffset(image, virtAddr);
@@ -429,7 +429,8 @@ static void dumpMetadataSection(ILImage *image, int realOffsets)
 	for(entry = 0; entry < numEntries; ++entry)
 	{
 		address = ILImageMetaEntryInfo(image, entry, &name, &virtAddr, &size);
-		fprintf(outstream, "Metadata Blob %s (%lu bytes):\n\n", name, size);
+		fprintf(outstream, "Metadata Blob %s (%lu bytes):\n\n",
+				name, (unsigned long)size);
 		if(realOffsets)
 		{
 			virtAddr = ILImageRealOffset(image, virtAddr);

@@ -1,7 +1,7 @@
 /*
  * il_program.h - Definitions related to program information.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -249,12 +249,12 @@ ILProgramItem *ILAttributeTypeAsItem(ILAttribute *attr);
  * Returns zero if out of memory.
  */
 int ILAttributeSetValue(ILAttribute *attr, const void *blob,
-						unsigned long len);
+						ILUInt32 len);
 
 /*
  * Get the value associated with an attribute.
  */
-const void *ILAttributeGetValue(ILAttribute *attr, unsigned long *len);
+const void *ILAttributeGetValue(ILAttribute *attr, ILUInt32 *len);
 
 /*
  * Opaque type for accessing the attribute usage attribute.
@@ -472,12 +472,12 @@ ILUInt32 ILAssemblyGetRefAttrs(ILAssembly *assem);
  * a specific value.  Returns zero if out of memory.
  */
 int ILAssemblySetOriginator(ILAssembly *assem, const void *key,
-						    unsigned long len);
+						    ILUInt32 len);
 
 /*
  * Get the originator key associated with an assembly.
  */
-const void *ILAssemblyGetOriginator(ILAssembly *assem, unsigned long *len);
+const void *ILAssemblyGetOriginator(ILAssembly *assem, ILUInt32 *len);
 
 /*
  * Change the name for an assembly.
@@ -505,12 +505,12 @@ const char *ILAssemblyGetLocale(ILAssembly *assem);
  * Set the value of an assembly's hash value to a specific value.
  * Returns zero if out of memory.
  */
-int ILAssemblySetHash(ILAssembly *assem, const void *hash, unsigned long len);
+int ILAssemblySetHash(ILAssembly *assem, const void *hash, ILUInt32 len);
 
 /*
  * Get the hash value associated with an assembly.
  */
-const void *ILAssemblyGetHash(ILAssembly *assem, unsigned long *len);
+const void *ILAssemblyGetHash(ILAssembly *assem, ILUInt32 *len);
 
 /*
  * Helper macros for querying information about an assembly.
@@ -2159,7 +2159,7 @@ int ILConstantSetValue(ILConstant *constant, const void *blob,
 /*
  * Get the value of a constant.  Returns NULL if no value.
  */
-const void *ILConstantGetValue(ILConstant *constant, unsigned long *len);
+const void *ILConstantGetValue(ILConstant *constant, ILUInt32 *len);
 
 /*
  * Get the constant that is associated with a program item.
@@ -2271,7 +2271,7 @@ int ILFieldMarshalSetType(ILFieldMarshal *marshal, const void *blob,
  * Get the native type block for a field marshal record.
  * Returns NULL if no value.
  */
-const void *ILFieldMarshalGetType(ILFieldMarshal *marshal, unsigned long *len);
+const void *ILFieldMarshalGetType(ILFieldMarshal *marshal, ILUInt32 *len);
 
 /*
  * Get the field marshaller that is associated with a program item.
@@ -2359,13 +2359,13 @@ ILUInt32 ILDeclSecurityGetType(ILDeclSecurity *security);
  * Returns zero if out of memory.
  */
 int ILDeclSecuritySetBlob(ILDeclSecurity *security, const void *blob,
-					      unsigned long len);
+					      ILUInt32 len);
 
 /*
  * Get the security block for a security record.
  * Returns NULL if no value.
  */
-const void *ILDeclSecurityGetBlob(ILDeclSecurity *security, unsigned long *len);
+const void *ILDeclSecurityGetBlob(ILDeclSecurity *security, ILUInt32 *len);
 
 /*
  * Get the first security record that is associated with a program item.
@@ -2412,13 +2412,13 @@ ILUInt32 ILFileDeclGetAttrs(ILFileDecl *decl);
  * Set the hash value for a file declaration.
  * Returns zero if out of memory.
  */
-int ILFileDeclSetHash(ILFileDecl *decl, const void *hash, unsigned long len);
+int ILFileDeclSetHash(ILFileDecl *decl, const void *hash, ILUInt32 len);
 
 /*
  * Get the hash value for a file declaration.
  * Returns NULL if no value.
  */
-const void *ILFileDeclGetHash(ILFileDecl *decl, unsigned long *len);
+const void *ILFileDeclGetHash(ILFileDecl *decl, ILUInt32 *len);
 
 /*
  * Convert a file declaration into a fully resolved image.

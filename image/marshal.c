@@ -155,7 +155,7 @@ ILUInt32 ILPInvokeGetMarshalType(ILPInvoke *pinvoke, ILMethod *method,
 	ILParameter *parameter;
 	ILFieldMarshal *marshal;
 	const unsigned char *nativeType;
-	unsigned long nativeTypeLen;
+	ILUInt32 nativeTypeLen;
 	int nativeTypeCode;
 
 	/* Find the parameter information block */

@@ -1,7 +1,7 @@
 /*
  * lib_reflect.c - Internalcall methods for the reflection classes.
  *
- * Copyright (C) 2001, 2002, 2003, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -322,7 +322,7 @@ static ILObject *DeserializeAttribute(ILExecThread *thread,
 	ILInt32 paramNum;
 	ILSerializeReader *reader;
 	void *blob;
-	unsigned long len;
+	ILUInt32 len;
 	ILObject **buf;
 	ILType *sig=NULL,*param=NULL;
 	ILObject *retval;
@@ -330,7 +330,6 @@ static ILObject *DeserializeAttribute(ILExecThread *thread,
 	/* see below for named args */
 	ILMember *member=NULL;
 	const char *name=NULL;
-	unsigned int nameLen;
 	ILObject *obj;
 
 	blob=(void*)ILAttributeGetValue(attr,&len); 
@@ -382,6 +381,8 @@ static ILObject *DeserializeAttribute(ILExecThread *thread,
 		/*
 		 * TODO : Named Arguments 
 		 */
+		int nameLen;
+
 		serialType=ILSerializeReaderGetExtra(reader,&member,&name,&nameLen);
 		member = ILMemberResolve(member);
 		switch(ILMemberGetKind(member))
@@ -1177,7 +1178,7 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 {
 	unsigned char *section;
 	unsigned char **sectionptr = &section;
-	unsigned long sectionLen;
+	ILUInt32 sectionLen;
 	unsigned long start;
 	unsigned long pad;
 	ILUInt32 length;
@@ -1198,7 +1199,7 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 			return 0;
 		}
 		length = IL_READ_UINT32(section);
-		if(((unsigned long)length) > (sectionLen - 4))
+		if(length > (sectionLen - 4))
 		{
 			return 0;
 		}
@@ -1223,7 +1224,7 @@ static ILObject *CreateResourceStream(ILExecThread *thread, ILImage *image,
 		return 0;
 	}
 	length = IL_READ_UINT32(section);
-	if(((unsigned long)length) > (sectionLen - 4))
+	if(length > (sectionLen - 4))
 	{
 		return 0;
 	}
@@ -1628,7 +1629,7 @@ ILString *_IL_Assembly_GetFullName(ILExecThread *thread, ILObject *_this)
 		const ILUInt16 *version;
 		const char *locale;
 		const void *publicKey;
-		unsigned long publicKeyLen;
+		ILUInt32 publicKeyLen;
 		unsigned long publicKeyLenInChars;
 		char versbuf[64];
 		char *buf;
@@ -1771,7 +1772,7 @@ static void FillAssemblyNameFromImage(ILExecThread *thread,
 	ILString *name;
 	ILAssembly *assem;
 	const void *publicKey;
-	unsigned long publicKeyLen;
+	ILUInt32 publicKeyLen;
 	System_Array *array;
 
 	/* Set the assembly name */
@@ -2265,7 +2266,7 @@ ILObject *_IL_FieldInfo_GetFieldFromHandle(ILExecThread *thread,
 ILObject* UnpackConstant(ILExecThread *thread,ILConstant* constant,
 						 ILType *type)
 {
-	unsigned long len;
+	ILUInt32 len;
 	ILInt8 byteValue;
 	ILInt16 shortValue;
  	ILInt32 intValue;
@@ -3604,7 +3605,7 @@ ILInt32 _IL_ClrResourceStream_ResourceRead(ILExecThread *_thread,
 	ILImage *image = (ILImage *)handle;
 	unsigned char *section;
 	unsigned char **sectionptr = &section;
-	unsigned long sectionLen;
+	ILUInt32 sectionLen;
 	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
 								  (void **)sectionptr, &sectionLen))
 	{
@@ -3628,7 +3629,7 @@ ILInt32 _IL_ClrResourceStream_ResourceReadByte(ILExecThread *_thread,
 	ILImage *image = (ILImage *)handle;
 	unsigned char *section;
 	unsigned char **sectionptr = &section;
-	unsigned long sectionLen;
+	ILUInt32 sectionLen;
 	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
 								  (void **)sectionptr, &sectionLen))
 	{
@@ -3650,7 +3651,7 @@ ILUInt8 *_IL_ClrResourceStream_ResourceGetAddress(ILExecThread *_thread,
 	ILImage *image = (ILImage *)handle;
 	unsigned char *section;
 	unsigned char **sectionptr = &section;
-	unsigned long sectionLen;
+	ILUInt32 sectionLen;
 	if(image && ILImageGetSection(image, IL_SECTION_RESOURCES,
 								  (void **)sectionptr, &sectionLen))
 	{

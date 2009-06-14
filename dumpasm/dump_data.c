@@ -1,7 +1,7 @@
 /*
  * dump_data.c - Dump ".data" blocks.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -87,10 +87,10 @@ void ILDAsmDumpDataSections(FILE *outstream, ILImage *image)
 	ILFieldRVA *rva;
 	void *dataAddr;
 	unsigned long dataRVA;
-	unsigned long dataLen;
+	ILUInt32 dataLen;
 	void *tlsAddr;
 	unsigned long tlsRVA;
-	unsigned long tlsLen;
+	ILUInt32 tlsLen;
 
 	/* Collect all field RVA values so that we know where to
 	   insert the data labels */

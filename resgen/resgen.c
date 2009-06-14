@@ -1,7 +1,7 @@
 /*
  * resgen.c - Resource file generator and reader.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -655,7 +655,7 @@ static int loadResources(const char *filename, FILE *stream,
 			ILImage *image;
 			int loadError;
 			void *address;
-			unsigned long size;
+			ILUInt32 size;
 
 			/* Attempt to load the IL image */
 			loadError = ILImageLoad(stream, filename, context, &image,
@@ -809,7 +809,7 @@ static int extractResource(const char *filename, const char *resourceName)
 	ILUInt32 posn;
 	void *address;
 	unsigned char *addr;
-	unsigned long size;
+	ILUInt32 size;
 	ILUInt32 reslen;
 	int gotres;
 	FILE *file;

@@ -1,7 +1,7 @@
 /*
  * link_method.c - Convert a method and copy it to the final image.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -198,7 +198,7 @@ static int ConvertCode(ILLinker *linker, ILMethod *method,
 	ILToken token;
 	int needsFixup;
 	const char *str;
-	unsigned long strLen;
+	ILUInt32 strLen;
 	ILType *localVars;
 	ILStandAloneSig *sig;
 	ILUInt32 numExceptions;

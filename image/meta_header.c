@@ -1,7 +1,7 @@
 /*
  * meta_header.c - Routines for walking the header of the metadata section.
  *
- * Copyright (C) 2001, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2003, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,16 +28,16 @@ extern	"C" {
  * Get the metadata section and validate it.  Returns
  * the number of entries, or 0xFFFFFFFF if invalid.
  */
-static unsigned long GetMetadata(ILImage *image, unsigned char **addr,
-								 unsigned long *len, unsigned long *headerLen)
+static ILUInt32 GetMetadata(ILImage *image, unsigned char **addr,
+							ILUInt32 *len, ILUInt32 *headerLen)
 {
 	void *address;
-	unsigned long versionLen;
+	ILUInt32 versionLen;
 
 	/* Find the metadata section in the IL image */
 	if(!ILImageGetSection(image, IL_SECTION_METADATA, &address, len))
 	{
-		return (unsigned long)0xFFFFFFFF;
+		return (ILUInt32)0xFFFFFFFF;
 	}
 
 	/* Is this really a metadata directory header? */
@@ -51,7 +51,7 @@ static unsigned long GetMetadata(ILImage *image, unsigned char **addr,
 		if(IL_READ_UINT32(*addr + 4) != 0x00010001)
 		{
 			/* Incorrect version */
-			return (unsigned long)0xFFFFFFFF;
+			return 0xFFFFFFFF;
 		}
 		versionLen = IL_READ_UINT32(*addr + 12);
 		if((versionLen % 4) != 0)
@@ -60,11 +60,11 @@ static unsigned long GetMetadata(ILImage *image, unsigned char **addr,
 		}
 		if(versionLen > (*len - 16))
 		{
-			return (unsigned long)0xFFFFFFFF;
+			return 0xFFFFFFFF;
 		}
 		if((*len - 16 - versionLen) < 4)
 		{
-			return (unsigned long)0xFFFFFFFF;
+			return 0xFFFFFFFF;
 		}
 		*headerLen = 16 + versionLen + 4;
 		return IL_READ_UINT16(*addr + 16 + versionLen + 2);
@@ -72,7 +72,7 @@ static unsigned long GetMetadata(ILImage *image, unsigned char **addr,
 	else
 	{
 		/* Invalid metadata header */
-		return (unsigned long)0xFFFFFFFF;
+		return 0xFFFFFFFF;
 	}
 }
 
@@ -81,9 +81,9 @@ static unsigned long GetMetadata(ILImage *image, unsigned char **addr,
  * Returns non-zero if a new entry has been found.
  */
 static int GetNextEntry(unsigned char **addrRef, unsigned long *lenLeftRef,
-						unsigned long *offsetRef, unsigned long *numEntries,
-						unsigned long totalLen, unsigned long *entryOffset,
-						unsigned long *entrySize, char **entryName)
+						unsigned long *offsetRef, ILUInt32 *numEntries,
+						unsigned long totalLen, ILUInt32 *entryOffset,
+						ILUInt32 *entrySize, char **entryName)
 {
 	unsigned char *addr = *addrRef;
 	unsigned long lenLeft = *lenLeftRef;
@@ -115,11 +115,11 @@ static int GetNextEntry(unsigned char **addrRef, unsigned long *lenLeftRef,
 	}
 	if(entryOffset)
 	{
-		*entryOffset = (unsigned long)(IL_READ_UINT32(addr));
+		*entryOffset = IL_READ_UINT32(addr);
 	}
 	if(entrySize)
 	{
-		*entrySize = (unsigned long)(IL_READ_UINT32(addr + 4));
+		*entrySize = IL_READ_UINT32(addr + 4);
 	}
 	if(entryName)
 	{
@@ -164,22 +164,22 @@ static int GetNextEntry(unsigned char **addrRef, unsigned long *lenLeftRef,
 }
 
 void *ILImageGetMetaEntry(ILImage *image, const char *name,
-						  unsigned long *size)
+						  ILUInt32 *size)
 {
 	unsigned char *address;
 	unsigned char *addr;
-	unsigned long len;
-	unsigned long headerLen;
+	ILUInt32 len;
+	ILUInt32 headerLen;
 	unsigned long lenLeft;
-	unsigned long numEntries;
+	ILUInt32 numEntries;
 	unsigned long offset;
-	unsigned long entryOffset;
-	unsigned long entrySize;
+	ILUInt32 entryOffset;
+	ILUInt32 entrySize;
 	char *entryName;
 
 	/* Find the metadata section and validate it */
 	numEntries = GetMetadata(image, &address, &len, &headerLen);
-	if(numEntries == (unsigned long)0xFFFFFFFF)
+	if(numEntries == 0xFFFFFFFF)
 	{
 		return 0;
 	}
@@ -203,13 +203,15 @@ void *ILImageGetMetaEntry(ILImage *image, const char *name,
 	return 0;
 }
 
-unsigned long ILImageNumMetaEntries(ILImage *image)
+ILUInt32 ILImageNumMetaEntries(ILImage *image)
 {
 	unsigned char *addr;
-	unsigned long len;
-	unsigned long headerLen;
-	unsigned long numEntries = GetMetadata(image, &addr, &len, &headerLen);
-	if(numEntries != (unsigned long)0xFFFFFFFF)
+	ILUInt32 len;
+	ILUInt32 headerLen;
+	ILUInt32 numEntries;
+
+	numEntries = GetMetadata(image, &addr, &len, &headerLen);
+	if(numEntries != 0xFFFFFFFF)
 	{
 		return numEntries;
 	}
@@ -221,22 +223,22 @@ unsigned long ILImageNumMetaEntries(ILImage *image)
 
 void *ILImageMetaEntryInfo(ILImage *image, unsigned long entry,
 						   char **name, unsigned long *virtAddr,
-						   unsigned long *size)
+						   ILUInt32 *size)
 {
 	unsigned char *address;
 	unsigned char *addr;
-	unsigned long len;
-	unsigned long headerLen;
+	ILUInt32 len;
+	ILUInt32 headerLen;
 	unsigned long lenLeft;
-	unsigned long numEntries;
+	ILUInt32 numEntries;
 	unsigned long offset;
-	unsigned long entryOffset;
-	unsigned long entrySize;
+	ILUInt32 entryOffset;
+	ILUInt32 entrySize;
 	char *entryName;
 
 	/* Find the metadata section and validate it */
 	numEntries = GetMetadata(image, &address, &len, &headerLen);
-	if(numEntries == (unsigned long)0xFFFFFFFF)
+	if(numEntries == 0xFFFFFFFF)
 	{
 		return 0;
 	}
@@ -276,15 +278,15 @@ void *ILImageMetaEntryInfo(ILImage *image, unsigned long entry,
 unsigned long ILImageMetaHeaderSize(ILImage *image)
 {
 	unsigned char *addr;
-	unsigned long len;
-	unsigned long headerLen;
+	ILUInt32 len;
+	ILUInt32 headerLen;
 	unsigned long lenLeft;
-	unsigned long numEntries;
+	ILUInt32 numEntries;
 	unsigned long offset;
 
 	/* Find the metadata section and validate it */
 	numEntries = GetMetadata(image, &addr, &len, &headerLen);
-	if(numEntries == (unsigned long)0xFFFFFFFF)
+	if(numEntries == 0xFFFFFFFF)
 	{
 		return 0;
 	}
@@ -305,15 +307,15 @@ unsigned long ILImageMetaHeaderSize(ILImage *image)
 const char *ILImageMetaRuntimeVersion(ILImage *image, int *length)
 {
 	unsigned char *addr;
-	unsigned long len;
-	unsigned long headerLen;
-	unsigned long numEntries;
-	unsigned long versionLen;
+	ILUInt32 len;
+	ILUInt32 headerLen;
+	ILUInt32 numEntries;
+	ILUInt32 versionLen;
 	const char *version;
 
 	/* Find the metadata section and validate it */
 	numEntries = GetMetadata(image, &addr, &len, &headerLen);
-	if(numEntries == (unsigned long)0xFFFFFFFF)
+	if(numEntries == 0xFFFFFFFF)
 	{
 		return 0;
 	}

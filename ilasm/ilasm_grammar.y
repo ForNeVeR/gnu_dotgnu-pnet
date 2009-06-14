@@ -3,7 +3,7 @@
  * ilasm_grammar.y - Input file for yacc that defines the syntax of
  *                   the ILASM language.
  *
- * Copyright (C) 2001, 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -144,10 +144,10 @@ static ILIntString SimpleNative(int type)
  */
 static ILIntString PackString(ILIntString str)
 {
-	unsigned char prefix[5];
+	unsigned char prefix[IL_META_COMPRESS_MAX_SIZE];
 	ILIntString prefixBlock;
 	prefixBlock.string = (char *)prefix;
-	prefixBlock.len = ILMetaCompressData(prefix, (unsigned long)(str.len));
+	prefixBlock.len = ILMetaCompressData(prefix, (ILUInt32)(str.len));
 	if(str.len != 0)
 	{
 		return ILInternAppendedString(prefixBlock, str);
@@ -163,8 +163,8 @@ static ILIntString PackString(ILIntString str)
  */
 static ILIntString PackLength(ILInt64 len)
 {
-	unsigned char prefix[5];
-	int prefixLen = ILMetaCompressData(prefix, (unsigned long)len);
+	unsigned char prefix[IL_META_COMPRESS_MAX_SIZE];
+	int prefixLen = ILMetaCompressData(prefix, (ILUInt32)len);
 	return ILInternString((char *)prefix, prefixLen);
 }
 
@@ -564,7 +564,7 @@ static void SetOriginator(const char *orig, int len, int fullOriginator)
 	{
 		if(!ILAssemblySetOriginator(ILAsmCurrAssemblyRef,
 									(const void *)orig,
-									(unsigned long)(long)len))
+									(ILUInt32)len))
 		{
 			ILAsmOutOfMemory();
 		}
@@ -579,7 +579,7 @@ static void SetOriginator(const char *orig, int len, int fullOriginator)
 	{
 		if(!ILAssemblySetOriginator(ILAsmAssembly,
 									(const void *)orig,
-									(unsigned long)(long)len))
+									(ILUInt32)len))
 		{
 			ILAsmOutOfMemory();
 		}

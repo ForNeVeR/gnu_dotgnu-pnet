@@ -1,7 +1,7 @@
 /*
  * sig_writer.c - Signature writing for IL image output.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ static int WriteClassToken(ILImage *image, SigBuffer *buffer, ILClass *info)
 /*
  * Write a 32-bit unsigned value into a signature.
  */
-static int WriteValue(SigBuffer *buffer, unsigned long value)
+static int WriteValue(SigBuffer *buffer, ILUInt32 value)
 {
 	if((buffer->posn + IL_META_COMPRESS_MAX_SIZE) > buffer->len)
 	{
@@ -146,7 +146,7 @@ static int WriteValue(SigBuffer *buffer, unsigned long value)
 /*
  * Write a 32-bit signed value into a signature.
  */
-static int WriteIntValue(SigBuffer *buffer, long value)
+static int WriteIntValue(SigBuffer *buffer, ILInt32 value)
 {
 	if((buffer->posn + IL_META_COMPRESS_MAX_SIZE) > buffer->len)
 	{
@@ -360,9 +360,9 @@ static int WriteType(ILImage *image, SigBuffer *buffer, ILType *type, int method
 			case IL_TYPE_COMPLEX_ARRAY_CONTINUE:
 			{
 				/* Other types of arrays */
-				unsigned long rank;
-				unsigned long sizes;
-				unsigned long num;
+				ILUInt32 rank;
+				ILUInt32 sizes;
+				ILUInt32 num;
 				int needSizes;
 				ILType *elemType;
 
@@ -559,7 +559,7 @@ static int WriteType(ILImage *image, SigBuffer *buffer, ILType *type, int method
 				if((ILType_CallConv(type) & IL_META_CALLCONV_GENERIC) != 0)
 				{
 					if(!WriteValue
-						(buffer, (unsigned long)(ILType_NumGen(type))))
+						(buffer, (ILUInt32)(ILType_NumGen(type))))
 					{
 						return 0;
 					}
@@ -569,14 +569,14 @@ static int WriteType(ILImage *image, SigBuffer *buffer, ILType *type, int method
 				if((type->kind__ & IL_TYPE_COMPLEX_METHOD_SENTINEL) != 0)
 				{
 					/* Subtract one from the count if a sentinel is present */
-					if(!WriteValue(buffer, ((unsigned long)(type->num__)) - 1))
+					if(!WriteValue(buffer, ((ILUInt32)(type->num__)) - 1))
 					{
 						return 0;
 					}
 				}
 				else
 				{
-					if(!WriteValue(buffer, ((unsigned long)(type->num__))))
+					if(!WriteValue(buffer, ((ILUInt32)(type->num__))))
 					{
 						return 0;
 					}

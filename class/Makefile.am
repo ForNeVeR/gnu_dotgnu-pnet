@@ -16,6 +16,7 @@ SUBDIRS = Custommarshalers \
 		  Mono.Data.SybaseClient \
 		  Mono.Data.TdsClient \
 		  System.Data.OracleClient \
+		  System.XML \
 		  System.Web \
 		  System.Web.Services\
 		  System.Runtime.Remoting \

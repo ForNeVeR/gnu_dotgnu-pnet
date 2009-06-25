@@ -1,3 +1,15 @@
+2009-06-25  Radek Polak  <psonek2@seznam.cz>
+
+	*  class/System.XML, class/System.XML/.cvsignore,
+	class/System.XML/Consts.cs, class/System.XML/Locale.cs,
+	class/System.XML/Makefile.am, class/System.XML/MonoTODOAttribute.cs,
+	class/System.XML/README, class/System.XML/System.XmlMono.build: New files
+	for building System.XML.
+
+	* NEWS, README: Info about building System.XML.
+	
+	* class/Makefile.am: Added System.XML to build.
+
 2007-03-04  Klaus Treichel  <ktreichel@web.de>
 
 	* NEWS, configure.in: update version for the "0.8.0" release.

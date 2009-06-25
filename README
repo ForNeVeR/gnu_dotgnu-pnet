@@ -30,7 +30,9 @@ Not all Mono libraries are built.  In particular, the Portable.NET
 counterparts to "corlib", "System", and "System.Xml" are used instead
 of the Mono versions.  Some other libraries may not be built yet
 because of missing features or bugs in Portable.NET or pnetlib, which
-we are working on.  Contributions are welcome.
+we are working on.  Contributions are welcome. It is possible to build
+and use "System.Xml" from mono. See "class/System.XML/README" for more
+info.
 
 Bug reports, contributions, offers of help, etc, should be addressed
 to the Portable.NET developers mailing list, "pnet-developers@dotgnu.org".

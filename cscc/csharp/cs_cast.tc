@@ -25,6 +25,14 @@
  */
 const char *CSTypeToName(ILType *type);
 
+#if IL_VERSION_MAJOR > 1
+/*
+ * Cast a method group to a delegate type.
+ */
+int CSCastMethod(ILGenInfo *info, ILNode *node, ILNode **parent,
+				 void *method, ILType *toType, int reportError);
+#endif /* IL_VERSION_MAJOR > 1 */
+
 %}
 
 /*
@@ -42,6 +50,18 @@ ILNode_SemAnalysis(ILNode_UserCast)
 	value = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
 
 	/* Validate the value */
+#if IL_VERSION_MAJOR > 1
+	if(CSSemIsMethodGroup(value))
+	{
+		if(CSSemIsType(type))
+		{
+			CSCastMethod(info, node->expr2, parent, CSSemGetGroup(value), CSSemGetType(type), 1);
+			CSSemSetRValue(value, CSSemGetType(type));
+			return value;
+		}
+	}
+	else
+#endif /* IL_VERSION_MAJOR > 1 */
 	if(!CSSemIsValue(value))
 	{
 		CCErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
@@ -388,6 +408,100 @@ const char *CSTypeToName(ILType *type)
 	}
 	return "invalid type";
 }
+
+#if IL_VERSION_MAJOR > 1
+int CSCastMethod(ILGenInfo *info, ILNode *node, ILNode **parent,
+				 void *method, ILType *toType, int reportError)
+{
+	unsigned long itemNum;
+	ILProgramItem *itemInfo;
+	ILMethod *firstMatch;
+
+	if(!ILTypeIsDelegate(toType))
+	{
+		if(reportError)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			"the type casted to `%s' is no delegate", CSTypeToName(toType));
+		}
+		return 0;
+	}
+
+	/* Find the set of candidate methods */
+	itemNum = 0;
+	firstMatch = 0;
+	while((itemInfo = CSGetGroupMember(method, itemNum)) != 0)
+	{
+		if(ILTypeDelegateSignatureMatch(toType, itemInfo))
+		{
+			if(firstMatch)
+			{
+				/* We have two (or possibly more) matches for the delegate */
+				if(reportError)
+				{
+						CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+	  					  "delegate expression supplies multiple candidates for `%s'",
+						  CSTypeToName(toType));
+				}
+				return 0;
+			}
+			firstMatch = (ILMethod *)itemInfo;
+		}
+		++itemNum;
+	}
+
+	/* If there was no candidates found then bail out */
+	if(!firstMatch)
+	{
+		/* We weren't able to find a match for the delegate */
+		if(reportError)
+		{
+			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+  				  "delegate expression is not compatible with `%s'",
+				  CSTypeToName(toType));
+		}
+		return 0;
+	}
+
+	/* Build the DelegateCreationExpression node */
+	if(ILMethod_IsStatic(firstMatch))
+	{
+		*parent = ILNode_DelegateCreationExpression_create
+			(ILType_ToClass(toType), 0, firstMatch);
+	}
+	else
+	{
+		if(yyisa(node, ILNode_Argument))
+		{
+			ILNode *thisExpr;
+
+			thisExpr = ((ILNode_Argument*)(node))->expression;
+			if(yyisa(thisExpr, ILNode_This) ||
+		  	  (yyisa(thisExpr, ILNode_MarkType) &&
+			   yyisa(((ILNode_MarkType *)(thisExpr))->expr, ILNode_This)))
+			{
+				ILNode_MethodDeclaration *caller;
+
+				caller = (ILNode_MethodDeclaration *)(info->currentMethod);
+				if(!caller || 
+					(caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+				{
+					/* Attempt to call an instance method using "this"
+					   from within a static method */
+					CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+						  "cannot access instance members in static methods");
+				}
+			}
+		}
+		*parent = ILNode_DelegateCreationExpression_create
+			(ILType_ToClass(toType), node, firstMatch);
+	}
+	yysetfilename(*parent, yygetfilename(node));
+	yysetlinenum(*parent, yygetlinenum(node));
+
+	return 1;
+}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 %}
 

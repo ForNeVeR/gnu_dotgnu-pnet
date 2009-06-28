@@ -98,6 +98,7 @@ typedef struct _tagILEvalValue ILEvalValue;
 	ILParamMod_out,
 	ILParamMod_params,
 	ILParamMod_arglist,
+	ILParamMod_methodgroup
 }
 
 /*

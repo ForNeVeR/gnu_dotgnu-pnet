@@ -1,3 +1,17 @@
+2009-06-28  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_nodes.tc (ILParameterModifier): Add ILParamMod_methodgroup.
+
+	* cscc/csharp/cs_cast.tc (CSCastMethod): Add function to cast a function
+	to a delegate.
+	(ILNode_SemAnalysis(ILNode_UserCast)): Add support for casting a function
+	to a delegate.
+
+	* cscc/csharp/cs_invoke.tc (CSEvalArguments, CSItemIsCandidate): Handle
+	function arguments.
+
+	* cscc/csharp/cs_oper.tc (AssignSem): Handle function assignments.
+
 2009-06-13  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_image.h (ILImageGetSectionSize, ILImageNumMetaEntries):

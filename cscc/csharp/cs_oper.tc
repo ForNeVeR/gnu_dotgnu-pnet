@@ -1049,7 +1049,7 @@ ILNode_SemAnalysis(ILNode_Assign)
 	/* Perform semantic analysis and coercion on the rvalue */
 	if(!CSSemExpectValue(node->expr2, info, &(node->expr2), &value2) ||
 	   !ILCanCoerceNode(info, node->expr2, CSSemGetType(value2),
-	   					CSSemGetType(value1),1))
+						CSSemGetType(value1),1))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 		  "incompatible types in assignment: no conversion from `%s' to `%s'",
@@ -1219,7 +1219,18 @@ static CSSemValue AssignSem(ILGenInfo *info,
 		return value1;
 	}
 
-	/* The second argument must be a value */
+#if IL_VERSION_MAJOR > 1
+	if(CSSemIsMethodGroup(value2))
+	{
+		if(!CSCastMethod(info, node->expr2, &(node->expr2),
+						 CSSemGetGroup(value2), CSSemGetType(value1), 1))
+		{
+			goto error;
+		}
+		CSSemSetRValue(value2, CSSemGetType(value1));
+	}
+	else
+#endif /* IL_VERSION_MAJOR > 1 */
 	if(!CSSemIsValue(value2))
 	{
 		goto error;

@@ -1231,17 +1231,28 @@ int CSEvalArguments(ILGenInfo *info, ILNode *argList,
 		/* Populate the argument array element */
 		if(!yyisa(tempList, ILNode_Argument) ||
 		   !yyisa(((ILNode_Argument *)tempList)->expression,
-		   		  ILNode_VarArgExpand))
+				  ILNode_VarArgExpand))
 		{
 			/* Ordinary argument */
 			value = ILNode_SemAnalysis(tempList, info, tempParent);
 			argArray[argNum].node = *tempParent;
 			argArray[argNum].parent = tempParent;
-			argArray[argNum].modifier = GetParamModForArg(tempList);
 			if(CSSemIsValue(value))
 			{
+				argArray[argNum].modifier = GetParamModForArg(tempList);
 				argArray[argNum].type = CSSemGetType(value);
 			}
+#if IL_VERSION_MAJOR > 1
+			else if(CSSemIsMethodGroup(value))
+			{
+				/*
+				 * This is an ugly hack to get a method group to the
+				 * eval value. This should be fixed later.
+				 */
+				argArray[argNum].modifier = ILParamMod_methodgroup;
+				argArray[argNum].type = (ILType *)CSSemGetGroup(value);
+			}
+#endif /* IL_VERSION_MAJOR > 1 */
 			else
 			{
 				argArray[argNum].type = ILType_Void;
@@ -1549,8 +1560,24 @@ int CSItemIsCandidate(ILGenInfo *info, ILProgramItem *item,
 		}
 		else if(paramMod != args[argNum].modifier)
 		{
-			/* Incorrect modifiers */
-			return 0;
+#if IL_VERSION_MAJOR > 1
+			if((args[argNum].modifier == ILParamMod_methodgroup) &&
+			   (paramMod == ILParamMod_empty))
+			{
+				/* Check if the method should be casted to a delegate */
+				if(!CSCastMethod(info, args[argNum].node, args[argNum].parent,
+								 (void *)(args[argNum].type), paramType, 0))
+				{
+					return 0;
+				}
+				++paramNum;
+			}
+			else
+#endif /* IL_VERSION_MAJOR > 1 */
+			{
+				/* Incorrect modifiers */
+				return 0;
+			}
 		}
 		else if(paramMod == ILParamMod_empty)
 		{

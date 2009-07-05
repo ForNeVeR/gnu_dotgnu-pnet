@@ -13,7 +13,7 @@
 .class private auto interface abstract ansi 'J' implements 'I'
 {
 } // class J
-.class private auto interface abstract ansi 'K' implements 'J', 'I'
+.class private auto interface abstract ansi 'K' implements 'I', 'J'
 {
 } // class K
 .class private auto interface abstract ansi 'L'

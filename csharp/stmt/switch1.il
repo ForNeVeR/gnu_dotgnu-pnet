@@ -25,41 +25,30 @@
 {
 	.locals init	(int32)
 	ldarg.1
-	dup
-	ldc.i4.0
-	beq	?L1
-	dup
-	ldc.i4.1
-	beq	?L2
-	dup
-	ldc.i4.2
-	beq	?L3
-	dup
-	ldc.i4.3
-	beq	?L4
+	switch (
+		?L1,
+		?L2,
+		?L3,
+		?L4
+	)
 	br	?L5
 ?L1:
-	pop
 	ldc.i4.0
 	stloc.0
 	br	?L6
 ?L2:
-	pop
 	ldc.i4.1
 	stloc.0
 	br	?L6
 ?L3:
-	pop
 	ldc.i4.2
 	stloc.0
 	br	?L6
 ?L4:
-	pop
 	ldc.i4.3
 	stloc.0
 	br	?L6
 ?L5:
-	pop
 ?L6:
 	ldarg.1
 	switch (
@@ -567,41 +556,30 @@
 {
 	.locals init	(int32)
 	ldarg.1
-	dup
-	ldc.i4.0
-	beq	?L82
-	dup
-	ldc.i4.1
-	beq	?L83
-	dup
-	ldc.i4.2
-	beq	?L84
-	dup
-	ldc.i4.3
-	beq	?L85
+	switch (
+		?L82,
+		?L83,
+		?L84,
+		?L85
+	)
 	br	?L86
 ?L82:
-	pop
 	ldc.i4.0
 	stloc.0
 	br	?L87
 ?L83:
-	pop
 	ldc.i4.1
 	stloc.0
 	br	?L87
 ?L84:
-	pop
 	ldc.i4.2
 	stloc.0
 	br	?L87
 ?L85:
-	pop
 	ldc.i4.3
 	stloc.0
 	br	?L87
 ?L86:
-	pop
 ?L87:
 	ldarg.1
 	switch (
@@ -650,7 +628,7 @@
 ?L96:
 ?L97:
 	ret
-	.maxstack 3
+	.maxstack 1
 } // method m4
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {

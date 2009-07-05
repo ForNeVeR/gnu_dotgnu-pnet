@@ -20,7 +20,7 @@
 .class public auto interface abstract ansi 'B' implements 'A'
 {
 } // class B
-.class public auto interface abstract ansi 'C' implements 'A', 'B'
+.class public auto interface abstract ansi 'C' implements 'B', 'A'
 {
 } // class C
 .class public auto ansi 'Test' extends ['.library']'System'.'Object'

@@ -24,41 +24,29 @@
 .method private hidebysig instance void 'm1'(int32 'x') cil managed java 
 {
 	iload_1
-	dup
-	iconst_0
-	if_icmpeq	?L1
-	dup
-	iconst_1
-	if_icmpeq	?L2
-	dup
-	iconst_2
-	if_icmpeq	?L3
-	dup
-	iconst_3
-	if_icmpeq	?L4
-	goto	?L5
-?L1:
-	pop
-	iconst_0
-	istore_2
-	goto	?L6
+	tableswitch ?L1 ( 0 :
+		?L2,
+		?L3,
+		?L4,
+		?L5
+	)
 ?L2:
-	pop
-	iconst_1
+	iconst_0
 	istore_2
 	goto	?L6
 ?L3:
-	pop
-	iconst_2
+	iconst_1
 	istore_2
 	goto	?L6
 ?L4:
-	pop
-	iconst_3
+	iconst_2
 	istore_2
 	goto	?L6
 ?L5:
-	pop
+	iconst_3
+	istore_2
+	goto	?L6
+?L1:
 ?L6:
 	iload_1
 	tableswitch ?L7 ( 0 :
@@ -237,7 +225,7 @@
 ?L44:
 	return
 	.locals 3
-	.maxstack 3
+	.maxstack 1
 } // method m1
 .method private hidebysig instance void 'm2'(int64 'x') cil managed java 
 {
@@ -518,41 +506,29 @@
 .method private hidebysig instance void 'm4'(valuetype 'Color' 'x') cil managed java 
 {
 	iload_1
-	dup
-	iconst_0
-	if_icmpeq	?L79
-	dup
-	iconst_1
-	if_icmpeq	?L80
-	dup
-	iconst_2
-	if_icmpeq	?L81
-	dup
-	iconst_3
-	if_icmpeq	?L82
-	goto	?L83
-?L79:
-	pop
-	iconst_0
-	istore_2
-	goto	?L84
+	tableswitch ?L79 ( 0 :
+		?L80,
+		?L81,
+		?L82,
+		?L83
+	)
 ?L80:
-	pop
-	iconst_1
+	iconst_0
 	istore_2
 	goto	?L84
 ?L81:
-	pop
-	iconst_2
+	iconst_1
 	istore_2
 	goto	?L84
 ?L82:
-	pop
-	iconst_3
+	iconst_2
 	istore_2
 	goto	?L84
 ?L83:
-	pop
+	iconst_3
+	istore_2
+	goto	?L84
+?L79:
 ?L84:
 	iload_1
 	tableswitch ?L85 ( 0 :
@@ -601,7 +577,7 @@
 ?L94:
 	return
 	.locals 3
-	.maxstack 3
+	.maxstack 1
 } // method m4
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed java 
 {

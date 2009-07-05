@@ -1,3 +1,15 @@
+2009-07-05  Klaus Treichel  <ktreichel@web.de>
+
+	* .gitignore, tools/.gitignore: Added
+
+	* csharp/class/interface1.il, csharp/class/interface1.jl,
+	csharp/class/interface6.il, csharp/class/interface6.jl,
+	csharp/expr/cast6.il, csharp/expr/cast6.jl: Reflect change of ordering
+	implemented interfaces the same as in original source.
+
+	* csharp/stmt/switch1.il, csharp/stmt/switch1.jl: Reflect change in
+	switch statement code generation.
+
 2009-01-06  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/expr/pointer3.cs, csharp/expr/pointer3.err,

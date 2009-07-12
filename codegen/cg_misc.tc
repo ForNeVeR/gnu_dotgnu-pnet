@@ -436,6 +436,16 @@ ILNode_GenDiscard(ILNode_ArgList)
 }
 
 /*
+ * Generate discard code for an "as is" expression.
+ */
+ILNode_GenDiscard(ILNode_AsIs),
+ILNode_GenDiscard(ILNode_ToConst)
+{
+	/* Evaluate the expression for its side effects only */
+	return ILNode_GenDiscard(node->expr, info);
+}
+
+/*
  * Generate discard code for a vararg list expression.
  */
 ILNode_GenDiscard(ILNode_VarArgList)

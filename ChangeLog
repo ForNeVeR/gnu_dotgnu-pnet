@@ -1,5 +1,8 @@
 2009-07-12  Klaus Treichel  <ktreichel@web.de>
 
+	* codegen/cg_misg.tc: Add operations ILNode_GenDiscard for ILNode_AsIs
+	and ILNode_ToConst.
+
 	* cscc/common/cc_preproc.c (RefillLineBuffer): Ignore lines with the
 	#pragma directive in builds with a version > 1.
 

@@ -3,6 +3,9 @@
 	* codegen/cg_misg.tc: Add operations ILNode_GenDiscard for ILNode_AsIs
 	and ILNode_ToConst.
 
+	* codegen/cg_scope.c (ILScopeDeclareType): Return the scope where a type
+	was declared the first time on attempt to redeclare the same type.
+
 	* cscc/common/cc_preproc.c (RefillLineBuffer): Ignore lines with the
 	#pragma directive in builds with a version > 1.
 

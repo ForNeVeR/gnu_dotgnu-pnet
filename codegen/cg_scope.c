@@ -634,6 +634,8 @@ int ILScopeDeclareType(ILScope *scope, ILNode *node, const char *name,
 		{
 			/* Declaration conflicts with a type the user already declared */
 			*origDefn = data->node;
+			/* return the type scope of the declared type too */
+			*resultScope = (ILScope *)(data->data);
 			return IL_SCOPE_ERROR_REDECLARED;
 		}
 		else if(data->rbnode.kind == IL_SCOPE_SUBSCOPE)

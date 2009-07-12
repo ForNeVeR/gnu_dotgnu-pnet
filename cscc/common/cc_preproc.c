@@ -1366,6 +1366,15 @@ static int RefillLineBuffer(CCPreProc *preproc)
 				   should also check that #region and #endregion lines
 				   are properly matched, but we don't do that yet */
 			}
+#if IL_VERSION_MAJOR > 1
+			else if(MATCH_DIRECTIVE(dirname, "pragma", 6))
+			{
+				/*
+				 * We don't handle #pragma at the moment so simply skip this
+				 * line.
+				 */
+			}
+#endif /* IL_VERSION_MAJOR > 1 */
 			else
 			{
 				/* Unknown directive */

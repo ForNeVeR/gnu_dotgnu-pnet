@@ -349,7 +349,7 @@ static void PreprocessClose(void)
  * Load a library from a specific path.  Returns zero on failure.
  * If "freePath" is non-zero, then free "path" afterwards.
  */
-static int LoadLibraryFromPath(const char *path, int freePath)
+static ILImage *LoadLibraryFromPath(const char *path, int freePath)
 {
 	ILImage *image;
 	int loadError;
@@ -364,20 +364,25 @@ static int LoadLibraryFromPath(const char *path, int freePath)
 			CCOutOfMemory();
 		}
 	}
+	else
+	{
+		image = 0;	
+	}
 
 	/* Clean up and exit */
 	if(freePath)
 	{
 		ILFree((char *)path);
 	}
-	return (loadError == 0);
+	return image;
 }
 
 /*
  * Load the contents of a library into the code generator's context.
  * Returns zero if the library load failed.
  */
-static int LoadLibrary(const char *name, int nostdlib_flag, int later_load)
+static ILImage *LoadLibrary(const char *name, int nostdlib_flag,
+							int later_load)
 {
 	int len;
 	int index;
@@ -442,7 +447,7 @@ static int LoadLibrary(const char *name, int nostdlib_flag, int later_load)
 			if(assemName[index] == '\0' && index == len)
 			{
 				/* The assembly is already loaded */
-				return 1;
+				return image;
 			}
 		}
 	}
@@ -456,23 +461,38 @@ static int LoadLibrary(const char *name, int nostdlib_flag, int later_load)
 		return LoadLibraryFromPath(path, 1);
 	}
 
-	/* If this is the C compiler, then ignore the missing library,
-	   since libraries are normally fixed up at link time */
-	if(CCPluginUsesPreproc == CC_PREPROC_C)
+	return 0;
+}
+
+/*
+ * Same as LoadLibrary except that the C compiler is handled and an
+ * int is returned.
+ */
+static int LoadLib(const char *name, int nostdlib_flag, int later_load)
+{
+	if(!LoadLibrary(name, nostdlib_flag, later_load))
 	{
-		if(later_load)
+		/* If this is the C compiler, then ignore the missing library,
+		   since libraries are normally fixed up at link time */
+		if(CCPluginUsesPreproc == CC_PREPROC_C)
 		{
-			return 0;
+			if(later_load)
+			{
+				return 0;
+			}
+			else
+			{
+				return 1;
+			}
 		}
 		else
 		{
-			return 1;
+			/* Could not locate the library */
+			fprintf(stderr, _("%s: No such library\n"), name);
 		}
+		return 0;
 	}
-
-	/* Could not locate the library */
-	fprintf(stderr, _("%s: No such library\n"), name);
-	return 0;
+	return 1;
 }
 
 /*
@@ -557,13 +577,19 @@ static int InitCodeGen(void)
 	/* Load the "mscorlib" library, to get the standard library */
 	if(!nostdlib_flag || (CCPluginForceStdlib && !useBuiltinLibrary))
 	{
+		ILImage *corlibImage;
+
 		char *name = CCStringListGetValue(extension_flags, num_extension_flags,
 										  "stdlib-name");
 		if(!name)
 		{
 			name = "mscorlib";
 		}
-		if(!LoadLibrary(name, 0, 0))
+		if((corlibImage = LoadLibrary(name, 0, 0)) != 0)
+		{
+			ILContextSetSystem(CCCodeGen.context, corlibImage);
+		}
+		else
 		{
 			return 1;
 		}
@@ -607,7 +633,7 @@ static int InitCodeGen(void)
 	/* Load all of the other libraries, in reverse order */
 	for(library = num_libraries - 1; library >= 0; --library)
 	{
-		if(!LoadLibrary(libraries[library], nostdlib_flag, 0))
+		if(!LoadLib(libraries[library], nostdlib_flag, 0))
 		{
 			return 1;
 		}
@@ -1456,7 +1482,7 @@ void CCPluginAddStandaloneAttrs(ILNode *node)
 
 int CCLoadLibrary(const char *name)
 {
-	return LoadLibrary(name, nostdlib_flag, 1);
+	return LoadLib(name, nostdlib_flag, 1);
 }
 
 /*

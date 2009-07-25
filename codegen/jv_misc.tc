@@ -28,6 +28,16 @@ JavaGenDiscard(ILNode_Comma)
 }
 
 /*
+ * Generate discard code for an "as is" expression.
+ */
+JavaGenDiscard(ILNode_AsIs),
+JavaGenDiscard(ILNode_ToConst)
+{
+	/* Evaluate the expression for its side effects only */
+	return JavaGenDiscard(node->expr, info);
+}
+
+/*
  * Generate discard code for an "overflow" expression.
  */
 JavaGenDiscard(ILNode_Overflow)

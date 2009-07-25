@@ -1,3 +1,13 @@
+2009-07-25  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/jv_misc.tc: Add operations JavaGenDiscard for  ILNode_AsIs
+	and ILNode_ToConst.
+
+	* cscc/common/cc_main.c (LoadLibrary, LoadLibraryFromPath): Return the
+	image or 0 on error instead of simply 0 or 1.
+	(LoadLib): Added wrapper for compatibility and error output.
+	(InitCodeGen): Set the system image in the context if it is loaded.
+
 2009-07-12  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_misg.tc: Add operations ILNode_GenDiscard for ILNode_AsIs

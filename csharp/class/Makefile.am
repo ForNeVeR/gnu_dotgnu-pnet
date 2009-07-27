@@ -53,6 +53,7 @@ TESTS = abstract1.cs \
 		property4.cs \
 		property5.cs \
 		property6.cs \
+		static1.cs \
 		type1.cs \
 		type2.cs
 

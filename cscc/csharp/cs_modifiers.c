@@ -27,6 +27,19 @@ extern	"C" {
 int CSNoHideBySig = 0;
 
 /*
+ * Define invalid modifiers
+ */
+#if IL_VERSION_MAJOR > 1
+#define INVALID_CLASS_MODIFIERS \
+	(CS_MODIFIER_READONLY | CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE | \
+	CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE)
+#else /* IL_VERSION_MAJOR == 1 */
+#define INVALID_CLASS_MODIFIERS \
+	(CS_MODIFIER_STATIC | CS_MODIFIER_READONLY | CS_MODIFIER_VIRTUAL | \
+	CS_MODIFIER_OVERRIDE | CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE)
+#endif /* IL_VERSION_MAJOR == 1 */
+
+/*
  * Report errors for each modifier in a mask.
  */
 static void ModifierError(char *filename, long linenum,
@@ -225,12 +238,6 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 		{
 			attrs = IL_META_TYPEDEF_NESTED_PRIVATE;
 		}
-
-		/* Process the "new" modifier */
-		if((modifiers & CS_MODIFIER_NEW) != 0)
-		{
-			attrs |= CS_SPECIALATTR_NEW;
-		}
 	}
 
 	/* Process "sealed", "abstract", and "unsafe" modifiers */
@@ -242,16 +249,10 @@ ILUInt32 CSModifiersToTypeAttrs(ILNode *node, ILUInt32 modifiers, int isNested)
 	{
 		attrs |= IL_META_TYPEDEF_ABSTRACT;
 	}
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
-	}
 
 	/* Report errors for any remaining modifiers */
 	BadModifiers(node,
-				 modifiers & (CS_MODIFIER_STATIC | CS_MODIFIER_READONLY |
-							  CS_MODIFIER_VIRTUAL | CS_MODIFIER_OVERRIDE |
-							  CS_MODIFIER_EXTERN | CS_MODIFIER_VOLATILE));
+				 modifiers & INVALID_CLASS_MODIFIERS);
 
 	/* We have the attributes we wanted now */
 	return attrs;
@@ -378,18 +379,6 @@ ILUInt32 CSModifiersToDelegateAttrs(ILNode *node, ILUInt32 modifiers,
 		{
 			attrs = IL_META_TYPEDEF_NESTED_PRIVATE;
 		}
-
-		/* Process the "new" modifier */
-		if((modifiers & CS_MODIFIER_NEW) != 0)
-		{
-			attrs |= CS_SPECIALATTR_NEW;
-		}
-	}
-
-	/* Process the "unsafe" modifier */
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 
 	/* Report errors for any remaining modifiers */
@@ -472,12 +461,6 @@ ILUInt32 CSModifiersToConstAttrs(ILNode *node, ILUInt32 modifiers)
 	/* Process the common attributes */
 	attrs = ValidateAccess(node, modifiers);
 
-	/* Process the "new" modifier */
-	if((modifiers & CS_MODIFIER_NEW) != 0)
-	{
-		attrs |= CS_SPECIALATTR_NEW;
-	}
-
 	/* Add the "literal" and "static" attributes */
 	attrs |= IL_META_FIELDDEF_LITERAL | IL_META_FIELDDEF_STATIC;
 
@@ -508,18 +491,6 @@ ILUInt32 CSModifiersToFieldAttrs(ILNode *node, ILUInt32 modifiers)
 	if((modifiers & CS_MODIFIER_READONLY) != 0)
 	{
 		attrs |= IL_META_FIELDDEF_INIT_ONLY;
-	}
-	if((modifiers & CS_MODIFIER_NEW) != 0)
-	{
-		attrs |= CS_SPECIALATTR_NEW;
-	}
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
-	}
-	if((modifiers & CS_MODIFIER_VOLATILE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_VOLATILE;
 	}
 
 	/* Report errors for the remaining modifiers */
@@ -576,11 +547,6 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers,
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "cannot use both `override' and `new'");
-			attrs |= CS_SPECIALATTR_OVERRIDE;
-		}
-		else
-		{
-			attrs |= CS_SPECIALATTR_OVERRIDE;
 		}
 		if((modifiers & CS_MODIFIER_VIRTUAL) != 0)
 		{
@@ -609,7 +575,7 @@ static ILUInt32 ValidateCalling(ILNode *node, ILUInt32 modifiers,
 	}
 	else if((modifiers & CS_MODIFIER_OVERRIDE) != 0)
 	{
-		attrs |= IL_META_METHODDEF_VIRTUAL | CS_SPECIALATTR_OVERRIDE;
+		attrs |= IL_META_METHODDEF_VIRTUAL;
 		if((modifiers & CS_MODIFIER_NEW) != 0)
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
@@ -661,17 +627,21 @@ ILUInt32 CSModifiersToMethodAttrs(ILNode *node, ILUInt32 modifiers)
 	attrs |= ValidateCalling(node, modifiers, attrs);
 
 	/* Process the other method modifiers */
-	if((modifiers & CS_MODIFIER_NEW) != 0)
+	if((modifiers & CS_MODIFIER_METHOD_SPECIAL_NAME) != 0)
 	{
-		attrs |= CS_SPECIALATTR_NEW;
+		attrs |= IL_META_METHODDEF_SPECIAL_NAME;
 	}
-	if((modifiers & CS_MODIFIER_EXTERN) != 0)
+	if((modifiers & CS_MODIFIER_METHOD_RT_SPECIAL_NAME) != 0)
 	{
-		attrs |= CS_SPECIALATTR_EXTERN;
+		attrs |= IL_META_METHODDEF_RT_SPECIAL_NAME;
 	}
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
+	if((modifiers & CS_MODIFIER_METHOD_COMPILER_CONTROLED) != 0)
 	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
+		attrs |= IL_META_METHODDEF_COMPILER_CONTROLLED;
+	}
+	if((modifiers & CS_MODIFIER_METHOD_HIDE_BY_SIG) != 0)
+	{
+		attrs |= IL_META_METHODDEF_HIDE_BY_SIG;
 	}
 
 	/* Report errors for the remaining modifiers */
@@ -690,16 +660,6 @@ ILUInt32 CSModifiersToEventAttrs(ILNode *node, ILUInt32 modifiers)
 
 	/* Process the calling convention attributes */
 	attrs |= ValidateCalling(node, modifiers, attrs);
-
-	/* Process the other property modifiers */
-	if((modifiers & CS_MODIFIER_NEW) != 0)
-	{
-		attrs |= CS_SPECIALATTR_NEW;
-	}
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
-	}
 
 	/* Events always need the "specialname" attribute */
 	attrs |= IL_META_METHODDEF_SPECIAL_NAME;
@@ -720,20 +680,6 @@ ILUInt32 CSModifiersToPropertyAttrs(ILNode *node, ILUInt32 modifiers)
 
 	/* Process the calling convention attributes */
 	attrs |= ValidateCalling(node, modifiers, attrs);
-
-	/* Process the other property modifiers */
-	if((modifiers & CS_MODIFIER_NEW) != 0)
-	{
-		attrs |= CS_SPECIALATTR_NEW;
-	}
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
-	}
-	if((modifiers & CS_MODIFIER_EXTERN) != 0)
-	{
-		attrs |= CS_SPECIALATTR_EXTERN;
-	}
 
 	/* Properties always need the "specialname" attribute */
 	attrs |= IL_META_METHODDEF_SPECIAL_NAME;
@@ -758,10 +704,7 @@ ILUInt32 CSModifiersToOperatorAttrs(ILNode *node, ILUInt32 modifiers)
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "operators must have `static' access");
 	}
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
-	}
+
 	BadModifiers(node,
 				 modifiers & ~(CS_MODIFIER_PUBLIC | CS_MODIFIER_STATIC |
 							   CS_MODIFIER_UNSAFE));
@@ -777,10 +720,7 @@ ILUInt32 CSModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers)
 	if((modifiers & CS_MODIFIER_STATIC) == 0)
 	{
 		attrs = ValidateAccess(node, modifiers);
-		if((modifiers & CS_MODIFIER_EXTERN) != 0)
-		{
-			attrs |= CS_SPECIALATTR_EXTERN;
-		}
+
 		BadModifiers(node,
 					 modifiers & ~(CS_MODIFIER_PUBLIC |
 								   CS_MODIFIER_PRIVATE |
@@ -794,12 +734,6 @@ ILUInt32 CSModifiersToConstructorAttrs(ILNode *node, ILUInt32 modifiers)
 		BadModifiers(node,
 					 modifiers & ~(CS_MODIFIER_STATIC | CS_MODIFIER_UNSAFE));
 		attrs = IL_META_METHODDEF_PRIVATE | IL_META_METHODDEF_STATIC;
-	}
-
-	/* Process the "unsafe" modifier */
-	if((modifiers & CS_MODIFIER_UNSAFE) != 0)
-	{
-		attrs |= CS_SPECIALATTR_UNSAFE;
 	}
 
 	/* Add the "hidebysig" and "*specialname" attributes always */
@@ -816,19 +750,10 @@ ILUInt32 CSModifiersToDestructorAttrs(ILNode *node, ILUInt32 modifiers)
 	ILUInt32 attrs=0;
 	
 	BadModifiers(node,
-					modifiers & ~(CS_MODIFIER_EXTERN |
-							      CS_MODIFIER_UNSAFE));
+				 modifiers & ~(CS_MODIFIER_EXTERN |
+							   CS_MODIFIER_UNSAFE));
 
-	/* Process the "unsafe" modifier */
-	if(modifiers == CS_MODIFIER_UNSAFE)
-	{
-		attrs = CS_SPECIALATTR_UNSAFE;
-	}
-	else if(modifiers == CS_MODIFIER_EXTERN)
-	{
-		attrs = CS_SPECIALATTR_EXTERN;
-	}
-	else if((modifiers & (CS_SPECIALATTR_EXTERN | CS_SPECIALATTR_EXTERN))!=0)
+	if((modifiers & (CS_MODIFIER_EXTERN | CS_MODIFIER_EXTERN)) != 0)
 	{
 		CCWarningOnLine(yygetfilename(node),yygetlinenum(node),
 							"'extern' and 'unsafe' modifiers used together");
@@ -837,9 +762,7 @@ ILUInt32 CSModifiersToDestructorAttrs(ILNode *node, ILUInt32 modifiers)
 	/* Add the "hidebysig" and "*specialname" attributes always */
 	attrs |= IL_META_METHODDEF_FAMILY |
 			 IL_META_METHODDEF_HIDE_BY_SIG |
-			 IL_META_METHODDEF_VIRTUAL |
-			 CS_SPECIALATTR_OVERRIDE |
-			 CS_SPECIALATTR_DESTRUCTOR;
+			 IL_META_METHODDEF_VIRTUAL;
 
 	/* Done */
 	return attrs;

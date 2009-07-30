@@ -82,19 +82,178 @@ static void CSListGatherStaticCtor(ILNode_List *node, ILNode_List *ctor)
  * the user specified static ctors after the ones from field decl
  */
 static void AppendStaticCtor(ILNode_List *collectedList, 
-							 ILNode_List *oldList)
+							 ILNode_List *oldList, int withSemGuard)
 {
-	ILNode_ListIter iter;
-	ILNode *curr;
-
-	if(!oldList)return;
+	if(!oldList)
+	{
+		return;
+	}
 
 	if (yyisa(oldList, ILNode_List))
 	{
-		ILNode_ListIter_Init(&iter,oldList);
+		ILNode_ListIter iter;
+		ILNode *curr;
+
+		ILNode_ListIter_Init(&iter, oldList);
 		while((curr = ILNode_ListIter_Next(&iter)))
 		{
-			ILNode_List_Add(collectedList,curr);
+			if(withSemGuard)
+			{
+				curr = ILNode_SemGuard_create(curr, CSSemValueDefault);
+			}
+			ILNode_List_Add(collectedList, curr);
+		}
+	}
+}
+
+/*
+ * Check for multiple explicit static constructors.
+ */
+static void CheckStaticCtor(ILNode *staticCtors, int hasStaticCtor)
+{
+	ILNode_ListIter iter;
+	ILNode *staticCtor;
+
+	ILNode_ListIter_Init(&iter, staticCtors);
+	if(!hasStaticCtor)
+	{
+		/* skip the first one */
+		if(!ILNode_ListIter_Next(&iter))
+		{
+			return;
+		}
+	}
+	while((staticCtor = ILNode_ListIter_Next(&iter)) != NULL)
+	{
+		CCErrorOnLine(yygetfilename(staticCtor),
+					  yygetlinenum(staticCtor),
+					  "Cannot have more than one static constructor");
+	}
+}
+
+/*
+ * Create the static constructor method.
+ */
+static ILNode *CreateStaticCtorMethod(ILGenInfo *info, ILClass *classInfo)
+{
+	ILMethod *methodInfo;
+	ILType *signature;
+	ILNode *ctorMethod;
+
+	ctorMethod = ILNode_MethodDeclaration_create(0,
+												 CS_MODIFIER_STATIC |
+												 CS_MODIFIER_METHOD_CONSTRUCTOR,
+												 0 /* void */,
+												 ILQualIdentSimple(ILInternString(".cctor", 6).string),
+												 0 /* no type formals */,
+												 0 /* no parameters */,
+												 0 /* no body */);
+	methodInfo = ILMethodCreate(classInfo, 0, ".cctor",
+								IL_META_METHODDEF_PRIVATE |
+								IL_META_METHODDEF_STATIC |
+								IL_META_METHODDEF_HIDE_BY_SIG |
+								IL_META_METHODDEF_SPECIAL_NAME |
+								IL_META_METHODDEF_RT_SPECIAL_NAME);
+	if(!methodInfo)
+	{
+		CCOutOfMemory();
+	}
+	signature = ILTypeCreateMethod(info->context, ILType_Void);
+	if(!signature)
+	{
+		CCOutOfMemory();
+	}
+	ILMemberSetSignature((ILMember *)methodInfo, signature);
+	((ILNode_MethodDeclaration *)(ctorMethod))->methodInfo = methodInfo;
+
+	return ctorMethod;
+}
+
+/*
+ * Handle static field declarations and constructors.
+ */
+static void HandleStaticCtor(ILGenInfo *info, ILNode_ClassDefn *node)
+{
+	ILNode *staticCtor;
+	ILNode_ClassDefn *ctorDefn;
+	ILNode *staticInitList;
+	ILNode *staticCtorsMethod;
+
+	/* First check if there is an explicit static constructor */
+	staticCtor = 0;
+	ctorDefn = 0;
+	staticCtorsMethod = 0;
+	if(node->staticCtors)
+	{
+		CheckStaticCtor(node->staticCtors, 0);
+		staticCtor = node->staticCtors;
+		ctorDefn = node;
+	}
+
+	/* Now collect the static fields with initialization */
+	staticInitList = ILNode_List_create();
+	ILNode_Declaration_GatherStaticCtor((ILNode_Declaration *)node->body,
+										(ILNode_List *)staticInitList);
+
+	/* append the explicit static constructors to the end of the 
+	   gathered list */
+	AppendStaticCtor((ILNode_List*)staticInitList,
+					  (ILNode_List*)staticCtor, 0);
+
+	if(ILNode_List_Length(staticInitList) == 0)
+	{
+		/*  There were no static constructors after all  */
+		node->staticCtors = 0;
+	}
+	else
+	{
+		/* Create a method for the static constructors and
+		   then perform semantic analysis on its contents */
+		ILNode *savedClass;
+		ILNode *savedNamespace;
+		ILNode *savedMethod;
+
+		if(staticCtorsMethod == 0)
+		{
+			staticCtorsMethod = CreateStaticCtorMethod(info, node->classInfo);
+		}
+		((ILNode_MethodDeclaration *)staticCtorsMethod)->body =
+									ILNode_NewScope_create(staticInitList);
+		node->staticCtorsMethod = staticCtorsMethod;
+
+		/*
+		 * Perform semantic analysis on the cctor in the context of the
+		 * explicit static constructor declaration.
+		 */
+		if(!ctorDefn)
+		{
+			ctorDefn = node;
+		}
+		savedClass = info->currentClass;
+		savedNamespace = info->currentNamespace;
+		savedMethod = info->currentMethod;
+		info->currentClass = (ILNode *)ctorDefn;
+		info->currentNamespace = ctorDefn->namespaceNode;
+		info->currentMethod = NULL;
+
+		ILNode_SemAnalysis(node->staticCtorsMethod, info,
+						   &(node->staticCtorsMethod));
+
+		info->currentClass = savedClass;
+		info->currentNamespace = savedNamespace;
+		info->currentMethod = savedMethod;
+
+		if(!staticCtor)
+		{
+			/* The class contains static initializers for fields, but no
+			   explicit static constructor.  Add the "beforefieldinit"
+			   flag to the set of modifiers */
+			if(node->classInfo)
+			{
+				ILClassSetAttrs(node->classInfo,
+								IL_META_TYPEDEF_BEFORE_FIELD_INIT,
+								IL_META_TYPEDEF_BEFORE_FIELD_INIT);
+			}
 		}
 	}
 }
@@ -113,10 +272,6 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 	ILNode *savedClass;
 	ILNode *savedNamespace;
 	ILNode *savedMethod;
-	ILNode *staticCtorList=NULL;
-	ILNode_ListIter iter;
-	ILNode *staticCtor;
-	int hadStaticCtorsBefore;
 	int target;
 
 	/* Determine if we have already visited this node */
@@ -190,8 +345,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 #endif /* IL_VERSION_MAJOR > 1 */
 
 	/* Perform semantic analysis on the node */
-	hadStaticCtorsBefore = (node->staticCtors != 0);
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeEnter(info, (ILNode *)node, "unsafe class declaration");
 	}
@@ -211,84 +365,13 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 							   &(node->initCtorsMethod));
 		}
 
-		/*  save the explicit static constructors before gathering  */
-		if (node->staticCtors)
-		{
-			if(ILNode_List_Length(node->staticCtors)>1)
-			{
-				ILNode_ListIter_Init(&iter, node->staticCtors);
-				ILNode_ListIter_Next(&iter); /* skip the first */
-				while((staticCtor=ILNode_ListIter_Next(&iter))!=NULL)
-				{
-					CCErrorOnLine(yygetfilename(staticCtor),
-									yygetlinenum(staticCtor), 
-									"Cannot have more than one static "
-									"constructor");
-				}
-			}
-			staticCtorList=node->staticCtors;
-		}
+		/* Create the static constructor */
+		HandleStaticCtor(info, node);
 
-		node->staticCtors=ILNode_List_create();
-
-		ILNode_Declaration_GatherStaticCtor
-								(   (ILNode_Declaration *)node->body, 
-									(ILNode_List *)node->staticCtors);
-
-		/* append the explicit static constructors to the end of the 
-		   gathered list */
-		AppendStaticCtor((ILNode_List*)node->staticCtors,
-						  (ILNode_List*) staticCtorList);
-
-		staticCtorList=NULL; /* do not use it again or segfault :-) */
-
-		if (ILNode_List_Length(node->staticCtors) == 0)
-		{
-			/*  There were no static constructors after all  */
-			node->staticCtors = 0;
-		}
-		else
-		{
-			/* Create a method for the static constructors and
-			   then perform semantic analysis on its contents */
-			ILMethod *methodInfo;
-			ILType *signature;
-			node->staticCtorsMethod =
-				ILNode_MethodDeclaration_create
-					(0, IL_META_METHODDEF_PRIVATE |
-						IL_META_METHODDEF_STATIC |
-						IL_META_METHODDEF_HIDE_BY_SIG |
-						IL_META_METHODDEF_SPECIAL_NAME |
-						IL_META_METHODDEF_RT_SPECIAL_NAME,
-					 0 /* void */,
-					 ILQualIdentSimple(ILInternString(".cctor", 6).string),
-					 0 /* no type formals */,
-					 0 /* no parameters */,
-					 ILNode_NewScope_create(node->staticCtors));
-			methodInfo = ILMethodCreate(node->classInfo, 0, ".cctor",
-										IL_META_METHODDEF_PRIVATE |
-										IL_META_METHODDEF_STATIC |
-										IL_META_METHODDEF_HIDE_BY_SIG |
-										IL_META_METHODDEF_SPECIAL_NAME |
-										IL_META_METHODDEF_RT_SPECIAL_NAME);
-			if(!methodInfo)
-			{
-				CCOutOfMemory();
-			}
-			signature = ILTypeCreateMethod(info->context, ILType_Void);
-			if(!signature)
-			{
-				CCOutOfMemory();
-			}
-			ILMemberSetSignature((ILMember *)methodInfo, signature);
-			((ILNode_MethodDeclaration *)(node->staticCtorsMethod))
-					->methodInfo = methodInfo;
-			ILNode_SemAnalysis(node->staticCtorsMethod, info,
-							   &(node->staticCtorsMethod));
-		}
 		info->currentClass = savedClass;
 		info->currentNamespace = savedNamespace;
 		info->currentMethod = savedMethod;
+
 	}
 	else
 	{
@@ -300,22 +383,9 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		ILGenImplementsAllInterfaces(info, (ILNode *)node, node->classInfo,
 									 InterfaceErrorFunc, InterfaceProxyFunc);
 	}
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeLeave(info);
-	}
-	if(!hadStaticCtorsBefore && node->staticCtors)
-	{
-		/* The class contains static initializers for fields, but no
-		   explicit static constructor.  Add the "beforefieldinit"
-		   flag to the set of modifiers */
-		node->modifiers |= IL_META_TYPEDEF_BEFORE_FIELD_INIT;
-		if(node->classInfo)
-		{
-			ILClassSetAttrs(node->classInfo,
-							IL_META_TYPEDEF_BEFORE_FIELD_INIT,
-							IL_META_TYPEDEF_BEFORE_FIELD_INIT);
-		}
 	}
 
 	/* We have finished processing this node */
@@ -630,6 +700,9 @@ void CSAddInitCtor(ILGenInfo *info, ILNode *stmt)
 	ILNode *bodyList;
 	if(defn && stmt)
 	{
+		CSSemValue value;
+		ILNode *savedMethod;
+
 		/* Construct the method declaration for ".init" if necessary.
 		   Note: the ".init" method is a pseudo method to collect up
 		   all non-static field initializers.  It isn't output into
@@ -642,8 +715,8 @@ void CSAddInitCtor(ILGenInfo *info, ILNode *stmt)
 			bodyList = ILNode_Compound_create();
 			defn->initCtorsMethod =
 				ILNode_MethodDeclaration_create
-					(0, IL_META_METHODDEF_PRIVATE |
-						IL_META_METHODDEF_HIDE_BY_SIG,
+					(0, CS_MODIFIER_PRIVATE |
+						CS_MODIFIER_METHOD_CONSTRUCTOR,
 					 0 /* void */,
 					 ILQualIdentSimple(ILInternString(".init", 5).string),
 					 0 /* no type formals */,
@@ -674,6 +747,20 @@ void CSAddInitCtor(ILGenInfo *info, ILNode *stmt)
 			bodyList = ((ILNode_NewScope *)bodyList)->stmt;
 		}
 
+		/* Perform semantic analysis on the statement */
+		/*
+		 * FIXME: Allow statements to be semanalyzed without having a
+		 * current method.
+		 * We are using ine .init method for now.
+		 */
+		savedMethod = info->currentMethod;
+		info->currentMethod = defn->initCtorsMethod;
+		value = ILNode_SemAnalysis(stmt, info, &stmt);
+		info->currentMethod =  savedMethod;
+
+		/* Guard the statement from further semantic analysis */
+		stmt = ILNode_SemGuard_create(stmt, value);
+
 		/* Wrap the statement in a scope and add it to the body */
 		ILNode_List_Add(bodyList, ILNode_NewScope_create(stmt));
 	}
@@ -690,9 +777,9 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 	ILNode *decl;
 
 	/* Enter an unsafe context for the field if necessary */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
-		if((node->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
+		if((node->modifiers & CS_MODIFIER_FIELD_CONST) != 0)
 		{
 			CCUnsafeEnter(info, (ILNode *)node, "unsafe constant declaration");
 		}
@@ -716,7 +803,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclaration)
 	}
 
 	/* Leave the unsafe context for the field */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeLeave(info);
 	}
@@ -776,9 +863,10 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	info->currentMethod=NULL;
 
 	/* Non-static fields are initialized differently */
-	if(node->owner && (node->owner->modifiers & IL_META_FIELDDEF_STATIC) == 0)
+	if(node->owner &&
+	   (node->owner->modifiers & (CS_MODIFIER_STATIC | CS_MODIFIER_FIELD_CONST)) == 0)
 	{
-		/* non-static field initializers are not allowed in structs */	 
+		/* non-static field initializers are not allowed in structs */
 		if(ILClassIsValueType(((ILNode_ClassDefn *)info->currentClass)->classInfo))
 		{
 			if (node->initializer != NULL)
@@ -799,7 +887,7 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 	}
 
 	/* If this is a constant, then evaluate the value */
-	if(node->owner && (node->owner->modifiers & IL_META_FIELDDEF_LITERAL) != 0)
+	if(node->owner && (node->owner->modifiers & CS_MODIFIER_FIELD_CONST) != 0)
 	{
 		/* Perform semantic analysis on the initializer value */
 		value = ILNode_SemAnalysis(node->initializer, info,
@@ -860,10 +948,6 @@ ILNode_SemAnalysis(ILNode_FieldDeclarator)
 		node->initializer = ILNode_SemGuard_create(node->initializer, value);
 	}
 
-	/* Add a statement to the static constructor to initialize the field */
-	/*	CSAddStaticCtor(info,  
-	                 ILNode_Assign_create(node->name, node->initializer)); */
-
 	initializer=ILNode_Assign_create(node->name, node->initializer);
 	yysetfilename(initializer,yygetfilename(node));
 	yysetlinenum(initializer,yygetlinenum(node));
@@ -887,7 +971,7 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 	CSSemValue value = CSSemValueDefault;
 
 	/* Enter an unsafe context for the event field if necessary */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeEnter(info, (ILNode *)node, "unsafe event declaration");
 	}
@@ -903,7 +987,7 @@ ILNode_SemAnalysis(ILNode_EventDeclaration)
 					   &(node->eventDeclarators));
 
 	/* Leave the unsafe context for the event field */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeLeave(info);
 	}
@@ -1004,7 +1088,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	info->currentMethod = (ILNode *)node;
 
 	/* Enter an unsafe context for the method if necessary */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeEnter(info, (ILNode *)node, "unsafe method declaration");
 	}
@@ -1031,7 +1115,7 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	}
 
 	/* Declare the parameters into the method's local variable scope */
-	if((node->modifiers & IL_META_METHODDEF_STATIC) == 0)
+	if((node->modifiers & CS_MODIFIER_STATIC) == 0)
 	{
 		/* Non-static parameters start at argument 1 */
 		argNum = 1;
@@ -1078,11 +1162,13 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	}
 
 	/* If the method is abstract, then the class must be too */
-	if((node->modifiers & IL_META_METHODDEF_ABSTRACT) != 0)
+	if((node->modifiers & CS_MODIFIER_ABSTRACT) != 0)
 	{
 		if(info->currentClass &&
-		   (((ILNode_ClassDefn *)(info->currentClass))->modifiers &
-		   			IL_META_TYPEDEF_ABSTRACT) == 0)
+		   ((((ILNode_ClassDefn *)(info->currentClass))->modifiers &
+					CS_MODIFIER_ABSTRACT) == 0) &&
+			((((ILNode_ClassDefn *)(info->currentClass))->modifiers &
+					CS_MODIFIER_TYPE_MASK) != CS_MODIFIER_TYPE_INTERFACE))
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 				  "`abstract' used on a member in a non-abstract class");
@@ -1105,12 +1191,12 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 				node->body = ILNode_Empty_create();
 			}
 		}
-		if((node->modifiers & IL_META_METHODDEF_ABSTRACT) != 0)
+		if((node->modifiers & CS_MODIFIER_ABSTRACT) != 0)
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`abstract' cannot be used with a method body");
 		}
-		if((node->modifiers & CS_SPECIALATTR_EXTERN) != 0)
+		if((node->modifiers & CS_MODIFIER_EXTERN) != 0)
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 						  "`extern' cannot be used with a method body");
@@ -1120,8 +1206,9 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 		ILNode_SemAnalysis(node->body, info, &(node->body));
 		info->currentScope = savedScope;
 	}
-	else if((node->modifiers & CS_SPECIALATTR_EXTERN) == 0 &&
-			(node->modifiers & IL_META_METHODDEF_ABSTRACT) == 0)
+	else if(((node->modifiers & (CS_MODIFIER_EXTERN | CS_MODIFIER_ABSTRACT)) == 0) &&
+			((node->modifiers & CS_MODIFIER_METHOD_TYPE_MASK) != CS_MODIFIER_METHOD_INTERFACE) &&
+			((node->modifiers & CS_MODIFIER_METHOD_TYPE_MASK) != CS_MODIFIER_METHOD_INTERFACE_ACCESSOR))
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "method with no body requires `abstract' or `extern'");
@@ -1147,18 +1234,18 @@ ILNode_SemAnalysis(ILNode_MethodDeclaration)
 	   within the "<Module>" class, then suppress code generation.
 	   Such methods are imported from a foreign C module, and
 	   should not be generated from the C# application */
-	if((node->modifiers & CS_SPECIALATTR_EXTERN) != 0)
+	if((node->modifiers & CS_MODIFIER_EXTERN) != 0)
 	{
 		if(info->currentClass &&
 		   !strcmp(((ILNode_ClassDefn *)(info->currentClass))->name,
-		   		   "<Module>"))
+				   "<Module>"))
 		{
 			node->suppressCodeGen = 1;
 		}
 	}
 
 	/* Leave the unsafe context for the method */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeLeave(info);
 	}
@@ -1193,7 +1280,7 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 				   node->attributes, IL_ATTRIBUTE_TARGET_PROPERTY);
 
 	/* Enter an unsafe context for the property if necessary */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeEnter(info, (ILNode *)node, "unsafe property declaration");
 	}
@@ -1215,7 +1302,7 @@ ILNode_SemAnalysis(ILNode_PropertyDeclaration)
 	}
 
 	/* Leave the unsafe context for the property */
-	if((node->modifiers & CS_SPECIALATTR_UNSAFE) != 0)
+	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeLeave(info);
 	}

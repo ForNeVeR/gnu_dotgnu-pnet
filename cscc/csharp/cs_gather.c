@@ -45,6 +45,15 @@ semantic analysis.
 */
 
 /*
+ * Clone the filename/linenum information from one node to another.
+ */
+static void CloneLine(ILNode *dest, ILNode *src)
+{
+	yysetfilename(dest, yygetfilename(src));
+	yysetlinenum(dest, yygetlinenum(src));
+}
+
+/*
  * Count the number of classes in a base class list.
  */
 static int CountBaseClasses(ILNode *node)
@@ -80,6 +89,79 @@ static ILClass *NodeToClass(ILNode *node)
 }
 
 #define NodeToProgramItem(node)	ILToProgramItem(NodeToClass(node))
+
+/*
+ * Get the member visibility for the modifiers.
+ */
+static ILUInt32 GetMemberVisibilityFromModifiers(ILUInt32 modifiers)
+{
+	switch(modifiers & CS_MODIFIER_ACCESS_MASK)
+	{
+		case CS_MODIFIER_PUBLIC:
+		{
+			return IL_META_METHODDEF_PUBLIC;
+		}
+		break;
+
+		case CS_MODIFIER_PRIVATE:
+		{
+			return IL_META_METHODDEF_PRIVATE;
+		}
+		break;
+
+		case CS_MODIFIER_PROTECTED:
+		{
+			return IL_META_METHODDEF_FAMILY;
+		}
+		break;
+
+		case CS_MODIFIER_INTERNAL:
+		{
+			return IL_META_METHODDEF_ASSEM;
+		}
+		break;
+
+		case (CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL):
+		{
+			return IL_META_METHODDEF_FAM_OR_ASSEM;
+		}
+		break;
+	}
+	return IL_META_METHODDEF_PRIVATE;
+}
+
+/*
+ * Adjust the name of a property to include a "get_" or "set_" prefix.
+ */
+static ILNode *PrefixName(ILNode *name, char *prefix)
+{
+	ILNode *node;
+	if(yykind(name) == yykindof(ILNode_Identifier))
+	{
+		/* Simple name: just add the prefix */
+		node = ILQualIdentSimple
+					(ILInternAppendedString
+						(ILInternString(prefix, strlen(prefix)),
+						 ILInternString(ILQualIdentName(name, 0), -1)).string);
+		CloneLine(node, name);
+		return node;
+	}
+	else if(yykind(name) == yykindof(ILNode_QualIdent))
+	{
+		/* Qualified name: add the prefix to the second component */
+		node = ILNode_QualIdent_create(((ILNode_QualIdent *)name)->left,
+					(ILInternAppendedString
+						(ILInternString(prefix, strlen(prefix)),
+						 ILInternString(((ILNode_QualIdent *)name)->name, -1)).string));
+		CloneLine(node, name);
+		return node;
+	}
+	else
+	{
+		/* Shouldn't happen */
+		return name;
+	}
+}
 
 /*
  * Get the full and basic names from a method/property/event name.
@@ -365,6 +447,31 @@ static void AddGenericParametersToClass(ILGenInfo *info, ILNode *classDefn)
 }
 #endif	/* IL_VERSION_MAJOR > 1 */
 
+static ILNode *GetImplicitParent(ILNode_ClassDefn *defn)
+{
+	switch(defn->modifiers & CS_MODIFIER_TYPE_MASK)
+	{
+		case CS_MODIFIER_TYPE_STRUCT:
+		{
+			return ILNode_GlobalNamespace_create(ILNode_SystemType_create("ValueType"));
+		}
+		break;
+
+		case CS_MODIFIER_TYPE_ENUM:
+		{
+			return ILNode_GlobalNamespace_create(ILNode_SystemType_create("Enum"));
+		}
+		break;
+
+		case CS_MODIFIER_TYPE_DELEGATE:
+		{
+			return ILNode_GlobalNamespace_create(ILNode_SystemType_create("MulticastDelegate"));
+		}
+		break;
+	}
+	return 0;
+}
+
 static void AddObjectParent(ILGenInfo *info,
 							ILNode_ClassDefn *classNode,
 							ILClass *classInfo,
@@ -419,26 +526,174 @@ static void AddObjectParent(ILGenInfo *info,
 	}
 }
 
+/*
+ * Collect the base classes for one class definition.
+ * The implement list must be large enough to hold all implemented
+ * interfaces of this class definition.
+ */
+static void CollectBaseClasses(ILGenInfo *info,
+							   ILNode_ClassDefn *defn,
+							   ILProgramItem **parent,
+							   ILProgramItem **implementList,
+							   ILUInt32 *numImplements,
+							   int baseClassAllowed)
+{
+	int errorReported;
+	ILUInt32 currentBase;
+	ILUInt32 currentImpl;
+	ILNode *savedNamespace;
+	ILNode *savedClass;
+	ILNode *baseNode;
+	ILNode *baseNodeList;
+
+	*parent = 0;
+	errorReported = 0;
+
+	/* Set the namespace and class to use for resolving type names */
+	savedNamespace = info->currentNamespace;
+	savedClass = info->currentClass;
+	info->currentNamespace = defn->namespaceNode;
+	info->currentClass = (ILNode *)defn;
+
+	currentImpl = 0;
+	baseNodeList = defn->baseClass;
+	for(currentBase = 0; currentBase < *numImplements; ++currentBase)
+	{
+		ILNode *baseTypeNode;
+		ILProgramItem *baseItem;
+
+		/* Get the name of the class to be inherited or implemented */
+		if(yykind(baseNodeList) == yykindof(ILNode_ArgList))
+		{
+			baseNode = ((ILNode_ArgList *)baseNodeList)->expr2;
+			baseNodeList = ((ILNode_ArgList *)baseNodeList)->expr1;
+		}
+		else
+		{
+			baseNode = baseNodeList;
+		}
+
+		baseItem = 0;
+		/* Look in the scope for the base class */
+		if(CSSemBaseType(baseNode, info, &baseNode,
+						 &baseTypeNode, &baseItem))
+		{
+			/* All class nodes should have a valid classinfo at
+			   this point. */
+			if(baseItem == 0)
+			{
+				baseItem = NodeToProgramItem(baseTypeNode);
+
+				if(baseItem == 0)
+				{
+					/* This is not a valid base class specification */
+					CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
+								  "invalid base type");
+				}
+			}
+
+			if(baseItem)
+			{
+				ILClass *underlying;
+
+				underlying = ILProgramItemToUnderlyingClass(baseItem);
+				if(underlying)
+				{
+					underlying = ILClassResolve(underlying);
+				}
+				if(!underlying)
+				{
+					CCOutOfMemory();
+				}
+				if(currentBase == 0)
+				{
+					/* Handle the first item in the base list */
+					if(!ILClass_IsInterface(underlying))
+					{
+						if(baseClassAllowed)
+						{
+							*parent = baseItem;
+						}
+						else
+						{
+							CCErrorOnLine(yygetfilename(baseNode),
+										  yygetlinenum(baseNode),
+										  "base class not allowed in this scope");
+
+						}
+					}
+					else
+					{
+						/* First base in the list is an interface */
+						implementList[currentImpl++] = baseItem;
+					}
+				}
+				else
+				{
+					if(!ILClass_IsInterface(underlying))
+					{
+						/*
+						 * Non interface class found later in the base list.
+						 */
+						if(!parent)
+						{
+							CCErrorOnLine(yygetfilename(defn),
+										  yygetlinenum(defn),
+							  "base class must be the first class in the base list");
+							if(baseClassAllowed)
+							{
+								*parent = baseItem;
+							}
+						}
+						else
+						{
+							if(!errorReported)
+							{
+								CCErrorOnLine(yygetfilename(defn),
+											  yygetlinenum(defn),
+								"more than one non-interface classes in the base class list");
+								errorReported = 1;
+							}
+						}
+					}
+					else
+					{
+						implementList[currentImpl++] = baseItem;
+					}
+				}
+			}
+		}
+		else
+		{
+			/* This is not a valid base class specification */
+			CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
+						  "invalid base type");
+		}
+	}
+
+	/* Restore the namespace, class */
+	info->currentNamespace = savedNamespace;
+	info->currentClass = savedClass;
+
+	*numImplements = currentImpl;
+}
+
 static void AddBaseClasses(ILGenInfo *info,
 						   ILNode_ClassDefn *classNode,
 						   ILNode *systemObjectName)
 {
-	ILNode *savedNamespace;
-	ILNode *savedClass;
 	ILClass *classInfo = classNode->classInfo;
-
-	/* Set the namespace and class to use for resolving type names */
-	savedNamespace = info->currentNamespace;
-	info->currentNamespace = classNode->namespaceNode;
-	savedClass = info->currentClass;
-	info->currentClass = (ILNode *)classNode;
 
 	if(classInfo && (classInfo != (ILClass *)1) &&
 					(classInfo != (ILClass *)2))
 	{
+		int baseClassAllowed;
 		ILProgramItem *parent = 0;
-		int numBases = CountBaseClasses(classNode->baseClass);
+		ILUInt32 numBases = CountBaseClasses(classNode->baseClass);
 
+		/* Only classes can have an explicit  base class */
+		baseClassAllowed = ((classNode->modifiers & CS_MODIFIER_TYPE_MASK) ==
+						   CS_MODIFIER_TYPE_CLASS);
 		if(numBases > 0)
 		{
 			if(!strcmp(ILClass_Name(classInfo), "<Module>"))
@@ -452,151 +707,49 @@ static void AddBaseClasses(ILGenInfo *info,
 		if(numBases > 0)
 		{
 			int base;
-			ILNode *baseNode;
-			ILNode *baseNodeList;
-			int errorReported = 0;
 			ILProgramItem *baseList[numBases];
 
 			ILMemZero(baseList, numBases * sizeof(ILClass *));
 
-			baseNodeList = classNode->baseClass;
-			for(base = 0; base < numBases; ++base)
+			numBases = CountBaseClasses(classNode->baseClass);
+			if(numBases > 0)
 			{
-				ILNode *baseTypeNode;
+				CollectBaseClasses(info, classNode, &parent, baseList,
+								   &numBases, baseClassAllowed);
+			}
 
-				/* Get the name of the class to be inherited or implemented */
-				if(yykind(baseNodeList) == yykindof(ILNode_ArgList))
+			if(parent)
+			{
+				if(ILClass_IsInterface(classInfo))
 				{
-					baseNode = ((ILNode_ArgList *)baseNodeList)->expr2;
-					baseNodeList = ((ILNode_ArgList *)baseNodeList)->expr1;
+					CCErrorOnLine(yygetfilename(classNode),
+								  yygetlinenum(classNode),
+					"interface inherits from non-interface class");
 				}
 				else
 				{
-					baseNode = baseNodeList;
-				}
+					ILClass *underlying;
 
-				/* Look in the scope for the base class */
-				if(CSSemBaseType(baseNode, info, &baseNode,
-								 &baseTypeNode, &(baseList[base])))
-				{
-					/* All class nodes should have a valid classinfo at
-					   this point. */
-					if(baseList[base] == 0)
+					underlying = ILProgramItemToUnderlyingClass(parent);
+					if(underlying)
 					{
-						baseList[base] = NodeToProgramItem(baseTypeNode);
-
-						if(baseList[base] == 0)
-						{
-							/* This is not a valid base class specification */
-							CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
-										  "invalid base type");
-						}
+						underlying = ILClassResolve(underlying);
 					}
-
-					if(baseList[base])
+					if(!underlying)
 					{
-						ILClass *underlying;
-
-						underlying = ILProgramItemToUnderlyingClass(baseList[base]);
-						if(underlying)
-						{
-							underlying = ILClassResolve(underlying);
-						}
-						if(!underlying)
-						{
-							CCOutOfMemory();
-						}
-						if(base == 0)
-						{
-							/* Handle the first item in the base list */
-							if(!ILClass_IsInterface(underlying))
-							{
-								if(ILClass_IsInterface(classInfo))
-								{
-									/*
-									 * Interfaces must not have non interface
-									 * classes in the base list.
-									 */
-									CCErrorOnLine(yygetfilename(classNode),
-												  yygetlinenum(classNode),
-									"interface inherits from non-interface class");
-									errorReported = 1;
-								}
-								else
-								{
-									if(ILClass_IsSealed(underlying))
-									{
-										CCErrorOnLine(yygetfilename(classNode),
-													  yygetlinenum(classNode),
-									  "inheriting from a sealed parent class");
-									}
-									else
-									{
-										ILClassSetParent(classInfo, baseList[base]);
-									}
-								}
-								parent = baseList[base];
-								baseList[base] = 0;
-							}
-							else
-							{
-								/* First base in the list is an interface */
-								if(!ILClass_IsInterface(classInfo))
-								{
-									/* We have to add the System.Object parent */
-									AddObjectParent(info, classNode,
-													classInfo,
-													systemObjectName);
-								}
-							}
-						}
-						else
-						{
-							if(!ILClass_IsInterface(underlying))
-							{
-								/*
-								 * Non interface class found later in the base list.
-								 */
-								if(ILClass_IsInterface(classInfo))
-								{
-									if(!errorReported)
-									{
-										CCErrorOnLine(yygetfilename(classNode),
-													  yygetlinenum(classNode),
-									  "interface inherits from non-interface classes");
-										errorReported = 1;
-									}
-								}
-								else
-								{
-									if(!parent)
-									{
-										CCErrorOnLine(yygetfilename(classNode),
-													  yygetlinenum(classNode),
-										  "base class must be the first class in the base list");
-										parent = baseList[base];
-									}
-									else
-									{
-										if(!errorReported)
-										{
-											CCErrorOnLine(yygetfilename(classNode),
-														  yygetlinenum(classNode),
-										  "class inherits from two or more non-interface classes");
-											errorReported = 1;
-										}
-									}
-								}
-								baseList[base] = 0;
-							}
-						}
+						CCOutOfMemory();
 					}
-				}
-				else
-				{
-					/* This is not a valid base class specification */
-					CCErrorOnLine(yygetfilename(baseNode), yygetlinenum(baseNode),
-								  "invalid base type");
+					if(ILClass_IsSealed(underlying))
+					{
+						CCErrorOnLine(yygetfilename(classNode),
+									  yygetlinenum(classNode),
+					  "inheriting from a sealed parent class");
+					}
+					else
+					{
+						/* Set the parent of the class */
+						ILClassSetParent(classInfo, parent);
+					}
 				}
 			}
 
@@ -612,14 +765,11 @@ static void AddBaseClasses(ILGenInfo *info,
 				}
 			}
 		}
-		else
+
+		if(!parent && baseClassAllowed)
 		{
-			if(!ILClass_IsInterface(classInfo) && 
-			   (strcmp(ILClass_Name(classInfo), "<Module>") != 0))
-			{
-				/* We have to add the System.Object parent */
-				AddObjectParent(info, classNode, classInfo, systemObjectName);
-			}
+			/* We have to add the System.Object parent */
+			AddObjectParent(info, classNode, classInfo, systemObjectName);
 		}
 	}
 	else
@@ -627,10 +777,6 @@ static void AddBaseClasses(ILGenInfo *info,
 		CCErrorOnLine(yygetfilename(classNode), yygetlinenum(classNode),
 					  "class not completely layed out");
 	}
-
-	/* Restore the namespace, class, and type formals */
-	info->currentNamespace = savedNamespace;
-	info->currentClass = savedClass;
 
 	/* Now process the nested classes */
 	if(classNode->nestedClasses)
@@ -651,6 +797,216 @@ static void AddBaseClasses(ILGenInfo *info,
 	}
 }
 
+static ILUInt32 GetTypeAttrs(ILGenInfo *info, ILNode_ClassDefn *defn)
+{
+	ILUInt32 attrs;
+
+	/* Validate the modifiers */
+	if((defn->modifiers & CS_MODIFIER_TYPE_MASK) == CS_MODIFIER_TYPE_DELEGATE)
+	{
+		attrs = CSModifiersToDelegateAttrs((ILNode *)defn,
+										   defn->modifiers & CS_MODIFIER_MASK,
+										   (defn->nestedParent != 0));
+
+		/*
+		 * Delegates should not be serializable by default but cscc behaved
+		 * like this.
+		 */
+		attrs |= IL_META_TYPEDEF_SERIALIZABLE;
+		attrs |= IL_META_TYPEDEF_SEALED;
+	}
+	else
+	{
+		attrs = CSModifiersToTypeAttrs((ILNode *)defn,
+									   defn->modifiers & CS_MODIFIER_MASK,
+									   (defn->nestedParent != 0));
+
+		/*
+		 * Add type specific flags to the attributes.
+		 */
+		switch(defn->modifiers & CS_MODIFIER_TYPE_MASK)
+		{
+			case CS_MODIFIER_TYPE_STRUCT:
+			{
+				/*
+				 * NOTE: Default sequential layout is not in the ECMA specs.
+				 * But it's the way we and MS layout structs by default.
+				 */
+				attrs |= IL_META_TYPEDEF_LAYOUT_SEQUENTIAL;
+
+				/*
+				 * Structs should not be serializable by default but cscc behaved
+				 * like this.
+				 */
+				attrs |= IL_META_TYPEDEF_SERIALIZABLE;
+
+				attrs |= IL_META_TYPEDEF_SEALED;
+			}
+			break;
+
+			case CS_MODIFIER_TYPE_INTERFACE:
+			{
+				attrs |= (IL_META_TYPEDEF_INTERFACE | IL_META_TYPEDEF_ABSTRACT);
+			}
+			break;
+
+			case CS_MODIFIER_TYPE_ENUM:
+			{
+				/*
+				 * Enums should not be serializable by default but cscc behaved
+				 * like this.
+				 */
+				attrs |= IL_META_TYPEDEF_SERIALIZABLE;
+				attrs |= IL_META_TYPEDEF_SEALED;
+			}
+			break;
+		}
+
+#if IL_VERSION_MAJOR > 1
+		/* Process the "static" modifier */
+		if((defn->modifiers & CS_MODIFIER_STATIC) != 0)
+		{
+			if((defn->modifiers & CS_MODIFIER_TYPE_MASK) ==  CS_MODIFIER_TYPE_CLASS)
+			{
+				if(defn->modifiers & CS_MODIFIER_SEALED)
+				{
+					CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+								  "static classes must not be sealed");
+				}
+				if(defn->modifiers & CS_MODIFIER_ABSTRACT)
+				{
+					CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+								  "static classes must not be abstract");
+				}
+				/* Static classes are sealed and abstract */
+				attrs |= (IL_META_TYPEDEF_SEALED | IL_META_TYPEDEF_ABSTRACT);
+			}
+			else
+			{
+				CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+					  "`static' modifier is not permitted on non classes");
+			}
+		}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+	}
+
+	return attrs;
+}
+
+/*
+ * Forward declaration
+ */
+static void CreateType(ILGenInfo *info, ILScope *globalScope,
+					   ILNode_List *list, ILNode *systemObjectName,
+					   ILNode *type);
+
+/*
+ * Create the nested types of a type
+ */
+static void CreateNestedTypes(ILGenInfo *info, ILScope *globalScope,
+							  ILNode_List *list, ILNode *systemObjectName,
+							  ILNode_ClassDefn *nestedParent)
+{
+	ILNode *node;
+	ILNode_ListIter iter;
+
+	node = nestedParent->body;
+	if(node && yyisa(node, ILNode_ScopeChange))
+	{
+		node = ((ILNode_ScopeChange *)node)->body;
+	}
+	ILNode_ListIter_Init(&iter, node);
+	while((node = ILNode_ListIter_Next(&iter)) != 0)
+	{
+		if(yyisa(node, ILNode_ClassDefn))
+		{
+			CreateType(info, globalScope, list, systemObjectName, node);
+		}
+	}
+}
+
+static void AddTypeToList(ILNode_List *list, ILNode_ClassDefn *defn)
+{
+	ILNode *type;
+
+	type = (ILNode *)defn;
+	if(!(defn->nestedParent))
+	{
+		ILNode_List_Add(list, type);
+	}
+	else
+	{
+		if(!defn->nestedParent->nestedClasses)
+		{
+			defn->nestedParent->nestedClasses = ILNode_List_create();
+		}
+		ILNode_List_Add(defn->nestedParent->nestedClasses, type);
+	}
+}
+
+static void AddDefaultCtor(ILNode_ClassDefn *defn)
+{
+	/* Determine if we need to add a default constructor */
+#if IL_VERSION_MAJOR > 1
+	/* Don't add the default constructor for static classes. */
+	if(((defn->modifiers & (CS_MODIFIER_STATIC | CS_MODIFIER_CTOR_DEFINED)) == 0) &&
+	   ((defn->modifiers & CS_MODIFIER_TYPE_MASK) == CS_MODIFIER_TYPE_CLASS))
+#else	/* IL_VERSION_MAJOR == 1 */
+	if(((defn->modifiers & CS_MODIFIER_CTOR_DEFINED) == 0) &&
+	   ((defn->modifiers & CS_MODIFIER_TYPE_MASK) == CS_MODIFIER_TYPE_CLASS))
+#endif	/* IL_VERSION_MAJOR == 1 */
+	{
+		ILUInt32 ctorMods;
+		ILNode *empty;
+		ILNode *cname;
+		ILNode *nonstaticInit;
+		ILNode *baseInit;
+		ILNode *invokation;
+		ILNode *compound;
+		ILNode *ctor;
+		ILNode *body;
+		ILNode *node;
+
+		ctorMods = (((defn->modifiers & CS_MODIFIER_ABSTRACT) != 0)
+							? CS_MODIFIER_PROTECTED : CS_MODIFIER_PUBLIC);
+		ctorMods |= CS_MODIFIER_METHOD_CONSTRUCTOR;
+		cname = ILQualIdentSimple(ILInternString(".ctor", 5).string);
+		empty = ILNode_Empty_create();
+		nonstaticInit = ILNode_NonStaticInit_create();
+		baseInit = ILNode_BaseInit_create();
+		invokation = ILNode_InvocationExpression_create(baseInit, 0);
+		compound = ILNode_Compound_CreateFrom(nonstaticInit, invokation);
+		body = ILNode_NewScope_create(compound);
+		ctor = ILNode_MethodDeclaration_create(0, ctorMods, 0, cname, 0,
+											   empty, body);
+
+		node = defn->body;
+		if(!node)
+		{
+			node = ILNode_List_create();
+			ILNode_List_Add(node, ctor);
+			/* TODO: Create a scope change here */
+			defn->body = node;
+		}
+		else
+		{
+			if(node && yyisa(node, ILNode_ScopeChange))
+			{
+				if(!((ILNode_ScopeChange *)node)->body)
+				{
+					/*
+					 * A empty class declaration so create the member list now
+					 */
+					((ILNode_ScopeChange *)node)->body = ILNode_List_create();
+				}
+				node = ((ILNode_ScopeChange *)node)->body;
+			}
+			ILNode_List_Add(node, ctor);
+		}
+	}
+}
+
 /*
  * Create the program structure for a type and all of its base types.
  * Returns the new end of the top-level type list.
@@ -665,13 +1021,12 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	ILNode *baseNode;
 	ILNode *baseTypeNode;
 	ILProgramItem *parent;
+	ILProgramItem *implicitParent;
 	ILClass *classInfo;
 	ILNode_ClassDefn *defn;
 	ILNode *savedNamespace;
 	ILNode *savedClass;
 	ILProgramItem *nestedScope;
-	ILNode *node;
-	ILNode_ListIter iter;
 
 	/* Get the name and namespace for the type, for error reporting */
 	defn = (ILNode_ClassDefn *)type;
@@ -705,9 +1060,9 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		 * since we'll be coming back to this very same class by
 		 * defn->nestedParent as it's nested child or the forward
 		 * edge , let's skip this loop,by returning here */
-		if(defn->nestedParent->classInfo==0)
+		if(defn->nestedParent->classInfo == 0)
 		{
-			defn->classInfo=0;
+			defn->classInfo = 0;
 			CreateType(info, globalScope, list,
 				   systemObjectName, (ILNode *)(defn->nestedParent));
 			return; 
@@ -724,12 +1079,50 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		nestedScope = ILClassGlobalScope(info->image);
 	}
 
+	/* Set the default accessibility if none was specified */
+	if((defn->modifiers & CS_MODIFIER_ACCESS_MASK) == 0)
+	{
+		defn->modifiers |= (defn->nestedParent ? CS_MODIFIER_PRIVATE :
+												 CS_MODIFIER_INTERNAL);
+	}
+
 	/* Set the namespace and class to use for resolving type names */
 	savedNamespace = info->currentNamespace;
 	info->currentNamespace = defn->namespaceNode;
 	savedClass = info->currentClass;
 	info->currentClass = (ILNode *)defn;
 
+
+	/*
+	 * Handle the implicit parents.
+	 * They are known to be no interfaces and not generic.
+	 */
+	implicitParent = 0;
+	if((baseNode = GetImplicitParent(defn)) != 0)
+	{
+		if(CSSemBaseType(baseNode, info, &baseNode,
+						 &baseTypeNode, &implicitParent))
+		{
+			if(implicitParent == 0)
+			{
+				implicitParent = NodeToProgramItem(baseTypeNode);
+				if(implicitParent == 0)
+				{
+					CreateType(info, globalScope, list,
+							   systemObjectName, baseTypeNode);
+					implicitParent = NodeToProgramItem(baseTypeNode);
+				}
+			}
+		}
+	}
+
+	/* Test for interfaces, or find "System.Object" if no parent yet */
+	/*
+	 * NOTE: This done too to make sure that all base classes and interfaces
+	 * are created before any class that inherits from the class or implamants
+	 * an interface. Otherwise members for implemented interface methods are
+	 * not created virtual sealed.
+	 */
 	parent = 0;
 	baseNodeList = defn->baseClass;
 	while(baseNodeList)
@@ -794,8 +1187,8 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		}
 	}
 
-	/* Test for interfaces, or find "System.Object" if no parent yet */
-	if(!parent && (defn->modifiers & IL_META_TYPEDEF_INTERFACE) == 0)
+	if(!parent &&
+	   ((defn->modifiers & CS_MODIFIER_TYPE_MASK) == CS_MODIFIER_TYPE_CLASS))
 	{
 		/* Compiling something else that inherits "System.Object" */
 		/* Use the builtin library's "System.Object" as parent class */
@@ -805,11 +1198,14 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 
 		if(!objectClass)
 		{
+			ILNode_Namespace *namespaceNode;
+
 			/* Change to the global namespace to resolve "System.Object" */
-			while(((ILNode_Namespace *)(info->currentNamespace))->enclosing != 0)
+			namespaceNode = (ILNode_Namespace *)(info->currentNamespace);
+			while(namespaceNode->enclosing != 0)
 			{
-				info->currentNamespace = (ILNode *)
-					((ILNode_Namespace *)(info->currentNamespace))->enclosing;
+				namespaceNode = namespaceNode->enclosing;
+				info->currentNamespace = (ILNode *)namespaceNode;
 			}
 
 			if(CSSemBaseType(systemObjectName, info, &systemObjectName,
@@ -833,14 +1229,20 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	}
 
 	/* Create the class information block */
-	if(strcmp(name, "<Module>") != 0)
+	if((defn->modifiers & CS_MODIFIER_TYPE_MASK) != CS_MODIFIER_TYPE_MODULE)
 	{
-		classInfo = ILClassCreate(nestedScope, 0, name, namespace, 0);
+		ILUInt32 attrs;
+
+		attrs = GetTypeAttrs(info, defn);
+		classInfo = ILClassCreate(nestedScope, 0, name, namespace, implicitParent);
 		if(!classInfo)
 		{
 			CCOutOfMemory();
 		}
-		ILClassSetAttrs(classInfo, ~0, defn->modifiers);
+		ILClassSetAttrs(classInfo, ~0, attrs);
+
+		/* Add the default ctor to the class if needed */
+		AddDefaultCtor(defn);
 	}
 	else
 	{
@@ -857,33 +1259,10 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 	ILSetProgramItemMapping(info, (ILNode *)defn);
 
 	/* Process the nested types */
-	node = defn->body;
-	if(node && yyisa(node, ILNode_ScopeChange))
-	{
-		node = ((ILNode_ScopeChange *)node)->body;
-	}
-	ILNode_ListIter_Init(&iter, node);
-	while((node = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		if(yyisa(node, ILNode_ClassDefn))
-		{
-			CreateType(info, globalScope, list, systemObjectName, node);
-		}
-	}
+	CreateNestedTypes(info, globalScope, list, systemObjectName, defn);
 
 	/* Add the type to the new top-level list in create order */
-	if(!(defn->nestedParent))
-	{
-		ILNode_List_Add(list, type);
-	}
-	else
-	{
-		if(!defn->nestedParent->nestedClasses)
-		{
-			defn->nestedParent->nestedClasses = ILNode_List_create();
-		}
-		ILNode_List_Add(defn->nestedParent->nestedClasses, type);
-	}
+	AddTypeToList(list, defn);
 }
 
 /*
@@ -1035,7 +1414,7 @@ static void ReportDuplicates(ILNode *node, ILMember *newMember,
 		  			  "declaration of `%s' conflicts with an existing member",
 					  name);
 	}
-	else if((modifiers & CS_SPECIALATTR_NEW) == 0)
+	else if((modifiers & CS_MODIFIER_NEW) == 0)
 	{
 		/* The duplicate is in a parent class, and "new" wasn't specified */
 		CCWarningOnLine(yygetfilename(node), yygetlinenum(node),
@@ -1054,10 +1433,37 @@ static void ReportUnnecessaryNew(ILNode *node, const char *name)
 					name);
 }
 
+static ILUInt32 GetFieldAttrs(ILNode_FieldDeclaration *field)
+{
+	ILUInt32 attrs;
+
+	if((field->modifiers & CS_MODIFIER_FIELD_CONST) != 0)
+	{
+		attrs = CSModifiersToConstAttrs(field->type,
+										field->modifiers & CS_MODIFIER_MASK);
+	}
+	else
+	{
+		attrs = CSModifiersToFieldAttrs(field->type,
+										field->modifiers & CS_MODIFIER_MASK);
+
+		if((field->modifiers & CS_MODIFIER_FIELD_SPECIAL_NAME) != 0)
+		{
+			attrs |= IL_META_FIELDDEF_SPECIAL_NAME;
+		}
+		if((field->modifiers & CS_MODIFIER_FIELD_RT_SPECIAL_NAME) != 0)
+		{
+			attrs |= IL_META_FIELDDEF_RT_SPECIAL_NAME;
+		}
+	}
+
+	return attrs;
+}
+
 /*
  * Create a field definition.
  */
-static void CreateField(ILGenInfo *info, ILClass *classInfo,
+static void CreateField(ILGenInfo *info, ILNode_ClassDefn *classNode,
 						ILNode_FieldDeclaration *field)
 {
 	ILNode_ListIter iterator;
@@ -1067,12 +1473,58 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 	ILType *tempType;
 	ILType *modifier;
 	ILMember *member;
+	ILClass *classInfo;
+	ILUInt32 fieldAttrs;
+
+#if IL_VERSION_MAJOR > 1
+	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	{
+		/* Constants are static by default */
+		if((field->modifiers & CS_MODIFIER_FIELD_CONST) == 0)
+		{
+			/* Only static fields or constants are allowed */
+			if((field->modifiers & CS_MODIFIER_STATIC) == 0)
+			{
+				CCErrorOnLine(yygetfilename(field), yygetlinenum(field),
+						  "only static fields are allowed in static classes");
+			}
+			switch(field->modifiers & CS_MODIFIER_ACCESS_MASK)
+			{
+				case CS_MODIFIER_PROTECTED:
+				{
+					CCErrorOnLine(yygetfilename(field), yygetlinenum(field),
+						"no protected fields are allowed in static classes");
+				}
+				break;
+
+				case (CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL):
+				{
+					CCErrorOnLine(yygetfilename(field), yygetlinenum(field),
+					"no protected internal fields are allowed in static classes");
+				}
+				break;
+			}
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+	/* Set the default accessibility if none was specified */
+	if((field->modifiers & CS_MODIFIER_ACCESS_MASK) == 0)
+	{
+		field->modifiers |= CS_MODIFIER_PRIVATE;
+	}
+
+	/* Get the field meadata flags */
+	fieldAttrs = GetFieldAttrs(field);
+
+	/* Get the class information block */
+	classInfo = classNode->classInfo;
 
 	/* Get the field's type */
 	tempType = CSSemType(field->type, info, &(field->type));
 
 	/* Add the "volatile" modifier if necessary */
-	if((field->modifiers & CS_SPECIALATTR_VOLATILE) != 0)
+	if((field->modifiers & CS_MODIFIER_VOLATILE) != 0)
 	{
 		modifier = ILFindNonSystemType(info, "IsVolatile",
 									   "System.Runtime.CompilerServices");
@@ -1104,8 +1556,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 		member = FindMemberByName(classInfo, name, classInfo, 0);
 
 		/* Create the field information block */
-		fieldInfo = ILFieldCreate(classInfo, 0, name,
-								  (field->modifiers & 0xFFFF));
+		fieldInfo = ILFieldCreate(classInfo, 0, name, fieldAttrs & 0xFFFF);
 		if(!fieldInfo)
 		{
 			CCOutOfMemory();
@@ -1120,7 +1571,7 @@ static void CreateField(ILGenInfo *info, ILClass *classInfo,
 			ReportDuplicates(decl->name, (ILMember *)fieldInfo,
 							 member, classInfo, field->modifiers, name);
 		}
-		else if((field->modifiers & CS_SPECIALATTR_NEW) != 0)
+		else if((field->modifiers & CS_MODIFIER_NEW) != 0)
 		{
 			ReportUnnecessaryNew(decl->name, name);
 		}
@@ -1266,9 +1717,7 @@ static ILMember *FindInterfaceDecl(ILNode *node, ILClass *classInfo,
 		/* Set the correct attributes on the explicit implementation */
 		newAttrs &= ~(IL_META_METHODDEF_MEMBER_ACCESS_MASK |
 					  IL_META_METHODDEF_STATIC |
-					  IL_META_METHODDEF_ABSTRACT |
-					  CS_SPECIALATTR_NEW |
-					  CS_SPECIALATTR_OVERRIDE);
+					  IL_META_METHODDEF_ABSTRACT);
 		newAttrs |= IL_META_METHODDEF_PRIVATE |
 					IL_META_METHODDEF_FINAL |
 					IL_META_METHODDEF_VIRTUAL |
@@ -1402,14 +1851,91 @@ static int IsRealFinalizer(ILClass *classInfo)
 	return 0;
 }
 
+static ILUInt32 GetMethodAttrs(ILNode_MethodDeclaration *method)
+{
+	ILUInt32 attrs;
+
+	switch(method->modifiers & CS_MODIFIER_METHOD_TYPE_MASK)
+	{
+		case CS_MODIFIER_METHOD_NORMAL:
+		{
+			attrs = CSModifiersToMethodAttrs((ILNode *)method,
+											 method->modifiers);
+		}
+		break;
+
+		case CS_MODIFIER_METHOD_CONSTRUCTOR:
+		{
+			attrs = CSModifiersToConstructorAttrs((ILNode *)method,
+												  method->modifiers);
+		}
+		break;
+
+		case CS_MODIFIER_METHOD_DESTRUCTOR:
+		{
+			attrs = CSModifiersToDestructorAttrs((ILNode *)method,
+												 method->modifiers);
+
+			/* Add the override modifier by default */
+			method->modifiers |= CS_MODIFIER_OVERRIDE;
+		}
+		break;
+
+		case CS_MODIFIER_METHOD_OPERATOR:
+		{
+			attrs = CSModifiersToOperatorAttrs((ILNode *)method,
+											   method->modifiers);
+		}
+		break;
+
+		case CS_MODIFIER_METHOD_INTERFACE:
+		{
+			attrs = IL_META_METHODDEF_PUBLIC |
+					IL_META_METHODDEF_VIRTUAL |
+					IL_META_METHODDEF_ABSTRACT |
+					IL_META_METHODDEF_HIDE_BY_SIG |
+					IL_META_METHODDEF_NEW_SLOT;
+		}
+		break;
+
+		case CS_MODIFIER_METHOD_INTERFACE_ACCESSOR:
+		{
+			attrs =  IL_META_METHODDEF_PUBLIC |
+					 IL_META_METHODDEF_VIRTUAL |
+					 IL_META_METHODDEF_ABSTRACT |
+					 IL_META_METHODDEF_HIDE_BY_SIG |
+					 IL_META_METHODDEF_SPECIAL_NAME |
+					 IL_META_METHODDEF_NEW_SLOT;
+		}
+		break;
+
+		case CS_MODIFIER_METHOD_EVENT_ACCESSOR:
+		{
+			attrs = CSModifiersToEventAttrs((ILNode *)method,
+											method->modifiers);
+		}
+		break;
+
+		case CS_MODIFIER_METHOD_PROPERTY_ACCESSOR:
+		{
+			attrs = CSModifiersToPropertyAttrs((ILNode *)method,
+											   method->modifiers);
+		}
+		break;
+	}
+
+	return attrs;
+}
+
 /*
  * Create a method definition.
  */
-static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
+static void CreateMethod(ILGenInfo *info, ILNode_ClassDefn *classNode,
 						 ILNode_MethodDeclaration *method)
 {
 	const char *name;
 	const char *basicName;
+	ILUInt32 attrs;
 	ILUInt32 thisAccess;
 	ILUInt32 baseAccess;
 	ILType *tempType;
@@ -1425,14 +1951,57 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	ILClass *interface;
 	ILMember *interfaceMember;
 	ILClass *class1, *class2;
+	ILClass *classInfo;
 #if IL_VERSION_MAJOR > 1
 	ILNode *savedMethod;
+
+	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	{
+		/* Only static methods are allowed */
+		if((method->modifiers & CS_MODIFIER_STATIC) == 0)
+		{
+			CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+					"only static methods are allowed in static classes");
+		}
+		switch(method->modifiers & CS_MODIFIER_ACCESS_MASK)
+		{
+			case CS_MODIFIER_PROTECTED:
+			{
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+					"no protected methods are allowed in static classes");
+			}
+			break;
+
+			case (CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL):
+			{
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+				"no protected internal methods are allowed in static classes");
+			}
+			break;
+		}
+		switch(method->modifiers & CS_MODIFIER_METHOD_TYPE_MASK)
+		{
+			case CS_MODIFIER_METHOD_OPERATOR:
+			{
+				CCErrorOnLine(yygetfilename(method), yygetlinenum(method),
+								"no operators are allowed in static classes");
+			}
+			break;
+		}
+	}
 
 	/* Save the current method context. */
 	savedMethod = info->currentMethod;
 	/* and set the method context for generic type parameter resolution */
 	info->currentMethod = (ILNode *)method;
-#endif	/* IL_VERSION_MAJOR > 1 */
+
+#endif /* IL_VERSION_MAJOR > 1 */
+
+	/* Get the method flags */
+	attrs = GetMethodAttrs(method);
+
+	/* Get the class information block */
+	classInfo = classNode->classInfo;
 
 	/* Get the name of the method, and the interface member (if any) */
 	interface = 0;
@@ -1507,8 +2076,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	/* Create the method information block */
 	if(!methodInfo)
 	{
-		methodInfo = ILMethodCreate(classInfo, 0, name,
-									(method->modifiers & 0xFFFF));
+		methodInfo = ILMethodCreate(classInfo, 0, name, (attrs & 0xFFFF));
 		if(!methodInfo)
 		{
 			CCOutOfMemory();
@@ -1524,9 +2092,9 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	if(!strcmp(name, "Finalize") &&
 	   (method->params == 0 || yyisa(method->params, ILNode_Empty)) &&
 	   tempType == ILType_Void &&
-	   (method->modifiers & CS_SPECIALATTR_DESTRUCTOR) == 0)
+	   (method->modifiers & CS_MODIFIER_METHOD_TYPE_MASK) != CS_MODIFIER_METHOD_DESTRUCTOR)
 	{
-		if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+		if((method->modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
 			if(IsRealFinalizer(classInfo))
 			{
@@ -1537,7 +2105,8 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 		}
 		else if(!ILTypeIsObjectClass(ILType_FromClass(classInfo)))
 		{
-			method->modifiers |= CS_SPECIALATTR_NEW;
+			method->modifiers |= CS_MODIFIER_NEW;
+			attrs |= IL_META_METHODDEF_NEW_SLOT;
 		}
 	}
 
@@ -1547,7 +2116,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	{
 		CCOutOfMemory();
 	}
-	if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
+	if((method->modifiers & CS_MODIFIER_STATIC) == 0)
 	{
 		ILTypeSetCallConv(signature, IL_META_CALLCONV_HASTHIS);
 		ILMethodSetCallConv(methodInfo, IL_META_CALLCONV_HASTHIS);
@@ -1662,7 +2231,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	/* Process interface overrides */
 	if(!ILClass_IsInterface(classInfo))
 	{
-		paramNum = method->modifiers;
+		paramNum = attrs;
 		interfaceMember = FindInterfaceDecl
 			((ILNode *)method, classInfo, interface,
 			 basicName, signature, IL_META_MEMBERKIND_METHOD,
@@ -1698,7 +2267,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 	    strncmp(ILMethod_Name(methodInfo), "set_", 4) != 0))
 	{
 		/* If "override" is supplied, then look for its "virtual" */
-		if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+		if((method->modifiers & CS_MODIFIER_OVERRIDE) != 0)
 		{
 			if(!ILMemberGetBase((ILMember *)methodInfo))
 			{
@@ -1747,9 +2316,9 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 				}
 
 				/* Check for the correct form of virtual method overrides */
-				if((method->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+				if((method->modifiers & CS_MODIFIER_OVERRIDE) == 0)
 				{
-					if((method->modifiers & CS_SPECIALATTR_NEW) == 0)
+					if((method->modifiers & CS_MODIFIER_NEW) == 0)
 					{
 						/* Report absent new keyword warning. */
 						ReportDuplicates(method->name, (ILMember *)methodInfo,
@@ -1757,7 +2326,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 										 method->modifiers, name);
 
 						/* Add new slot modifier. */
-						method->modifiers |= CS_SPECIALATTR_NEW;
+						method->modifiers |= CS_MODIFIER_NEW;
 					}
 
 					/* Set the method to use a new vtable slot. */
@@ -1768,13 +2337,13 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 				else
 				{
 					/* Get the access modifiers for this and the base methods */
-					thisAccess = (method->modifiers &
-					            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+					thisAccess = (attrs &
+								  IL_META_METHODDEF_MEMBER_ACCESS_MASK);
 					baseAccess = (ILMember_Attrs(member) &
-					            IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+								  IL_META_METHODDEF_MEMBER_ACCESS_MASK);
 
 					/* Check for legal modifiers for overrides */
-					if((method->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
+					if((method->modifiers & CS_MODIFIER_OVERRIDE) != 0 &&
 					   (thisAccess != baseAccess) &&
 					   ((ILProgramItem_Image(member) ==
 					     ILProgramItem_Image(methodInfo)) ||
@@ -1807,7 +2376,7 @@ static void CreateMethod(ILGenInfo *info, ILClass *classInfo,
 								 member, classInfo, method->modifiers, name);
 			}
 		}
-		else if((method->modifiers & CS_SPECIALATTR_NEW) != 0)
+		else if((method->modifiers & CS_MODIFIER_NEW) != 0)
 		{
 			ReportUnnecessaryNew(method->name, name);
 		}
@@ -1920,7 +2489,7 @@ static int EventIsVirtual(ILEvent *event)
 /*
  * Create a property definition.
  */
-static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
+static void CreateProperty(ILGenInfo *info, ILNode_ClassDefn *classNode,
 						   ILNode_PropertyDeclaration *property,
 						   const char **defaultMemberName)
 {
@@ -1940,16 +2509,48 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	int interfaceOverride;
 	ILMethod *baseMethod;
 	ILClass *class1, *class2;
+	ILClass *classInfo;
+
+#if IL_VERSION_MAJOR > 1
+	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	{
+		/* Only static methods are allowed */
+		if((property->modifiers & CS_MODIFIER_STATIC) == 0)
+		{
+			CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+					"only static properties are allowed in static classes");
+		}
+		switch(property->modifiers & CS_MODIFIER_ACCESS_MASK)
+		{
+			case CS_MODIFIER_PROTECTED:
+			{
+				CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+					"no protected properties are allowed in static classes");
+			}
+			break;
+
+			case (CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL):
+			{
+				CCErrorOnLine(yygetfilename(property), yygetlinenum(property),
+				"no protected internal properties are allowed in static classes");
+			}
+			break;
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+	/* Get the class information block */
+	classInfo = classNode->classInfo;
 
 	/* Create the get and set methods */
 	if(property->getAccessor)
 	{
-		CreateMethod(info, classInfo,
+		CreateMethod(info, classNode,
 				     (ILNode_MethodDeclaration *)(property->getAccessor));
 	}
 	if(property->setAccessor)
 	{
-		CreateMethod(info, classInfo,
+		CreateMethod(info, classNode,
 				     (ILNode_MethodDeclaration *)(property->setAccessor));
 	}
 
@@ -2026,8 +2627,8 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 
 		/* Return the name of this indexer for use in the
 		   "DefaultMember" attribute on the containing class */
-		if((property->modifiers & IL_META_METHODDEF_MEMBER_ACCESS_MASK)
-				!= IL_META_METHODDEF_PRIVATE)
+		if((property->modifiers & CS_MODIFIER_ACCESS_MASK)
+				!= CS_MODIFIER_PRIVATE)
 		{
 			*defaultMemberName = basicName;
 		}
@@ -2072,7 +2673,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 					 name, (ILMember *)propertyInfo, property->name);
 
 	/* If "override" is supplied, then look for its "virtual" */
-	if((property->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+	if((property->modifiers & CS_MODIFIER_OVERRIDE) != 0)
 	{
 		if(!ILMemberGetBase((ILMember *)propertyInfo))
 		{
@@ -2090,7 +2691,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 	{
 		if(ILMember_IsProperty(member) &&
 		   PropertyIsVirtual((ILProperty *)member) &&
-		   (property->modifiers & CS_SPECIALATTR_NEW) == 0)
+		   (property->modifiers & CS_MODIFIER_NEW) == 0)
 		{
 			if(ILMember_Owner(member) == classInfo)
 			{
@@ -2100,7 +2701,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 			}
 
 			/* Check for the correct form of virtual method overrides */
-			if((property->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+			if((property->modifiers & CS_MODIFIER_OVERRIDE) == 0)
 			{
 				/* Report absent new keyword warning. */
 				ReportDuplicates(property->name, (ILMember *)propertyInfo,
@@ -2108,13 +2709,13 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 								 property->modifiers, name);
 
 				/* Add new slot modifier for property. */
-				property->modifiers |= CS_SPECIALATTR_NEW;
+				property->modifiers |= CS_MODIFIER_NEW;
 
 				/* Set the getter to use a new vtable slot. */
 				if(property->getAccessor)
 				{
 					((ILNode_MethodDeclaration *)property->getAccessor)
-						->modifiers |= CS_SPECIALATTR_NEW;
+						->modifiers |= CS_MODIFIER_NEW;
 					ILMemberSetAttrs((ILMember *)(ILProperty_Getter(propertyInfo)),
 									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
 									 IL_META_METHODDEF_NEW_SLOT);
@@ -2124,7 +2725,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 				if(property->setAccessor)
 				{
 					((ILNode_MethodDeclaration *)property->setAccessor)
-						->modifiers |= CS_SPECIALATTR_NEW;
+						->modifiers |= CS_MODIFIER_NEW;
 					ILMemberSetAttrs((ILMember *)(ILProperty_Setter(propertyInfo)),
 									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
 									 IL_META_METHODDEF_NEW_SLOT);
@@ -2133,8 +2734,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 			else
 			{
 				/* Get the access modifiers for this property */
-				thisAccess = (property->modifiers &
-				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+				thisAccess = GetMemberVisibilityFromModifiers(property->modifiers);
 
 				/* Get a base getter or setter */
 				baseMethod = ILProperty_Getter((ILProperty *)member);
@@ -2148,7 +2748,7 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
 
 				/* Check for legal modifiers for overrides */
-				if((property->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
+				if((property->modifiers & CS_MODIFIER_OVERRIDE) != 0 &&
 				   (thisAccess != baseAccess) &&
 				   ((ILProgramItem_Image(member) ==
 				     ILProgramItem_Image(propertyInfo)) ||
@@ -2179,16 +2779,171 @@ static void CreateProperty(ILGenInfo *info, ILClass *classInfo,
 							 member, classInfo, property->modifiers, name);
 		}
 	}
-	else if((property->modifiers & CS_SPECIALATTR_NEW) != 0)
+	else if((property->modifiers & CS_MODIFIER_NEW) != 0)
 	{
 		ReportUnnecessaryNew(property->name, name);
+	}
+}
+
+static ILUInt32 GetEventAccessorModifiers(ILNode_EventDeclaration *event)
+{
+	ILUInt32 modifiers;
+
+	/* Validate the modifiers */
+	if((event->modifiers & CS_MODIFIER_EVENT_INTERFACE) != 0)
+	{
+		modifiers = (event->modifiers & CS_MODIFIER_MASK) | CS_MODIFIER_METHOD_INTERFACE;
+	}
+	else
+	{
+		modifiers = (event->modifiers & CS_MODIFIER_MASK) | CS_MODIFIER_METHOD_EVENT_ACCESSOR;
+	}
+
+	return modifiers;
+}
+
+/*
+ * Create the methods needed by an event declarator.
+ */
+static void CreateEventDeclMethods(ILNode_EventDeclaration *event,
+								   ILNode_EventDeclarator *decl,
+								   ILUInt32 accessorModifiers)
+{
+	ILNode_MethodDeclaration *method;
+	ILNode *eventName;
+	ILNode *name;
+	ILNode *param;
+	ILNode *addParams;
+	ILNode *removeParams;
+
+	/* Get the name of the event */
+	eventName = ((ILNode_FieldDeclarator *)(decl->fieldDeclarator))->name;
+
+	/* Create the parameter information for the "add" and "remove" methods */
+	addParams = ILNode_List_create();
+	param = ILNode_FormalParameter_create(0, ILParamMod_empty, event->type,
+				ILQualIdentSimple(ILInternString("value", 5).string));
+	CloneLine(param, (ILNode *)decl);
+	ILNode_List_Add(addParams, param);
+
+	removeParams = ILNode_List_create();
+	param = ILNode_FormalParameter_create(0, ILParamMod_empty, event->type,
+				ILQualIdentSimple(ILInternString("value", 5).string));
+	CloneLine(param, (ILNode *)decl);
+	ILNode_List_Add(removeParams, param);
+
+	/* Create the "add" method */
+	name = PrefixName(eventName, "add_");
+	method = (ILNode_MethodDeclaration *)(decl->addAccessor);
+	if(!method && event->needFields)
+	{
+		/* Field-based event that needs a pre-defined body */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, accessorModifiers, 0, name, 0, addParams, 0);
+		method->body = ILNode_NewScope_create
+							(ILNode_AssignAdd_create
+								(ILNode_Add_create(eventName, 
+									ILQualIdentSimple
+										(ILInternString("value", 5).string))));
+		decl->addAccessor = (ILNode *)method;
+	}
+	else if(!method)
+	{
+		/* Abstract interface definition */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, accessorModifiers, 0, name, 0, addParams, 0);
+		decl->addAccessor = (ILNode *)method;
+	}
+	else
+	{
+		/* Regular class definition */
+		method->modifiers = accessorModifiers;
+		method->type = 0;
+		method->name = name;
+		method->params = addParams;
+	}
+
+	/* Create the "remove" method */
+	name = PrefixName(eventName, "remove_");
+	method = (ILNode_MethodDeclaration *)(decl->removeAccessor);
+	if(!method && event->needFields)
+	{
+		/* Field-based event that needs a pre-defined body */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, accessorModifiers, 0, name, 0, removeParams, 0);
+		method->body = ILNode_NewScope_create
+							(ILNode_AssignSub_create
+								(ILNode_Sub_create(eventName, 
+									ILQualIdentSimple
+										(ILInternString("value", 5).string))));
+		decl->removeAccessor = (ILNode *)method;
+	}
+	else if(!method)
+	{
+		/* Abstract interface definition */
+		method = (ILNode_MethodDeclaration *)
+			ILNode_MethodDeclaration_create
+					(0, accessorModifiers, 0, name, 0, removeParams, 0);
+		decl->removeAccessor = (ILNode *)method;
+	}
+	else
+	{
+		/* Regular class definition */
+		method->modifiers = accessorModifiers;
+		method->type = 0;
+		method->name = name;
+		method->params = removeParams;
+	}
+}
+
+/*
+ * Create the methods needed by an event definition.
+ */
+static void CreateEventMethods(ILNode_EventDeclaration *event)
+{
+	ILNode_ListIter iter;
+	ILNode *decl;
+	ILUInt32 accessorModifiers;
+
+	accessorModifiers = GetEventAccessorModifiers(event);
+
+	if(yyisa(event->eventDeclarators, ILNode_EventDeclarator))
+	{
+		ILNode_EventDeclarator *eventDeclarator;
+
+		eventDeclarator = (ILNode_EventDeclarator *)(event->eventDeclarators);
+
+		/* A single declarator indicates a property-style event */
+		event->needFields = 0;
+
+		/* Create the methods for the event declarator */
+		CreateEventDeclMethods(event, eventDeclarator, accessorModifiers);
+	}
+	else
+	{
+		/* A list of declarators indicates a field-style event */
+		event->needFields =
+			((event->modifiers & (CS_MODIFIER_ABSTRACT | CS_MODIFIER_EVENT_INTERFACE)) == 0);
+
+		/* Scan the list and create the methods that we require */
+		ILNode_ListIter_Init(&iter, event->eventDeclarators);
+		while((decl = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_EventDeclarator *eventDeclarator;
+
+			eventDeclarator = (ILNode_EventDeclarator *)decl;
+			CreateEventDeclMethods(event, eventDeclarator, accessorModifiers);
+		}
 	}
 }
 
 /*
  * Create an event definition from a specific declarator.
  */
-static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
+static void CreateEventDecl(ILGenInfo *info, ILNode_ClassDefn *classNode,
 						    ILNode_EventDeclaration *event,
 							ILType *eventType,
 							ILNode_EventDeclarator *eventDecl)
@@ -2204,6 +2959,41 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	int interfaceOverride;
 	ILMethod *baseMethod;
 	ILClass *class1, *class2;
+	ILClass *classInfo;
+
+#if IL_VERSION_MAJOR > 1
+	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	{
+		/* Only static fields or constants are allowed */
+		if((event->modifiers & CS_MODIFIER_STATIC) == 0)
+		{
+			CCErrorOnLine(yygetfilename(event), yygetlinenum(event),
+						  "only static events are allowed in static classes");
+		}
+		switch(event->modifiers & CS_MODIFIER_ACCESS_MASK)
+		{
+			case CS_MODIFIER_PROTECTED:
+			{
+				CCErrorOnLine(yygetfilename(event), yygetlinenum(event),
+					"no protected events are allowed in static classes");
+			}
+			break;
+
+			case (CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL):
+			{
+				CCErrorOnLine(yygetfilename(event), yygetlinenum(event),
+					"no protected internal events are allowed in static classes");
+			}
+			break;
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+	/* Create the event accessor methods */
+	CreateEventMethods(event);
+
+	/* Get the class information block */
+	classInfo = classNode->classInfo;
 
 	/* Set the back link for use by code generation */
 	eventDecl->backLink = event;
@@ -2211,12 +3001,12 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	/* Create the add and remove methods */
 	if(eventDecl->addAccessor)
 	{
-		CreateMethod(info, classInfo,
+		CreateMethod(info, classNode,
 				     (ILNode_MethodDeclaration *)(eventDecl->addAccessor));
 	}
 	if(eventDecl->removeAccessor)
 	{
-		CreateMethod(info, classInfo,
+		CreateMethod(info, classNode,
 				     (ILNode_MethodDeclaration *)(eventDecl->removeAccessor));
 	}
 
@@ -2311,7 +3101,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 					 name, (ILMember *)eventInfo, eventName);
 
 	/* If "override" is supplied, then look for its "virtual" */
-	if((event->modifiers & CS_SPECIALATTR_OVERRIDE) != 0)
+	if((event->modifiers & CS_MODIFIER_OVERRIDE) != 0)
 	{
 		if(!ILMemberGetBase((ILMember *)eventInfo))
 		{
@@ -2326,7 +3116,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	{
 		if(ILMember_IsEvent(member) &&
 		   EventIsVirtual((ILEvent *)member) &&
-		   (event->modifiers & IL_META_METHODDEF_NEW_SLOT) == 0)
+		   (event->modifiers & CS_MODIFIER_NEW) == 0)
 		{
 			if(ILMember_Owner(member) == classInfo)
 			{
@@ -2336,7 +3126,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 			}
 
 			/* Check for the correct form of virtual method overrides */
-			if((event->modifiers & CS_SPECIALATTR_OVERRIDE) == 0)
+			if((event->modifiers & CS_MODIFIER_OVERRIDE) == 0)
 			{
 				/* Report absent new keyword warning. */
 				ReportDuplicates(eventName, (ILMember *)eventInfo,
@@ -2344,13 +3134,13 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 								 event->modifiers, name);
 
 				/* Add new slot modifier for event. */
-				event->modifiers |= CS_SPECIALATTR_NEW;
+				event->modifiers |= CS_MODIFIER_NEW;
 
 				/* Set the adder to use a new vtable slot. */
 				if(eventDecl->addAccessor)
 				{
 					((ILNode_MethodDeclaration *)eventDecl->addAccessor)
-						->modifiers |= CS_SPECIALATTR_NEW;
+						->modifiers |= CS_MODIFIER_NEW;
 					ILMemberSetAttrs((ILMember *)(ILEvent_AddOn(eventInfo)),
 									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
 									 IL_META_METHODDEF_NEW_SLOT);
@@ -2360,7 +3150,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 				if(eventDecl->removeAccessor)
 				{
 					((ILNode_MethodDeclaration *)eventDecl->removeAccessor)
-						->modifiers |= CS_SPECIALATTR_NEW;
+						->modifiers |= CS_MODIFIER_NEW;
 					ILMemberSetAttrs((ILMember *)(ILEvent_RemoveOn(eventInfo)),
 									 IL_META_METHODDEF_VTABLE_LAYOUT_MASK,
 									 IL_META_METHODDEF_NEW_SLOT);
@@ -2369,8 +3159,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 			else
 			{
 				/* Get the access modifiers for this event */
-				thisAccess = (event->modifiers &
-				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
+				thisAccess = GetMemberVisibilityFromModifiers(event->modifiers);
 
 				/* Get a base adder or remover */
 				baseMethod = ILEvent_AddOn((ILEvent *)member);
@@ -2384,7 +3173,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 				              IL_META_METHODDEF_MEMBER_ACCESS_MASK);
 
 				/* Check for legal modifiers for overrides */
-				if((event->modifiers & CS_SPECIALATTR_OVERRIDE) != 0 &&
+				if((event->modifiers & CS_MODIFIER_OVERRIDE) != 0 &&
 				   (thisAccess != baseAccess) &&
 				   ((ILProgramItem_Image(member) ==
 				     ILProgramItem_Image(eventInfo)) ||
@@ -2415,7 +3204,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 							 member, classInfo, event->modifiers, name);
 		}
 	}
-	else if((event->modifiers & CS_SPECIALATTR_NEW) != 0)
+	else if((event->modifiers & CS_MODIFIER_NEW) != 0)
 	{
 		ReportUnnecessaryNew(eventName, name);
 	}
@@ -2426,7 +3215,7 @@ static void CreateEventDecl(ILGenInfo *info, ILClass *classInfo,
 	{
 		ILUInt32 attrs = IL_META_FIELDDEF_PRIVATE;
 		ILField *field;
-		if((event->modifiers & IL_META_METHODDEF_STATIC) != 0)
+		if((event->modifiers & CS_MODIFIER_STATIC) != 0)
 		{
 			attrs |= IL_META_FIELDDEF_STATIC;
 		}
@@ -2468,7 +3257,7 @@ static int FuzzyIsDelegate(ILType *type)
 /*
  * Create an event definition.
  */
-static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
+static void CreateEvent(ILGenInfo *info, ILNode_ClassDefn *classNode,
 						ILNode_EventDeclaration *event)
 {
 	ILNode_ListIter iter;
@@ -2487,7 +3276,7 @@ static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
 	if(yyisa(event->eventDeclarators, ILNode_EventDeclarator))
 	{
 		/* Create the methods for the event declarator */
-		CreateEventDecl(info, classInfo, event, eventType,
+		CreateEventDecl(info, classNode, event, eventType,
 					    (ILNode_EventDeclarator *)(event->eventDeclarators));
 	}
 	else
@@ -2496,7 +3285,7 @@ static void CreateEvent(ILGenInfo *info, ILClass *classInfo,
 		ILNode_ListIter_Init(&iter, event->eventDeclarators);
 		while((decl = ILNode_ListIter_Next(&iter)) != 0)
 		{
-			CreateEventDecl(info, classInfo, event, eventType,
+			CreateEventDecl(info, classNode, event, eventType,
 							(ILNode_EventDeclarator *)decl);
 		}
 	}
@@ -2534,9 +3323,8 @@ static void AppendParameters(ILNode *from,ILNode_List *to,int onlyPtrs)
 											ILNode_FormalParameter_create(NULL,
 													node->pmod,node->type,
 													node->name);
-			yysetfilename((ILNode*)param,yygetfilename(node));
-			yysetlinenum((ILNode*)param, yygetlinenum(node));
-			ILNode_List_Add(to,param);
+			CloneLine((ILNode *)param, (ILNode *)node);
+			ILNode_List_Add(to, param);
 		}
 	}
 }
@@ -2544,13 +3332,17 @@ static void AppendParameters(ILNode *from,ILNode_List *to,int onlyPtrs)
 /*
  * Create a delegate member definition.
  */
-static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
+static void CreateDelegateMember(ILGenInfo *info, ILNode_ClassDefn *classNode,
 								 ILNode_DelegateMemberDeclaration *member)
 {
 	ILMethod *method;
 	ILType *signature;
 	ILNode_MethodDeclaration *decl;
 	ILNode_List *params;
+	ILClass *classInfo;
+
+	/* Get the class information block */
+	classInfo = classNode->classInfo;
 
 	/* Create the delegate constructor */
 	method = ILMethodCreate(classInfo, 0, ".ctor",
@@ -2593,18 +3385,16 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 
 	/* Create the "Invoke" method */
 	decl = (ILNode_MethodDeclaration *)ILNode_MethodDeclaration_create
-		(0, IL_META_METHODDEF_PUBLIC |
-			IL_META_METHODDEF_VIRTUAL |
-			IL_META_METHODDEF_NEW_SLOT |
-			IL_META_METHODDEF_HIDE_BY_SIG,
+		(0, CS_MODIFIER_PUBLIC |
+			CS_MODIFIER_VIRTUAL |
+			CS_MODIFIER_METHOD_HIDE_BY_SIG,
 		 member->returnType,
 		 ILQualIdentSimple(ILInternString("Invoke", -1).string),
 		 0, member->params, 0);
 	
-	yysetfilename((ILNode*)decl,yygetfilename(member));
-	yysetlinenum((ILNode*)decl, yygetlinenum(member));
+	CloneLine((ILNode *)decl, (ILNode *)member);
 
-	CreateMethod(info, classInfo, decl);
+	CreateMethod(info, classNode, decl);
 	method = member->invokeMethod = decl->methodInfo;
 	if(method)
 	{
@@ -2625,21 +3415,19 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 	/* Create the "BeginInvoke" method */
 	decl = (ILNode_MethodDeclaration*) ILNode_MethodDeclaration_create
 			(0,
-			IL_META_METHODDEF_PUBLIC |
-			IL_META_METHODDEF_VIRTUAL |
-			IL_META_METHODDEF_NEW_SLOT |
-			IL_META_METHODDEF_HIDE_BY_SIG |
-			IL_META_METHODDEF_COMPILER_CONTROLLED,
+			CS_MODIFIER_PUBLIC |
+			CS_MODIFIER_VIRTUAL |
+			CS_MODIFIER_METHOD_HIDE_BY_SIG |
+			CS_MODIFIER_METHOD_COMPILER_CONTROLED,
 			ILNode_SystemType_create("IAsyncResult"),
 			ILQualIdentSimple(ILInternString("BeginInvoke", -1).string),
 			0,
 			(ILNode*)params,
 			0);
 
-	yysetfilename((ILNode*)decl,yygetfilename(member));
-	yysetlinenum((ILNode*)decl, yygetlinenum(member));
+	CloneLine((ILNode *)decl, (ILNode *)member);
 
-	CreateMethod(info, classInfo, decl);
+	CreateMethod(info, classNode, decl);
 	method = member->beginInvokeMethod = decl->methodInfo;
 	if(method)
 	{
@@ -2659,21 +3447,18 @@ static void CreateDelegateMember(ILGenInfo *info, ILClass *classInfo,
 	/* Create the "EndInvoke" method */
 	decl = (ILNode_MethodDeclaration*) ILNode_MethodDeclaration_create
 			(0,
-			IL_META_METHODDEF_PUBLIC |
-			IL_META_METHODDEF_VIRTUAL |
-			IL_META_METHODDEF_NEW_SLOT |
-			IL_META_METHODDEF_HIDE_BY_SIG |
-			IL_META_METHODDEF_COMPILER_CONTROLLED,
+			CS_MODIFIER_PUBLIC |
+			CS_MODIFIER_VIRTUAL |
+			CS_MODIFIER_METHOD_HIDE_BY_SIG |
+			CS_MODIFIER_METHOD_COMPILER_CONTROLED,
 			member->returnType,
 			ILQualIdentSimple(ILInternString("EndInvoke", -1).string),
 			0,
 			(ILNode*)params,
 			0);
-	
-	yysetfilename((ILNode*)decl,yygetfilename(member));
-	yysetlinenum((ILNode*)decl, yygetlinenum(member));
+	CloneLine((ILNode *)decl, (ILNode *)member);
 
-	CreateMethod(info, classInfo, decl);
+	CreateMethod(info, classNode, decl);
 	method = member->endInvokeMethod = decl->methodInfo;
 	if(method)
 	{
@@ -2782,7 +3567,7 @@ static void FixNonInterfaceMethods(ILClass *classInfo)
  * Create the members of a class node.
  */
 static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
-						  ILNode *classNode)
+						  ILNode_ClassDefn *classNode)
 {
 	ILClass *classInfo;
 	ILNode *body;
@@ -2795,7 +3580,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	const char *defaultMemberName;
 
 	/* Get the class information block, and bail out if not defined */
-	classInfo = ((ILNode_ClassDefn *)classNode)->classInfo;
+	classInfo = classNode->classInfo;
 	if(!classInfo || classInfo == ((ILClass *)1) ||
 	   classInfo == ((ILClass *)2))
 	{
@@ -2803,7 +3588,7 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	}
 
 	/* Get the class body and the scope it is declared within */
-	body = ((ILNode_ClassDefn *)classNode)->body;
+	body = classNode->body;
 	if(body && yykind(body) == yykindof(ILNode_ScopeChange))
 	{
 		scope = ((ILNode_ScopeChange *)body)->scope;
@@ -2818,9 +3603,9 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	savedScope = info->currentScope;
 	info->currentScope = scope;
 	savedClass = info->currentClass;
-	info->currentClass = classNode;
+	info->currentClass = (ILNode *)classNode;
 	savedNamespace = info->currentNamespace;
-	info->currentNamespace = ((ILNode_ClassDefn *)classNode)->namespaceNode;
+	info->currentNamespace = classNode->namespaceNode;
 
 	/* Iterate over the member definitions in the class body */
 	defaultMemberName = 0;
@@ -2829,11 +3614,11 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	{
 		if(yykind(member) == yykindof(ILNode_FieldDeclaration))
 		{
-			CreateField(info, classInfo, (ILNode_FieldDeclaration *)member);
+			CreateField(info, classNode, (ILNode_FieldDeclaration *)member);
 		}
 		else if(yykind(member) == yykindof(ILNode_MethodDeclaration))
 		{
-			CreateMethod(info, classInfo,
+			CreateMethod(info, classNode,
 						 (ILNode_MethodDeclaration *)member);
 		}
 		else if(yykind(member) == yykindof(ILNode_EnumMemberDeclaration))
@@ -2843,18 +3628,18 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 		}
 		else if(yykind(member) == yykindof(ILNode_PropertyDeclaration))
 		{
-			CreateProperty(info, classInfo,
+			CreateProperty(info, classNode,
 						   (ILNode_PropertyDeclaration *)member,
 						   &defaultMemberName);
 		}
 		else if(yykind(member) == yykindof(ILNode_EventDeclaration))
 		{
-			CreateEvent(info, classInfo,
+			CreateEvent(info, classNode,
 						(ILNode_EventDeclaration *)member);
 		}
 		else if(yykind(member) == yykindof(ILNode_DelegateMemberDeclaration))
 		{
-			CreateDelegateMember(info, classInfo,
+			CreateDelegateMember(info, classNode,
 								 (ILNode_DelegateMemberDeclaration *)member);
 		}
 		else if(yykind(member) == yykindof(ILNode_ClassDefn))
@@ -2871,14 +3656,14 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 
 	/* process the nested classes in the order of creation , rather than
 	 * occurrence in source */
-	if(((ILNode_ClassDefn*)classNode)->nestedClasses)
+	if(classNode->nestedClasses)
 	{
-		ILNode_ListIter_Init(&iterator, ((ILNode_ClassDefn*)classNode)->nestedClasses);
+		ILNode_ListIter_Init(&iterator, classNode->nestedClasses);
 		while((member = ILNode_ListIter_Next(&iterator)) != 0)
 		{
 			if(yykind(member) == yykindof(ILNode_ClassDefn))
 			{
-				CreateMembers(info, globalScope, member);
+				CreateMembers(info, globalScope, (ILNode_ClassDefn *)member);
 			}
 		}
 	}
@@ -2886,14 +3671,14 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	/* Add the "DefaultMember" attribute to the class if necessary */
 	if(defaultMemberName)
 	{
-		((ILNode_ClassDefn *)classNode)->defaultMemberName = defaultMemberName;
+		classNode->defaultMemberName = defaultMemberName;
 	}
 
 	/* If the class is not abstract then make sure that all abstract
 	   methods in ancestor classes have been implemented here */
 	if(!ILClass_IsAbstract(classInfo))
 	{
-		CheckAbstractOverrides(info, classInfo, classNode);
+		CheckAbstractOverrides(info, classInfo, (ILNode *)classNode);
 	}
 
 	/* Fix up "public final virtual" methods that we thought we
@@ -2915,19 +3700,20 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 {
 	ILNode_ListIter iterator;
 	ILNode *child;
-	ILNode_ClassDefn *defn;
-	ILScope *scope;
-	ILScope *aliasScope;
-	ILNode *origDefn;
-	const char *name;
-	const char *namespace;
-	int error;
 
 	ILNode_ListIter_Init(&iterator, tree);
 	while((child = ILNode_ListIter_Next(&iterator)) != 0)
 	{
 		if(yykind(child) == yykindof(ILNode_ClassDefn))
 		{
+			ILNode_ClassDefn *defn;
+			ILScope *scope;
+			ILScope *aliasScope;
+			ILNode *origDefn;
+			const char *name;
+			const char *namespace;
+			int error;
+
 			defn = (ILNode_ClassDefn *)child;
 			defn->nestedParent = nestedParent;
 			name = defn->name;
@@ -2958,8 +3744,8 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 		#endif	/* IL_VERSION_MAJOR > 1 */
 
 			error = ILScopeDeclareType(parentScope, child,
-								   	   name, namespace, &scope,
-								   	   &origDefn,aliasScope);
+									   name, namespace, &scope,
+									   &origDefn, aliasScope);
 
 			if(error != IL_SCOPE_ERROR_OK)
 			{
@@ -3083,7 +3869,7 @@ ILNode *CSTypeGather(ILGenInfo *info, ILScope *globalScope, ILNode *tree)
 	ILNode_ListIter_Init(&iterator, list);
 	while((child = ILNode_ListIter_Next(&iterator)) != 0)
 	{
-		CreateMembers(info, globalScope, child);
+		CreateMembers(info, globalScope, (ILNode_ClassDefn *)child);
 	}
 
 	/* Return the new top-level list to the caller */

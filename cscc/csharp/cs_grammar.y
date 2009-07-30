@@ -309,7 +309,7 @@ static int ClassNameSame(ILNode *name)
 {
 	return (strcmp(((ILNode_Identifier *)name)->name,
 	   ((ILNode_Identifier *)(classNameStack[classNameStackSize - 1]))->name)
-	   			== 0);
+				== 0);
 }
 
 /*
@@ -579,71 +579,78 @@ static ILNode *GetIndexerName(ILGenInfo *info,ILNode_AttributeTree *attrTree,
 #define CS_PROPERTY_ACCESSOR_MODIFIERS \
 		(CS_MODIFIER_PRIVATE | CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL)
 
-static ILUInt32 GetAccessorAttrs(ILUInt32 propertyAttrs,
-								 ILUInt32 accessorAttrs,
-								 const char *filename,
-								 long linenum)
+static ILUInt32 GetAccessorModifiers(ILUInt32 propertyModifiers,
+									 ILUInt32 accessorModifiers,
+									 const char *filename,
+									 long linenum)
 {
-	ILUInt32 attrs;
+	ILUInt32 modifiers;
 
-	if(accessorAttrs == 0)
+	if(accessorModifiers == 0)
 	{
-		return propertyAttrs;
+		if((propertyModifiers & CS_MODIFIER_PROPERTY_INTERFACE) != 0)
+		{
+			return propertyModifiers | CS_MODIFIER_METHOD_INTERFACE_ACCESSOR;
+		}
+		else
+		{
+			return propertyModifiers | CS_MODIFIER_METHOD_PROPERTY_ACCESSOR;
+		}
 	}
-	if((accessorAttrs & ~CS_PROPERTY_ACCESSOR_MODIFIERS) != 0)
+	if((accessorModifiers & ~CS_PROPERTY_ACCESSOR_MODIFIERS) != 0)
 	{
 		CCErrorOnLine(filename, linenum,
 					  "Invalid modifier used for accessor");
-		return propertyAttrs;
+		return propertyModifiers;
 	}
-	if((accessorAttrs & CS_MODIFIER_PRIVATE) != 0)
+	if((accessorModifiers & CS_MODIFIER_PRIVATE) != 0)
 	{
-		if((accessorAttrs & CS_MODIFIER_PROTECTED) != 0)
+		if((accessorModifiers & CS_MODIFIER_PROTECTED) != 0)
 		{
 			CCErrorOnLine(filename, linenum,
 						  "cannot use both `private' and `protected'");
 		}
-		if((accessorAttrs & CS_MODIFIER_INTERNAL) != 0)
+		if((accessorModifiers & CS_MODIFIER_INTERNAL) != 0)
 		{
 			CCErrorOnLine(filename, linenum,
 						  "cannot use both `private' and `internal'");
 		}
-		attrs = IL_META_METHODDEF_PRIVATE;
+		modifiers = CS_MODIFIER_PRIVATE;
 	}
 	else
 	{
-		attrs = 0;
+		modifiers = 0;
 
-		if((accessorAttrs & CS_MODIFIER_PROTECTED) != 0)
+		if((accessorModifiers & CS_MODIFIER_PROTECTED) != 0)
 		{
-			if((accessorAttrs & CS_MODIFIER_INTERNAL) != 0)
+			if((accessorModifiers & CS_MODIFIER_INTERNAL) != 0)
 			{
-				attrs = IL_META_METHODDEF_FAM_OR_ASSEM;
+				modifiers = (CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL);
 			}
 			else
 			{
-				attrs = IL_META_METHODDEF_FAMILY;
+				modifiers = CS_MODIFIER_PROTECTED;
 			}
 		}
 		else
 		{
-			attrs = IL_META_METHODDEF_ASSEM;
+			modifiers = CS_MODIFIER_INTERNAL;
 		}
 	}
 	/* Now validate the visibility */
-	switch(propertyAttrs & IL_META_FIELDDEF_FIELD_ACCESS_MASK)
+	switch(propertyModifiers & CS_MODIFIER_ACCESS_MASK)
 	{
-		case IL_META_FIELDDEF_PUBLIC:
+		case CS_MODIFIER_PUBLIC:
 		{
-			/* OK every accessor modifier is allowed */			
+			/* OK every accessor modifier is allowed */
 		}
 		break;
 
-		case IL_META_FIELDDEF_FAM_OR_ASSEM:
+		case (CS_MODIFIER_PROTECTED | CS_MODIFIER_INTERNAL):
 		{
-			if((attrs == IL_META_METHODDEF_ASSEM) ||
-			   (attrs == IL_META_METHODDEF_FAMILY) ||
-			   (attrs == IL_META_METHODDEF_PRIVATE))
+			if((modifiers == CS_MODIFIER_INTERNAL) ||
+			   (modifiers == CS_MODIFIER_PROTECTED) ||
+			   (modifiers == CS_MODIFIER_PRIVATE))
 			{
 				/* OK */
 			}
@@ -655,10 +662,10 @@ static ILUInt32 GetAccessorAttrs(ILUInt32 propertyAttrs,
 		}
 		break;
 
-		case IL_META_FIELDDEF_FAMILY:
-		case IL_META_FIELDDEF_ASSEMBLY:
+		case CS_MODIFIER_PROTECTED:
+		case CS_MODIFIER_INTERNAL:
 		{
-			if(attrs != IL_META_METHODDEF_PRIVATE)
+			if(modifiers != CS_MODIFIER_PRIVATE)
 			{
 				CCErrorOnLine(filename, linenum,
 						"only `private' is allowed in this context");
@@ -672,8 +679,8 @@ static ILUInt32 GetAccessorAttrs(ILUInt32 propertyAttrs,
 						"no modifiers are allowed in this context");
 		}
 	}
-	attrs |= (propertyAttrs & ~IL_META_FIELDDEF_FIELD_ACCESS_MASK);
-	return attrs;
+	modifiers |= CS_MODIFIER_METHOD_PROPERTY_ACCESSOR;
+	return modifiers;
 }
 
 /*
@@ -724,17 +731,17 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property,
 	/* Create the "get" method */
 	if(accessors->getAccessor.present != 0)
 	{
-		ILUInt32 attrs;
+		ILUInt32 modifiers;
 
 		name = AdjustPropertyName(property->name, "get_");
-		attrs = GetAccessorAttrs(property->modifiers,
-								 accessors->getAccessor.modifiers,
-								 accessors->getAccessor.filename,
-								 accessors->getAccessor.linenum);
+		modifiers = GetAccessorModifiers(property->modifiers,
+										 accessors->getAccessor.modifiers,
+										 accessors->getAccessor.filename,
+										 accessors->getAccessor.linenum);
 		decl = (ILNode_MethodDeclaration *)
 				ILNode_MethodDeclaration_create
 						(accessors->getAccessor.attributes,
-						 attrs, property->type,
+						 modifiers, property->type,
 						 name, 0, property->params,
 						 accessors->getAccessor.body);
 		yysetfilename(decl, accessors->getAccessor.filename);
@@ -745,13 +752,13 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property,
 	/* Create the "set" method */
 	if(accessors->setAccessor.present != 0)
 	{
-		ILUInt32 attrs;
+		ILUInt32 modifiers;
 
 		name = AdjustPropertyName(property->name, "set_");
-		attrs = GetAccessorAttrs(property->modifiers,
-								 accessors->setAccessor.modifiers,
-								 accessors->setAccessor.filename,
-								 accessors->setAccessor.linenum);
+		modifiers = GetAccessorModifiers(property->modifiers,
+										 accessors->setAccessor.modifiers,
+										 accessors->setAccessor.filename,
+										 accessors->setAccessor.linenum);
 		params = ILNode_List_create();
 		ILNode_ListIter_Init(&iter, property->params);
 		while((temp = ILNode_ListIter_Next(&iter)) != 0)
@@ -764,137 +771,11 @@ static void CreatePropertyMethods(ILNode_PropertyDeclaration *property,
 		decl = (ILNode_MethodDeclaration *)
 			ILNode_MethodDeclaration_create
 					(accessors->setAccessor.attributes,
-					 attrs, 0, name, 0, params,
+					 modifiers, 0, name, 0, params,
 					 accessors->setAccessor.body);
 		yysetfilename(decl, accessors->setAccessor.filename);
 		yysetlinenum(decl, accessors->setAccessor.linenum);
 		property->setAccessor = (ILNode *)decl;
-	}
-}
-
-/*
- * Create the methods needed by an event declarator.
- */
-static void CreateEventDeclMethods(ILNode_EventDeclaration *event,
-								   ILNode_EventDeclarator *decl)
-{
-	ILNode_MethodDeclaration *method;
-	ILNode *eventName;
-	ILNode *name;
-	ILNode *addParams;
-	ILNode *removeParams;
-
-	/* Get the name of the event */
-	eventName = ((ILNode_FieldDeclarator *)(decl->fieldDeclarator))->name;
-
-	/* Create the parameter information for the "add" and "remove" methods */
-	addParams = ILNode_List_create();
-	ILNode_List_Add(addParams,
-		ILNode_FormalParameter_create(0, ILParamMod_empty, event->type,
-				ILQualIdentSimple(ILInternString("value", 5).string)));
-	removeParams = ILNode_List_create();
-	ILNode_List_Add(removeParams,
-		ILNode_FormalParameter_create(0, ILParamMod_empty, event->type,
-				ILQualIdentSimple(ILInternString("value", 5).string)));
-
-	/* Create the "add" method */
-	name = AdjustPropertyName(eventName, "add_");
-	method = (ILNode_MethodDeclaration *)(decl->addAccessor);
-	if(!method && event->needFields)
-	{
-		/* Field-based event that needs a pre-defined body */
-		method = (ILNode_MethodDeclaration *)
-			ILNode_MethodDeclaration_create
-					(0, event->modifiers, 0, name, 0, addParams, 0);
-		method->body = ILNode_NewScope_create
-							(ILNode_AssignAdd_create
-								(ILNode_Add_create(eventName, 
-									ILQualIdentSimple
-										(ILInternString("value", 5).string))));
-		decl->addAccessor = (ILNode *)method;
-	}
-	else if(!method)
-	{
-		/* Abstract interface definition */
-		method = (ILNode_MethodDeclaration *)
-			ILNode_MethodDeclaration_create
-					(0, event->modifiers, 0, name, 0, addParams, 0);
-		decl->addAccessor = (ILNode *)method;
-	}
-	else
-	{
-		/* Regular class definition */
-		method->modifiers = event->modifiers;
-		method->type = 0;
-		method->name = name;
-		method->params = addParams;
-	}
-	method->modifiers |= IL_META_METHODDEF_SPECIAL_NAME;
-
-	/* Create the "remove" method */
-	name = AdjustPropertyName(eventName, "remove_");
-	method = (ILNode_MethodDeclaration *)(decl->removeAccessor);
-	if(!method && event->needFields)
-	{
-		/* Field-based event that needs a pre-defined body */
-		method = (ILNode_MethodDeclaration *)
-			ILNode_MethodDeclaration_create
-					(0, event->modifiers, 0, name, 0, removeParams, 0);
-		method->body = ILNode_NewScope_create
-							(ILNode_AssignSub_create
-								(ILNode_Sub_create(eventName, 
-									ILQualIdentSimple
-										(ILInternString("value", 5).string))));
-		decl->removeAccessor = (ILNode *)method;
-	}
-	else if(!method)
-	{
-		/* Abstract interface definition */
-		method = (ILNode_MethodDeclaration *)
-			ILNode_MethodDeclaration_create
-					(0, event->modifiers, 0, name, 0, removeParams, 0);
-		decl->removeAccessor = (ILNode *)method;
-	}
-	else
-	{
-		/* Regular class definition */
-		method->modifiers = event->modifiers;
-		method->type = 0;
-		method->name = name;
-		method->params = removeParams;
-	}
-	method->modifiers |= IL_META_METHODDEF_SPECIAL_NAME;
-}
-
-/*
- * Create the methods needed by an event definition.
- */
-static void CreateEventMethods(ILNode_EventDeclaration *event)
-{
-	ILNode_ListIter iter;
-	ILNode *decl;
-
-	if(yyisa(event->eventDeclarators, ILNode_EventDeclarator))
-	{
-		/* A single declarator indicates a property-style event */
-		event->needFields = 0;
-
-		/* Create the methods for the event declarator */
-		CreateEventDeclMethods
-			(event, (ILNode_EventDeclarator *)(event->eventDeclarators));
-	}
-	else
-	{
-		/* A list of declarators indicates a field-style event */
-		event->needFields =
-			((event->modifiers & IL_META_METHODDEF_ABSTRACT) == 0);
-
-		/* Scan the list and create the methods that we require */
-		ILNode_ListIter_Init(&iter, event->eventDeclarators);
-		while((decl = ILNode_ListIter_Next(&iter)) != 0)
-		{
-			CreateEventDeclMethods(event, (ILNode_EventDeclarator *)decl);
-		}
 	}
 }
 
@@ -3367,81 +3248,27 @@ ClassDeclaration
 				/* Enter a new nesting level */
 				++NestingLevel;
 
-			#if IL_VERSION_MAJOR > 1
-				/* ECMA 334 Version 4: 17.1.1.3 */
-				if($1.modifiers & CS_MODIFIER_STATIC)
-				{
-					if($1.modifiers & CS_MODIFIER_SEALED)
-					{
-						CCError(_("static classes must not be sealed"));
-					}
-					if($1.modifiers & CS_MODIFIER_ABSTRACT)
-					{
-						CCError(_("static classes must not be abstract"));
-					}
-					if($1.classBase != 0)
-					{
-						CCError(_("static classes must not have a base class specification"));
-					}
-					/* Static classes are implecitely sealed. */
-					/* ECMA 335 Version 4: 10.1.4 states they should be abstract too. */
-					$1.modifiers |= (CS_MODIFIER_SEALED | CS_MODIFIER_ABSTRACT);
-				}
-			#endif	/* IL_VERSION_MAJOR > 1 */
-
 				/* Push the identifier onto the class name stack */
 				ClassNamePush($1.identifier, $1.modifiers);
 			}
 			ClassBody OptSemiColon	{
 				ILNode *classBody = ($3).body;
-
-				/* Validate the modifiers */
-				ILUInt32 attrs =
-			#if IL_VERSION_MAJOR > 1
-					CSModifiersToTypeAttrs($1.identifier, $1.modifiers & ~CS_MODIFIER_STATIC,
-										   (NestingLevel > 1));
-			#else	/* IL_VERSION_MAJOR == 1 */
-					CSModifiersToTypeAttrs($1.identifier, $1.modifiers, (NestingLevel > 1));
-			#endif	/* IL_VERSION_MAJOR == 1 */
+				ILUInt32 modifiers = $1.modifiers;
 
 				/* Exit the current nesting level */
 				--NestingLevel;
 
 				/* Determine if we need to add a default constructor */
-			#if IL_VERSION_MAJOR > 1
-				/* Don't add the default constructor for static classes. */
-				if((($1.modifiers & CS_MODIFIER_STATIC) == 0) && 
-				   !ClassNameIsCtorDefined())
-			#else	/* IL_VERSION_MAJOR == 1 */
-				if(!ClassNameIsCtorDefined())
-			#endif	/* IL_VERSION_MAJOR == 1 */
+				if(ClassNameIsCtorDefined())
 				{
-					ILUInt32 ctorMods =
-						(((attrs & IL_META_TYPEDEF_ABSTRACT) != 0)
-							? CS_MODIFIER_PROTECTED : CS_MODIFIER_PUBLIC);
-					ILNode *cname = ILQualIdentSimple
-							(ILInternString(".ctor", 5).string);
-					ILNode *body = ILNode_NewScope_create
-							(ILNode_Compound_CreateFrom
-								(ILNode_NonStaticInit_create(),
-								 ILNode_InvocationExpression_create
-									(ILNode_BaseInit_create(), 0)));
-					ILNode *ctor = ILNode_MethodDeclaration_create
-						  (0, CSModifiersToConstructorAttrs(cname, ctorMods),
-						   0 /* "void" */, cname, 0,
-						   ILNode_Empty_create(), body);
-					if(!classBody)
-					{
-						classBody = ILNode_List_create();
-					}
-					ILNode_List_Add(classBody, ctor);
+					modifiers |= CS_MODIFIER_CTOR_DEFINED;
 				}
 
 				/* Create the class definition */
 				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							($1.attributes,			/* OptAttributes */
-							 attrs,					/* OptModifiers */
+							 modifiers | CS_MODIFIER_TYPE_CLASS,
 							 ILQualIdentName($1.identifier, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
@@ -3611,7 +3438,7 @@ ModuleDeclaration
 				ILNode *classBody = ($3).body;
 
 				/* Get the default modifiers */
-				ILUInt32 attrs = IL_META_TYPEDEF_PUBLIC;
+				ILUInt32 modifiers = CS_MODIFIER_PUBLIC;
 
 				/* Exit the current nesting level */
 				--NestingLevel;
@@ -3620,7 +3447,7 @@ ModuleDeclaration
 				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							(0,						/* OptAttributes */
-							 attrs,					/* OptModifiers */
+							 modifiers | CS_MODIFIER_TYPE_MODULE,
 							 ILInternString("<Module>", -1).string,
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
@@ -3761,8 +3588,9 @@ GenericMethodHeaderStart
 
 ConstantDeclaration
 	: OptAttributesAndModifiers CONST Type ConstantDeclarators ';' {
-				ILUInt32 attrs = CSModifiersToConstAttrs($3, $1.modifiers);
-				$$ = ILNode_FieldDeclaration_create($1.attributes, attrs, $3, $4);
+				$$ = ILNode_FieldDeclaration_create($1.attributes,
+													$1.modifiers | CS_MODIFIER_FIELD_CONST,
+													$3, $4);
 			}
 	;
 
@@ -3789,21 +3617,9 @@ ConstantDeclarator
 
 FieldDeclaration
 	: MemberHeaderStart FieldDeclarators ';'	{
-				ILUInt32 attrs = CSModifiersToFieldAttrs($1.type, $1.modifiers);
-			#if IL_VERSION_MAJOR > 1
-				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
-				{
-					if(!($1.modifiers & CS_MODIFIER_STATIC))
-					{
-						CCError(_("only static fields are allowed in static classes"));
-					}
-					if($1.modifiers & CS_MODIFIER_PROTECTED)
-					{
-						CCError(_("no protected or protected internal fields are allowed in static classes"));
-					}
-				}
-			#endif	/* IL_VERSION_MAJOR > 1 */
-				$$ = ILNode_FieldDeclaration_create($1.attributes, attrs, $1.type, $2);
+				$$ = ILNode_FieldDeclaration_create($1.attributes,
+													$1.modifiers,
+													$1.type, $2);
 			}
 	;
 
@@ -3860,29 +3676,15 @@ MethodHeader
 
 MethodDeclaration
 	: MethodHeader MethodBody	{
-				ILUInt32 attrs = CSModifiersToMethodAttrs($1.type, $1.modifiers);
 				if($1.modifiers & CS_MODIFIER_PRIVATE  && yyisa($1.identifier, ILNode_QualIdent))
 				{
 					// NOTE: clean this up later
 					CCErrorOnLine(yygetfilename($1.type), yygetlinenum($1.type),
 						"`private' cannot be used in this context");
 				}
-			#if IL_VERSION_MAJOR > 1
-				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
-				{
-					if(!($1.modifiers & CS_MODIFIER_STATIC))
-					{
-						CCError(_("only static methods are allowed in static classes"));
-					}
-					if($1.modifiers & CS_MODIFIER_PROTECTED)
-					{
-						CCError(_("no protected or protected internal methods are allowed in static classes"));
-					}
-				}
-			#endif	/* IL_VERSION_MAJOR > 1 */
 				$$ = ILNode_MethodDeclaration_create
 						($1.attributes,
-						 attrs,
+						 $1.modifiers,
 						 $1.type,
 						 $1.identifier,
 						 (ILNode *)$1.typeFormals,
@@ -3936,25 +3738,9 @@ ParameterModifier
 PropertyDeclaration
 	: NonGenericMethodAndPropertyHeaderStart
 			StartAccessorBlock AccessorBlock	{
-				ILUInt32 attrs;
-
-			#if IL_VERSION_MAJOR > 1
-				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
-				{
-					if(!($1.modifiers & CS_MODIFIER_STATIC))
-					{
-						CCError(_("only static properties are allowed in static classes"));
-					}
-					if($1.modifiers & CS_MODIFIER_PROTECTED)
-					{
-						CCError(_("no protected or protected internal properties are allowed in static classes"));
-					}
-				}
-			#endif	/* IL_VERSION_MAJOR > 1 */
 				/* Create the property declaration */
-				attrs = CSModifiersToPropertyAttrs($1.type, $1.modifiers);
 				$$ = ILNode_PropertyDeclaration_create($1.attributes,
-								   attrs, $1.type, $1.identifier, 0, 0, 0,
+								   $1.modifiers, $1.type, $1.identifier, 0, 0, 0,
 								   (($3.getAccessor.present ? 1 : 0) |
 								    ($3.setAccessor.present ? 2 : 0)));
 				CloneLine($$, $1.identifier);
@@ -4073,22 +3859,8 @@ EventDeclaration
 
 EventFieldDeclaration
 	: OptAttributesAndModifiers EVENT Type EventDeclarators ';'	{
-				ILUInt32 attrs = CSModifiersToEventAttrs($3, $1.modifiers);
-			#if IL_VERSION_MAJOR > 1
-				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
-				{
-					if(!($1.modifiers & CS_MODIFIER_STATIC))
-					{
-						CCError(_("only static events are allowed in static classes"));
-					}
-					if($1.modifiers & CS_MODIFIER_PROTECTED)
-					{
-						CCError(_("no protected or protected internal events are allowed in static classes"));
-					}
-				}
-			#endif	/* IL_VERSION_MAJOR > 1 */
-				$$ = ILNode_EventDeclaration_create($1.attributes, attrs, $3, $4);
-				CreateEventMethods((ILNode_EventDeclaration *)($$));
+				$$ = ILNode_EventDeclaration_create($1.attributes, $1.modifiers, $3, $4);
+				CloneLine($$, $3);
 			}
 	;
 
@@ -4106,26 +3878,32 @@ EventDeclarators
 
 EventDeclarator
 	: Identifier							{
-				$$ = ILNode_EventDeclarator_create
-						(ILNode_FieldDeclarator_create($1, 0), 0, 0);
+				ILNode *field;
+
+				field = ILNode_FieldDeclarator_create($1, 0);
+				$$ = ILNode_EventDeclarator_create(field, 0, 0);
 			}
 	| Identifier '=' VariableInitializer	{
-				$$ = ILNode_EventDeclarator_create
-						(ILNode_FieldDeclarator_create($1, $3), 0, 0);
+				ILNode *field;
+
+				field = ILNode_FieldDeclarator_create($1, $3);
+				$$ = ILNode_EventDeclarator_create(field, 0, 0);
 			}
 	;
 
 EventPropertyDeclaration
 	: OptAttributesAndModifiers EVENT Type QualifiedIdentifier
 			StartAccessorBlock EventAccessorBlock	{
-				ILUInt32 attrs = CSModifiersToEventAttrs($3, $1.modifiers);
-				$$ = ILNode_EventDeclaration_create
-					($1.attributes, attrs, $3, 
-						ILNode_EventDeclarator_create
-							(ILNode_FieldDeclarator_create($4, 0),
-							 $6.item1, $6.item2));
-				CloneLine($$, $4);
-				CreateEventMethods((ILNode_EventDeclaration *)($$));
+				ILNode *fieldDeclarator;
+				ILNode *eventDeclarator;
+
+				fieldDeclarator = ILNode_FieldDeclarator_create($4, 0);
+				eventDeclarator = ILNode_EventDeclarator_create(fieldDeclarator,
+																$6.item1,
+																$6.item2);
+				$$ = ILNode_EventDeclaration_create($1.attributes,
+													$1.modifiers, $3,
+													eventDeclarator);
 			}
 	;
 
@@ -4183,7 +3961,6 @@ IndexerDeclaration
 			StartAccessorBlock AccessorBlock		{
 				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1.attributes,
 							$2.ident);
-				ILUInt32 attrs = CSModifiersToPropertyAttrs($1.type, $1.modifiers);
 
 			#if IL_VERSION_MAJOR > 1
 				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
@@ -4200,7 +3977,7 @@ IndexerDeclaration
 			#endif	/* IL_VERSION_MAJOR > 1 */
 
 				$$ = ILNode_PropertyDeclaration_create($1.attributes,
-								   attrs, $1.type, name, $2.params,
+								   $1.modifiers, $1.type, name, $2.params,
 								   0, 0,
 								   (($4.getAccessor.present ? 1 : 0) |
 								    ($4.setAccessor.present ? 2 : 0)));
@@ -4264,7 +4041,6 @@ OperatorDeclaration
 NormalOperatorDeclaration
 	: MemberHeaderStart OPERATOR OverloadableOperator
 			'(' Type Identifier ')'	Block {
-				ILUInt32 attrs;
 				ILNode *params;
 
 				/* Validate the name of the unary operator */
@@ -4274,16 +4050,6 @@ NormalOperatorDeclaration
 					$3.unary = $3.binary;
 				}
 
-			#if IL_VERSION_MAJOR > 1
-				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
-				{
-					CCError(_("no operators are allowed in static classes"));
-				}
-			#endif	/* IL_VERSION_MAJOR > 1 */
-
-				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($1.type, $1.modifiers);
-
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
 				ILNode_List_Add(params,
@@ -4291,14 +4057,14 @@ NormalOperatorDeclaration
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1.attributes, attrs, $1.type,
+						($1.attributes,
+						 $1.modifiers | CS_MODIFIER_METHOD_OPERATOR, $1.type,
 						 ILQualIdentSimple(ILInternString($3.unary, -1).string),
 						 0, params, $8);
 				CloneLine($$, $1.type);
 			}
 	| MemberHeaderStart OPERATOR OverloadableOperator
 			'(' Type Identifier ',' Type Identifier ')' Block	{
-				ILUInt32 attrs;
 				ILNode *params;
 
 				/* Validate the name of the binary operator */
@@ -4307,16 +4073,6 @@ NormalOperatorDeclaration
 					CCError("overloadable binary operator expected");
 					$3.binary = $3.unary;
 				}
-
-			#if IL_VERSION_MAJOR > 1
-				if(ClassNameGetModifiers() & CS_MODIFIER_STATIC)
-				{
-					CCError(_("no operators are allowed in static classes"));
-				}
-			#endif	/* IL_VERSION_MAJOR > 1 */
-
-				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($1.type, $1.modifiers);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -4329,7 +4085,8 @@ NormalOperatorDeclaration
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1.attributes, attrs, $1.type,
+						($1.attributes,
+						 $1.modifiers | CS_MODIFIER_METHOD_OPERATOR, $1.type,
 						 ILQualIdentSimple
 						 	(ILInternString($3.binary, -1).string),
 						 0, params, $11);
@@ -4365,11 +4122,7 @@ OverloadableOperator
 ConversionOperatorDeclaration
 	: OptAttributesAndModifiers IMPLICIT OPERATOR Type
 			'(' Type Identifier ')' Block	{
-				ILUInt32 attrs;
 				ILNode *params;
-
-				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($4, $1.modifiers);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -4378,7 +4131,8 @@ ConversionOperatorDeclaration
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1.attributes, attrs, $4,
+						($1.attributes,
+						 $1.modifiers | CS_MODIFIER_METHOD_OPERATOR, $4,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Implicit", -1).string),
 						 0, params, $9);
@@ -4386,11 +4140,7 @@ ConversionOperatorDeclaration
 			}
 	| OptAttributesAndModifiers EXPLICIT OPERATOR Type
 			'(' Type Identifier ')' Block	{
-				ILUInt32 attrs;
 				ILNode *params;
-
-				/* Get the operator attributes */
-				attrs = CSModifiersToOperatorAttrs($4, $1.modifiers);
 
 				/* Build the formal parameter list */
 				params = ILNode_List_create();
@@ -4399,7 +4149,8 @@ ConversionOperatorDeclaration
 
 				/* Create a method definition for the operator */
 				$$ = ILNode_MethodDeclaration_create
-						($1.attributes, attrs, $4,
+						($1.attributes,
+						 $1.modifiers | CS_MODIFIER_METHOD_OPERATOR, $4,
 						 ILQualIdentSimple
 						 	(ILInternString("op_Explicit", -1).string),
 						 0, params, $9);
@@ -4414,7 +4165,6 @@ ConversionOperatorDeclaration
 ConstructorDeclaration
 	: OptAttributesAndModifiers Identifier
 			'(' OptFormalParameterList ')' ConstructorInitializer MethodBody {
-				ILUInt32 attrs = CSModifiersToConstructorAttrs($2, $1.modifiers);
 				ILNode *ctorName;
 				ILNode *cname;
 				ILNode *initializer = $6;
@@ -4430,7 +4180,7 @@ ConstructorDeclaration
 				}
 			#endif	/* IL_VERSION_MAJOR > 1 */
 
-				if((attrs & IL_META_METHODDEF_STATIC) != 0)
+				if(($1.modifiers & CS_MODIFIER_STATIC) != 0)
 				{
 					cname = ILQualIdentSimple
 								(ILInternString(".cctor", 6).string);
@@ -4456,7 +4206,7 @@ ConstructorDeclaration
 						ILNode_Compound_CreateFrom
 							(initializer, ((ILNode_NewScope *)body)->stmt);
 				}
-				else if($7 || (attrs & CS_SPECIALATTR_EXTERN) == 0)
+				else if($7 || ($1.modifiers & CS_MODIFIER_EXTERN) == 0)
 				{
 					/* Non-scoped body: create a new scoped body */
 					body = ILNode_NewScope_create
@@ -4469,7 +4219,7 @@ ConstructorDeclaration
 					/* Extern constructor with an empty body */
 					body = 0;
 				}
-				if((attrs & IL_META_METHODDEF_STATIC) != 0)
+				if(($1.modifiers & CS_MODIFIER_STATIC) != 0)
 				{
 					if(!yyisa($4,ILNode_Empty))
 					{
@@ -4482,7 +4232,8 @@ ConstructorDeclaration
 				else
 				{
 					$$.body = ILNode_MethodDeclaration_create
-						  ($1.attributes, attrs, 0 /* "void" */, cname, 0, $4, body);
+						  ($1.attributes, $1.modifiers | CS_MODIFIER_METHOD_CONSTRUCTOR,
+						   0 /* "void" */, cname, 0, $4, body);
 					CloneLine($$.body, $2);
 					$$.staticCtors = 0;
 				}
@@ -4509,7 +4260,6 @@ ConstructorInitializer
 
 DestructorDeclaration
 	: OptAttributesAndModifiers '~' Identifier '(' ')' Block		{
-				ILUInt32 attrs;
 				ILNode *dtorName;
 				ILNode *name;
 				ILNode *body;
@@ -4533,9 +4283,6 @@ DestructorDeclaration
 						"destructor name does not match class name");
 				}
 
-				/* Build the list of attributes needed on "Finalize" */
-				attrs = CSModifiersToDestructorAttrs($3, $1.modifiers);
-
 				/* Build the name of the "Finalize" method */
 				name = ILQualIdentSimple(ILInternString("Finalize", -1).string);
 
@@ -4553,7 +4300,9 @@ DestructorDeclaration
 
 				/* Construct the finalizer declaration */
 				$$ = ILNode_MethodDeclaration_create
-							($1.attributes, attrs, 0 /* void */,
+							($1.attributes,
+							 $1.modifiers | CS_MODIFIER_METHOD_DESTRUCTOR,
+							 0 /* void */,
 							 ILQualIdentSimple
 							 	(ILInternString("Finalize", -1).string),
 							 0, 0, body);
@@ -4604,38 +4353,19 @@ StructDeclaration
 				ClassNamePush($1.identifier, $1.modifiers);
 			}
 			StructBody OptSemiColon	{
-				ILNode *baseList;
-				ILUInt32 attrs;
-
-				/* Validate the modifiers */
-				attrs = CSModifiersToTypeAttrs($1.identifier, $1.modifiers,
-											   (NestingLevel > 1));
-
-				/* Add extra attributes that structs need */
-				attrs |= IL_META_TYPEDEF_LAYOUT_SEQUENTIAL |
-						 IL_META_TYPEDEF_SERIALIZABLE |
-						 IL_META_TYPEDEF_SEALED;
-
 				/* Exit the current nesting level */
 				--NestingLevel;
-
-				/* Make sure that we have "ValueType" in the base list */
-				baseList = MakeSystemType("ValueType");
-				if($1.classBase != 0)
-				{
-					baseList = ILNode_ArgList_create($1.classBase, baseList);
-				}
 
 				/* Create the class definition */
 				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							($1.attributes,			/* OptAttributes */
-							 attrs,					/* OptModifiers */
+							 $1.modifiers | CS_MODIFIER_TYPE_STRUCT,
 							 ILQualIdentName($1.identifier, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 (ILNode *)$1.typeFormals, /* TypeFormals */
-							 baseList,				/* ClassBase */
+							 ($1).classBase,		/* ClassBase */
 							 ($3).body,				/* StructBody */
 							 ($3).staticCtors);		/* StaticCtors */
 				CloneLine($$, $1.identifier);
@@ -4708,15 +4438,6 @@ InterfaceDeclaration
 				ClassNamePush($1.identifier, $1.modifiers);
 			}
 			InterfaceBody OptSemiColon	{
-				/* Validate the modifiers */
-				ILUInt32 attrs =
-					CSModifiersToTypeAttrs($1.identifier, $1.modifiers,
-										   (NestingLevel > 1));
-
-				/* Add extra attributes that interfaces need */
-				attrs |= IL_META_TYPEDEF_INTERFACE |
-						 IL_META_TYPEDEF_ABSTRACT;
-
 				/* Exit from the current nesting level */
 				--NestingLevel;
 
@@ -4724,7 +4445,7 @@ InterfaceDeclaration
 				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							($1.attributes,			/* OptAttributes */
-							 attrs,					/* OptModifiers */
+							 $1.modifiers | CS_MODIFIER_TYPE_INTERFACE,
 							 ILQualIdentName($1.identifier, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
@@ -4815,15 +4536,9 @@ InterfaceMethodHeader
 
 InterfaceMethodDeclaration
 	: InterfaceMethodHeader ';' {
-				ILUInt32 attrs = ($1.modifiers ? CS_SPECIALATTR_NEW : 0) |
-								 IL_META_METHODDEF_PUBLIC |
-								 IL_META_METHODDEF_VIRTUAL |
-								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG |
-								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_MethodDeclaration_create
 						($1.attributes,
-						 attrs,
+						 $1.modifiers | CS_MODIFIER_METHOD_INTERFACE,
 						 $1.type,
 						 $1.identifier,
 						 (ILNode *)$1.typeFormals,
@@ -4835,21 +4550,16 @@ InterfaceMethodDeclaration
 
 OptNew
 	: /* empty */	{ $$ = 0; }
-	| NEW 			{ $$ = 1; }
+	| NEW 			{ $$ = CS_MODIFIER_NEW; }
 	;
 
 InterfacePropertyDeclaration
 	: OptAttributes OptNew Type Identifier
 			StartInterfaceAccessorBody InterfaceAccessorBody	{
-				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
-								 IL_META_METHODDEF_PUBLIC |
-								 IL_META_METHODDEF_VIRTUAL |
-								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG |
-								 IL_META_METHODDEF_SPECIAL_NAME |
-								 IL_META_METHODDEF_NEW_SLOT;
 				$$ = ILNode_PropertyDeclaration_create
-								($1, attrs, $3, $4, 0, 0, 0,
+								($1,
+								 $2 | CS_MODIFIER_PROPERTY_INTERFACE,
+								 $3, $4, 0, 0, 0,
 								 (($6.getAccessor.present ? 1 : 0) |
 								  ($6.setAccessor.present ? 2 : 0)));
 				CloneLine($$, $4);
@@ -4969,34 +4679,24 @@ InterfaceAccessors
 
 InterfaceEventDeclaration
 	: OptAttributes OptNew EVENT Type Identifier ';'		{
-				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
-								 IL_META_METHODDEF_PUBLIC |
-								 IL_META_METHODDEF_VIRTUAL |
-								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG |
-								 IL_META_METHODDEF_NEW_SLOT;
+				ILUInt32 modifiers;
+
+				modifiers = $2 | CS_MODIFIER_EVENT_INTERFACE;
 				$$ = ILNode_EventDeclaration_create
-							($1, attrs, $4,
+							($1, modifiers, $4,
 							 ILNode_EventDeclarator_create
 							 	(ILNode_FieldDeclarator_create($5, 0), 0, 0));
-				CreateEventMethods((ILNode_EventDeclaration *)($$));
 			}
 	;
 
 InterfaceIndexerDeclaration
 	: OptAttributes OptNew Type THIS FormalIndexParameters
 			StartInterfaceAccessorBody InterfaceAccessorBody	{
-				ILUInt32 attrs = ($2 ? CS_SPECIALATTR_NEW : 0) |
-								 IL_META_METHODDEF_PUBLIC |
-								 IL_META_METHODDEF_VIRTUAL |
-								 IL_META_METHODDEF_ABSTRACT |
-								 IL_META_METHODDEF_HIDE_BY_SIG |
-								 IL_META_METHODDEF_SPECIAL_NAME |
-								 IL_META_METHODDEF_NEW_SLOT;
+				ILUInt32 modifiers = $2 | CS_MODIFIER_PROPERTY_INTERFACE;
 				ILNode* name=GetIndexerName(&CCCodeGen,(ILNode_AttributeTree*)$1,
 								ILQualIdentSimple(NULL));
 				$$ = ILNode_PropertyDeclaration_create
-								($1, attrs, $3, name, $5, 0, 0,
+								($1, modifiers, $3, name, $5, 0, 0,
 								 (($7.getAccessor.present ? 1 : 0) |
 								  ($7.setAccessor.present ? 2 : 0)));
 				CloneLine($$, $3);
@@ -5019,23 +4719,11 @@ EnumDeclaration
 				ClassNamePush($3, $1.modifiers);
 			}
 			EnumBody OptSemiColon	{
-				ILNode *baseList;
 				ILNode *bodyList;
 				ILNode *fieldDecl;
-				ILUInt32 attrs;
-
-				/* Validate the modifiers */
-				attrs = CSModifiersToTypeAttrs($3, $1.modifiers, (NestingLevel > 1));
-
-				/* Add extra attributes that enums need */
-				attrs |= IL_META_TYPEDEF_SERIALIZABLE |
-						 IL_META_TYPEDEF_SEALED;
 
 				/* Exit the current nesting level */
 				--NestingLevel;
-
-				/* Make sure that we have "Enum" in the base list */
-				baseList = MakeSystemType("Enum");
 
 				/* Add an instance field called "value__" to the body,
 				   which is used to hold the enumerated value */
@@ -5051,20 +4739,20 @@ EnumDeclaration
 				MakeBinary(FieldDeclarator, $1.attributes, 0);
 				ILNode_List_Add(bodyList,
 					ILNode_FieldDeclaration_create
-						(0, IL_META_FIELDDEF_PUBLIC |
-							IL_META_FIELDDEF_SPECIAL_NAME |
-							IL_META_FIELDDEF_RT_SPECIAL_NAME, $4, fieldDecl));
+						(0, CS_MODIFIER_PUBLIC |
+							CS_MODIFIER_FIELD_SPECIAL_NAME |
+							CS_MODIFIER_FIELD_RT_SPECIAL_NAME, $4, fieldDecl));
 
 				/* Create the class definition */
 				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
-							($1.attributes,					/* OptAttributes */
-							 attrs,					/* OptModifiers */
+							($1.attributes,			/* OptAttributes */
+							 $1.modifiers | CS_MODIFIER_TYPE_ENUM,
 							 ILQualIdentName($3, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 0,						/* TypeFormals */
-							 baseList,				/* ClassBase */
+							 0,						/* ClassBase */
 							 bodyList,				/* EnumBody */
 							 0);					/* StaticCtors */
 				CloneLine($$, $3);
@@ -5171,17 +4859,7 @@ DelegateHeader
 
 DelegateDeclaration
 	: DelegateHeader ';'	{
-				ILNode *baseList;
 				ILNode *bodyList;
-				ILUInt32 attrs;
-
-				/* Validate the modifiers */
-				attrs = CSModifiersToDelegateAttrs($1.identifier, $1.modifiers,
-												   (NestingLevel > 0));
-
-				/* Make sure that we have "MulticastDelegate"
-				   in the base list */
-				baseList = MakeSystemType("MulticastDelegate");
 
 				/* Construct the body of the delegate class */
 				bodyList = ILNode_List_create();
@@ -5193,12 +4871,12 @@ DelegateDeclaration
 				InitGlobalNamespace();
 				$$ = ILNode_ClassDefn_create
 							($1.attributes,			/* OptAttributes */
-							 attrs,					/* OptModifiers */
+							 $1.modifiers | CS_MODIFIER_TYPE_DELEGATE,
 							 ILQualIdentName($1.identifier, 0),/* Identifier */
 							 CurrNamespace.string,	/* Namespace */
 							 (ILNode *)CurrNamespaceNode,
 							 (ILNode *)$1.typeFormals, /* TypeFormals */
-							 baseList,				/* ClassBase */
+							 0,						/* ClassBase */
 							 bodyList,				/* Body */
 							 0);					/* StaticCtors */
 				CloneLine($$, $1.identifier);

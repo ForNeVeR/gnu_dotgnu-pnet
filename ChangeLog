@@ -1,3 +1,86 @@
+2009-07-30  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_cast.tc (CSCastMethod): Use CS_MODIGIER_STATIC instead
+	of IL_META_METHODDEF_STATIC with the modifiers now.
+
+	* cscc/csharp/cs_decls.tc (AppendStaticCtor): Guard the initialization
+	with a SemGuard node if required.
+	(CheckStaticCtor): Add helper function to check for multiple static
+	constructors.
+	(CreateStaticCtorMethod): Move logic from
+	ILNode_SemAnalysis(ILNode_ClassDefn) to this helper function.
+	(HandleStaticCtor): Move logic from ILNode_SemAnalysis(ILNode_ClassDefn)
+	to this new helper function.
+	(CSAddInitCtor): Perform semantic analysis on the initialization
+	statement in the context of the class node where it is defined here.
+
+	* cscc/csharp/cs_gather.c (CloneLine): New helper function
+	(GetMemberVisibilityFromModifiers): likewise
+	(PrefixName): likewise
+	(GetImplicitParent): likewise.
+	(CollectBaseClasses): Move collecting the base classes and implemented
+	interfaces from AddBaseClases to this separate function.
+	(AddBaseClasses): see CollectBaseClasses.
+	(GetTypeAttrs): Add helper function for determining the correct type
+	attributes for an ILNode_ClassDefn (Logic moved from cs_grammar.y to here).
+	(CreateNestedTypes): Add helper function.
+	(AddTypeToList): likewise.
+	(AddDefaultCtor): Logic moved from cs_grammar.y to here.
+	(CreateType): Move handling of implicit parent classes from cs_grammar.y
+	to here. Use the new small helper functions CreateNestedTypec,
+	AddTypeToList) instead of having the logic inlined.
+	Creation of the default constructor moved to here.
+	(GetFieldAttrs): Add helper function for determining the correct field
+	attributes for an ILNode_FieldDeclaration (Logic moved from cs_grammar.y
+	to here).
+	(CreateField): Move check for static classes from cs_grammar.y to here.
+	(GetMethodAttrs): Add helper function for determining the correct method
+	attributes for an ILNode_MethodDeclaration (Logic moved from cs_grammar.y
+	to here).
+	(CreateMethod): Move check for static classes from cs_grammar.y to here.
+	(CreateProperty): Move check for static classes from cs_grammar.y to
+	here.
+	(GetEventAccessorModifiers): Add helper function for determining the
+	correct attributes for an event accessor.
+	(CreateEventDeclMethods): Moved to from cs_grammar.y to here.
+	(CreateEventMethods): likewise
+	(CreateEventDecl): Move check for static classes from cs_grammar.y to
+	here.
+	General: Use the new CS_MODIFIER_* flags instead of the metadata
+	attribute flags with the node modifiers members.
+	Pass the ClassDefn node to the Create* functions indtead of the classInfo.
+
+	* cscc/csharp/cs_grammar.y (GetAccessorAttrs): Rename to
+	GetAccessorModifiers to reflect the new purpose to return the accessor
+	modifiers instead of the attributes.
+	(CreatePropertyMethods): Rename attrs to modifiers and GetAccessorAttrs
+	and store the modigfiers in the ILNode_MethodDeclarations.
+	(CreateEventDeclMethods): Moved to cs_gather.c
+	(CreateEventMethods): likewise
+	(parser): Move the checks for static classes to the corresponding Create*
+	functions in cs_gather.c.
+	Move the modifier to attribute conversions to cs_gather.c and store the
+	C# modifiers in the modifiers member of the nodes instead.
+	Move the default constructor creation to cs_gather.c
+	Move adding the implicit base classes to cs_gather.c
+
+	* cscc/csharp/cs_internal.h: Add additional CS_MODIFIER_ flags used
+	during type gathering and semantic analysis.
+	(CSProcessAttrsForClass): Add prototype.
+
+	* cscc/csharp/cs_invoke.tc
+	(ILNode_SemAnalysis(ILNode_InvokationExpression),
+	DelegateCreationSem): likewise
+
+	* cscc/csharp/cs_lvalue.tc (CheckForInstanceAccess,
+	(ILNode_SemAnalysis(ILNode_This), ILNode_SemAnalysis(ILNode_Identifier),
+	ILNode_SemAnalysis(ILNode_BaseAccess),
+	ILNode_SemAnalysis(ILNode_BaseElement)): likewise
+
+	* cscc/csharp/cs_modifiers.c: Omit the CS_SPECIALATTR_* flags from the
+	returned attribute flags because the modifiers member holds the modifiers
+	from the source now instead of the type/member attributes.
+
 2009-07-25  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/jv_misc.tc: Add operations JavaGenDiscard for  ILNode_AsIs

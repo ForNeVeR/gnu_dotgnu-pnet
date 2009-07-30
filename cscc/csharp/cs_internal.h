@@ -104,6 +104,52 @@ struct PropertyAccessors
 #define	CS_MODIFIER_EXTERN			(1<<11)
 #define	CS_MODIFIER_UNSAFE			(1<<12)
 #define	CS_MODIFIER_VOLATILE		(1<<13)
+#define	CS_MODIFIER_MASK			(0x0000FFFF)
+
+/* Type specific modifier flags */
+/* Set if an instance  constructor is defined for the class */
+#define	CS_MODIFIER_CTOR_DEFINED	0x00010000
+#define CS_MODIFIER_TYPE_CLASS		0x00100000
+#define CS_MODIFIER_TYPE_STRUCT		0x00200000
+#define CS_MODIFIER_TYPE_INTERFACE	0x00300000
+#define CS_MODIFIER_TYPE_ENUM		0x00400000
+#define CS_MODIFIER_TYPE_DELEGATE	0x00500000
+#define CS_MODIFIER_TYPE_MODULE		0x00600000
+#define CS_MODIFIER_TYPE_MASK		0x00700000
+
+/* Event specific modifier flags */
+/* Set for interface events */
+#define	CS_MODIFIER_EVENT_INTERFACE				0x00010000
+
+/*
+ * Field specific modifier flags
+ */
+#define	CS_MODIFIER_FIELD_CONST					0x00010000
+#define	CS_MODIFIER_FIELD_SPECIAL_NAME			0x00020000
+#define	CS_MODIFIER_FIELD_RT_SPECIAL_NAME		0x00040000
+
+/*
+ * Property specific modifier flags
+ */
+#define	CS_MODIFIER_PROPERTY_INTERFACE			0x00010000
+
+/*
+ * Method specific modifier flags
+ */
+#define	CS_MODIFIER_METHOD_SPECIAL_NAME			0x00010000
+#define	CS_MODIFIER_METHOD_RT_SPECIAL_NAME		0x00020000
+#define	CS_MODIFIER_METHOD_COMPILER_CONTROLED	0x00040000
+#define	CS_MODIFIER_METHOD_HIDE_BY_SIG			0x00080000
+#define	CS_MODIFIER_METHOD_NORMAL				0x00000000
+#define	CS_MODIFIER_METHOD_CONSTRUCTOR			0x00100000
+#define	CS_MODIFIER_METHOD_DESTRUCTOR			0x00200000
+#define	CS_MODIFIER_METHOD_OPERATOR				0x00300000
+#define	CS_MODIFIER_METHOD_INTERFACE			0x00400000
+#define	CS_MODIFIER_METHOD_INTERFACE_ACCESSOR	0x00500000
+#define	CS_MODIFIER_METHOD_EVENT_ACCESSOR		0x00600000
+#define	CS_MODIFIER_METHOD_PROPERTY_ACCESSOR	0x00700000
+#define	CS_MODIFIER_METHOD_TYPE_MASK			0x00700000
+
 
 /*
  * Special attribute flags.
@@ -292,6 +338,12 @@ void CSAddInitCtor(ILGenInfo *info, ILNode *stmt);
  */
 void CSProcessAttrs(ILGenInfo *info, ILProgramItem *item,
 					ILNode *attributes, int target);
+
+/*
+ * Process the attributes on a type definition.
+ */
+void CSProcessAttrsForClass(ILGenInfo *info, ILNode_ClassDefn *defn,
+							int mainTarget);
 
 /*
  * Process the attributes on a method parameter.

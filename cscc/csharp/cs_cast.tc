@@ -484,7 +484,7 @@ int CSCastMethod(ILGenInfo *info, ILNode *node, ILNode **parent,
 
 				caller = (ILNode_MethodDeclaration *)(info->currentMethod);
 				if(!caller || 
-					(caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+					(caller->modifiers & CS_MODIFIER_STATIC) != 0)
 				{
 					/* Attempt to call an instance method using "this"
 					   from within a static method */

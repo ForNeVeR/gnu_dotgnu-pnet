@@ -28,7 +28,7 @@ static void CheckForInstanceAccess(ILGenInfo *info, ILNode *node)
 {
 	ILNode_MethodDeclaration *caller;
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
-	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	if(!caller || (caller->modifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot access instance members in static methods");
@@ -50,7 +50,7 @@ ILNode_SemAnalysis(ILNode_This)
 	method = (ILNode_MethodDeclaration *)(info->currentMethod);
 
 	/* If the method is static, then we cannot use "this" */
-	if((method->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	if((method->modifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "cannot use `this' in static methods");
@@ -908,7 +908,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 		{
 			/* Argument reference */
 			index &= ~CS_LOCAL_IS_ARG;
-			if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
+			if((method->modifiers & CS_MODIFIER_STATIC) == 0)
 			{
 				paramMod = ILGenGetParamInfo(method->methodInfo, 0,
 											 index, &type);
@@ -935,7 +935,7 @@ ILNode_SemAnalysis(ILNode_Identifier)
 			else if(paramMod == ILParamMod_params)
 			{
 				/* Use the array form of the parameter inside the method */
-				if((method->modifiers & IL_META_METHODDEF_STATIC) == 0)
+				if((method->modifiers & CS_MODIFIER_STATIC) == 0)
 				{
 					type = ILTypeGetParam
 						(ILMethod_Signature(method->methodInfo), index);
@@ -1528,7 +1528,7 @@ ILNode_SemAnalysis(ILNode_BaseAccess)
 
 	/* Bail out if "base" is used within a static method */
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
-	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	if(!caller || (caller->modifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "cannot use base reference in a static method");
@@ -1583,7 +1583,7 @@ ILNode_SemAnalysis(ILNode_BaseElement)
 	
 	/* Bail out if "base" is used within a static method */
 	caller = (ILNode_MethodDeclaration *)(info->currentMethod);
-	if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+	if(!caller || (caller->modifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			  "cannot use base reference in a static method");

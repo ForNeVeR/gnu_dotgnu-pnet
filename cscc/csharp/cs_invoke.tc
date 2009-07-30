@@ -121,7 +121,7 @@ ILNode_SemAnalysis(ILNode_VarArgList)
 	method = (decl ? decl->methodInfo : 0);
 	if(!method ||
 	   (ILMethodGetCallConv(method) & IL_META_CALLCONV_MASK)
-	   		!= IL_META_CALLCONV_VARARG)
+			!= IL_META_CALLCONV_VARARG)
 	{
 		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					  "`__arglist' must be used inside a vararg method");
@@ -572,7 +572,7 @@ ILNode_SemAnalysis(ILNode_InvocationExpression)
 		    yyisa(((ILNode_MarkType *)(node->thisExpr))->expr, ILNode_This)))
 		{
 			caller = (ILNode_MethodDeclaration *)(info->currentMethod);
-			if(!caller || (caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+			if(!caller || (caller->modifiers & CS_MODIFIER_STATIC) != 0)
 			{
 				/* Attempt to call an instance method using "this"
 				   from within a static method */
@@ -687,7 +687,7 @@ CSSemValue DelegateCreationSem(ILGenInfo *info, ILNode *node,
 			{
 				caller = (ILNode_MethodDeclaration *)(info->currentMethod);
 				if(!caller || 
-					(caller->modifiers & IL_META_METHODDEF_STATIC) != 0)
+					(caller->modifiers & CS_MODIFIER_STATIC) != 0)
 				{
 					/* Attempt to call an instance method using "this"
 					   from within a static method */

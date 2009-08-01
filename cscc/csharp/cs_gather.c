@@ -72,6 +72,34 @@ static int CountBaseClasses(ILNode *node)
 }
 
 /*
+ * Get the total number of base classes for a class definition
+ */
+static int NumBases(ILNode_ClassDefn *defn)
+{
+	int count;
+
+	count = CountBaseClasses(defn->baseClass);
+#if IL_VERSION_MAJOR > 1
+	if(defn->otherParts)
+	{
+		ILNode *otherPart;
+		ILNode_ListIter iter;
+
+		ILNode_ListIter_Init(&iter, defn->otherParts);
+		while((otherPart = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			if(yyisa(otherPart, ILNode_ClassDefn))
+			{
+				count += CountBaseClasses(((ILNode_ClassDefn *)otherPart)->baseClass);
+			}
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+	return count;
+}
+
+/*
  * Convert a class definition node into an ILClass value.
  */
 static ILClass *NodeToClass(ILNode *node)
@@ -684,12 +712,20 @@ static void AddBaseClasses(ILGenInfo *info,
 {
 	ILClass *classInfo = classNode->classInfo;
 
+#if IL_VERSION_MAJOR > 1
+	if(classNode->partialParent)
+	{
+		/* This is handled by the main part of the partial class */
+		return;
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
 	if(classInfo && (classInfo != (ILClass *)1) &&
 					(classInfo != (ILClass *)2))
 	{
 		int baseClassAllowed;
 		ILProgramItem *parent = 0;
-		ILUInt32 numBases = CountBaseClasses(classNode->baseClass);
+		ILUInt32 numBases = NumBases(classNode);
 
 		/* Only classes can have an explicit  base class */
 		baseClassAllowed = ((classNode->modifiers & CS_MODIFIER_TYPE_MASK) ==
@@ -718,6 +754,58 @@ static void AddBaseClasses(ILGenInfo *info,
 								   &numBases, baseClassAllowed);
 			}
 
+		#if IL_VERSION_MAJOR > 1
+			if(classNode->otherParts)
+			{
+				ILUInt32 numPartBases;
+				ILNode_ListIter iter;
+				ILNode *part;
+
+				ILNode_ListIter_Init(&iter, classNode->otherParts);
+				while((part = ILNode_ListIter_Next(&iter)) != 0)
+				{
+					if(yykind(part) == yykindof(ILNode_ClassDefn))
+					{
+						ILNode_ClassDefn *partDefn;
+
+						partDefn = (ILNode_ClassDefn *)part;
+						numPartBases = CountBaseClasses(partDefn->baseClass);
+						if(numPartBases > 0)
+						{
+							ILProgramItem *partParent;
+							ILProgramItem *partBaseList[numPartBases];
+
+							partParent = 0;
+							ILMemZero(partBaseList,
+									  numPartBases * sizeof(ILClass *));
+
+							CollectBaseClasses(info, partDefn, &partParent,
+											   partBaseList, &numPartBases,
+											   baseClassAllowed);
+							if(!parent)
+							{
+								parent = partParent;
+							}
+							else
+							{
+								if(partParent && (partParent != parent))
+								{
+									CCErrorOnLine(yygetfilename(partDefn),
+												  yygetlinenum(partDefn),
+									"Base class mismatch in partial class");
+								}
+							}
+
+							/* Add the interfaces to the main part list */
+							for(base = 0; base < numPartBases; ++base)
+							{
+								baseList[numBases++] = partBaseList[base];
+							}
+						}
+					}
+				}
+			}
+		#endif /* IL_VERSION_MAJOR > 1 */
 			if(parent)
 			{
 				if(ILClass_IsInterface(classInfo))
@@ -1049,6 +1137,35 @@ static void CreateType(ILGenInfo *info, ILScope *globalScope,
 		}
 		return;
 	}
+
+#if IL_VERSION_MAJOR > 1
+	if(defn->partialParent)
+	{
+		/* This is an additional part of a partial type declaration */
+		if(defn->partialParent->classInfo == 0)
+		{
+			/* This should not happen but i'm kindof paranoid here */
+			CreateType(info, globalScope, list,
+				   systemObjectName, (ILNode *)(defn->partialParent));
+		}
+		/*
+		 * Get the classInfo of the partial parent and use this one for this
+		 * part too since this one is for the same class.
+		 */
+		defn->classInfo = defn->partialParent->classInfo;
+
+		/* Process the nested types */
+		CreateNestedTypes(info, globalScope, list, systemObjectName, defn);
+
+		/* Add the type to the list of nested classes in the nested parent if it's a nested type */
+		if(defn->nestedParent)
+		{
+			AddTypeToList(list, defn);
+		}
+
+		return;
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* Mark this type as already seen so that we can detect recursion */
 	defn->classInfo = (ILClass *)2;
@@ -1477,7 +1594,17 @@ static void CreateField(ILGenInfo *info, ILNode_ClassDefn *classNode,
 	ILUInt32 fieldAttrs;
 
 #if IL_VERSION_MAJOR > 1
-	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	ILUInt32 classModifiers;
+
+	if(classNode->partialParent)
+	{
+		classModifiers = classNode->partialParent->modifiers;
+	}
+	else
+	{
+		classModifiers = classNode->modifiers;
+	}
+	if((classModifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		/* Constants are static by default */
 		if((field->modifiers & CS_MODIFIER_FIELD_CONST) == 0)
@@ -1954,8 +2081,17 @@ static void CreateMethod(ILGenInfo *info, ILNode_ClassDefn *classNode,
 	ILClass *classInfo;
 #if IL_VERSION_MAJOR > 1
 	ILNode *savedMethod;
+	ILUInt32 classModifiers;
 
-	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	if(classNode->partialParent)
+	{
+		classModifiers = classNode->partialParent->modifiers;
+	}
+	else
+	{
+		classModifiers = classNode->modifiers;
+	}
+	if((classModifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		/* Only static methods are allowed */
 		if((method->modifiers & CS_MODIFIER_STATIC) == 0)
@@ -2512,7 +2648,17 @@ static void CreateProperty(ILGenInfo *info, ILNode_ClassDefn *classNode,
 	ILClass *classInfo;
 
 #if IL_VERSION_MAJOR > 1
-	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	ILUInt32 classModifiers;
+
+	if(classNode->partialParent)
+	{
+		classModifiers = classNode->partialParent->modifiers;
+	}
+	else
+	{
+		classModifiers = classNode->modifiers;
+	}
+	if((classModifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		/* Only static methods are allowed */
 		if((property->modifiers & CS_MODIFIER_STATIC) == 0)
@@ -2962,7 +3108,17 @@ static void CreateEventDecl(ILGenInfo *info, ILNode_ClassDefn *classNode,
 	ILClass *classInfo;
 
 #if IL_VERSION_MAJOR > 1
-	if((classNode->modifiers & CS_MODIFIER_STATIC) != 0)
+	ILUInt32 classModifiers;
+
+	if(classNode->partialParent)
+	{
+		classModifiers = classNode->partialParent->modifiers;
+	}
+	else
+	{
+		classModifiers = classNode->modifiers;
+	}
+	if((classModifiers & CS_MODIFIER_STATIC) != 0)
 	{
 		/* Only static fields or constants are allowed */
 		if((event->modifiers & CS_MODIFIER_STATIC) == 0)
@@ -3668,6 +3824,21 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 		}
 	}
 
+#if IL_VERSION_MAJOR > 1
+	/* If this is a top level class create the members for the other parts too */
+	if(!(classNode->nestedParent) && (classNode->otherParts))
+	{
+		ILNode_ListIter_Init(&iterator, classNode->otherParts);
+		while((member = ILNode_ListIter_Next(&iterator)) != 0)
+		{
+			if(yykind(member) == yykindof(ILNode_ClassDefn))
+			{
+				CreateMembers(info, globalScope, (ILNode_ClassDefn *)member);
+			}
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
 	/* Add the "DefaultMember" attribute to the class if necessary */
 	if(defaultMemberName)
 	{
@@ -3690,6 +3861,175 @@ static void CreateMembers(ILGenInfo *info, ILScope *globalScope,
 	info->currentClass = savedClass;
 	info->currentNamespace = savedNamespace;
 }
+
+#if IL_VERSION_MAJOR > 1
+static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
+						 ILNode *tree, ILNode_List *list,
+						 ILNode_ClassDefn *nestedParent);
+
+static const char *FlagTypeToName(ILUInt32 modifiers)
+{
+	switch(modifiers & CS_MODIFIER_TYPE_MASK)
+	{
+		case CS_MODIFIER_TYPE_CLASS:
+		{
+			return "class";
+		}
+		break;
+
+		case CS_MODIFIER_TYPE_STRUCT:
+		{
+			return "struct";
+		}
+		break;
+
+		case CS_MODIFIER_TYPE_INTERFACE:
+		{
+			return "interface";
+		}
+		break;
+
+		case CS_MODIFIER_TYPE_ENUM:
+		{
+			return "enum";
+		}
+		break;
+
+		case CS_MODIFIER_TYPE_DELEGATE:
+		{
+			return "delegate";
+		}
+		break;
+
+		case CS_MODIFIER_TYPE_MODULE:
+		{
+			return "module";
+		}
+		break;
+	}
+	return "Unknown";
+}
+/*
+ * Handle partial class declarations
+ */
+static void DeclareTypePart(ILGenInfo *info, ILNode_List *list,
+							ILScope *scope, ILNode_ClassDefn *defn,
+							ILNode_ClassDefn *existingDefn,
+							ILNode_ClassDefn *nestedParent,
+							const char *name, const char *namespace)
+{
+	if((defn->modifiers & CS_MODIFIER_PARTIAL) != 0)
+	{
+		if((existingDefn->modifiers & CS_MODIFIER_PARTIAL) == 0)
+		{
+			CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+						  "`%s%s%s' already declared not partial",
+						  (namespace ? namespace : ""),
+						  (namespace ? "." : ""), name);
+			CCErrorOnLine(yygetfilename(existingDefn),
+						  yygetlinenum(existingDefn),
+						  "the declaration was here");
+			return;
+		}
+
+		if((existingDefn->modifiers & CS_MODIFIER_TYPE_MASK) !=
+		   (defn->modifiers & CS_MODIFIER_TYPE_MASK))
+		{
+			/* class, struct or interface mismatch */
+			CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+						  "partial `%s' is already declared as partial `%s'",
+						  FlagTypeToName(defn->modifiers),
+						  FlagTypeToName(existingDefn->modifiers));
+			CCErrorOnLine(yygetfilename(existingDefn),
+						  yygetlinenum(existingDefn),
+						  "the partial `%s' declaration was here",
+						  FlagTypeToName(existingDefn->modifiers));
+		}
+
+		if((defn->modifiers & CS_MODIFIER_ACCESS_MASK) == 0)
+		{
+			/* OK */
+		}
+		else if((existingDefn->modifiers & CS_MODIFIER_ACCESS_MASK) == 0)
+		{
+			/*
+			 * The first part has no accessibility defined so set the
+			 * accessibility of the first part to the same definition as
+			 * this part.
+			 */
+			existingDefn->modifiers |= (defn->modifiers & CS_MODIFIER_ACCESS_MASK);
+		}
+		else if((existingDefn->modifiers & CS_MODIFIER_ACCESS_MASK) !=
+				(defn->modifiers & CS_MODIFIER_ACCESS_MASK))
+		{
+			/* accessibility mismatch */
+			CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+						  "accessibility mismatch with an other part of the %s",
+						  FlagTypeToName(defn->modifiers));
+			CCErrorOnLine(yygetfilename(existingDefn),
+						  yygetlinenum(existingDefn),
+						  "the other declaration was here");
+		}
+
+		if((defn->modifiers & CS_MODIFIER_ABSTRACT) != 0)
+		{
+			existingDefn->modifiers |= CS_MODIFIER_ABSTRACT;
+		}
+
+		if((defn->modifiers & CS_MODIFIER_SEALED) != 0)
+		{
+			existingDefn->modifiers |= CS_MODIFIER_SEALED;
+		}
+
+		if((defn->modifiers & CS_MODIFIER_STATIC) != 0)
+		{
+			existingDefn->modifiers |= CS_MODIFIER_STATIC;
+		}
+
+		/*
+		 * set the flag if a default ctor is defined in the first part
+		 * if there is one in any other part so that no default ctor is
+		 * created automatically for classes.
+		 */
+		if((defn->modifiers & CS_MODIFIER_CTOR_DEFINED) != 0)
+		{
+			existingDefn->modifiers |= CS_MODIFIER_CTOR_DEFINED;
+		}
+
+		/* Remember the first declared partial declaration */
+		defn->partialParent = existingDefn;
+
+		/* Add this part to the list of other parts in the main part */
+		if(!(existingDefn->otherParts))
+		{
+			existingDefn->otherParts = ILNode_List_create();
+		}
+		ILNode_List_Add(existingDefn->otherParts, (ILNode *)defn);
+
+		/* Declare nested types in this part */
+		DeclareTypes(info, scope, defn->body, list, existingDefn);
+
+		/* Replace the class body with a scoped body */
+		defn->body = ILNode_ScopeChange_create(scope, defn->body);
+
+		/* Add the type to the end of the new top-level list */
+		if(!nestedParent)
+		{
+			ILNode_List_Add(list, (ILNode *)defn);
+		}
+	}
+	else
+	{
+		CCErrorOnLine(yygetfilename(defn), yygetlinenum(defn),
+					  "`%s%s%s' already declared",
+					  (namespace ? namespace : ""),
+					  (namespace ? "." : ""), name);
+		CCErrorOnLine(yygetfilename(existingDefn),
+					  yygetlinenum(existingDefn),
+					  "previous declaration here");
+	}
+}
+#endif	/* IL_VERSION_MAJOR > 1 */
 
 /*
  * Scan all types and their nested children to declare them.
@@ -3763,6 +4103,11 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 
 					case IL_SCOPE_ERROR_REDECLARED:
 					{
+					#if IL_VERSION_MAJOR > 1
+						DeclareTypePart(info, list, scope, defn,
+										(ILNode_ClassDefn *)origDefn,
+										nestedParent, name, namespace);
+					#else  /* IL_VERSION_MAJOR == 1 */
 						CCErrorOnLine(yygetfilename(child), yygetlinenum(child),
 								"`%s%s%s' already declared",
 								(namespace ? namespace : ""),
@@ -3770,6 +4115,7 @@ static void DeclareTypes(ILGenInfo *info, ILScope *parentScope,
 						CCErrorOnLine(yygetfilename(origDefn),
 									  yygetlinenum(origDefn),
 									  "previous declaration here");
+					#endif /* IL_VERSION_MAJOR == 1 */
 					}
 					break;
 

@@ -960,13 +960,11 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 	{
 		ILNode		   *attributes;
 		ILUInt32		modifiers;
-		ILUInt32		partial;
 	}				typeHeader;
 	struct
 	{
 		ILNode		   *attributes;
 		ILUInt32		modifiers;
-		ILUInt32		partial;
 		ILNode		   *identifier;
 		ILNode		   *classBase;
 		ILNode_GenericTypeParameters *typeFormals;
@@ -3204,8 +3202,7 @@ AttributesAndModifiers
 OptTypeDeclarationHeader
 	: OptAttributesAndModifiers OptPartial	{
 				$$.attributes = $1.attributes;
-				$$.modifiers = $1.modifiers;
-				$$.partial = $2;
+				$$.modifiers = $1.modifiers | $2;
 			}
 	;
 
@@ -3216,7 +3213,6 @@ ClassHeader
 	: OptTypeDeclarationHeader CLASS Identifier ClassBase	{
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $4;
 				$$.typeFormals = 0;
@@ -3226,7 +3222,6 @@ ClassHeader
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $5;
 				$$.typeFormals = $4;
@@ -3236,7 +3231,6 @@ ClassHeader
 							  "generics are not supported in this version");
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $5;
 				$$.typeFormals = 0;
@@ -3537,8 +3531,12 @@ ClassMemberDeclaration
 OptPartial
 	: /* empty */				{ $$ = 0; }
 	| PARTIAL					{
-				$$ = 1;
-				CCError(_("partial types are not yet supported"));
+#if IL_VERSION_MAJOR > 1
+				$$ = CS_MODIFIER_PARTIAL;
+#else /* IL_VERSION_MAJOR == 1 */
+				$$ = 0;
+				CCError(_("partial types are not supported in this version"));
+#endif /* IL_VERSION_MAJOR == 1 */
 			}
 	;
 
@@ -4317,7 +4315,6 @@ StructHeader
 	: OptTypeDeclarationHeader STRUCT Identifier StructInterfaces	{
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $4;
 				$$.typeFormals = 0;
@@ -4327,7 +4324,6 @@ StructHeader
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $5;
 				$$.typeFormals = $4;
@@ -4337,7 +4333,6 @@ StructHeader
 							  "generics are not supported in this version");
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $5;
 				$$.typeFormals = 0;
@@ -4402,7 +4397,6 @@ InterfaceHeader
 	: OptTypeDeclarationHeader INTERFACE Identifier InterfaceBase	{
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $4;
 				$$.typeFormals = 0;
@@ -4412,7 +4406,6 @@ InterfaceHeader
 #if IL_VERSION_MAJOR > 1
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $5;
 				$$.typeFormals = $4;
@@ -4422,7 +4415,6 @@ InterfaceHeader
 							  "generics are not supported in this version");
 				$$.attributes = $1.attributes;
 				$$.modifiers = $1.modifiers;
-				$$.partial = $1.partial;
 				$$.identifier = $3;
 				$$.classBase = $5;
 				$$.typeFormals = 0;

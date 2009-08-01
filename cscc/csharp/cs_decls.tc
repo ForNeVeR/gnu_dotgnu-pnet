@@ -189,11 +189,84 @@ static void HandleStaticCtor(ILGenInfo *info, ILNode_ClassDefn *node)
 		staticCtor = node->staticCtors;
 		ctorDefn = node;
 	}
+#if IL_VERSION_MAJOR > 1
+	if(node->otherParts)
+	{
+		ILNode_ListIter iter;
+		ILNode *part;
+
+		ILNode_ListIter_Init(&iter, node->otherParts);
+		while((part = ILNode_ListIter_Next(&iter)) != NULL)
+		{
+			ILNode_ClassDefn *partDefn;
+
+			partDefn = (ILNode_ClassDefn *)part;
+			if(partDefn->staticCtors)
+			{
+				CheckStaticCtor(node->staticCtors, (staticCtor != 0));
+				if(!staticCtor)
+				{
+					staticCtor = partDefn->staticCtors;
+					ctorDefn = partDefn;
+				}
+			}
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* Now collect the static fields with initialization */
 	staticInitList = ILNode_List_create();
 	ILNode_Declaration_GatherStaticCtor((ILNode_Declaration *)node->body,
 										(ILNode_List *)staticInitList);
+#if IL_VERSION_MAJOR > 1
+	if(node->otherParts)
+	{
+		ILNode_ListIter iter;
+		ILNode *part;
+
+		ILNode_ListIter_Init(&iter, node->otherParts);
+		while((part = ILNode_ListIter_Next(&iter)) != NULL)
+		{
+			ILNode_ClassDefn *partDefn;
+			ILNode *partInitList;
+
+			partDefn = (ILNode_ClassDefn *)part;
+			partInitList = ILNode_List_create();
+			ILNode_Declaration_GatherStaticCtor((ILNode_Declaration *)partDefn->body,
+												(ILNode_List *)partInitList);
+
+			if(ILNode_List_Length(partInitList) > 0)
+			{
+				/* Perform semantic analysis on this part */
+				ILNode *savedClass;
+				ILNode *savedNamespace;
+				ILNode *savedMethod;
+
+				if(staticCtorsMethod == 0)
+				{
+					staticCtorsMethod = CreateStaticCtorMethod(info, partDefn->classInfo);
+				}
+
+				savedClass = info->currentClass;
+				savedNamespace = info->currentNamespace;
+				savedMethod = info->currentMethod;
+				info->currentClass = (ILNode *)partDefn;
+				info->currentNamespace = partDefn->namespaceNode;
+				info->currentMethod = staticCtorsMethod;
+
+				ILNode_SemAnalysis(partInitList, info, &partInitList);
+
+				info->currentClass = savedClass;
+				info->currentNamespace = savedNamespace;
+				info->currentMethod = savedMethod;
+
+				/* Append the list of this part to the main list */
+				AppendStaticCtor((ILNode_List*)staticInitList,
+								  (ILNode_List*)partInitList, 1);
+			}
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* append the explicit static constructors to the end of the 
 	   gathered list */
@@ -320,8 +393,7 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentClass = (ILNode *)node;
 		info->currentNamespace = node->namespaceNode;
 		info->currentMethod = NULL;
-		CSProcessAttrs(info, ILToProgramItem(node->classInfo),
-					   node->attributes, target);
+		CSProcessAttrsForClass(info, node, target);
 		info->currentClass = savedClass;
 		info->currentNamespace = savedNamespace;
 		info->currentMethod = savedMethod;
@@ -358,6 +430,26 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentNamespace = node->namespaceNode;
 		info->currentMethod = NULL;
 		value = ILNode_SemAnalysis(node->body, info, &(node->body));
+		info->currentClass = savedClass;
+		info->currentNamespace = savedNamespace;
+		info->currentMethod = savedMethod;
+	}
+
+#if IL_VERSION_MAJOR > 1
+	if(node->otherParts)
+	{
+		ILNode_SemAnalysis(node->otherParts, info, &(node->otherParts));
+	}
+	if(!(node->partialParent))
+	{
+#endif /* IL_VERSION_MAJOR > 1 */
+		savedClass = info->currentClass;
+		savedNamespace = info->currentNamespace;
+		savedMethod = info->currentMethod;
+		info->currentClass = (ILNode *)node;
+		info->currentNamespace = node->namespaceNode;
+		info->currentMethod = NULL;
+
 		if(node->initCtorsMethod)
 		{
 			/* Perform semantic analysis on the non-static initializers */
@@ -372,17 +464,18 @@ ILNode_SemAnalysis(ILNode_ClassDefn)
 		info->currentNamespace = savedNamespace;
 		info->currentMethod = savedMethod;
 
+		if(node->classInfo && !ILClass_IsInterface(node->classInfo))
+		{
+			/* Check that the class implements all of its interfaces */
+			ILGenImplementsAllInterfaces(info, (ILNode *)node,
+										 node->classInfo,
+										 InterfaceErrorFunc,
+										 InterfaceProxyFunc);
+		}
+#if IL_VERSION_MAJOR > 1
 	}
-	else
-	{
-		CSSemSetRValue(value, ILType_Int32);
-	}
-	if(node->classInfo && !ILClass_IsInterface(node->classInfo))
-	{
-		/* Check that the class implements all of its interfaces */
-		ILGenImplementsAllInterfaces(info, (ILNode *)node, node->classInfo,
-									 InterfaceErrorFunc, InterfaceProxyFunc);
-	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
 	if((node->modifiers & CS_MODIFIER_UNSAFE) != 0)
 	{
 		CCUnsafeLeave(info);
@@ -703,6 +796,12 @@ void CSAddInitCtor(ILGenInfo *info, ILNode *stmt)
 		CSSemValue value;
 		ILNode *savedMethod;
 
+	#if IL_VERSION_MAJOR > 1
+		if(defn->partialParent)
+		{
+			defn = defn->partialParent;
+		}
+	#endif /* IL_VERSION_MAJOR > 1 */
 		/* Construct the method declaration for ".init" if necessary.
 		   Note: the ".init" method is a pseudo method to collect up
 		   all non-static field initializers.  It isn't output into

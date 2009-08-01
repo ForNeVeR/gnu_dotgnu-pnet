@@ -144,6 +144,48 @@ static int ClassIsEmpty(ILClass *classInfo)
 	return 1;
 }
 
+/*
+ * Dump the members of the current class definition node and all it's other
+ * partial declarations.
+ */
+static void DumpClassMembers(ILGenInfo *info, ILNode_ClassDefn *node)
+{
+	/* First dump the members of this class */
+	if(info->outputIsJava)
+	{
+		JavaGenDiscard(node->body, info);
+	}
+	else
+	{
+		ILNode_GenDiscard(node->body, info);
+	}
+#if IL_VERSION_MAJOR > 1
+	if(node->otherParts)
+	{
+		ILNode_ListIter iter;
+		ILNode *part;
+		ILNode *prevClass;
+
+		prevClass = info->currentClass;
+		ILNode_ListIter_Init(&iter, node->otherParts);
+		while((part = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			info->currentClass = part;
+
+			if(info->outputIsJava)
+			{
+				JavaGenDiscard(((ILNode_ClassDefn *)part)->body, info);
+			}
+			else
+			{
+				ILNode_GenDiscard(((ILNode_ClassDefn *)part)->body, info);
+			}
+		}
+		info->currentClass = prevClass;
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+}
+
 %}
 
 /*
@@ -157,6 +199,17 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	ILNode *prevClass;
 	int isModule = (!strcmp(node->name, "<Module>"));
 	ILClassLayout *layout;
+
+#if IL_VERSION_MAJOR > 1
+	/*
+	 * If this is an additional part skip it here because it's contents is
+	 * handled in DumpClassMembers.
+	 */
+	if(node->partialParent)
+	{
+		return;
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
 
 	/* Get the class information structure */
 	classInfo = node->classInfo;
@@ -269,14 +322,7 @@ ILNode_GenDiscard(ILNode_ClassDefn)
 	}
 
 	/* Output the class members */
-	if(info->outputIsJava)
-	{
-		JavaGenDiscard(node->body, info);
-	}
-	else
-	{
-		ILNode_GenDiscard(node->body, info);
-	}
+	DumpClassMembers(info, node);
 
 	/* Output the static constructor for the class */
 	if(node->staticCtorsMethod && info->asmOutput)

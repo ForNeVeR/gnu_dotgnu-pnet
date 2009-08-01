@@ -600,36 +600,28 @@ cleanup:
 	}
 }
 
-void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
-					ILNode *attributes, int mainTarget)
+static void CollectAttributes(ILGenInfo *info,
+							  CGAttributeInfos *attributeInfos,
+							  ILNode_AttributeTree *attributes,
+							  ILProgramItem *mainItem, int mainTarget)
 {
-	CGAttributeInfos attributeInfos;
-	ILProgramItem *item;
-	int target;
-	ILNode_ListIter iter;
-	ILNode_ListIter iter2;
 	ILNode_AttributeSection *section;
-	ILNode_Attribute *attr;
-	const char *targetName;
-	ILClass *classInfo;
-	ILMethod *method;
-	unsigned long numParams;
-
-	/* Bail out if we don't have any attributes */
-	if(!attributes)
-	{
-		return;
-	}
-
-	/* Initislize the attribute infos. */
-	CGAttributeInfosInit(info, &attributeInfos);
+	ILNode_ListIter iter;
 
 	/* Scan through the attribute sections */
-	ILNode_ListIter_Init(&iter, ((ILNode_AttributeTree *)attributes)
-										->sections);
+	ILNode_ListIter_Init(&iter, attributes->sections);
 	while((section = (ILNode_AttributeSection *)
 				ILNode_ListIter_Next(&iter)) != 0)
 	{
+		ILProgramItem *item;
+		int target;
+		ILNode_Attribute *attr;
+		ILNode_ListIter iter2;
+		const char *targetName;
+		ILClass *classInfo;
+		ILMethod *method;
+		unsigned long numParams;
+
 		/* Skip documentation comments, if present */
 		if(yyisa(section, ILNode_DocComment))
 		{
@@ -796,7 +788,7 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 		ILNode_ListIter_Init(&iter2, section->attrs);
 		while((attr = (ILNode_Attribute *)ILNode_ListIter_Next(&iter2)) != 0)
 		{
-			ProcessAttr(info, &attributeInfos, item, target, attr);
+			ProcessAttr(info, attributeInfos, item, target, attr);
 		}
 
 		/* Convert system library attributes into metadata structures */
@@ -805,7 +797,111 @@ void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
 			CCOutOfMemory();
 		}
 	}
-	/* Process tha collected attributes */
+}
+
+void CSProcessAttrs(ILGenInfo *info, ILProgramItem *mainItem,
+					ILNode *attributes, int mainTarget)
+{
+	CGAttributeInfos attributeInfos;
+
+	/* Bail out if we don't have any attributes */
+	if(!attributes)
+	{
+		return;
+	}
+
+	/* Initialize the attribute infos. */
+	CGAttributeInfosInit(info, &attributeInfos);
+
+	/* Collect the attributes */
+	CollectAttributes(info, &attributeInfos,
+					  (ILNode_AttributeTree *)attributes,
+					  mainItem, mainTarget);
+
+	/* Process the collected attributes */
+	CGAttributeInfosProcess(&attributeInfos);
+
+	/* Destroy the attribute infos. */
+	CGAttributeInfosDestroy(&attributeInfos);
+}
+
+void CSProcessAttrsForClass(ILGenInfo *info, ILNode_ClassDefn *defn,
+							int mainTarget)
+{
+	CGAttributeInfos attributeInfos;
+	ILProgramItem *item;
+
+#if IL_VERSION_MAJOR == 1
+	/* Bail out if we don't have any attributes */
+	if(!defn || !(defn->attributes))
+	{
+		return;
+	}
+#else
+	/*
+	 * Bail out if this is an additional part for a type or this is no
+	 * partial type fefinition and we have no attributes.
+	 */
+	if(!defn || (defn->partialParent != 0) ||
+	   (((defn->modifiers & CS_MODIFIER_PARTIAL) == 0) && !(defn->attributes)))
+	{
+		return;
+	}
+#endif /* IL_VERSION_MAJOR == 1 */
+
+	/* Get the item */
+	item = ILToProgramItem(defn->classInfo);
+
+	/* Initialize the attribute infos. */
+	CGAttributeInfosInit(info, &attributeInfos);
+
+	if(defn->attributes)
+	{
+		/* Collect the attributes */
+		CollectAttributes(info, &attributeInfos,
+						  (ILNode_AttributeTree *)(defn->attributes),
+						  item, mainTarget);
+	}
+
+#if IL_VERSION_MAJOR > 1
+	/* Collect the attributes from the additional parts too */
+	if(defn->otherParts)
+	{
+		ILNode_ListIter iter;
+		ILNode *partNode;
+
+		ILNode_ListIter_Init(&iter, defn->otherParts);
+		while((partNode = ILNode_ListIter_Next(&iter)) != 0)
+		{
+			ILNode_ClassDefn *partDefn;
+
+			partDefn = (ILNode_ClassDefn *)partNode;
+			if(partDefn->attributes)
+			{
+				ILNode *savedClass;
+				ILNode *savedNamespace;
+				ILNode *savedMethod;
+
+				savedClass = info->currentClass;
+				savedNamespace = info->currentNamespace;
+				savedMethod = info->currentMethod;
+				info->currentClass = (ILNode *)partDefn;
+				info->currentNamespace = partDefn->namespaceNode;
+				info->currentMethod = NULL;
+
+				CollectAttributes(info, &attributeInfos,
+								  (ILNode_AttributeTree *)(partDefn->attributes),
+								  item, mainTarget);
+
+				info->currentClass = savedClass;
+				info->currentNamespace = savedNamespace;
+				info->currentMethod = savedMethod;
+			}
+		}
+	}
+#endif /* IL_VERSION_MAJOR > 1 */
+
+	/* Process the collected attributes */
 	CGAttributeInfosProcess(&attributeInfos);
 
 	/* Destroy the attribute infos. */

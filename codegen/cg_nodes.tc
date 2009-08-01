@@ -874,6 +874,8 @@ struct _tagILSwitchValue
 	%nocreate ILNode *nestedClasses = {0};
 	%nocreate ILVisitMode visited = {ILVisitMode_NotVisited};
 	%nocreate const char *defaultMemberName = {0};
+	%nocreate ILNode_ClassDefn *partialParent = {0};
+	%nocreate ILNode *otherParts = {0};
 
 }
 %node ILNode_ScopeChange ILNode_Declaration =

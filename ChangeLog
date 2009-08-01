@@ -1,6 +1,52 @@
+2009-08-01  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cs_decls.tc (DumpClassMembers): Add helper function for dumping
+	class members which hadles partial types.
+	(ILNode_GenDiscard(ILNode_ClassDefn)): Do nothing for additional part
+	declarations for a type and use DumpClassMembers for dumping the members.
+
+	* codegen/cg_nodes.tc: Add additional members to ILNode_ClassDefn for
+	partial type handling.
+
+	* cscc/csharp/cs_attrs.c (CollectAttributes): Added to collect the
+	attributes from one attribute tree. (Moved from CSProcessAttrs to here).
+	(CSProcessAttrs): Use CollectAttributes for collecting the attributes now.
+	(CSProcessAttrsForClass): Added for processing the attributes for a class
+	node including it's additional parts.
+
+	* cscc/csharp/cs_decls.tc (HandleStaticCtor): Add handling of the
+	additional partial declarations of a type.
+	(ILNode_SemAnalysis(ILNode_ClassDefn)): Call CSProcessAttrsForClass
+	instead of CSProcessAttrs for processing the attributes of all partial
+	declarations of a type in one run. Perform semantic analysis on
+	additional partial declarations prior to semanalyzing the main part.
+	(CSAddInitCtor): Make sure the pseudo .init method on the main part is
+	used.
+
+	* cscc/csharp/cs_gather.c (NumBases): Add helper function to get the
+	number of base classes and interfaces for all partial definitions of one
+	type.
+	(FlagTypeToName): Add helper function.
+	(DeclareTypePart): Added to handle the declaration of additional parial
+	declarations of a type.
+	(AddBaseClasses): Handle the base classes and implemented interfaces of
+	all partial declarations for a type.
+	(CreateType): Create types only for non partial declarations and the main
+	part of a partial type declaration. For additional partial declarations
+	handle only the nested typed of that part.
+	(CreateField, CreateProperty): Use the modifiers of the main part to
+	determine if the owner class is static.
+	(CreateMembers): Create the members of additional partial declerations of
+	a type too.
+	(DeclareTypes): Add handling of partial type declarations.
+
+	* cscc/csharp/cs_grammar.y: Add handling of the 2.x partial type modifier.
+
+	* cscc/csharp/cs_internal.h: Add the CS_MODIFIER_PARTIAL modifier flag.
+
 2009-07-30  Klaus Treichel  <ktreichel@web.de>
 
-	* cscc/csharp/cs_cast.tc (CSCastMethod): Use CS_MODIGIER_STATIC instead
+	* cscc/csharp/cs_cast.tc (CSCastMethod): Use CS_MODIFIER_STATIC instead
 	of IL_META_METHODDEF_STATIC with the modifiers now.
 
 	* cscc/csharp/cs_decls.tc (AppendStaticCtor): Guard the initialization

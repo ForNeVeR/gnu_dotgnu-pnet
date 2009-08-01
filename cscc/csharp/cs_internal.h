@@ -104,6 +104,9 @@ struct PropertyAccessors
 #define	CS_MODIFIER_EXTERN			(1<<11)
 #define	CS_MODIFIER_UNSAFE			(1<<12)
 #define	CS_MODIFIER_VOLATILE		(1<<13)
+#if IL_VERSION_MAJOR > 1
+#define	CS_MODIFIER_PARTIAL			(1<<14)
+#endif /* IL_VERSION_MAJOR > 1 */
 #define	CS_MODIFIER_MASK			(0x0000FFFF)
 
 /* Type specific modifier flags */

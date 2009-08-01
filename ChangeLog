@@ -1,3 +1,17 @@
+2009-08-01  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/class/Makefile.am: Add partial.cs to partial5.cs to the
+	executed tests.
+
+	* csharp/class/partial1.cs, csharp/class/partial1.il,
+	csharp/class/partial1.jl, csharp/class/partial2.cs,
+	csharp/class/partial2.il, csharp/class/partial2.jl,
+	csharp/class/partial3.cs, csharp/class/partial3.il,
+	csharp/class/partial3.jl, csharp/class/partial4.cs,
+	csharp/class/partial4.il, csharp/class/partial4.jl,
+	csharp/class/partial5.cs, csharp/class/partial5.il,
+	csharp/class/partial5.jl: Add tests for partial type declarations.
+
 2009-07-27  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/class/Makefile.am: Add static1.cs to the executed tests.

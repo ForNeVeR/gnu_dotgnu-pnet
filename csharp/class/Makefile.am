@@ -47,6 +47,11 @@ TESTS = abstract1.cs \
 		member_access1.cs \
 		member_access2.cs \
 		nested1.cs \
+		partial1.cs \
+		partial2.cs \
+		partial3.cs \
+		partial4.cs \
+		partial5.cs \
 		property1.cs \
 		property2.cs \
 		property3.cs \

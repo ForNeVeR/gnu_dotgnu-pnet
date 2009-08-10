@@ -2638,11 +2638,21 @@ ILNode_EndsInReturnImpl(ILNode_Lock)
 }
 
 /*
- * Generate discard code for local variable declarations.
+ * Generate discard code for variable declarators.
  */
+ILNode_GenDiscard(ILNode_VariableDeclarator)
+{
+	/*
+	 * Nothing to do here: the node will be replaced during semantic
+	 * analysis if some action is needed.
+	 */
+}
 ILNode_GenDiscard(ILNode_LocalVarDeclaration)
 {
-	/* Nothing to do here: the declaration is done in the method header */
+	if(node->varNames)
+	{
+		ILNode_GenDiscard(node->varNames, info);
+	}
 }
 
 /*

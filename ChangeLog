@@ -1,3 +1,60 @@
+2009-08-10  Klaus Treichel  <ktreichel@web.de>
+
+	* codegen/cg_nodes.tc (ILNode_VariableDeclarator): Added.
+
+	* codegen/cg_stmt.tc (ILNode_GenDiscard(ILNode_LocalVarDeclaration)):
+	Add generation of the discard code on varnames.
+	(ILNode_GenDiscard(ILNode_VariableDeclarator)): Added
+
+	* codegen/jv_stmt.tc (JavaGenDiscard(ILNode_LocalVarDeclaration)):
+	Add generation of the discard code on varnames.
+	(JavaGenDiscard(ILNode_VariableDeclarator)): Added
+
+	* cscc/c/c_stubs (ILNode_CSemAnalysis(ILNode_VariableDeclarator)):
+	Add to stubs.
+
+	* cscc/csharp/cs_defs.tc (ILNode_ResourceDeclaration): Remove init
+	member.
+	(ILNode_UsingStatement): Replaces old ILNode_Using.
+	(ILNode_Using): Add to handle one resource in a using statement.
+
+	* cscc/csharp/cs_gather.c: Do some reformatting.
+
+	* cscc/csharp/cs_grammar.y: Use the new ILNode_VariableDeclarator for
+	a variable declaration and make VariableDeclarations an ILNode_List of
+	variable declarations.
+	Replace creation of Using nodes by UsingStatement nodes.
+
+	* cscc/csharp/cs_lvalue.tc (ILNode_SemAnalyzis(ILNode_LocalVar)): Return
+	a semantic value with the type of the local variable now.
+
+	* cscc/csharp/cs_modifiers.c (ModifierError): Add handling of the new
+	partial modifier.
+
+	* cscc/csharp/cs_stmt.tc (AddLocalToMethod): Added to replace individual
+	implementations in various places.
+	(HandleFixedExpr, ILNode_SemAnalysis(ILNode_CatchClause),
+	ILNode_SemAnalysis(ILNode_Fixed)) : like here
+	(CheckIfDisposable): Add to check if a type implements the
+	System.IDisposable interface and print an error if doesn't.
+	(FindLocalType): Add function to find a local type incl. handling of the
+	var type.
+	(HandleLocalDecl): Added to handle the declaration of a local with var
+	type handling.
+	(HandleForeachVarDecl): Added to handle declaration of the foreach indexer
+	variable.
+	(ILNode_SemAnalysis(ILNode_Foreach)): Add handling of the local var type.
+	(ILNode_SemAnalysis(ILNode_UsingStatement)): Convert the declared
+	resources to a number of nested ILNode_Using nodes now.
+	(ILNode_GenDiscard(ILNode_UsingStatement)): Generate the discard code on 
+	the resources which have been  replaced by using nodes during
+	semanalyzing.
+	(ILNode_GenDiscard(ILNode_Using)): Generate discard code for one declared
+	resource.
+	(ILNode_SemAnalysis(ILNode_VariableDeclarator)): Added
+	(ILNode_SemAnalysis(ILNode_ResourceDeclaration)): Code removed because
+	it is handled completely now in ILNode_SemAnalysis(ILNode_UsingStatement).
+
 2009-08-01  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cs_decls.tc (DumpClassMembers): Add helper function for dumping

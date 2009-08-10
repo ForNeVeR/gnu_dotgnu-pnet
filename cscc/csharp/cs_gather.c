@@ -2194,7 +2194,7 @@ static void CreateMethod(ILGenInfo *info, ILNode_ClassDefn *classNode,
 					 IL_META_MEMBERKIND_METHOD, ".ctor", 0)) != 0)
 		{
 			if((ILMethod_Token(methodInfo) & IL_META_TOKEN_MASK) ==
-			   		IL_META_TOKEN_MEMBER_REF)
+					IL_META_TOKEN_MEMBER_REF)
 			{
 				if(!ILMethodNewToken(methodInfo))
 				{

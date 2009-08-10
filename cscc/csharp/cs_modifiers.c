@@ -101,6 +101,10 @@ static void ModifierError(char *filename, long linenum,
 	{
 		CCErrorOnLine(filename, linenum, msg, "volatile");
 	}
+	if((modifiers & CS_MODIFIER_PARTIAL) != 0)
+	{
+		CCErrorOnLine(filename, linenum, msg, "partial");
+	}
 }
 
 /*

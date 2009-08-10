@@ -154,13 +154,20 @@
 {
 	ILNode *type;
 	ILNode *variables;
-	ILNode *init;
 }
-%node ILNode_Using ILNode_Statement =
+%node ILNode_UsingStatement ILNode_Statement =
 {
 	ILNode *resource;
 	ILNode *stmt;
 }
+%node ILNode_Using ILNode_Statement =
+{
+	ILNode_LocalVar	   *localVar;
+	ILNode			   *init;
+	ILNode			   *stmt;
+	ILType			   *type;
+}
+
 %node ILNode_Unsafe ILNode_Statement =
 {
 	ILNode *stmt;
@@ -188,7 +195,7 @@
 	ILNode_Namespace *enclosing;
 	%nocreate ILNode_UsingNamespace *using = {0};
 	%nocreate ILNode_Alias *alias = {0};
-	%nocreate ILScope *localScope={0};
+	%nocreate ILScope *localScope = {0};
 }
 %node ILNode_UsingAlias ILNode_Alias =
 {

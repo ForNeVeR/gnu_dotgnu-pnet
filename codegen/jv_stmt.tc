@@ -1736,11 +1736,24 @@ JavaGenDiscard(ILNode_Lock)
 }
 
 /*
+ * Generate discard code for variable declarators.
+ */
+JavaGenDiscard(ILNode_VariableDeclarator)
+{
+	/*
+	 * Nothing to do here: the node will be replaced during semantic
+	 * analysis if some action is needed.
+	 */
+}
+/*
  * Generate discard code for local variable declarations.
  */
 JavaGenDiscard(ILNode_LocalVarDeclaration)
 {
-	/* Nothing to do here: the declaration is done in the method header */
+	if(node->varNames)
+	{
+		JavaGenDiscard(node->varNames, info);
+	}
 }
 
 /*

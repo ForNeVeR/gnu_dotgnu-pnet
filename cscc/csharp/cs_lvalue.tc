@@ -1364,9 +1364,36 @@ ILNode_SemAnalysisType(ILNode_GenericTypeConstraint)
 
 
 /*
- * Perform semantic analysis for local and argument variables.
+ * Perform semantic analysis for local variables.
  */
-ILNode_SemAnalysis(ILNode_LocalVar),
+ILNode_SemAnalysis(ILNode_LocalVar)
+{
+	ILNode_MethodDeclaration *method;
+
+	/* Locate the method that this local is declared within */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* Get the type of the local from the local variable signature */
+	if(method->localVarSig)
+	{
+		ILType *type;
+
+		type = ILTypeGetLocal(method->localVarSig, node->index);
+		if(type)
+		{
+			CSSemValue value;
+
+			CSSemSetLValue(value, type);
+			return value;
+		}
+	}
+
+	return CSSemValueDefault;
+}
+
+/*
+ * Perform semantic analysis for argument variables.
+ */
 ILNode_SemAnalysis(ILNode_ArgumentVar),
 ILNode_SemAnalysis(ILNode_RefArgumentVar)
 {

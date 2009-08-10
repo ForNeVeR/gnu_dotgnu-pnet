@@ -152,6 +152,32 @@ static int StmtContextOK(ILGenInfo *info, int context, int stopContext)
 	}
 }
 
+/*
+ * Add a local variable to a method.
+ * Returns the index of the new local variable in the local signature.
+ */
+static unsigned long AddLocalToMethod(ILGenInfo *info,
+									  ILNode_MethodDeclaration *method,
+									  ILType *type)
+{
+	/* Create the local variable signature for this method */
+	if(!(method->localVarSig))
+	{
+		method->localVarSig = ILTypeCreateLocalList(info->context);
+		if(!(method->localVarSig))
+		{
+			CCOutOfMemory();
+		}
+	}
+			
+	if(!ILTypeAddLocal(info->context, method->localVarSig, type))
+	{
+		CCOutOfMemory();
+	}
+
+	return ILTypeNumLocals(method->localVarSig) - 1;
+}
+
 static ILNode *HandleFixedExpr(ILGenInfo *info, ILNode *nameNode,
 							   ILNode *exprNode, ILNode **exprParent,
 							   int isFixAddress)
@@ -188,16 +214,6 @@ static ILNode *HandleFixedExpr(ILGenInfo *info, ILNode *nameNode,
 			CSSemSetValueKind(value, CSSemGetKind(value), type);
 		}
 
-		/* Create the local variable signature for this method */
-		if(!(method->localVarSig))
-		{
-			method->localVarSig = ILTypeCreateLocalList(info->context);
-			if(!(method->localVarSig))
-			{
-				CCOutOfMemory();
-			}
-		}
-			
 		pinnedType = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PINNED,
 									 type);
 		if(!pinnedType)
@@ -205,12 +221,7 @@ static ILNode *HandleFixedExpr(ILGenInfo *info, ILNode *nameNode,
 			ILGenOutOfMemory(info);
 		}
 
-		if(!ILTypeAddLocal(info->context, method->localVarSig, pinnedType))
-		{
-			CCOutOfMemory();
-		}
-
-		tempVar = ILTypeNumLocals(method->localVarSig) - 1;
+		tempVar = AddLocalToMethod(info, method, pinnedType);
 		pinnedVar = ILNode_LocalVar_create(tempVar, ILTypeToMachineType(type));
 
 		/* Assign the value to the pinned variable */
@@ -237,6 +248,239 @@ static ILNode *HandleFixedExpr(ILGenInfo *info, ILNode *nameNode,
 	yysetlinenum(expr, yygetlinenum(nameNode));
 
 	return expr;
+}
+
+/*
+ * Check if a type implements the IDisposable interface
+ */
+static void CheckIfDisposable(ILGenInfo *info, ILNode *node, ILType *type)
+{
+	ILType *disposableType;
+
+	disposableType=ILFindSystemType(info,"IDisposable");
+	if(!ILTypeImplements(info, type, disposableType) &&
+	   !ILTypeInherits(info, type, disposableType))
+	{
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+			  "`%s' does not implement 'IDisposable' interface ", 
+			  CSTypeToName(type));
+	}
+}
+
+/*
+ * Resolve the type for a local variable declaration.
+ * Returns the type on success and defaults to ILType_Int32 on error.
+ * If the type is 'var' and to be the result of the initialization statement
+ * then Null is returned.
+ */
+static ILType *FindLocalType(ILNode *node, ILGenInfo *info, ILNode **parent,
+							 int isUsing)
+{
+	ILType *type;
+
+#if IL_VERSION_MAJOR > 2
+	if(node && yykind(node) == yykindof(ILNode_Identifier))
+	{
+		const char *name;
+
+		name = ((ILNode_Identifier *)node)->name;
+		if(name && !strcmp(name, "var"))
+		{
+			CSSemValue value;
+			int save;
+
+			save = info->inSemType;
+			info->inSemType = info->typeGather;
+			value = ILNode_SemAnalysisType(node, info, parent);
+			info->inSemType = save;
+			if(!CSSemIsType(value))
+			{
+				/*
+				 * This is a declaration where the type results from the result
+				 * type of the initialization statement.
+				 * We simply replace thy type node here and leave the real work
+				 * for later.
+				 */
+				type = 0;
+			}
+			else
+			{
+				type = CSSemGetType(value);
+
+				if(type == ILType_Void)
+				{
+					CCErrorOnLine(yygetfilename(node),
+								  yygetlinenum(node),
+								"`void' type is not allowed in this context");
+					type = ILType_Int32;
+				}
+			}
+		}
+		else
+		{
+			/* Perform semantic analysis on the local variable type */
+			type = CSSemType(node, info, parent);
+		}
+	}
+	else
+#endif
+	{
+		/* Perform semantic analysis on the local variable type */
+		type = CSSemType(node, info, parent);
+	}
+
+	if(type && isUsing)
+	{
+		CheckIfDisposable(info, node, type);
+	}
+
+	return type;
+}
+
+/*
+ * If type is Null then the type results in the return type of the
+ * initialization expression.
+ * The resulting type of the local is returned.
+ */
+static ILType *HandleLocalDecl(ILNode *node, ILGenInfo *info, ILNode **parent,
+							   ILType *type, int isUsing)
+{
+	const char *name = 0;
+	ILNode *nameNode;
+	unsigned long varNum;
+	ILNode_MethodDeclaration *method;
+	ILType *resultType = type;
+
+	if(!node)
+	{
+		nameNode = 0;
+	}
+	if(yyisa(node, ILNode_VariableDeclarator))
+	{
+		nameNode = ((ILNode_VariableDeclarator *)node)->name;
+		parent = &(((ILNode_VariableDeclarator *)node)->name);
+	}
+	else
+	{
+		nameNode = node;
+	}
+	if(nameNode)
+	{
+		ILScopeData *data;
+
+		name = ILQualIdentName(nameNode, 0);
+		data = ILScopeLookup(info->currentScope, name, 0);
+		if(data)
+		{
+			ILNode *errorNode;
+
+			/* The name is already declared in this scope */
+			CCErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
+						  "`%s' is already declared in this scope", name);
+			errorNode = ILScopeDataGetNode(data);
+			if(errorNode)
+			{
+				CCErrorOnLine(yygetfilename(errorNode),
+							  yygetlinenum(errorNode),
+							  "previous declaration here");
+			}
+			nameNode = 0;
+		}
+	}
+	if(!type)
+	{
+		if(node && yyisa(node, ILNode_VariableDeclarator))
+		{
+			CSSemValue value;
+			ILNode_VariableDeclarator *declNode;
+
+			declNode = (ILNode_VariableDeclarator *)node;
+			if(declNode->init)
+			{
+				value = ILNode_SemAnalysis(declNode->init,
+										   info, &(declNode->init));
+
+				if(!CSSemIsValue(value))
+				{
+					CCErrorOnLine(yygetfilename(node),
+								  yygetlinenum(node),
+								  "invalid lvalue in assignment");
+					if(!CSSemIsRValue(value))
+					{
+						CSSemSetRValue(value, ILType_Int32);
+					}
+				}
+				resultType = CSSemGetType(value);
+
+				/* Wrap the expression to prevent double evaluation */
+				declNode->init = ILNode_SemGuard_create(declNode->init,
+														value);
+			}
+			else
+			{
+				CCErrorOnLine(yygetfilename(node),
+							  yygetlinenum(node),
+					"`var' type is not allowed without an initializer");
+				resultType = ILType_Int32;
+			}
+		}
+		else
+		{
+			CCErrorOnLine(yygetfilename(node),
+						  yygetlinenum(node),
+					"`var' type is not allowed without an initializer");
+			resultType = ILType_Int32;
+		}
+	}
+
+	/* Locate the method that this local is declared within */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	/* Add the type to the local variable signature for this method */
+	varNum = AddLocalToMethod(info, method, resultType);
+
+	if(nameNode)
+	{
+		/* Create a local variable entry in the current scope */
+		ILScopeDeclareLocal(info->currentScope, name, varNum, nameNode);
+	}
+
+	if(isUsing)
+	{
+		/* replace the name with the local variable */
+		*parent = ILNode_LocalVar_create(varNum,
+										 ILTypeToMachineType(resultType));
+	}
+
+	if(isUsing && node &&
+	   (!yyisa(node, ILNode_VariableDeclarator) ||
+		((ILNode_VariableDeclarator *)node)->init == 0))
+	{
+		CCErrorOnLine(yygetfilename(node),
+					  yygetlinenum(node),
+		"resource declaration in a using statement is not allowed without an initializer");
+	}
+
+	return resultType;
+}
+
+static void HandleForeachVarDecl(ILNode_Foreach *node, ILGenInfo *info, ILType *type)
+{
+	unsigned long varNum;
+	ILNode_MethodDeclaration *method;
+
+	/* Locate the method that this local is declared within */
+	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+	varNum = AddLocalToMethod(info, method, type);
+
+	/* Create a local variable entry in the current scope */
+	/* TODO: the variable should be marked read-only */
+	ILScopeDeclareLocal(info->currentScope, node->varName, varNum,
+						node->varNameNode);
+
+	node->varIndex = varNum;
+	node->varType = ILTypeToMachineType(type);
 }
 
 %}
@@ -359,57 +603,39 @@ ILNode_SemAnalysis(ILNode_Foreach)
 {
 	CSSemValue value;
 	ILScope *scope;
-	ILNode_MethodDeclaration *method;
 	ILType *type;
-	/* ForeachCollection */
-	ILMethod *getEnumerator=NULL;
-	ILProperty *property=NULL;
-	ILMethod *getCurrent=NULL;
-	ILMethod *moveNext=NULL;
-	ILType *retType;
-	ILType *enumerator;
-	ILNode *castNode;
-	ILClass *arrayClass;
 
 	/* Locate the scope and method for the iteration variable */
 	scope = info->currentScope;
-	method = (ILNode_MethodDeclaration *)(info->currentMethod);
 
 	/* Perform semantic analysis on the local variable type */
 	if(CSHasUnsafeType(node->type))
 	{
 		CCUnsafeTypeMessage(info, (ILNode *)node);
 	}
-	type = CSSemType(node->type, info, &(node->type));
+	type = FindLocalType(node->type, info, &(node->type), 0);
 
 	/* Add the type to the local variable signature for this method */
-	if(!(method->localVarSig))
+	if(type)
 	{
-		method->localVarSig = ILTypeCreateLocalList(info->context);
-		if(!(method->localVarSig))
-		{
-			CCOutOfMemory();
-		}
+		HandleForeachVarDecl(node, info, type);
 	}
-	if(!ILTypeAddLocal(info->context, method->localVarSig, type))
-	{
-		CCOutOfMemory();
-	}
-
-	/* Create a local variable entry in the current scope */
-	/* TODO: the variable should be marked read-only */
-	ILScopeDeclareLocal(info->currentScope, node->varName,
-						ILTypeNumLocals(method->localVarSig) - 1,
-						node->varNameNode);
-	node->varIndex = ILTypeNumLocals(method->localVarSig) - 1;
-	node->varType = ILTypeToMachineType(type);
 
 	/* Perform semantic analysis on the collection expression */
 	if(!CSSemExpectValue(node->expr, info, &(node->expr), &value))
 	{
 		CCErrorOnLine(yygetfilename(node->expr), yygetlinenum(node->expr),
 					  "invalid collection expression in `foreach' statement");
-		node->arrayType = ILTypeCreateArray(info->context, 1, type);
+		if(type)
+		{
+			node->arrayType = ILTypeCreateArray(info->context, 1, type);
+		}
+		else
+		{
+			type = ILType_Int32;
+			HandleForeachVarDecl(node, info, type);
+			node->arrayType = ILTypeCreateArray(info->context, 1, type);
+		}
 		if(!(node->arrayType))
 		{
 			CCOutOfMemory();
@@ -420,36 +646,46 @@ ILNode_SemAnalysis(ILNode_Foreach)
 		node->arrayType = CSSemGetType(value);
 	}
 
-	/* Perform semantic analysis on the body of the "foreach" statement */
-	PushStmtContext(info, CS_STMT_LOOP);
-	StmtSem(node->stmt, info, &(node->stmt));
-	PopStmtContext(info);
-
 	/* Is this a simple array-based or collection-based "foreach" statement? */
-	node->elemType = ILTypeGetElemType(node->arrayType);
-	if(ILType_IsSimpleArray(node->arrayType) &&
-	   ILTypeIdentical(node->elemType, type))
+	if(ILType_IsSimpleArray(node->arrayType))
 	{
-		/* The collection is a simple array and the iteration variable
-		   has the same type as the array elements.  We can optimise
-		   this case in the code generator to scan the array efficiently */
-	}
-	else if(ILType_IsSimpleArray(node->arrayType))
-	{		
-			castNode=ILNode_EmptyExpr_create
+		/* 
+		 * If the collection is a simple array and the iteration variable
+		 * has the same type as the array elements.  We can optimise
+		 * this case in the code generator to scan the array efficiently.
+		 * Nothing has to be done here in this case.
+		 */
+		node->elemType = ILTypeGetElemType(node->arrayType);
+
+		if(!type)
+		{
+			type = node->elemType;
+			HandleForeachVarDecl(node, info, type);
+		}
+		else if(!ILTypeIdentical(node->elemType, type))
+		{
+			ILNode *castNode;
+
+			castNode = ILNode_EmptyExpr_create
 				(ILTypeToMachineType(node->elemType));
-			if(!ILCast(info,castNode,&(castNode),node->elemType,type,1))
+			if(!ILCast(info, castNode, &(castNode), node->elemType, type, 1))
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 					"Cannot cast '%s' to '%s'",CSTypeToName(node->elemType),
 					CSTypeToName(type));
 			}
-			node->doCast=castNode;
+			node->doCast = castNode;
+		}
 	}
 	else if(ILTypeIsStringClass(node->arrayType) &&
-	        ILTypeIdentical(type, ILType_Char))
+			(!type || ILTypeIdentical(type, ILType_Char)))
 	{
 		/* The collection is a string, which we can special-case */
+		if(!type)
+		{
+			type = ILType_Char;
+			HandleForeachVarDecl(node, info, type);
+		}
 		*parent = ILNode_ForeachString_create(node->expr,
 											  node->stmt,
 											  node->varIndex,
@@ -457,7 +693,14 @@ ILNode_SemAnalysis(ILNode_Foreach)
 	}
 	else 
 	{
+		ILMethod *getEnumerator = NULL;
+		ILType *ienumerableType;
+		ILClass *arrayClass;
+
 		arrayClass = ILTypeToClass(info, node->arrayType);
+		ienumerableType = ILFindNonSystemType(info,
+											  "IEnumerable",
+											  "System.Collections");
 		if(arrayClass)
 		{
 			getEnumerator = ILResolveInstanceMethod(info, arrayClass,
@@ -465,13 +708,12 @@ ILNode_SemAnalysis(ILNode_Foreach)
 													"GetEnumerator",
 													NULL, 0);
 		}
-		if(getEnumerator==NULL &&
-			ILTypeImplements(info, node->arrayType,
-			ILFindNonSystemType(info,"IEnumerable","System.Collections")))
+		if(getEnumerator == NULL &&
+		   ILTypeImplements(info, node->arrayType, ienumerableType))
 		{
-			ILClass * enumerable = ILTypeToClass(info,
-									ILFindNonSystemType(info,"IEnumerable",
-													"System.Collections"));
+			ILClass * enumerable;
+
+			enumerable = ILTypeToClass(info, ienumerableType);
 			enumerable = ILClassResolve(enumerable);
 
 			getEnumerator = ILResolveInstanceMethod(info, enumerable,
@@ -481,18 +723,24 @@ ILNode_SemAnalysis(ILNode_Foreach)
 		}	
 		if(getEnumerator)
 		{
-			enumerator=ILTypeGetReturn(ILMethod_Signature(getEnumerator));
-			property=ILResolveProperty(info,
-							ILType_ToClass(enumerator),
-							GetDefaultScope(info),
-							"Current");
-			
-			getCurrent=(property ? ILProperty_Getter(property) : 0);
+			ILProperty *property = NULL;
+			ILMethod *getCurrent = NULL;
+			ILMethod *moveNext = NULL;
+			ILType *retType;
+			ILType *enumerator;
 
-			moveNext=ILResolveInstanceMethod(info,
-						ILType_ToClass(enumerator),
-						GetDefaultScope(info),
-						"MoveNext",	NULL, 0);
+			enumerator = ILTypeGetReturn(ILMethod_Signature(getEnumerator));
+			property = ILResolveProperty(info,
+										 ILType_ToClass(enumerator),
+										 GetDefaultScope(info),
+										 "Current");
+
+			getCurrent = (property ? ILProperty_Getter(property) : 0);
+
+			moveNext = ILResolveInstanceMethod(info,
+											   ILType_ToClass(enumerator),
+											   GetDefaultScope(info),
+											   "MoveNext", NULL, 0);
 
 			if(!property) 
 			{
@@ -503,8 +751,8 @@ ILNode_SemAnalysis(ILNode_Foreach)
 			else if(!getCurrent)
 			{
 				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-		  		"'Current' property has no 'get' method in '%s'",
-					  CSTypeToName(enumerator));
+							  "'Current' property has no 'get' method in '%s'",
+							  CSTypeToName(enumerator));
 			}
 			if(!moveNext) 
 			{
@@ -512,58 +760,79 @@ ILNode_SemAnalysis(ILNode_Foreach)
 			  "Cannot locate 'MoveNext()' or 'IEnumerator.MoveNext()' in '%s'",
 					  CSTypeToName(enumerator));
 			}
-			if(!getCurrent || !moveNext)
+			if(getCurrent && moveNext)
 			{
-				/* Bail out if we have insufficient interface support */
-				return CSSemValueDefault;
-			}
-			
-			retType=ILTypeGetReturn(ILMethod_Signature(getCurrent));
+				retType = ILTypeGetReturn(ILMethod_Signature(getCurrent));
 
-			if(ILTypeIdentical(type,retType))	
-			{	
-				*parent=ILNode_ForeachCollection_create(
-						NULL,
-						node->expr,
-						node->stmt,
-						node->arrayType,
-						node->varIndex,
-						ILTypeToMachineType(type),
-						enumerator,
-						getEnumerator,
-						moveNext,
-						getCurrent);
-			}
-			else
-			{	
-				castNode=ILNode_EmptyExpr_create(ILTypeToMachineType(retType));
-				if(!ILCast(info,castNode,&(castNode),retType,type,1))
+				if(!type)
 				{
-					CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
-						"Cannot cast '%s' to '%s'",CSTypeToName(retType),
-						CSTypeToName(type));
+					type = retType;
+					HandleForeachVarDecl(node, info, type);
+					*parent = ILNode_ForeachCollection_create(
+								NULL,
+								node->expr,
+								node->stmt,
+								node->arrayType,
+								node->varIndex,
+								ILTypeToMachineType(type),
+								enumerator,
+								getEnumerator,
+								moveNext,
+								getCurrent);
 				}
-				*parent=ILNode_ForeachCollection_create(
-						castNode,
-						node->expr,
-						node->stmt,
-						node->arrayType,
-						node->varIndex,
-						ILTypeToMachineType(type),
-						enumerator,
-						getEnumerator,
-						moveNext,
-						getCurrent);
+				else if(ILTypeIdentical(type, retType))	
+				{	
+					*parent = ILNode_ForeachCollection_create(
+								NULL,
+								node->expr,
+								node->stmt,
+								node->arrayType,
+								node->varIndex,
+								ILTypeToMachineType(type),
+								enumerator,
+								getEnumerator,
+								moveNext,
+								getCurrent);
+				}
+				else
+				{
+					ILNode *castNode;
+
+					castNode = ILNode_EmptyExpr_create(ILTypeToMachineType(retType));
+					if(!ILCast(info, castNode, &(castNode), retType, type, 1))
+					{
+						CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+							"Cannot cast '%s' to '%s'",CSTypeToName(retType),
+							CSTypeToName(type));
+					}
+					*parent = ILNode_ForeachCollection_create(
+								castNode,
+								node->expr,
+								node->stmt,
+								node->arrayType,
+								node->varIndex,
+								ILTypeToMachineType(type),
+								enumerator,
+								getEnumerator,
+								moveNext,
+								getCurrent);
+				}
 			}
 		}
 		else
 		{
 			CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
 			 "Could not locate a 'GetEnumerator' or "
-			 "'IEnumerable.GetEnumerator' in '%s'"
-			 ,CSTypeToName(node->arrayType));
+			 "'IEnumerable.GetEnumerator' in '%s'",
+			 CSTypeToName(node->arrayType));
 		}
 	}
+
+	/* Perform semantic analysis on the body of the "foreach" statement */
+	PushStmtContext(info, CS_STMT_LOOP);
+	StmtSem(node->stmt, info, &(node->stmt));
+	PopStmtContext(info);
+
 	/* Done */
 	return CSSemValueDefault;
 }
@@ -1404,27 +1673,16 @@ ILNode_SemAnalysis(ILNode_CatchClause)
 	/* Declare a new local variable for the catch value */
 	if(node->name)
 	{
+		unsigned long varNum;
+
 		/* Add the type to the local variable signature for this method */
-		if(!(method->localVarSig))
-		{
-			method->localVarSig = ILTypeCreateLocalList(info->context);
-			if(!(method->localVarSig))
-			{
-				CCOutOfMemory();
-			}
-		}
-		if(!ILTypeAddLocal(info->context, method->localVarSig, thrownType))
-		{
-			CCOutOfMemory();
-		}
+		varNum = AddLocalToMethod(info, method, thrownType);
 
 		/* Create a local variable entry in the current scope */
-		ILScopeDeclareLocal(newScope, node->name,
-							ILTypeNumLocals(method->localVarSig) - 1,
-							node->nameNode);
+		ILScopeDeclareLocal(newScope, node->name, varNum, node->nameNode);
 
 		/* Record the local variable index for the code generator */
-		node->varIndex = ILTypeNumLocals(method->localVarSig) - 1;
+		node->varIndex = varNum;
 	}
 
 	/* Perform semantic analysis on the catch body */
@@ -1497,123 +1755,251 @@ ILNode_SemAnalysis(ILNode_Lock)
 /*
  * Perform semantic analysis for the "using" statement.
  */
-ILNode_SemAnalysis(ILNode_Using)
+ILNode_SemAnalysis(ILNode_UsingStatement)
 {
-	CSSemValue value;
-	ILType *type;
-	ILType *disposable;
+	ILNode **stmtParent = 0;
 	
-	if(yyisa(node->resource,ILNode_ResourceDeclaration))
+	if(yyisa(node->resource, ILNode_ResourceDeclaration))
 	{
-		/* TODO: Handle the declaration of multiple resources in the
-		   using statement like using(type a, b, c) { ... }.
-		   They should be converted to distinct nested using statements
-		   like using(type a) { using(type b) { using(type c) { ... }}}. */
-		ILNode_SemAnalysis(node->resource,info,&(node->resource));
+		ILType *type;
+		ILNode_ResourceDeclaration *resource;
+
+		resource = (ILNode_ResourceDeclaration *)(node->resource);
+
+		/* Perform semantic analysis on the resource variable type */
+		type = FindLocalType(resource->type, info, &(resource->type), 1);
+
+		if(yyisa(resource->variables, ILNode_List))
+		{
+			ILNode *varNode;
+			ILNode_ListIter iter;
+
+			/* Scan through the variable names and declare them in the current scope */
+			ILNode_ListIter_Init(&iter, resource->variables);
+			while((varNode = ILNode_ListIter_Next(&iter)) != 0)
+			{
+				ILNode *initNode;
+				ILType *newType;
+
+				initNode = varNode;
+				newType = HandleLocalDecl(initNode, info, &initNode, type, 1);
+
+				if(yyisa(initNode, ILNode_VariableDeclarator))
+				{
+					ILNode_VariableDeclarator *declNode;
+					ILNode_LocalVar *localNode;
+					ILNode_Using *using;
+
+					declNode = (ILNode_VariableDeclarator *)(initNode);
+					localNode = (ILNode_LocalVar *)(declNode->name);
+
+					StmtSem(initNode, info, &initNode);
+
+					if(stmtParent)
+					{
+						using = (ILNode_Using *)ILNode_Using_create(localNode,
+																	initNode,
+																	*stmtParent,
+																	newType);
+						*stmtParent = (ILNode *)using;
+					}
+					else
+					{
+						using = (ILNode_Using *)ILNode_Using_create(localNode,
+																	initNode,
+																	node->stmt,
+																	newType);
+
+						node->resource = (ILNode *)using;
+					}
+					stmtParent = &(using->stmt);
+				}
+				else
+				{
+					/* In using statements the variables shall have an initializer */
+					stmtParent = 0;
+				}
+			}
+		}
+		else
+		{
+			ILType *newType;
+
+			newType = HandleLocalDecl(resource->variables, info,
+									  &(resource->variables), type, 1);
+
+			if(yyisa(resource->variables, ILNode_VariableDeclarator))
+			{
+				ILNode_VariableDeclarator *declNode;
+				ILNode *initNode;
+				ILNode_LocalVar *varNode;
+				ILNode_Using *using;
+
+				declNode = (ILNode_VariableDeclarator *)(resource->variables);
+				initNode = resource->variables;
+				varNode = (ILNode_LocalVar *)(declNode->name);
+
+				StmtSem(initNode, info, &(initNode));
+
+				using = (ILNode_Using *)ILNode_Using_create(varNode,
+															initNode,
+															node->stmt,
+															newType);
+
+				stmtParent = &(using->stmt);
+				node->resource = (ILNode *)using;
+			}
+			else
+			{
+				/* In using statements the variables shall have an initializer */
+				stmtParent = 0;
+			}
+		}
 	}
 	else 
 	{
-		value=ILNode_SemAnalysis(node->resource,info,&(node->resource));		
-		if(!CSSemGetType(value))
+		ILType *type;
+		CSSemValue value;
+
+		value = ILNode_SemAnalysis(node->resource, info, &(node->resource));
+		type = CSSemGetType(value);
+		if(!type)
 		{
-			CCErrorOnLine(yygetfilename(node->resource), 
-				yygetlinenum(node->resource), 
-				"invalid expression");
+			CCErrorOnLine(yygetfilename(node->resource),
+						  yygetlinenum(node->resource),
+						  "invalid expression");
+			stmtParent = 0;
 		}
-		disposable=ILFindSystemType(info,"IDisposable");
-		type=CSSemGetType(value);
-		if(!ILTypeImplements(info,type,disposable) && 
-			!ILTypeImplements(info,type,disposable))
+		else
 		{
-			CCErrorOnLine(yygetfilename(node->resource), 
-				yygetlinenum(node->resource), 
-				"'%s' does not implement 'IDisposable'",
-					CSTypeToName(type));
+			unsigned long varNum;
+			ILNode_MethodDeclaration *method;
+			ILNode_LocalVar *varNode;
+			ILNode *initNode;
+			ILNode_Using *using;
+
+			CheckIfDisposable(info, node->resource, type);
+
+			/* Locate the method that this local is declared within */
+			method = (ILNode_MethodDeclaration *)(info->currentMethod);
+
+			/* Add the type to the local variable signature for this method */
+			varNum = AddLocalToMethod(info, method, type);
+
+			/* create a nameless local variable */
+			varNode = (ILNode_LocalVar *)ILNode_LocalVar_create(varNum,
+											 ILTypeToMachineType(type));
+
+			initNode = ILNode_SemGuard_create(node->resource, value);
+			initNode = ILNode_Assign_create((ILNode *)varNode, initNode);
+
+			/* Perform semantic analysis on the initializer */
+			ILNode_SemAnalysis(initNode, info, &initNode);
+
+			using = (ILNode_Using *)ILNode_Using_create(varNode,
+														initNode,
+														node->stmt,
+														type);
+
+			stmtParent = &(using->stmt);
+			node->resource = (ILNode *)using;
 		}
 	}
-	ILNode_SemAnalysis(node->stmt,info,&(node->stmt));
+
+	/* Now perform the semantic analysis on the statement itself */
+	if(stmtParent)
+	{
+		ILNode_SemAnalysis(*stmtParent, info, stmtParent);
+	}
+	else
+	{
+		ILNode_SemAnalysis(node->stmt, info, &(node->stmt));
+	}
+
 	return CSSemValueDefault;
 }
 
 /*
  * Generate discard code for the "using" statement.
  */
+ILNode_GenDiscard(ILNode_UsingStatement)
+{
+	ILNode_GenDiscard(node->resource, info);
+}
+
+/*
+ * Perform semantic analysis for a "using" node.
+ */
+ILNode_SemAnalysis(ILNode_Using)
+{
+	return CSSemValueDefault;
+}
+
+/*
+ * Generate discard code for the "using" node.
+ */
 ILNode_GenDiscard(ILNode_Using)
 {
-	ILNode *vars;
-	ILNode_ListIter iter;
-	ILNode_LocalVar *varNode;
-	unsigned tempVar=0;
-	
+	ILLabel label = ILLabel_Undefined;
 	ILLabel label1 = ILLabel_Undefined;
-	ILLabel label2 = ILLabel_Undefined;
-	if(yyisa(node->resource,ILNode_ResourceDeclaration))
-	{
-		ILNode_GenDiscard(node->resource,info);
-	}
-	else
-	{
-		tempVar=ILGenTempTypedVar(info,ILFindSystemType(info,"IDisposable"));
-		ILNode_GenValue(node->resource,info);
-		ILGenStoreLocal(info,tempVar);	
-		ILGenAdjust(info,-1);
-	}
-	
-	/* Encapsulate the loop in a "try" block so that the "Dispose"
+
+	/* First run the initializer for the local */
+	ILNode_GenDiscard(node->init, info);
+
+	/* Encapsulate the statement in a "try" block so that the "Dispose"
 	   method can be called in finally */
 	if(info->asmOutput)
 	{
 		fputs("\t.try {\n", info->asmOutput);
 	}
 	ILGenPushTry(info);
-	ILNode_GenDiscard(node->stmt,info);
-	ILGenJump(info, IL_OP_LEAVE, &label1);
+
+	/* Generate the dicard code for the statement */
+	ILNode_GenDiscard(node->stmt, info);
+
+	/* Leave the try block */
+	ILGenJump(info, IL_OP_LEAVE, &label);
+	
+	/* end the try block and start a finally block */
 	ILGenPopTry(info);
 	if(info->asmOutput)
 	{
 		fputs("\t} finally {\n", info->asmOutput);
 	}
-	if(yyisa(node->resource,ILNode_ResourceDeclaration))
-	{
-		vars=((ILNode_ResourceDeclaration*)(node->resource))->variables;
-		ILNode_ListIter_Init(&iter, vars);
-		while((varNode = (ILNode_LocalVar*)ILNode_ListIter_Next(&iter)) != 0)
-		{
-			ILGenLoadLocal(info, varNode->index);
-			ILGenAdjust(info, 1);
-			ILGenJump(info, IL_OP_BRFALSE, &label2);
-			ILGenAdjust(info,-1);
-			ILGenLoadLocal(info, varNode->index);
-			ILGenAdjust(info, 1);
-			ILGenCallVirtual(info, 
+
+	/* Generate the dispose code */
+	/* TODO: handle value types */
+	ILGenLoadLocal(info, node->localVar->index);
+	ILGenAdjust(info, 1);
+	ILGenJump(info, IL_OP_BRFALSE, &label1);
+	ILGenAdjust(info,-1);
+	ILGenLoadLocal(info, node->localVar->index);
+	ILGenAdjust(info, 1);
+	ILGenCallVirtual(info, 
 				"void [.library]System.IDisposable::Dispose()");
-			ILGenAdjust(info, -1);
-		}
-	}
-	else
-	{
-		ILGenLoadLocal(info, tempVar);
-		ILGenAdjust(info, 1);
-		ILGenJump(info, IL_OP_BRFALSE, &label2);
-		ILGenAdjust(info,-1);
-		ILGenLoadLocal(info, tempVar);
-		ILGenAdjust(info, 1);
-		ILGenCallVirtual(info, 
-			"void [.library]System.IDisposable::Dispose()");
-		ILGenAdjust(info, -1);
-		ILGenReleaseTempVar(info,tempVar);
-	}
+	ILGenAdjust(info, -1);
+
+	/* Leave the finally block */
+	ILGenLabel(info, &label1);
 	ILGenSimple(info, IL_OP_ENDFINALLY);
-	ILGenLabel(info,&label2);
 	if(info->asmOutput)
 	{
 		fputs("\t}\n",info->asmOutput);
 	}
-	ILGenLabel(info,&label1);
+
+	ILGenLabel(info, &label);
 }
 
 /*
  * Generate Java discard code for the "using" statement.
+ */
+JavaGenDiscard(ILNode_UsingStatement)
+{
+	JavaGenDiscard(node->resource, info);
+}
+
+/*
+ * Generate Java discard code for the "using" node.
  */
 JavaGenDiscard(ILNode_Using)
 {
@@ -1623,7 +2009,7 @@ JavaGenDiscard(ILNode_Using)
 /*
  * Determine if a "using" statement ends in a return statement.
  */
-ILNode_EndsInReturnImpl(ILNode_Using)
+ILNode_EndsInReturnImpl(ILNode_UsingStatement)
 {
 	return ILNode_EndsInReturnImpl(node->stmt,info);
 }
@@ -1719,29 +2105,18 @@ ILNode_SemAnalysis(ILNode_Fixed)
 		}
 		else
 		{
-			/* Add the type to the local variable signature for this method */
-			if(!(method->localVarSig))
-			{
-				method->localVarSig = ILTypeCreateLocalList(info->context);
-				if(!(method->localVarSig))
-				{
-					CCOutOfMemory();
-				}
-			}
-			
+			unsigned long varNum;
+
 			if(yyisa(varNode,ILNode_FixAddress))
 			{
 				/* TODO : figure the right way to pin variables */
 			}
 			
-			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
-			{
-				CCOutOfMemory();
-			}
-
+			/* Add the type to the local variable signature for this method */
+			varNum = AddLocalToMethod(info, method, type);
+			
 			/* Create a local variable entry in the current scope */
-			ILScopeDeclareLocal(info->currentScope, name,
-								ILTypeNumLocals(method->localVarSig) - 1,
+			ILScopeDeclareLocal(info->currentScope, name, varNum,
 								((ILNode_FixedVariable*)varNode)->name);
 			info->inFixed = -1;
 			ILNode_SemAnalysis(varNode,info,iter.last);
@@ -1803,62 +2178,67 @@ ILNode_SemAnalysis(ILNode_FixExpr)
 }
 
 /*
+ * Perform semantic analysis for a variable declaration.
+ */
+ILNode_SemAnalysis(ILNode_VariableDeclarator)
+{
+	if(node->init)
+	{
+		/*
+		 * if we have an initializer then replace this node by an assignment
+		 */
+		*parent = ILNode_Assign_create(node->name, node->init);
+
+		/*
+		 * and perform semantic analysis on the assignment node.
+		 */
+		return ILNode_SemAnalysis(*parent, info, parent);
+	}
+
+	/* Return the default value to the caller */
+	return CSSemValueDefault;
+}
+
+/*
  * Perform semantic analysis for local variable declarations.
  */
 ILNode_SemAnalysis(ILNode_LocalVarDeclaration)
 {
 	ILType *type;
-	ILNode_ListIter iter;
-	ILNode *nameNode;
-	const char *name;
-	ILScopeData *data;
-	ILNode_MethodDeclaration *method;
-	ILNode *errorNode;
 
-	/* Locate the method that this local is declared within */
-	method = (ILNode_MethodDeclaration *)(info->currentMethod);
+	type = FindLocalType(node->type, info, &(node->type), 0);
 
-	/* Perform semantic analysis on the local variable type */
-	type = CSSemType(node->type, info, &(node->type));
-
-	/* Scan through the variable names and declare them in the current scope */
-	ILNode_ListIter_Init(&iter, node->varNames);
-	while((nameNode = ILNode_ListIter_Next(&iter)) != 0)
+	if(yyisa(node->varNames, ILNode_List))
 	{
-		name = ILQualIdentName(nameNode, 0);
-		data = ILScopeLookup(info->currentScope, name, 0);
-		if(data)
+		ILNode *varNode;
+		ILNode_ListIter iter;
+
+		/* Scan through the variable names and declare them in the current scope */
+		ILNode_ListIter_Init(&iter, node->varNames);
+		while((varNode = ILNode_ListIter_Next(&iter)) != 0)
 		{
-			/* The name is already declared in this scope */
-			CCErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
-						  "`%s' is already declared in this scope", name);
-			errorNode = ILScopeDataGetNode(data);
-			if(errorNode)
+			ILNode *replace;
+
+			replace = varNode;
+			HandleLocalDecl(varNode, info, &replace, type, 0);
+
+			if(yyisa(replace, ILNode_VariableDeclarator))
 			{
-				CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
-							  "previous declaration here");
+				StmtSem(replace, info, &replace);
+			}
+			if(replace != varNode)
+			{
+				*(iter.last) = replace;
 			}
 		}
-		else
-		{
-			/* Add the type to the local variable signature for this method */
-			if(!(method->localVarSig))
-			{
-				method->localVarSig = ILTypeCreateLocalList(info->context);
-				if(!(method->localVarSig))
-				{
-					CCOutOfMemory();
-				}
-			}
-			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
-			{
-				CCOutOfMemory();
-			}
+	}
+	else
+	{
+		HandleLocalDecl(node->varNames, info, &(node->varNames), type, 0);
 
-			/* Create a local variable entry in the current scope */
-			ILScopeDeclareLocal(info->currentScope, name,
-								ILTypeNumLocals(method->localVarSig) - 1,
-								nameNode);
+		if(yyisa(node->varNames, ILNode_VariableDeclarator))
+		{
+			StmtSem(node->varNames, info, &(node->varNames));
 		}
 	}
 
@@ -1887,7 +2267,7 @@ ILNode_SemAnalysis(ILNode_LocalConstDeclaration)
 
 	/* Perform semantic analysis on the local variable type */
 	type = CSSemType(node->type, info, &(node->type));
-		
+
 	ILNode_ListIter_Init(&iterator, node->decls);
 	while((decl = (ILNode_FieldDeclarator *)
 						ILNode_ListIter_Next(&iterator)) != 0)
@@ -2004,87 +2384,17 @@ ILNode_SemAnalysis(ILNode_Memset)
 }
 
 /*
- * This is ILNode_LocalVarDeclaration's copy ,except for the fact that
- * all nodes are replaced with ILNode_LocVar after SemAnalysis.
+ * Perform semantic analysis for a resource declaration.
  */
 ILNode_SemAnalysis(ILNode_ResourceDeclaration)
 {
-	ILType *type;
-	ILNode_ListIter iter;
-	ILNode *nameNode;
-	const char *name;
-	ILScopeData *data;
-	ILNode_MethodDeclaration *method;
-	ILNode *errorNode;
-	ILType *disposableType;
-	/* Locate the method that this local is declared within */
-	method = (ILNode_MethodDeclaration *)(info->currentMethod);
-
-	/* Perform semantic analysis on the local variable type */
-	type = CSSemType(node->type, info, &(node->type));
-
-	disposableType=ILFindSystemType(info,"IDisposable");
-	if(! ILTypeImplements(info,type,disposableType) 
-		&& !ILTypeInherits(info,type,disposableType))
-	{
-		CCErrorOnLine(yygetfilename(node->type), yygetlinenum(node->type),
-			  "`%s' does not implement 'IDisposable' interface ", 
-			  CSTypeToName(type));
-	}
-
-	/* Scan through the variable names and declare them in the current scope */
-	ILNode_ListIter_Init(&iter, node->variables);
-	while((nameNode = ILNode_ListIter_Next(&iter)) != 0)
-	{
-		name = ILQualIdentName(nameNode, 0);
-		data = ILScopeLookup(info->currentScope, name, 0);
-		if(data)
-		{
-			/* The name is already declared in this scope */
-			CCErrorOnLine(yygetfilename(nameNode), yygetlinenum(nameNode),
-						  "`%s' is already declared in this scope", name);
-			errorNode = ILScopeDataGetNode(data);
-			if(errorNode)
-			{
-				CCErrorOnLine(yygetfilename(errorNode), yygetlinenum(errorNode),
-							  "previous declaration here");
-			}
-		}
-		else
-		{
-			/* Add the type to the local variable signature for this method */
-			if(!(method->localVarSig))
-			{
-				method->localVarSig = ILTypeCreateLocalList(info->context);
-				if(!(method->localVarSig))
-				{
-					CCOutOfMemory();
-				}
-			}
-			if(!ILTypeAddLocal(info->context, method->localVarSig, type))
-			{
-				CCOutOfMemory();
-			}
-
-			/* Create a local variable entry in the current scope */
-			ILScopeDeclareLocal(info->currentScope, name,
-								ILTypeNumLocals(method->localVarSig) - 1,
-								nameNode);
-
-			/* replace the name with the local variable */
-			*(iter.last) = ILNode_LocalVar_create(
-							ILTypeNumLocals(method->localVarSig)-1,
-							ILTypeToMachineType(type));
-		}
-	}
-
-	ILNode_SemAnalysis(node->init,info, &(node->init));
-
-	/* Return the default value to the caller */
+	/*
+	 * This is handled completely in semanalyzing an ILNode_UsingStatement.
+	 */
 	return CSSemValueDefault;
 }
 
 ILNode_GenDiscard(ILNode_ResourceDeclaration)
 {
-	ILNode_GenDiscard(node->init,info);
+	ILNode_GenDiscard(node->variables, info);
 }

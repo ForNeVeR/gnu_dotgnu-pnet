@@ -818,6 +818,11 @@ struct _tagILSwitchValue
 	ILNode *expr;
 	ILNode *stmt;
 }
+%node ILNode_VariableDeclarator ILNode_Statement =
+{
+	ILNode	   *name;
+	ILNode	   *init;
+}
 %node ILNode_LocalVarDeclaration ILNode_Statement =
 {
 	ILNode	   *type;

@@ -1249,7 +1249,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <genericMethodHeaderStart> GenericMethodHeaderStart
 %type <node>		ConstantDeclaration ConstantDeclarators ConstantDeclarator
 %type <node>		FieldDeclaration FieldDeclarators FieldDeclarator
-%type <varInit>		VariableDeclarators VariableDeclarator
+%type <node>		VariableDeclarators VariableDeclarator
 %type <node>		VariableInitializer LocalVariableDeclaration
 %type <node>		LocalConstantDeclaration
 %type <node>		EventFieldDeclaration EventDeclaration 
@@ -2558,60 +2558,32 @@ InnerEmbeddedStatement
 
 LocalVariableDeclaration
 	: LocalVariableType VariableDeclarators		{
-				/* "VariableDeclarators" has split the declaration into
-				   a list of variable names, plus a list of assignment
-				   statements to set the initial values.  Turn the result
-				   into a local variable declaration followed by the
-				   assignment statements */
-				if($2.init)
-				{
-					$$ = ILNode_Compound_CreateFrom
-							(ILNode_LocalVarDeclaration_create($1, $2.decl),
-							 $2.init);
-				}
-				else
-				{
-					$$ = ILNode_LocalVarDeclaration_create($1, $2.decl);
-				}
+				$$ = ILNode_LocalVarDeclaration_create($1, $2);
 			}
 	;
 
 VariableDeclarators
 	: VariableDeclarator							{
-				$$.decl = ILNode_List_create();
-				ILNode_List_Add($$.decl, $1.decl);
-				$$.init = $1.init;
+				$$ = $1;
 			}	
 	| VariableDeclarators ',' VariableDeclarator	{
-				ILNode_List_Add($1.decl, $3.decl);
-				$$.decl = $1.decl;
-				if($1.init)
+				if(!yyisa($1, ILNode_List))
 				{
-					if($3.init)
-					{
-						$$.init = ILNode_Compound_CreateFrom($1.init, $3.init);
-					}
-					else
-					{
-						$$.init = $1.init;
-					}
-				}
-				else if($3.init)
-				{
-					$$.init = $3.init;
+					$$ = ILNode_List_create();
+					ILNode_List_Add($$, $1);
 				}
 				else
 				{
-					$$.init = 0;
+					$$ = $1;
 				}
+				ILNode_List_Add($$, $3);
 			}
 	;
 
 VariableDeclarator
-	: Identifier							{ $$.decl = $1; $$.init = 0; }
+	: Identifier							{ $$ = $1; }
 	| Identifier '=' VariableInitializer	{
-				$$.decl = $1;
-				$$.init = ILNode_Assign_create($1, $3);
+				MakeBinary(VariableDeclarator, $1, $3);
 			}
 	;
 
@@ -2946,16 +2918,16 @@ LockStatement
 
 UsingStatement
 	: USING ResourceAcquisition EmbeddedStatement	{
-				MakeBinary(Using, $2, $3);
+				MakeBinary(UsingStatement, $2, $3);
 				$$ = ILNode_NewScope_create($$);
 			}
 	;
 
 ResourceAcquisition
 	: '(' LocalVariableType VariableDeclarators ')'	{ 
-			MakeTernary(ResourceDeclaration,$2,$3.decl,$3.init); 
+			MakeBinary(ResourceDeclaration, $2, $3);
 		}
-	| '(' Expression ')'				{ 
+	| '(' Expression ')'				{
 			$$ = $2;
 		}
 	| '(' error ')'		{

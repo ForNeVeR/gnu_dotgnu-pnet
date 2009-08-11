@@ -11,6 +11,7 @@ TESTS = block1.cs \
 		locals1.cs \
 		locals2.cs \
 		locals3.cs \
+		locals4.cs \
 		lock1.cs \
 		lock2.cs \
 		return1.cs \
@@ -32,10 +33,17 @@ TESTS = block1.cs \
 		using_namespace5.cs \
 		using_namespace6.cs \
 		using_statement1.cs \
+		using_statement2.cs \
 		using1.cs \
 		using2.cs \
 		using3.cs \
-		using4.cs
+		using4.cs \
+		var_foreach1.cs \
+		var_foreach3.cs \
+		var_foreach4.cs \
+		var_foreach5.cs \
+		var_locals1.cs \
+		var_using1.cs
 
 TESTS_ENVIRONMENT = $(SHELL) $(top_srcdir)/tools/run_test.sh
 

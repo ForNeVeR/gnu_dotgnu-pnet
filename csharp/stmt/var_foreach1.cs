@@ -1,7 +1,8 @@
 /*
- * using_statement1.cs - Test the using statement - valid cases.
+ * var_foreach1.cs - Test the handling of "foreach" statements using the
+ *					 var type.
  *
- * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,31 +19,15 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
-public class Test
+class Test
 {
-
-	private class TestDisposable : IDisposable
+	int m1(int[] array)
 	{
-		public void Dispose()
+		int sum = 0;
+		foreach(var x in array)
 		{
+			sum += x;
 		}
-	}
-
-	static void Test1()
-	{
-		TestDisposable a = new TestDisposable();
-
-		using(a)
-		{
-		}
-	}
-
-	static void Test2()
-	{
-		using(TestDisposable a = new TestDisposable())
-		{
-		}
+		return sum;
 	}
 }

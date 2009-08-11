@@ -1,3 +1,40 @@
+2009-08-11  Klaus Treichel  <ktreichel@web.de>
+
+	* csharp/stmt/using3.il, csharp/stmt/using3.jl:	Sync with latest
+	compiler changes.
+
+	* csharp/stmt/locals4.cs, csharp/stmt/locals4.il, csharp/stmt/locals4.jl:
+	Add test for multiple local variable declarations in one statement.
+
+	* csharp/stmt/using_statement1.cs, csharp/stmt/using_statement1.il,
+	csharp/stmt/using_statement1.jl: Make the declaration of Dispose() public
+	because it id nor recognizes as an interface method implementation
+	otherwise.
+
+	* csharp/stmt/using_statement2.cs, csharp/stmt/using_statement2.il,
+	csharp/stmt/using_statement2.jl: Add test for decraring multiple
+	resources in one using statenment.
+
+	* csharp/stmt/var_foreach1.cs, csharp/stmt/var_foreach1.il,
+	csharp/stmt/var_foreach1.jl, csharp/stmt/var_foreach3.cs,
+	csharp/stmt/var_foreach3.il, csharp/stmt/var_foreach3.jl,
+	csharp/stmt/var_foreach4.cs, csharp/stmt/var_foreach4.il,
+	csharp/stmt/var_foreach4.jl, csharp/stmt/var_foreach5.cs,
+	csharp/stmt/var_foreach5.il, csharp/stmt/var_foreach5.jl: Add tests for
+	the foreach statement with the C# 3.x local var type.
+
+	* csharp/stmt/var_locals1.cs, csharp/stmt/var_locals1.il,
+	csharp/stmt/var_locals1.jl: Add tests for local variable declarations
+	using the C# 3.x local var type.
+
+	* csharp/stmt/var_using1.cs, csharp/stmt/var_using1.il,
+	csharp/stmt/var_using1.jl: Add tests for the using statement using the
+	C# 3.x local var type.
+
+	* csharp/stmt/Makefile.am: Add locals4.cs, var_foreach1.cs,
+	var_foreach3.cs, var_foreach4.cs, var_foreach5.cs, var_locals1.cs and
+	var_using1.cs to the tests to be executed.
+
 2009-08-01  Klaus Treichel  <ktreichel@web.de>
 
 	* csharp/class/Makefile.am: Add partial.cs to partial5.cs to the

@@ -1,7 +1,7 @@
 /*
- * using_statement1.cs - Test the using statement - valid cases.
+ * locals4.cs - Test the declaration of local variables
  *
- * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,31 +18,11 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
-public class Test
+class Test
 {
-
-	private class TestDisposable : IDisposable
+	static void m2()
 	{
-		public void Dispose()
-		{
-		}
-	}
-
-	static void Test1()
-	{
-		TestDisposable a = new TestDisposable();
-
-		using(a)
-		{
-		}
-	}
-
-	static void Test2()
-	{
-		using(TestDisposable a = new TestDisposable())
-		{
-		}
+		int a, b = 1, c, d = 3;
+		int e = 4, f = 5, g = 6, h = 7;
 	}
 }

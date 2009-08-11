@@ -11,6 +11,7 @@
 {
 .class nested private auto ansi 'TestDisposable' extends ['.library']'System'.'Object' implements ['.library']'System'.'IDisposable'
 {
+.field public int32 'i'
 .method public hidebysig instance void 'Dispose'() cil managed 
 {
 	ret
@@ -19,9 +20,12 @@
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
 	ldarg.0
+	ldc.i4.1
+	stfld	int32 'Test'/'TestDisposable'::'i'
+	ldarg.0
 	call	instance void ['.library']'System'.'Object'::'.ctor'()
 	ret
-	.maxstack 1
+	.maxstack 2
 } // method .ctor
 } // class TestDisposable
 .method private static hidebysig void 'Test1'() cil managed 
@@ -29,9 +33,17 @@
 	.locals init	(class 'Test'/'TestDisposable', class 'Test'/'TestDisposable')
 	newobj	instance void 'Test'/'TestDisposable'::'.ctor'()
 	stloc.0
-	ldloc.0
+	.try {
+	newobj	instance void 'Test'/'TestDisposable'::'.ctor'()
 	stloc.1
 	.try {
+	ldloc.0
+	dup
+	ldfld	int32 'Test'/'TestDisposable'::'i'
+	ldloc.1
+	ldfld	int32 'Test'/'TestDisposable'::'i'
+	add
+	stfld	int32 'Test'/'TestDisposable'::'i'
 	leave	?L1
 	} finally {
 	ldloc.1
@@ -42,15 +54,6 @@
 	endfinally
 	}
 ?L1:
-	ret
-	.maxstack 1
-} // method Test1
-.method private static hidebysig void 'Test2'() cil managed 
-{
-	.locals init	(class 'Test'/'TestDisposable')
-	newobj	instance void 'Test'/'TestDisposable'::'.ctor'()
-	stloc.0
-	.try {
 	leave	?L3
 	} finally {
 	ldloc.0
@@ -62,8 +65,8 @@
 	}
 ?L3:
 	ret
-	.maxstack 1
-} // method Test2
+	.maxstack 3
+} // method Test1
 .method public hidebysig specialname rtspecialname instance void '.ctor'() cil managed 
 {
 	ldarg.0

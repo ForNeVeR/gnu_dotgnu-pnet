@@ -1,7 +1,7 @@
 /*
- * using_statement1.cs - Test the using statement - valid cases.
+ * var_locals1.cs - Test the allocating of local variables using the var type
  *
- * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,31 +18,53 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-using System;
-
-public class Test
+namespace Test1
 {
-
-	private class TestDisposable : IDisposable
+	public class var
 	{
-		public void Dispose()
+	}
+}
+
+namespace Test
+{
+	class Test1
+	{
+		static int i1()
 		{
+			var y = 10;
+
+			return y;
+		}
+
+		static float f1()
+		{
+			var y = 1.0f;
+
+			return y;
+		}
+
+		static double d1()
+		{
+			var y = 1.0d;
+
+			return y;
+		}
+	}
+}
+
+namespace Test
+{
+	using Test1;
+
+	class Test2
+	{
+		static var v1()
+		{
+			var y;
+
+			y = new var();
+			return y;
 		}
 	}
 
-	static void Test1()
-	{
-		TestDisposable a = new TestDisposable();
-
-		using(a)
-		{
-		}
-	}
-
-	static void Test2()
-	{
-		using(TestDisposable a = new TestDisposable())
-		{
-		}
-	}
 }

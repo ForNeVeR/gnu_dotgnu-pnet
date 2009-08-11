@@ -11,7 +11,7 @@
 {
 .class nested private auto ansi 'TestDisposable' extends ['.library']'System'.'Object' implements ['.library']'System'.'IDisposable'
 {
-.method private hidebysig instance void 'Dispose'() cil managed java 
+.method public hidebysig instance void 'Dispose'() cil managed java 
 {
 	return
 	.locals 1
@@ -33,7 +33,7 @@
 	invokespecial	instance void 'Test'/'TestDisposable'::'.ctor'()
 	astore_0
 	return
-	.locals 1
+	.locals 2
 	.maxstack 2
 } // method Test1
 .method private static hidebysig void 'Test2'() cil managed java 

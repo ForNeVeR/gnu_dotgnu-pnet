@@ -1,5 +1,5 @@
 /*
- * using_statement1.cs - Test the using statement - valid cases.
+ * using_statement2.cs - Test the using statement - valid cases.
  *
  * Copyright (C) 2007  Southern Storm Software, Pty Ltd.
  *
@@ -25,6 +25,8 @@ public class Test
 
 	private class TestDisposable : IDisposable
 	{
+		public int i = 1;
+
 		public void Dispose()
 		{
 		}
@@ -32,17 +34,9 @@ public class Test
 
 	static void Test1()
 	{
-		TestDisposable a = new TestDisposable();
-
-		using(a)
+		using(TestDisposable a = new TestDisposable(), b = new TestDisposable())
 		{
-		}
-	}
-
-	static void Test2()
-	{
-		using(TestDisposable a = new TestDisposable())
-		{
+			a.i += b.i;
 		}
 	}
 }

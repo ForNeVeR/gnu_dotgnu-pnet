@@ -555,6 +555,36 @@ static void AddObjectParent(ILGenInfo *info,
 }
 
 /*
+ * Check if an interface is already declared in the implement list and add
+ * it to the list if not.
+ * If reportError is != 0 an error is reported.
+ */
+static void AddImplementedInterface(ILGenInfo *info,
+									ILNode *node,
+									ILProgramItem **implementList,
+									ILUInt32 *numImplements,
+									ILProgramItem *interface,
+									int reportError)
+{
+	ILUInt32 current;
+
+	for(current = 0; current < *numImplements; ++current)
+	{
+		if(implementList[current] == interface)
+		{
+			if(reportError)
+			{
+				CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					"interface declared multiple times in implement list");
+			}
+			return;
+		}
+	}
+	implementList[*numImplements] = interface;
+	*numImplements += 1;
+}
+
+/*
  * Collect the base classes for one class definition.
  * The implement list must be large enough to hold all implemented
  * interfaces of this class definition.
@@ -653,7 +683,9 @@ static void CollectBaseClasses(ILGenInfo *info,
 					else
 					{
 						/* First base in the list is an interface */
-						implementList[currentImpl++] = baseItem;
+						AddImplementedInterface(info, baseNode,
+												implementList, &currentImpl,
+												baseItem, 1);
 					}
 				}
 				else
@@ -686,7 +718,9 @@ static void CollectBaseClasses(ILGenInfo *info,
 					}
 					else
 					{
-						implementList[currentImpl++] = baseItem;
+						AddImplementedInterface(info, baseNode,
+												implementList, &currentImpl,
+												baseItem, 1);
 					}
 				}
 			}
@@ -799,7 +833,11 @@ static void AddBaseClasses(ILGenInfo *info,
 							/* Add the interfaces to the main part list */
 							for(base = 0; base < numPartBases; ++base)
 							{
-								baseList[numBases++] = partBaseList[base];
+								/* Filter duplicates if present */
+								AddImplementedInterface(info, part,
+														baseList, &numBases,
+														partBaseList[base],
+														0);
 							}
 						}
 					}

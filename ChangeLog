@@ -1,3 +1,10 @@
+2009-08-13  Klaus Treichel  <ktreichel@web.de>
+
+	* cscc/csharp/cs_gather.c (AddImplementedInterface): Add helper function
+	for adding an interface to the implement list and check for duplicates.
+	(CollectBaseClasses, AddBaseClasses): Use the new helper function for
+	adding implemented interfaces to the list.
+
 2009-08-10  Klaus Treichel  <ktreichel@web.de>
 
 	* codegen/cg_nodes.tc (ILNode_VariableDeclarator): Added.

@@ -4,6 +4,7 @@ TESTS = abstract1.cs \
 		access1.cs \
 		access2.cs \
 		ainit1.cs \
+		class1.cs \
 		const1.cs \
 		const2.cs \
 		constructor1.cs \
@@ -52,6 +53,7 @@ TESTS = abstract1.cs \
 		partial3.cs \
 		partial4.cs \
 		partial5.cs \
+		partial6.cs \
 		property1.cs \
 		property2.cs \
 		property3.cs \

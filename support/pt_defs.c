@@ -291,9 +291,121 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 }
 
 /*
- * Increase the semaphore count by count to release count threads waiting
- * at the semaphore.
+ * Define some functions from the Timeouts options that need not be provided
+ * in all implementations.
  */
+
+#ifndef HAVE_PTHREAD_MUTEX_TIMEDLOCK
+int pthread_mutex_timedlock (pthread_mutex_t *mutex,
+			    const struct timespec *abs_timeout)
+{
+	struct timeval tv;
+	struct timespec ts;
+	int retcode;
+	
+	/* To avoid a completely busy wait we sleep for 10 ms between two tries. */
+	/* As a consequence the resolution is at most 10 ms instead of 1 ms. */
+	ts.tv_sec = 0;
+	ts.tv_nsec = 10000000;	/* 10ms */
+	
+	while((retcode = pthread_mutex_trylock(mutex)) == EBUSY)
+	{
+		gettimeofday(&tv, NULL);
+		
+		if(tv.tv_sec >= abs_timeout->tv_sec &&
+		    (tv.tv_usec * 1000) >= abs_timeout->tv_nsec)
+		{
+			return ETIMEDOUT;
+		}
+		nanosleep(&ts, NULL);
+	}
+	return retcode;
+}
+#endif /* !HAVE_PTHREAD_MUTEX_TIMEDLOCK */
+
+#ifndef HAVE_SEM_TIMEDWAIT
+int sem_timedwait(sem_t *sem,
+				  const struct timespec *abs_timeout)
+{
+	struct timeval tv;
+	struct timespec ts;
+	int retcode;
+	
+	/* To avoid a completely busy wait we sleep for 10 ms between two tries. */
+	/* As a consequence the resolution is at most 10 ms instead of 1 ms. */
+	ts.tv_sec = 0;
+	ts.tv_nsec = 10000000;	/* 10ms */
+	
+	while((retcode = sem_trywait(sem)) == EAGAIN)
+	{
+		gettimeofday(&tv, NULL);
+		
+		if(tv.tv_sec >= abs_timeout->tv_sec &&
+		    (tv.tv_usec * 1000) >= abs_timeout->tv_nsec)
+		{
+			return ETIMEDOUT;
+		}
+		nanosleep(&ts, NULL);
+	}
+	return retcode;
+}
+#endif	/* !HAVE_SEM_TIMEDWAIT */
+
+int _ILCondMutexTimedLockUnsafe(_ILCondMutex *mutex, ILUInt32 ms)
+{
+	if((ms == IL_MAX_UINT32) || (ms <= IL_MAX_INT32))
+	{
+		int result;
+
+		if(ms == IL_MAX_UINT32)
+		{
+			/* This is the same as the call to _ILCondMutexLockUnsafe. */
+			result = pthread_mutex_lock(mutex);
+		}
+		else if(ms == 0)
+		{
+			/* This is the same as the call to _ILCondMutexTryLock. */
+			result = pthread_mutex_trylock(mutex);
+		}
+		else
+		{
+			struct timeval tv;
+			struct timespec ts;
+
+			gettimeofday(&tv, 0);
+			ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
+			ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
+			if(ts.tv_nsec >= 1000000000L)
+			{
+				++(ts.tv_sec);
+				ts.tv_nsec -= 1000000000L;
+			}
+			result = pthread_mutex_timedlock(mutex, &ts);
+		}
+		switch(result)
+		{
+			case 0:
+			{
+				return IL_THREAD_OK;
+			}
+			break;
+
+			case EBUSY:
+			case ETIMEDOUT:
+			{
+				return IL_THREAD_BUSY;
+			}
+			break;
+		}
+		return IL_THREAD_ERR_UNKNOWN;
+	}
+	else
+	{
+		/* Invalid negative value for ms. */
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
+}
+
 int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count)
 {
 	if((count > 0) && (count < IL_MAX_INT32))
@@ -304,12 +416,359 @@ int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count)
 		{
 			if(sem_post(sem))
 			{
-				return 0;
+				/* An error occured. */
+				return IL_THREAD_ERR_UNKNOWN;
 			}
 		}
-		return 1;
+		return IL_THREAD_OK;
 	}
-	return 0;
+	/* Invalid value for the release count. */
+	return IL_THREAD_ERR_INVALID_RELEASECOUNT;
+}
+
+int _ILSemaphoreTimedWait(_ILSemaphore *sem, ILUInt32 ms, ILInt32 interruptable)
+{
+	if((ms == IL_MAX_UINT32) || (ms <= IL_MAX_INT32))
+	{
+		int result;
+
+		if(ms == IL_MAX_UINT32)
+		{
+			/* This is the same as the call to _ILSemaphoreWait. */
+			do
+			{
+				result = sem_wait(sem);
+			} while(!interruptable && (result == EINTR));
+		}
+		else if(ms == 0)
+		{
+			/* This is the same as the call to _ILSemaphoreTryWait. */
+			do
+			{
+				result = sem_trywait(sem);
+			} while(!interruptable && (result == EINTR));
+		}
+		else
+		{
+			struct timeval tv;
+			struct timespec ts;
+
+			gettimeofday(&tv, 0);
+			ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
+			ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
+			if(ts.tv_nsec >= 1000000000L)
+			{
+				++(ts.tv_sec);
+				ts.tv_nsec -= 1000000000L;
+			}
+			do
+			{
+				result = sem_timedwait(sem, &ts);
+			} while(!interruptable && (result == EINTR));
+		}
+		switch(result)
+		{
+			case 0:
+			{
+				return IL_THREAD_OK;
+			}
+			break;
+
+			case EINTR:
+			{
+				return IL_THREAD_ERR_INTERRUPT;
+			}
+			break;
+
+			case EAGAIN:
+			case ETIMEDOUT:
+			{
+				return IL_THREAD_BUSY;
+			}
+			break;
+		}
+		return IL_THREAD_ERR_UNKNOWN;
+	}
+	else
+	{
+		/* Invalid negative value for ms. */
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
+}
+
+/*
+ * Release a number of waiting threads from the count semaphore.
+ */
+int _ILCountSemaphoreSignalCount(_ILCountSemaphore *sem, ILUInt32 count)
+{
+	int result = IL_THREAD_OK;
+
+	if((count > 0) && (count <= IL_MAX_INT32))
+	{
+		ILUInt32 current;
+
+		/* Lock the count semaphore object. */
+		_ILMutexLock(&(sem->_lock));
+
+		for(current = 0; current < count; current++)
+		{
+			if(sem_post(&(sem->_sem)))
+			{
+				/* An error occured. */
+
+				/* Unlock the count semaphore object. */
+				_ILMutexUnlock(&(sem->_lock));
+
+				return IL_THREAD_ERR_UNKNOWN;
+			}
+			--(sem->_waiting);
+		}
+		/* Unlock the count semaphore object. */
+		_ILMutexUnlock(&(sem->_lock));
+	}
+	else
+	{
+		/* Invalid value for the release count. */
+		result = IL_THREAD_ERR_INVALID_RELEASECOUNT;
+	}
+	return result;
+}
+
+/*
+ * Release all waiting threads from the count semaphore.
+ */
+int _ILCountSemaphoreSignalAll(_ILCountSemaphore *sem)
+{
+	int result = IL_THREAD_OK;
+
+	if(sem->_waiting > 0)
+	{
+		/* Lock the count semaphore object. */
+		_ILMutexLock(&(sem->_lock));
+
+		/* We have to recheck because of possible race conditions. */
+		while(sem->_waiting > 0)
+		{
+			if(sem_post(&(sem->_sem)))
+			{
+				/* An error occured. */
+
+				/* Unlock the count semaphore object. */
+				_ILMutexUnlock(&(sem->_lock));
+
+				return IL_THREAD_ERR_UNKNOWN;
+			}
+			--sem->_waiting;
+		}
+
+		/* Unlock the count semaphore object. */
+		_ILMutexUnlock(&(sem->_lock));
+	}
+	return result;
+}
+
+/*
+ * Wait on a count semaphore.
+ */
+int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms)
+{
+	if((ms == IL_MAX_UINT32) || (ms <= IL_MAX_INT32))
+	{
+		int result = IL_THREAD_OK;
+
+		/* Lock the count semaphore object. */
+		_ILMutexLock(&(sem->_lock));
+
+		++sem->_waiting;
+
+		/* Unlock the count semaphore object. */
+		_ILMutexUnlock(&(sem->_lock));
+
+		if((result = _ILSemaphoreTimedWait(&(sem->_sem), ms, 0)) != IL_THREAD_OK)
+		{
+			/* We have to decrement the counter again because the call failed. */
+
+			/* Lock the count semaphore object. */
+			_ILMutexLock(&(sem->_lock));
+
+			if(sem->_waiting > 0)
+			{
+				--sem->_waiting;
+			}
+
+			/* Unlock the count semaphore object. */
+			_ILMutexUnlock(&(sem->_lock));
+		}
+		return result;
+	}
+	else
+	{
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
+}
+
+int _ILMonitorExit(_ILMonitor *mon)
+{
+	int result;
+
+	if(!(result = _ILCondMutexUnlockUnsafe(&(mon->_mutex))))
+	{
+		/* NOTE: fast mutexes return 0 even if the current thread doesn't */
+		/* own the mutex. */
+		return IL_THREAD_OK;
+	}
+	return result == EPERM ? IL_THREAD_ERR_SYNCLOCK : IL_THREAD_ERR_UNKNOWN;
+}
+
+int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms)
+{
+	if(ms == IL_MAX_UINT32)
+	{
+		if(!_ILCondMutexLockUnsafe(&(mon->_mutex)))
+		{
+			return IL_THREAD_OK;
+		}
+		return IL_THREAD_ERR_UNKNOWN;
+	}
+	else if(ms == 0)
+	{
+		int result;
+
+		if(!(result = _ILCondMutexTryLockUnsafe(&(mon->_mutex))))
+		{
+			return IL_THREAD_OK;
+		}
+		return result == EBUSY ? IL_THREAD_BUSY : IL_THREAD_ERR_UNKNOWN;
+	}
+	else if(ms <= IL_MAX_INT32)
+	{
+		struct timeval tv;
+		struct timespec ts;
+		int result;
+
+		gettimeofday(&tv, 0);
+		ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
+		ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
+		if(ts.tv_nsec >= 1000000000L)
+		{
+			++(ts.tv_sec);
+			ts.tv_nsec -= 1000000000L;
+		}
+		if((result = pthread_mutex_timedlock(&(mon->_mutex), &ts)) != 0)
+		{
+			if(result == ETIMEDOUT)
+			{
+				return IL_THREAD_BUSY;
+			}
+			return IL_THREAD_ERR_UNKNOWN;
+		}
+		return IL_THREAD_OK;
+	}
+	else
+	{
+		/* Invalid negative value for ms. */
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
+}
+
+int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
+						ILMonitorPredicate predicate, void *arg)
+{
+	int result = 0;
+
+	if(ms == IL_MAX_UINT32)
+	{
+		do
+		{
+			result = pthread_cond_wait(&(mon->_cond), &(mon->_mutex));
+			switch(result)
+			{
+				case 0:
+				{
+					if(predicate(arg))
+					{
+						return IL_THREAD_OK;
+					}
+				}
+				break;
+
+				case EINVAL:
+				{
+					return IL_THREAD_ERR_INVALID_TIMEOUT;
+				}
+				break;
+
+				case EPERM:
+				{
+					return IL_THREAD_ERR_SYNCLOCK;
+				}
+				break;
+			}
+			return IL_THREAD_ERR_UNKNOWN;
+		} while(1);
+	}
+	else if(ms == 0)
+	{
+		/*
+		 * In this case we don't have to enter the waiting queue but simply
+		 * release the mutex and reacquire it again
+		 * that's (release and reenter the ready state).
+		 */
+		if(!(result = _ILCondMutexUnlockUnsafe(&(mon->_mutex))))
+		{
+			result = _ILCondMutexLockUnsafe(&(mon->_mutex));
+			if(!result)
+			{
+				/*
+				 * In this case the predicate should always return a
+				 * value != 0
+				 */
+				if(predicate(arg))
+				{
+					return IL_THREAD_OK;
+				}
+				return IL_THREAD_ERR_UNKNOWN;
+			}
+		}
+		return result;
+	}
+	else if(ms <= IL_MAX_INT32)
+	{
+		struct timeval tv;
+		struct timespec ts;
+
+		gettimeofday(&tv, 0);
+		ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
+		ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
+		if(ts.tv_nsec >= 1000000000L)
+		{
+			++(ts.tv_sec);
+			ts.tv_nsec -= 1000000000L;
+		}
+
+		/* Wait until we are signalled or the timeout expires */
+		do
+		{
+			result = pthread_cond_timedwait(&(mon->_cond),
+										    &(mon->_mutex), &ts);
+			if((result == 0) || (result == ETIMEDOUT))
+			{
+				if(predicate(arg))
+				{
+					return result == 0 ? IL_THREAD_OK : IL_THREAD_BUSY;
+				}
+			}
+			else
+			{
+				return IL_THREAD_ERR_UNKNOWN;
+			}
+		} while(1);
+	}
+	else
+	{
+		/* Invalid negative value for ms. */
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
 }
 
 #ifdef	__cplusplus

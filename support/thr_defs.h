@@ -23,6 +23,26 @@
 #define	_THR_DEFS_H
 
 /*
+ * Predicate function for the _ILMonitorWait functions.
+ * The function has to return 0 if the predicate is not true so that the
+ * wait has to be called again and != 0 otherwise.
+ */
+typedef int (*ILMonitorPredicate)(void *);
+
+/*
+ * Threading error codes.
+ */
+#define IL_THREAD_OK						0x00000000
+#define IL_THREAD_ERR_ABANDONED				0x00000080
+#define IL_THREAD_BUSY						0x00000102
+#define IL_THREAD_ERR_INTERRUPT				0x80131519
+#define IL_THREAD_ERR_INVALID_TIMEOUT		0x80131502
+#define IL_THREAD_ERR_SYNCLOCK				0x80131518
+#define IL_THREAD_ERR_INVALID_RELEASECOUNT	0xFFFFFFFD
+#define IL_THREAD_ERR_IN_USE				0xFFFFFFFE
+#define IL_THREAD_ERR_UNKNOWN				0xFFFFFFFF
+
+/*
  * Choose which thread package we will be using.
  */
 #include "thr_choose.h"
@@ -138,7 +158,7 @@ struct _tagILThread
 /*
  * Wait handle kinds.
  */
-#define	IL_WAIT_EVENT			0x800
+#define	IL_WAIT_EVENT			0x0800
 #define	IL_WAIT_MUTEX			0x1000
 #define	IL_WAIT_NAMED_MUTEX		0x1001
 #define	IL_WAIT_MONITOR			0x1002
@@ -232,15 +252,33 @@ typedef struct
 } ILWaitMutexNamed;
 
 /*
- * Internal structure of a monitor, which extends a wait
+ * Internal structure of a wait monitor, which extends a wait
  * mutex with Wait/Pulse/PulseAll semantics.
  */
+
 typedef struct
 {
 	ILWaitMutex			parent;
 	_ILWakeupQueue  	signalQueue;
 	int				waiters;
-} ILMonitor;
+} ILWaitMonitor;
+
+/*
+ * Monitor support with the whole .NET monitor semantics.
+ */
+typedef struct _tagILMonitor ILMonitor;
+
+/*
+ * Pool used ba the monitor.
+ */
+typedef struct _tagILMonitorPool ILMonitorPool;
+struct _tagILMonitorPool
+{
+	_ILMutex	    lock;		/* Mutex to synchronize the access to the pool */
+	ILMonitor	   *freeList;	/* List of unused monitors */
+	ILMonitor	   *usedList;	/* List of monitors in use */
+	ILMemPool		pool;		/* Pool to allocate the monitors from */
+};
 
 /*
  * Safe mutex lock and unlock operations that will prevent the
@@ -270,10 +308,30 @@ typedef struct
  * the thread from being suspended while it holds a lock.
  */
 #define	_ILCondMutexLock(mutex)	\
+			({ \
+				int __result; \
+				ILThread *__self = _ILThreadGetSelf(); \
+				++(__self->numLocksHeld); \
+				if((__result = _ILCondMutexLockUnsafe((mutex)))) \
+				{ \
+					--(__self->numLocksHeld); \
+				}\
+				__result; \
+			})
+#define	_ILCondMutexTryLock(mutex, errval)	\
 			do { \
 				ILThread *__self = _ILThreadGetSelf(); \
 				++(__self->numLocksHeld); \
-				_ILCondMutexLockUnsafe((mutex)); \
+				if((errval) = _ILCondMutexTryLockUnsafe((mutex))) \
+				{ \
+					if(--(__self->numLocksHeld) == 0) \
+					{ \
+						if(__self->suspendRequested) \
+						{ \
+							_ILThreadSuspendRequest(__self); \
+						} \
+					} \
+				} \
 			} while (0)
 #define	_ILCondMutexUnlock(mutex)	\
 			do { \
@@ -469,6 +527,53 @@ int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout);
 #define ILWaitMutexThreadOwns(t, handle) \
 	(((ILWaitMutex *)handle)->owner == &(t->wakeup))
 
+/*
+ * Initialize a monitor pool for the monitor subsystem.
+ */
+void ILMonitorPoolInit(ILMonitorPool *pool);
+
+/*
+ * Destroy a monitor pool.
+ * There must be no used monitors in this pool when calling this function.
+ */
+void ILMonitorPoolDestroy(ILMonitorPool *pool);
+
+/*
+ * Enter a monitor 
+ * This function returns IL_THREAD_OK on success, IL_THREAD_BUSY on timeout
+ * or any other of the threading return codes on error.
+ */
+int ILMonitorTimedTryEnter(ILMonitorPool *pool, void **monitorLocation,
+						   ILUInt32 ms);
+#define ILMonitorEnter(pool, loc) \
+				ILMonitorTimedTryEnter((pool), (loc), IL_MAX_UINT32)
+#define ILMonitorTryEnter(pool, loc) \
+				ILMonitorTimedTryEnter((pool), (loc), 0)
+
+/*
+ * Leave the monitor stored at monitorLocation.
+ * This function returns IL_THREAD_OK on success, IL_THREAD_BUSY on timeout
+ * or any other of the threading return codes on error.
+ */
+int ILMonitorExit(ILMonitorPool *pool, void **monitorLocation);
+
+/*
+ * Enter the wait state on an owned monitor.
+ */
+int ILMonitorTimedWait(void **monitorLocation, ILUInt32 ms);
+#define ILMonitorWait(loc)	ILMonitorTimedWait((loc), IL_MAX_UINT32)
+
+/*
+ * Move one thread in the waiting queue to the ready queue in the monitor
+ * stored at monitorLocation.
+ */
+int ILMonitorPulse(void **monitorLocation);
+
+/*
+ * Move all threads in the waiting queue to the ready queue in the monitor
+ * stored at monitorLocation.
+ */
+int ILMonitorPulseAll(void **monitorLocation);
 
 #ifdef	__cplusplus
 };

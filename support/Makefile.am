@@ -46,6 +46,7 @@ libILSupport_a_SOURCES = aes.c \
 						 memory.c \
 						 mempool.c \
 						 memstack.c \
+						 monitor.c \
 						 mul_long.c \
 						 mutex.c \
 						 no_defs.c \

@@ -37,6 +37,25 @@ typedef HANDLE				_ILSemaphore;
 typedef CRITICAL_SECTION	_ILRWLock;
 
 /*
+ * Semaphore which allows to release multiple or all waiters.
+ */
+typedef struct
+{
+	_ILMutex		_lock;
+	_ILSemaphore	_sem;
+	LONG volatile	_waiting;
+} _ILCountSemaphore;
+
+/*
+ * Structure of a monitor.
+ */
+typedef struct
+{
+	_ILCountSemaphore	_sem;
+	_ILCondMutex		_mutex;
+} _ILMonitor;
+
+/*
  * This is a real thread package.
  */
 #define	_ILThreadIsReal		1
@@ -46,6 +65,25 @@ typedef CRITICAL_SECTION	_ILRWLock;
  */
 #define	_ILThreadIsSelf(thread)	\
 			((thread)->identifier == GetCurrentThreadId())
+
+/*
+ * Some helper macros for wait handles.
+ */
+
+/*
+ * Close (destroy) a WaitHandle.
+ */
+#define _ILWaitHandleClose(handle) (CloseHandle(handle) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN)
+
+/*
+ * Wait for a WaitHandle for the given amount of time.
+ */
+int	_ILWaitHandleTimedWait(HANDLE handle, ILUInt32 ms);
+
+/*
+ * Wait for a WaitHandle infinitely untit the WaitHandle is signaled.
+ */
+#define _ILWaitHandleWait(handle)	_ILWaitHandleTimedWait((handle), IL_MAX_UINT32)
 
 /*
  * Suspend and resume threads.  Note: these are the primitive
@@ -79,10 +117,7 @@ typedef CRITICAL_SECTION	_ILRWLock;
 /*
  * Destroy a thread handle that is no longer required.
  */
-#define	_ILThreadDestroy(thread)	\
-			do { \
-				CloseHandle((thread)->handle); \
-			} while (0)
+#define	_ILThreadDestroy(thread)	_ILWaitHandleClose((thread)->handle)
 
 /*
  * Primitive mutex operations.  Note: the "Lock" and "Unlock"
@@ -111,21 +146,23 @@ typedef CRITICAL_SECTION	_ILRWLock;
  * variables to do an atomic "unlock and wait" operation.
  */
 #define	_ILCondMutexCreate(mutex)	\
-			do { \
+			({ \
 				*(mutex) = CreateMutex(NULL, FALSE, NULL); \
-			} while (0)
-#define	_ILCondMutexDestroy(mutex)	\
-			do { \
-				CloseHandle(*(mutex)); \
-			} while (0)
-#define	_ILCondMutexLockUnsafe(mutex)	\
-			do { \
-				WaitForSingleObject(*(mutex), INFINITE); \
-			} while (0)
-#define	_ILCondMutexUnlockUnsafe(mutex)	\
-			do { \
-				ReleaseMutex(*(mutex)); \
-			} while (0)
+				*(mutex) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
+			})
+#define	_ILCondMutexDestroy(mutex)	_ILWaitHandleClose(*(mutex))
+#define	_ILCondMutexLockUnsafe(mutex)	_ILWaitHandleWait(*(mutex))
+#define	_ILCondMutexTryLockUnsafe(mutex)	_ILWaitHandleTimedWait(*(mutex), 0)
+#define	_ILCondMutexUnlockUnsafe(mutex)	(ReleaseMutex(*(mutex)) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_SYNCLOCK)
+
+/*
+ * Try to lock a condition mutex wor a given amount of time.
+ * Returns IL_THREAD_OK if the mutex could be acquired, IL_THREAD_BUSY if the
+ * operation timed out, IL_THREAD_ERR_INVALID_TIMEOUT if a negative timeout not
+ * equal to IL_MAX_UINT32 was supplied or IL_THREAD_ERR_UNKNOWN on every other
+ * error.
+ */
+#define _ILCondMutexTimedLockUnsafe(mutex, ms)	_ILWaitHandleTimedWait((mutex), (ms))
 
 /*
  * Primitive read/write lock operations.  Note: the "Lock" and
@@ -141,25 +178,16 @@ typedef CRITICAL_SECTION	_ILRWLock;
  * Primitive semaphore operations.
  */
 #define	_ILSemaphoreCreate(sem)	\
-			do { \
+			({ \
 				*(sem) = CreateSemaphore(NULL, 0, 0x7FFFFFFF, NULL); \
-			} while (0)
-#define	_ILSemaphoreDestroy(sem)	\
-			do { \
-				CloseHandle(*(sem)); \
-			} while (0)
-#define	_ILSemaphoreWait(sem)	\
-			do { \
-				WaitForSingleObject(*(sem), INFINITE); \
-			} while (0)
+				*(sem) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
+			})
+#define	_ILSemaphoreDestroy(sem)	_ILWaitHandleClose(*(sem))
+#define	_ILSemaphoreWait(sem)	_ILWaitHandleWait(*(sem))
 #define	_ILSemaphorePost(sem)	\
-			do { \
-				ReleaseSemaphore(*(sem), 1, NULL); \
-			} while (0)
+	(ReleaseSemaphore(*(sem), 1, NULL) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN)
 #define	_ILSemaphorePostMultiple(sem, count)	\
-			do { \
-				ReleaseSemaphore(*(sem), (count), NULL); \
-			} while (0)
+	(ReleaseSemaphore(*(sem), (count), NULL) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN)
 
 /*
  * Primitive condition variable operations.
@@ -168,6 +196,89 @@ typedef CRITICAL_SECTION	_ILRWLock;
 #define	_ILCondVarDestroy(cond)		_ILSemaphoreDestroy((cond))
 #define	_ILCondVarSignal(cond)		_ILSemaphorePost((cond))
 int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
+
+/*
+ * Primitive counting semaphore operations.
+ */
+#define _ILCountSemaphoreCreate(sem)	\
+		({ \
+			(sem)->_waiting = 0; \
+			_ILMutexCreate(&((sem)->_lock)); \
+			_ILSemaphoreCreate(&(sem)->_sem);	\
+		})
+#define _ILCountSemaphoreDestroy(sem)	\
+		({ \
+			_ILMutexDestroy(&((sem)->_lock)); \
+			_ILSemaphoreDestroy(&((sem)->_sem)); \
+		})
+
+/*
+ * Release a number of waiting threads from the count semaphore.
+ */
+int _ILCountSemaphoreSignalCount(_ILCountSemaphore *sem, ILUInt32 count);
+
+/*
+ * Release all waiting threads from the count semaphore.
+ */
+int _ILCountSemaphoreSignalAll(_ILCountSemaphore *sem);
+
+#define _ILCountSemaphoreSignal(sem)	_ILCountSemaphoreSignalCount((sem), 1)
+
+/*
+ * Wait on a count semaphore.
+ */
+int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms);
+
+#define _ILCountSemaphoreWait(sem)	_ILCountSemaphoreTimedWait((sem), IL_MAX_UINT32)
+#define _ILCountSemaphoreTryWait(sem)	_ILCountSemaphoreTimedWait((sem), 0)
+
+/*
+ * Primitive monitor operations.
+ */
+#define	_ILMonitorCreate(mon)	\
+		({ \
+			int _result = 0; \
+			if((_result = _ILCondMutexCreate(&((mon)->_mutex))) == IL_THREAD_OK) \
+			{ \
+				_result = _ILCountSemaphoreCreate(&((mon)->_sem)); \
+			} \
+			_result == IL_THREAD_OK ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
+		})
+#define	_ILMonitorDestroy(mon)	\
+		({ \
+			int _result = IL_THREAD_OK; \
+			if(_ILCountSemaphoreDestroy(&((mon)->_sem)) != IL_THREAD_OK) \
+			{ \
+				_result = IL_THREAD_ERR_UNKNOWN; \
+			} \
+			if(_ILCondMutexDestroy(&((mon)->_mutex)) != IL_THREAD_OK) \
+			{ \
+				_result = IL_THREAD_ERR_UNKNOWN; \
+			} \
+			_result; \
+		})
+#define	_ILMonitorEnter(mon)	\
+			_ILCondMutexLockUnsafe(&((mon)->_mutex))
+#define	_ILMonitorExit(mon)	\
+			_ILCondMutexUnlockUnsafe(&((mon)->_mutex))
+
+/*
+ * Release one waiter from the waiting queue.
+ */
+#define _ILMonitorPulse(mon)	_ILCountSemaphoreSignal(&((mon)->_sem))
+
+/*
+ * Release all waiters from the waiting queue.
+ */
+#define	_ILMonitorPulseAll(mon)	_ILCountSemaphoreSignalAll(&((mon)->_sem))
+
+int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
+#define _ILMonitorTryEnter(mon)	_ILMonitorTimedTryEnter(mon, 0)
+
+int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
+						ILMonitorPredicate predicate, void *arg);
+#define _ILMonitorWait(mon, pred, arg) \
+			_ILMonitorTimedWait((mon), IL_MAX_UINT32, (pred), (arg))
 
 /*
  * Get or set the thread object that is associated with "self".

@@ -1,3 +1,51 @@
+2009-09-01  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add checks for availability of pthread_mutex_timedlock,
+	sem_timedwait and pthread_cond_timedwait.
+
+	* support/Makefile.am: Add monitor.c to the sources.
+
+	* support/monitor.c: Add monitor implementation.
+
+	* support/no_defs.c (_ILMonitorTimedWait): Add dummy implementation that
+	simply calls the predicate function.
+
+	* support/no_defs.h: Add macros for the dummy monitor implementation.
+
+	* support/pt_defs.c: Add pthread monitor implementation	Add replacements
+	for pthread_mutex_timedlock and sem_timedwait if not available.
+	(_ILCondMutexTimedLockUnsafe): Added
+	(_ILSemaphoreTimedWait): Added
+	(_ILCountSemaphoreSignalCount): Added
+	(_ILCountSemaphoreSignalAll): Added
+	(_ILCountSemaphoreTimedWait): Added
+
+	* support/pt_defs.h: Add declarations for _ILCountSemaphore and
+	_ILMonitor.
+
+	* support/thr_defs.h: Add first threading error codes.
+	Rename the current ILMonitor to ILWaitMonitor because it's not a real
+	monitor implementation.
+	Add declarations for the conforming monitor implementation.
+
+	* support/w32_defs.c (_ILWaitHandleTimedWait): Added
+	(_ILCountSemaphoreSignalCount): Added
+	(_ILCountSemaphoreSignalAll): Added
+	(_ILCountSemaphoreTimedWait): Added
+	Add windows monitor implementation.
+
+	* support/w32_defs.h: Add declarations for _ILCountSemaphore and
+	_ILMonitor.
+
+	* support/wait_mutex.c: Rename the occurances of ILMonitor to
+	ILWaitMonitor.
+
+	* tests/Makefile.am: Add additional include directries to AM_FLAGS
+	needed for the additional tests.
+
+	* tests/test_thread.c: Add first tests for the monitor primitives and
+	the monitor implementation.
+
 2009-08-13  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_gather.c (AddImplementedInterface): Add helper function

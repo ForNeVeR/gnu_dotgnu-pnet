@@ -35,6 +35,7 @@ typedef int	_ILThreadHandle;
 typedef int	_ILThreadIdentifier;
 typedef int	_ILSemaphore;
 typedef int	_ILRWLock;
+typedef int _ILMonitor;
 
 /*
  * This is not a real thread package.
@@ -78,7 +79,8 @@ typedef int	_ILRWLock;
  */
 #define	_ILCondMutexCreate(mutex)		do { *(mutex) = 0; } while (0)
 #define	_ILCondMutexDestroy(mutex)		do { ; } while (0)
-#define	_ILCondMutexLockUnsafe(mutex)	do { ; } while (0)
+#define	_ILCondMutexLockUnsafe(mutex)		(IL_THREAD_OK)
+#define	_ILCondMutexTryLockUnsafe(mutex)	(IL_THREAD_OK)
 #define	_ILCondMutexUnlockUnsafe(mutex)	do { ; } while (0)
 
 /*
@@ -106,6 +108,23 @@ typedef int	_ILRWLock;
 #define	_ILCondVarDestroy(cond)		do { ; } while (0)
 #define	_ILCondVarSignal(cond)		do { ; } while (0)
 int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
+
+
+/*
+ * Primitive monitor operations.
+ */
+#define	_ILMonitorCreate(mon)				IL_THREAD_OK
+#define	_ILMonitorDestroy(mon)				IL_THREAD_OK
+#define	_ILMonitorPulse(mon)				IL_THREAD_OK
+#define	_ILMonitorPulseAll(mon)				IL_THREAD_OK
+#define	_ILMonitorTimedTryEnter(mon, ms)	IL_THREAD_OK
+#define _ILMonitorTryEnter(mon) 			IL_THREAD_OK
+#define _ILMonitorEnter(mon)				IL_THREAD_OK
+#define	_ILMonitorExit(mon)					IL_THREAD_OK
+int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
+						ILMonitorPredicate predicate, void *arg);
+#define _ILMonitorWait(mon, pred, arg) \
+			_ILMonitorTimedWait((mon), IL_MAX_UINT32, (pred), (arg))
 
 /*
  * Get or set the thread object that is associated with "self".

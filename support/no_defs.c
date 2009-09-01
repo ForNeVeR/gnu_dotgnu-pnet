@@ -94,6 +94,16 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 #endif
 }
 
+int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
+						ILMonitorPredicate predicate, void *arg)
+{
+	if(!predicate(arg))
+	{
+		return IL_THREAD_ERR_UNKNOWN;
+	}
+	return IL_THREAD_OK;
+}
+
 #ifdef	__cplusplus
 };
 #endif

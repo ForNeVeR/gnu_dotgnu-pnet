@@ -19,6 +19,7 @@
  */
 
 #include "ilunit.h"
+#include "../support/thr_defs.h"
 #include "il_thread.h"
 #include "il_gc.h"
 #if HAVE_UNISTD_H
@@ -1181,7 +1182,7 @@ static void mutex_create(void *arg)
 /*
  * Test monitor creation.
  */
-static void monitor_create(void *arg)
+static void wait_monitor_create(void *arg)
 {
 	ILWaitHandle *handle;
 	handle = ILWaitMonitorCreate();
@@ -1195,7 +1196,7 @@ static void monitor_create(void *arg)
 /*
  * Test monitor acquire/release.
  */
-static void monitor_acquire(void *arg)
+static void wait_monitor_acquire(void *arg)
 {
 	ILWaitHandle *handle;
 
@@ -1241,7 +1242,7 @@ static void monitor_acquire(void *arg)
 /*
  * Thread start function that holds a monitor for a period of time.
  */
-static void monitorHold(void *arg)
+static void waitMonitorHold(void *arg)
 {
 	ILWaitHandle *monitor = ILWaitMonitorCreate();
 	ILWaitMonitorEnter(monitor);
@@ -1255,13 +1256,13 @@ static void monitorHold(void *arg)
 /*
  * Test that a thread can be suspended while it holds a monitor.
  */
-static void monitor_suspend(void *arg)
+static void wait_monitor_suspend(void *arg)
 {
 	ILThread *thread;
 	int savedFlag;
 
 	/* Create the thread */
-	thread = ILThreadCreate(monitorHold, 0);
+	thread = ILThreadCreate(waitMonitorHold, 0);
 	if(!thread)
 	{
 		ILUnitOutOfMemory();
@@ -1304,6 +1305,1440 @@ static void monitor_suspend(void *arg)
 	{
 		ILUnitFailed("thread holding the monitor did not finish");
 	}
+}
+
+/*
+ * Test monitor creation.
+ */
+static void primitive_monitor_create(void *arg)
+{
+	/* We are using the primitive versions for now. */
+	_ILMonitor mon;
+	if(_ILMonitorCreate(&mon))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+	_ILMonitorDestroy(&mon);
+}
+
+/*
+ * Test monitor enter.
+ */
+static void primitive_monitor_enter(void *arg)
+{
+	int result = 0;
+
+	/* We are using the primitive versions for now. */
+	_ILMonitor mon;
+	if(_ILMonitorCreate(&mon))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+	if((result = _ILMonitorEnter(&mon)))
+	{
+		_ILMonitorDestroy(&mon);
+		ILUnitFailed("could not enter a monitor");
+	}
+	if((result = _ILMonitorExit(&mon)))
+	{
+		_ILMonitorDestroy(&mon);
+		ILUnitFailed("could not exit a monitor");
+	}
+	_ILMonitorDestroy(&mon);
+}
+
+static int _result;
+static _ILMonitor _mon1;
+
+/*
+ * A simple monitor predicate returning success in every case.
+ */
+static int _monitor_predicate(void *arg)
+{
+	return 1;
+}
+
+static void _primitive_monitor_exit_unowned(void *arg)
+{
+	_ILMonitor *mon1 = (_ILMonitor *)arg;
+
+	_result = _ILMonitorExit(mon1);
+}
+
+/*
+ * Test exiting an unowned monitor.
+ */
+static void primitive_monitor_exit_unowned(void *arg)
+{
+	int result = 0;
+	ILThread *thread;
+
+	if(_ILMonitorCreate(&_mon1))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_primitive_monitor_exit_unowned, &_mon1);
+	if(!thread)
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitOutOfMemory();
+	}
+
+	if((result = _ILMonitorEnter(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Set the result to an invalid value. */
+	_result = -1;
+
+	/* Start the thread, which should immediately try to exit the unowned monitor */
+	ILThreadStart(thread);
+
+	/* Wait 3 time steps */
+	sleepFor(3);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(_result != IL_THREAD_ERR_SYNCLOCK)
+	{
+		_ILMonitorExit(&_mon1);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailMessage("exiting an unowned monitor returned the wrong result");
+		ILUnitFailMessage("the Wrong result is %i", _result);
+		if(_result == IL_THREAD_OK)
+		{
+			ILUnitFailMessage("This is expected in pthread implementations");
+		}
+		ILUnitFailEndMessages();
+	}
+
+	if((result = _ILMonitorExit(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not exit a monitor");
+	}
+	_ILMonitorDestroy(&_mon1);
+}
+
+/*
+ * Test monitor enter1.
+ */
+static void _primitive_monitor_enter_locked(void *arg)
+{
+	_ILMonitor *mon1 = (_ILMonitor *)arg;
+
+	_result = 1;
+	if(_ILMonitorEnter(mon1))
+	{
+		_result = 999;
+		return;
+	}
+	_result = 2;
+	if(_ILMonitorExit(mon1))
+	{
+		_result = 998;
+	}
+}
+
+static void primitive_monitor_enter1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+	int result2 = 0;
+
+	/* We are using the primitive versions for now. */
+	if(_ILMonitorCreate(&_mon1))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	if((result = _ILMonitorEnter(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_primitive_monitor_enter_locked, &_mon1);
+	if(!thread)
+	{
+		_ILMonitorExit(&_mon1);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 1 time steps */
+	sleepFor(1);
+
+	/* The result1 should be 1 now. */
+	result1 = _result;
+
+	if((result = _ILMonitorExit(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILThreadDestroy(thread);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	/* Wait 3 time steps */
+	sleepFor(3);
+
+	/* The result1 should be 2 now. */
+	result2 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 1 || result2 != 2)
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("lock on monitor enter doesn't work");
+	}
+
+	if((result = _ILMonitorDestroy(&_mon1)))
+	{
+		ILUnitFailed("could not destroy a monitor");
+	}
+}
+
+static void _primitive_monitor_tryenter_locked(void *arg)
+{
+	_ILMonitor *mon1 = (_ILMonitor *)arg;
+	int result = _ILMonitorTryEnter(mon1);
+
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 0;
+			if(_ILMonitorExit(mon1))
+			{
+				_result = 998;
+			}
+		}
+		break;
+
+		case IL_THREAD_BUSY:
+		{
+			_result = 1;
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+static void primitive_monitor_tryenter1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+
+	/* We are using the primitive versions for now. */
+	if(_ILMonitorCreate(&_mon1))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	if((result = _ILMonitorEnter(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_primitive_monitor_tryenter_locked, &_mon1);
+	if(!thread)
+	{
+		_ILMonitorExit(&_mon1);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 1 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 1 now. */
+	result1 = _result;
+
+	if((result = _ILMonitorExit(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILThreadDestroy(thread);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 1)
+	{
+		_ILMonitorDestroy(&_mon1);
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("tryenter on a locked monitor doesn't work");
+	}
+
+	if((result = _ILMonitorDestroy(&_mon1)))
+	{
+		ILUnitFailed("could not destroy a monitor");
+	}
+}
+
+static void primitive_monitor_tryenter2(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+
+	/* We are using the primitive versions for now. */
+	if(_ILMonitorCreate(&_mon1))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_primitive_monitor_tryenter_locked, &_mon1);
+	if(!thread)
+	{
+		_ILMonitorExit(&_mon1);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps to let the thread enter the monitor. */
+	sleepFor(2);
+
+	result1 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 0)
+	{
+		_ILMonitorDestroy(&_mon1);
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("tryenter on a unlocked monitor doesn't work");
+	}
+
+	if((result = _ILMonitorDestroy(&_mon1)))
+	{
+		ILUnitFailed("could not destroy a monitor");
+	}
+}
+
+static void _primitive_monitor_timed_tryenter(void *arg)
+{
+	_ILMonitor *mon1 = (_ILMonitor *)arg;
+	int result = _ILMonitorTimedTryEnter(mon1, 1);
+
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 0;
+			if(_ILMonitorExit(mon1))
+			{
+				_result = 998;
+			}
+		}
+		break;
+
+		case IL_THREAD_BUSY:
+		{
+			_result = 1;
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+static void primitive_monitor_timed_tryenter1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+
+	/* We are using the primitive versions for now. */
+	if(_ILMonitorCreate(&_mon1))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	if((result = _ILMonitorEnter(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_primitive_monitor_timed_tryenter, &_mon1);
+	if(!thread)
+	{
+		_ILMonitorExit(&_mon1);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps to let the thread try to enter the monitor. */
+	sleepFor(2);
+
+	result1 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if((result = _ILMonitorExit(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILThreadDestroy(thread);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	if(result1 != 1)
+	{
+		_ILMonitorDestroy(&_mon1);
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("timed tryenter on a locked monitor with timeout doesn't work");
+	}
+
+	if((result = _ILMonitorDestroy(&_mon1)))
+	{
+		ILUnitFailed("could not destroy a monitor");
+	}
+}
+
+static void _primitive_monitor_wait1(void *arg)
+{
+	_ILMonitor *mon1 = (_ILMonitor *)arg;
+	int result;
+
+	_result = 0;
+	result = _ILMonitorEnter(mon1);
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 1;
+			if(_ILMonitorPulse(mon1))
+			{
+				result = 997;
+				_ILMonitorExit(mon1);
+			}
+			else
+			{
+				if(_ILMonitorExit(mon1))
+				{
+					_result = 998;
+				}
+			}
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+static void primitive_monitor_wait1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+	int result2 = 0;
+
+	/* We are using the primitive versions for now. */
+	if(_ILMonitorCreate(&_mon1))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	if(_ILMonitorEnter(&_mon1))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_primitive_monitor_wait1, &_mon1);
+	if(!thread)
+	{
+		_ILMonitorExit(&_mon1);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 0 now. */
+	result1 = _result;
+
+	if(_ILMonitorWait(&_mon1, _monitor_predicate, 0) != IL_THREAD_OK)
+	{
+		/* Clean up the thread object. */
+		ILThreadDestroy(thread);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("wait on a monitor doesn't work");
+	}
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 1 now. */
+	result2 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 0)
+	{
+		_ILMonitorDestroy(&_mon1);
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("tryenter on a locked monitor doesn't work");
+	}
+
+	if((result = _ILMonitorExit(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	if((result = _ILMonitorDestroy(&_mon1)))
+	{
+		ILUnitFailed("could not destroy a monitor");
+	}
+
+	if(result1 != 0 && result2 != 1)
+	{
+		ILUnitFailed("testcase failed");
+	}
+}
+
+static void _primitive_monitor_timed_wait1(void *arg)
+{
+	_ILMonitor *mon1 = (_ILMonitor *)arg;
+	int result;
+
+	_result = 0;
+	result = _ILMonitorEnter(mon1);
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 1;
+			/* Wait 3 time steps to let the calling thread timeout.*/
+			sleepFor(3);
+			if(_ILMonitorPulse(mon1))
+			{
+				result = 997;
+				_ILMonitorExit(mon1);
+			}
+			else
+			{
+				if(_ILMonitorExit(mon1))
+				{
+					_result = 998;
+				}
+				else
+				{
+					sleepFor(1);
+					if((result = _ILMonitorTryEnter(mon1)) == IL_THREAD_BUSY)
+					{
+						_result = 3;
+					}
+					else
+					{
+						if(result == IL_THREAD_OK)
+						{
+							_result = 996;
+							_ILMonitorExit(mon1);
+						}
+						else
+						{
+							_result = 997;
+						}
+					}
+				}
+			}
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+static void primitive_monitor_timed_wait1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+	int result2 = 0;
+
+	/* We are using the primitive versions for now. */
+	if(_ILMonitorCreate(&_mon1))
+	{
+		ILUnitFailed("could not create a monitor");
+	}
+
+	if(_ILMonitorEnter(&_mon1))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_primitive_monitor_timed_wait1, &_mon1);
+	if(!thread)
+	{
+		_ILMonitorExit(&_mon1);
+		_ILMonitorDestroy(&_mon1);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 0 now. */
+	result1 = _result;
+
+	result = _ILMonitorTimedWait(&_mon1, 2, _monitor_predicate, 0);
+	if(result != IL_THREAD_BUSY)
+	{
+		/* Clean up the thread object. */
+		ILThreadDestroy(thread);
+		_ILMonitorDestroy(&_mon1);
+		printf("Wrong result is %i\n", result);
+		ILUnitFailed("timed wait on a monitor doesn't work");
+	}
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 3 now. */
+	result2 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 0 || result2 != 3)
+	{
+		_ILMonitorDestroy(&_mon1);
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("tryenter on a locked monitor doesn't work");
+	}
+
+	if((result = _ILMonitorExit(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	if((result = _ILMonitorDestroy(&_mon1)))
+	{
+		ILUnitFailed("could not destroy a monitor");
+	}
+
+	if(result1 != 0 && result2 != 1)
+	{
+		ILUnitFailed("testcase failed");
+	}
+}
+
+/*
+ * Test monitor creation
+ */
+static void monitor_create(void *arg)
+{
+	ILMonitorPool monitorPool;
+	void *monitorLocation;
+	int result;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&monitorPool);
+	monitorLocation = 0;
+
+	result = ILMonitorEnter(&monitorPool, &monitorLocation);
+	if(result != IL_THREAD_OK)
+	{
+		ILUnitFailed("could not enter a new monitor");
+	}
+	if(monitorPool.usedList == 0)
+	{
+		ILUnitFailed("new monitor is not on the used list in the pool");
+	}
+	if(monitorLocation == 0)
+	{
+		ILUnitFailed("new monitor is not set at the monitor location");
+	}
+
+	result = ILMonitorExit(&monitorPool, &monitorLocation);
+	if(result != IL_THREAD_OK)
+	{
+		ILUnitFailed("could not exit a monitor");
+	}
+	if(monitorPool.usedList != 0)
+	{
+		ILUnitFailed("monitor left is not removed from the used list in the pool");
+	}
+	if(monitorPool.freeList == 0)
+	{
+		ILUnitFailed("monitor left is not moved to the free list in the pool");
+	}
+	if(monitorLocation != 0)
+	{
+		ILUnitFailed("monitor location is not cleared");
+	}
+
+	ILMonitorPoolDestroy(&monitorPool);
+}
+
+/*
+ * Test entering and leaving a monitor multiple times
+ */
+static void monitor_enter_multiple(void *arg)
+{
+	ILMonitorPool monitorPool;
+	void *monitorLocation;
+	int result;
+	int i;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&monitorPool);
+	monitorLocation = 0;
+
+	for(i = 0; i < 10; ++i)
+	{
+		result = ILMonitorEnter(&monitorPool, &monitorLocation);
+		if(result != IL_THREAD_OK)
+		{
+			ILMonitorPoolDestroy(&monitorPool);
+			ILUnitFailed("could not enter a new monitor at i = %i", i);
+		}
+	}
+
+	for(i = 0; i < 10; ++i)
+	{
+		result = ILMonitorExit(&monitorPool, &monitorLocation);
+		if(result != IL_THREAD_OK)
+		{
+			ILMonitorPoolDestroy(&monitorPool);
+			ILUnitFailed("could not exit the new monitor at i = %i", i);
+		}
+	}
+	if(monitorPool.usedList != 0)
+	{
+		ILUnitFailed("monitor left is not removed from the used list in the pool");
+	}
+	if(monitorPool.freeList == 0)
+	{
+		ILUnitFailed("monitor left is not moved to the free list in the pool");
+	}
+	if(monitorLocation != 0)
+	{
+		ILUnitFailed("monitor location is not cleared");
+	}
+
+	ILMonitorPoolDestroy(&monitorPool);
+}
+
+ILMonitorPool _monitorPool;
+void *_monitorLocation;
+
+/*
+ * Try to enter a locked monitor
+ */
+static void _monitor_enter_locked(void *arg)
+{
+	void **monitorLocation;
+
+	monitorLocation = (void **)arg;
+	_result = 1;
+	if(ILMonitorEnter(&_monitorPool, monitorLocation) != IL_THREAD_OK)
+	{
+		_result = 999;
+		return;
+	}
+	_result = 2;
+	if(ILMonitorExit(&_monitorPool, monitorLocation) != IL_THREAD_OK)
+	{
+		_result = 998;
+	}
+}
+
+static void monitor_enter_locked(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+	int result2 = 0;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&_monitorPool);
+	_monitorLocation = 0;
+
+	if((result = ILMonitorEnter(&_monitorPool, &_monitorLocation)) != IL_THREAD_OK)
+	{
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitFailed("could not enter a new monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_monitor_enter_locked, (void *)&_monitorLocation);
+	if(!thread)
+	{
+		ILMonitorExit(&_monitorPool, &_monitorLocation);
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 1 time steps */
+	sleepFor(1);
+
+	/* The result1 should be 1 now. */
+	result1 = _result;
+
+	if((result = ILMonitorExit(&_monitorPool, &_monitorLocation)) != IL_THREAD_OK)
+	{
+		ILThreadDestroy(thread);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	/* Wait 3 time steps */
+	sleepFor(3);
+
+	/* The result1 should be 2 now. */
+	result2 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 1 || result2 != 2)
+	{
+		ILUnitFailed("lock on monitor enter doesn't work");
+	}
+
+	if(_monitorPool.usedList != 0)
+	{
+		ILUnitFailed("monitor left is not removed from the used list in the pool");
+	}
+	if(_monitorPool.freeList == 0)
+	{
+		ILUnitFailed("monitor left is not moved to the free list in the pool");
+	}
+	if(_monitorLocation != 0)
+	{
+		ILUnitFailed("monitor location is not cleared");
+	}
+
+	/* Clean up the monitor pool */
+	ILMonitorPoolDestroy(&_monitorPool);
+}
+
+static void _monitor_tryenter_locked(void *arg)
+{
+	void **monitorLocation;
+	int result;
+
+	monitorLocation = (void **)arg;
+	result = ILMonitorTryEnter(&_monitorPool, monitorLocation);
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 0;
+			if(ILMonitorExit(&_monitorPool, monitorLocation) != IL_THREAD_OK)
+			{
+				_result = 998;
+			}
+		}
+		break;
+
+		case IL_THREAD_BUSY:
+		{
+			_result = 1;
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+/*
+ * Test TryEnter on a locked monitor
+ */
+static void monitor_tryenter1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&_monitorPool);
+	_monitorLocation = 0;		
+
+	if((result = ILMonitorEnter(&_monitorPool, &_monitorLocation)) != IL_THREAD_OK)
+	{
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_monitor_tryenter_locked, (void *)&_monitorLocation);
+	if(!thread)
+	{
+		ILMonitorExit(&_monitorPool, &_monitorLocation);
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 1 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 1 now. */
+	result1 = _result;
+
+	if((result = ILMonitorExit(&_monitorPool, &_monitorLocation)) != IL_THREAD_OK)
+	{
+		ILThreadDestroy(thread);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 1)
+	{
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("tryenter on a locked monitor doesn't work");
+	}
+
+	if(_monitorPool.usedList != 0)
+	{
+		ILUnitFailed("monitor left is not removed from the used list in the pool");
+	}
+	if(_monitorPool.freeList == 0)
+	{
+		ILUnitFailed("monitor left is not moved to the free list in the pool");
+	}
+	if(_monitorLocation != 0)
+	{
+		ILUnitFailed("monitor location is not cleared");
+	}
+
+	/* Clean up the monitor pool */
+	ILMonitorPoolDestroy(&_monitorPool);
+}
+
+/*
+ * Test TryEnter on an unlocked monitor
+ */
+static void monitor_tryenter2(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&_monitorPool);
+	_monitorLocation = 0;
+
+	/* Create the thread */
+	thread = ILThreadCreate(_monitor_tryenter_locked, (void *)&_monitorLocation);
+	if(!thread)
+	{
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps to let the thread enter the monitor. */
+	sleepFor(2);
+
+	result = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result != 0)
+	{
+		printf("Wrong result is %i\n", result);
+		ILUnitFailed("tryenter on a unlocked monitor doesn't work");
+	}
+
+	/* Clean up the monitor pool */
+	ILMonitorPoolDestroy(&_monitorPool);
+}
+
+static void _monitor_timed_tryenter(void *arg)
+{
+	void **monitorLocation;
+	int result;
+
+	monitorLocation = (void **)arg;
+	result = ILMonitorTimedTryEnter(&_monitorPool, monitorLocation, 1);
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 0;
+			if(ILMonitorExit(&_monitorPool, monitorLocation) != IL_THREAD_OK)
+			{
+				_result = 998;
+			}
+		}
+		break;
+
+		case IL_THREAD_BUSY:
+		{
+			_result = 1;
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+static void monitor_timed_tryenter1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&_monitorPool);
+	_monitorLocation = 0;
+
+	if((result = ILMonitorEnter(&_monitorPool, &_monitorLocation)) != IL_THREAD_OK)
+	{
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_monitor_timed_tryenter, (void *)&_monitorLocation);
+	if(!thread)
+	{
+		ILMonitorExit(&_monitorPool, (void *)&_monitorLocation);
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps to let the thread try to enter the monitor. */
+	sleepFor(2);
+
+	result1 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if((result = ILMonitorExit(&_monitorPool, (void *)&_monitorLocation)) != IL_THREAD_OK)
+	{
+		ILThreadDestroy(thread);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	if(result1 != 1)
+	{
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("timed tryenter on a locked monitor with timeout doesn't work");
+	}
+
+	/* Clean up the monitor pool */
+	ILMonitorPoolDestroy(&_monitorPool);
+}
+
+/*
+ * Test for exiting an unowned monitor.
+ */
+static void _monitor_exit_unowned(void *arg)
+{
+	void **monitorLocation = (void **)arg;
+
+	_result = ILMonitorExit(&_monitorPool, monitorLocation);
+}
+
+/*
+ * Test exiting an unowned monitor.
+ */
+static void monitor_exit_unowned(void *arg)
+{
+	int result = 0;
+	ILThread *thread;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&_monitorPool);
+	_monitorLocation = 0;		
+
+	/* Create the thread */
+	thread = ILThreadCreate(_monitor_exit_unowned, (void *)(&_monitorLocation));
+	if(!thread)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	result = ILMonitorEnter(&_monitorPool, &_monitorLocation);
+	if(result != IL_THREAD_OK)
+	{
+		ILUnitFailed("could not enter a new monitor");
+	}
+
+	/* Set the result to an invalid value. */
+	_result = -1;
+
+	/* Start the thread, which should immediately try to exit the unowned monitor */
+	ILThreadStart(thread);
+
+	/* Wait 3 time steps */
+	sleepFor(3);
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(_result != IL_THREAD_ERR_SYNCLOCK)
+	{
+		ILMonitorExit(&_monitorPool, &_monitorLocation);
+		printf("Wrong result is %i\n", _result);
+		ILUnitFailed("exiting an unowned monitor returned the wrong result");
+	}
+
+	result = ILMonitorExit(&_monitorPool, &_monitorLocation);
+	if(result)
+	{
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	/* Clean up the monitor pool */
+	ILMonitorPoolDestroy(&_monitorPool);
+}
+
+static void _monitor_wait1(void *arg)
+{
+	void **monitorLocation;
+	int result;
+
+	monitorLocation = (void **)arg;
+	_result = 0;
+	result = ILMonitorEnter(&_monitorPool, monitorLocation);
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 1;
+			if(ILMonitorPulse(monitorLocation) == IL_THREAD_OK)
+			{
+				result = 997;
+				ILMonitorExit(&_monitorPool, monitorLocation);
+			}
+			else
+			{
+				if(ILMonitorExit(&_monitorPool, monitorLocation) == IL_THREAD_OK)
+				{
+					_result = 998;
+				}
+			}
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+static void monitor_wait1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+	int result2 = 0;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&_monitorPool);
+	_monitorLocation = 0;		
+
+	if(ILMonitorEnter(&_monitorPool, &_monitorLocation) != IL_THREAD_OK)
+	{
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_monitor_wait1, (void *)&_monitorLocation);
+	if(!thread)
+	{
+		ILMonitorExit(&_monitorPool, &_monitorLocation);
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 0 now. */
+	result1 = _result;
+
+	if(ILMonitorWait(&_monitorLocation) != IL_THREAD_OK)
+	{
+		/* Clean up the thread object. */
+		ILThreadDestroy(thread);
+		ILMonitorExit(&_monitorPool, &_monitorLocation);
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitFailed("wait on a monitor doesn't work");
+	}
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 1 now. */
+	result2 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 0)
+	{
+		ILMonitorExit(&_monitorPool, &_monitorLocation);
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		printf("Wrong result is %i\n", result1);
+		ILUnitFailed("tryenter on a locked monitor doesn't work");
+	}
+
+	if((result = ILMonitorExit(&_monitorPool, &_monitorLocation)) != IL_THREAD_OK)
+	{
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	if(result1 != 0 && result2 != 1)
+	{
+		ILUnitFailed("testcase failed");
+	}
+
+	/* Clean up the monitor pool */
+	ILMonitorPoolDestroy(&_monitorPool);
+}
+
+static void _monitor_timed_wait1(void *arg)
+{
+	void **monitorLocation;
+	int result;
+
+	monitorLocation = (void **)arg;
+	_result = 0;
+	result = ILMonitorEnter(&_monitorPool, monitorLocation);
+	switch(result)
+	{
+		case IL_THREAD_OK:
+		{
+			_result = 1;
+			/* Wait 3 time steps to let the calling thread timeout.*/
+			sleepFor(3);
+			if(ILMonitorPulse(monitorLocation) != IL_THREAD_OK)
+			{
+				result = 997;
+				ILMonitorExit(&_monitorPool, monitorLocation);
+			}
+			else
+			{
+				if(ILMonitorExit(&_monitorPool, monitorLocation) != IL_THREAD_OK)
+				{
+					_result = 998;
+				}
+				else
+				{
+					sleepFor(1);
+					if((result = ILMonitorTryEnter(&_monitorPool, monitorLocation)) == IL_THREAD_BUSY)
+					{
+						_result = 3;
+					}
+					else
+					{
+						if(result == IL_THREAD_OK)
+						{
+							_result = 996;
+							ILMonitorExit(&_monitorPool, monitorLocation);
+						}
+						else
+						{
+							_result = 997;
+						}
+					}
+				}
+			}
+		}
+		break;
+
+		default:
+		{
+			_result = 999;
+		}
+	}
+}
+
+static void monitor_timed_wait1(void *arg)
+{
+	ILThread *thread;
+	int result = 0;
+	int result1 = 0;
+	int result2 = 0;
+
+	/* initialize the monitor pool and the test location */
+	ILMonitorPoolInit(&_monitorPool);
+	_monitorLocation = 0;		
+
+	if(ILMonitorEnter(&_monitorPool, &_monitorLocation) != IL_THREAD_OK)
+	{
+		ILUnitFailed("could not enter a monitor");
+	}
+
+	/* Create the thread */
+	thread = ILThreadCreate(_monitor_timed_wait1, (void *)&_monitorLocation);
+	if(!thread)
+	{
+		ILMonitorExit(&_monitorPool, &_monitorLocation);
+		/* Clean up the monitor pool */
+		ILMonitorPoolDestroy(&_monitorPool);
+		ILUnitOutOfMemory();
+	}
+
+	_result = -1;
+
+	/* Start the thread, which should immediately try to enter the monitor. */
+	ILThreadStart(thread);
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 0 now. */
+	result1 = _result;
+
+	result = ILMonitorTimedWait(&_monitorLocation, 2);
+	if(result != IL_THREAD_BUSY)
+	{
+		/* Clean up the thread object. */
+		ILThreadDestroy(thread);
+		printf("Wrong result is %i\n", result);
+		ILUnitFailed("timed wait on a monitor doesn't work");
+	}
+
+	/* Wait 2 time steps */
+	sleepFor(2);
+
+	/* The result1 should be 3 now. */
+	result2 = _result;
+
+	/* Clean up the thread object (the thread itself is now dead) */
+	ILThreadDestroy(thread);
+
+	if(result1 != 0 || result2 != 3)
+	{
+		printf("Wrong result1 is %i\n", result1);
+		printf("Wrong result2 is %i\n", result2);
+		ILUnitFailed("tryenter on a locked monitor doesn't work");
+	}
+
+	if((result = ILMonitorExit(&_monitorPool, &_monitorLocation)) != IL_THREAD_OK)
+	{
+		ILUnitFailed("could not exit a monitor");
+	}
+
+	if(result1 != 0 && result2 != 1)
+	{
+		ILUnitFailed("testcase failed");
+	}
+
+	/* Clean up the monitor pool */
+	ILMonitorPoolDestroy(&_monitorPool);
 }
 
 /*
@@ -1390,12 +2825,40 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(mutex_create);
 
 	/*
-	 * Test monitor behaviours.
+	 * Test for the implementation of the monitor primitives.
+	 */
+	ILUnitRegisterSuite("Monitor primitives Tests");
+	RegisterSimple(primitive_monitor_create);
+	RegisterSimple(primitive_monitor_enter);
+	RegisterSimple(primitive_monitor_exit_unowned);
+	RegisterSimple(primitive_monitor_enter1);
+	RegisterSimple(primitive_monitor_tryenter1);
+	RegisterSimple(primitive_monitor_tryenter2);
+	RegisterSimple(primitive_monitor_timed_tryenter1);
+	RegisterSimple(primitive_monitor_wait1);
+	RegisterSimple(primitive_monitor_timed_wait1);
+
+	/*
+	 * Test wait monitor behaviours.
+	 */
+	ILUnitRegisterSuite("Wait Monitor Tests");
+	RegisterSimple(wait_monitor_create);
+	RegisterSimple(wait_monitor_acquire);
+	RegisterSimple(wait_monitor_suspend);
+
+	/*
+	 * Tests for the monitor implementation.
 	 */
 	ILUnitRegisterSuite("Monitor Tests");
 	RegisterSimple(monitor_create);
-	RegisterSimple(monitor_acquire);
-	RegisterSimple(monitor_suspend);
+	RegisterSimple(monitor_enter_multiple);
+	RegisterSimple(monitor_enter_locked);
+	RegisterSimple(monitor_tryenter1);
+	RegisterSimple(monitor_tryenter2);	
+	RegisterSimple(monitor_timed_tryenter1);
+	RegisterSimple(monitor_exit_unowned);
+	RegisterSimple(monitor_wait1);
+	RegisterSimple(monitor_timed_wait1);
 }
 
 #ifdef	__cplusplus

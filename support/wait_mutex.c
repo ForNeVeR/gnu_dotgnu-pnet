@@ -616,7 +616,7 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 /*
  * Close a monitor.
  */
-static int MonitorClose(ILMonitor *monitor)
+static int MonitorClose(ILWaitMonitor *monitor)
 {
 	/* Lock down the monitor and determine if it is currently owned */
 	_ILMutexLock(&(monitor->parent.parent.lock));
@@ -640,10 +640,10 @@ static int MonitorClose(ILMonitor *monitor)
 
 ILWaitHandle *ILWaitMonitorCreate(void)
 {
-	ILMonitor *monitor;
+	ILWaitMonitor *monitor;
 
 	/* Allocate memory for the monitor */
-	if((monitor = (ILMonitor *)ILMalloc(sizeof(ILMonitor))) == 0)
+	if((monitor = (ILWaitMonitor *)ILMalloc(sizeof(ILWaitMonitor))) == 0)
 	{
 		return 0;
 	}
@@ -685,7 +685,7 @@ ILWaitHandle *ILWaitMonitorCreate(void)
 int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 {
 	ILThread *thread = ILThreadSelf();
-	ILMonitor *monitor = (ILMonitor *)handle;
+	ILWaitMonitor *monitor = (ILWaitMonitor *)handle;
 	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
 	int result, result2;
 	unsigned long saveCount;
@@ -793,7 +793,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 
 static IL_INLINE int PrivateWaitMonitorPulse(ILWaitHandle *handle, int all)
 {
-	ILMonitor *monitor = (ILMonitor *)handle;
+	ILWaitMonitor *monitor = (ILWaitMonitor *)handle;
 	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
 	int result;
 

@@ -14,6 +14,8 @@
 	(ThreadStart): Simply store the current thread in _myThread if
 	compiler tls is used instead of calling pthread_setspecific.
 
+	* include/il_gc.h: Improve comments for ILGCAlloc and ILGCAllocAtomic.
+
 2009-09-01  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add checks for availability of pthread_mutex_timedlock,

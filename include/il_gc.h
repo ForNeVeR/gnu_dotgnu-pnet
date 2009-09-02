@@ -40,15 +40,24 @@ void ILGCDeinit();
 
 /*
  * Allocate a block of memory from the garbage collector.
- * The block may contain pointers to other blocks.  The
- * block is guaranteed to be zero'ed.
+ * The block may contain pointers to other blocks allocated brom the
+ * garbage that have to be kept alive while referenced in this block.
+ * That means the block is scanned for pointers during garbage collection.
+ * The block is guaranteed to be zero'ed.
  */
 void *ILGCAlloc(unsigned long size);
 
 /*
  * Allocate a block of memory from the garbage collector
- * that will never contain pointers.  Use this for allocating
- * arrays of atomic numeric types.  The block is zero'ed.
+ * that will never contain pointers to blocks that have to be kept alive
+ * while being referenced from this block.
+ * Use this for allocating arrays of atomic numeric types or blocks that
+ * contain only pointers to other blocks which are kept alive through other
+ * references. For example to avoid circular references which are not easy
+ * to be broken by the garbage collector.
+ * That means blocks allocated this way are not scanned for pointers during
+ * garbage collection.
+ * The block is guaranteed to be zero'ed.
  */
 void *ILGCAllocAtomic(unsigned long size);
 

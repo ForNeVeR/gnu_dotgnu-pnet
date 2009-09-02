@@ -40,10 +40,19 @@
 extern	"C" {
 #endif
 
+
+#if defined(USE_COMPILER_TLS)
+/*
+ * Define the thread local variable to hold the ILThread value for the
+ * current thread.
+ */
+_THREAD_ ILThread *_myThread;
+#else
 /*
  * Thread-specific key that is used to store and retrieve thread objects.
  */
 pthread_key_t _ILThreadObjectKey;
+#endif
 
 /*
  * Default mutex attribute.
@@ -164,8 +173,10 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	action.sa_handler = ResumeSignal;
 	sigaction(IL_SIG_RESUME, &action, (struct sigaction *)0);
 
+#if !defined(USE_COMPILER_TLS)
 	/* We need a thread-specific key for storing thread objects */
 	pthread_key_create(&_ILThreadObjectKey, (void (*)(void *))0);
+#endif
 
 	/* Initialize the mutexattr used on this system. */
 	pthread_mutexattr_init(&_ILMutexAttr);
@@ -212,8 +223,13 @@ static void *ThreadStart(void *arg)
 	thread->handle = pthread_self();
 	thread->identifier = thread->handle;
 
+#if defined(USE_COMPILER_TLS)
+	/* Store the thread at the thread local storage */
+	_myThread = thread;
+#else
 	/* Attach the thread object to the thread identifier */
 	pthread_setspecific(_ILThreadObjectKey, (void *)thread);
+#endif
 
 	/* Detach ourselves because we won't be using "pthread_join"
 	   to detect when the thread exits */

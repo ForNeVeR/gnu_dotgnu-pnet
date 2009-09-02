@@ -87,6 +87,17 @@ extern	"C" {
 #endif
 
 /*
+ * Determine if we are using compiler thread local storage
+ */
+#if defined(USE_COMPILER_TLS)
+#if !defined(__GNUC__)
+#undef USE_COMPILER_TLS
+#else
+#define _THREAD_ __thread
+#endif
+#endif
+
+/*
  * Types that are needed elsewhere.
  */
 typedef pthread_mutex_t		_ILMutex;
@@ -310,11 +321,17 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
 /*
  * Get or set the thread object that is associated with "self".
  */
+#if defined(USE_COMPILER_TLS)
+extern _THREAD_ ILThread *_myThread;
+#define	_ILThreadGetSelf()			(_myThread)
+#define	_ILThreadSetSelf(object)	(_myThread = (object))
+#else
 extern pthread_key_t _ILThreadObjectKey;
 #define	_ILThreadGetSelf()	\
 			((ILThread *)(pthread_getspecific(_ILThreadObjectKey)))
 #define	_ILThreadSetSelf(object)	\
 			(pthread_setspecific(_ILThreadObjectKey, (object)))
+#endif
 
 /*
  * Call a function "once".

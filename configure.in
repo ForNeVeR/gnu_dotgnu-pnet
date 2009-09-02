@@ -102,6 +102,17 @@ if test x$interrupts = xtrue ; then
   AC_DEFINE(USE_INTERRUPT_BASED_CHECKS, 1, [Use interrupt based NullReference and other checks])
 fi
 
+dnl Enable use of thread local storage.
+AC_ARG_ENABLE(tls, AS_HELP_STRING([--enable-tls], [Use compiler supported thread local storage]),
+[case "${enableval}" in
+  yes)	tls=true ;;
+  no)	tls=false ;;
+  *)	AC_MSG_ERROR(bad value ${enableval} for --enable-tls) ;;
+esac],[tls=false])
+if test x$tls = xtrue ; then
+  AC_DEFINE(USE_COMPILER_TLS, 1, [Use compiler supported thread local storage])
+fi
+
 dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT

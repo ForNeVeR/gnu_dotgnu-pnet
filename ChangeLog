@@ -1,3 +1,19 @@
+2009-09-02  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add configure switch --enable-tls to allow enabling
+	usage of thread local storage if the compiler and kernel support is
+	available.
+
+	* support/pt_defs.h: Check if thread local storage should be used and
+	use it for GCC for now. Change the declarations for _ILThreadGetSelf
+	and _ILThreadSetSelf for this case and declare the thread local
+	variable _myThread to hold the pointer to the current ILThread.
+
+	* support/pt_defs.c (_ILThreadInitSystem): Don't allocate a pthread key
+	for the	current thread if compiler tls is used.
+	(ThreadStart): Simply store the current thread in _myThread if
+	compiler tls is used instead of calling pthread_setspecific.
+
 2009-09-01  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add checks for availability of pthread_mutex_timedlock,

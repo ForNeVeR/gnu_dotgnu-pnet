@@ -81,7 +81,7 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 	uc = (ucontext_t *)ctx;
 #endif
 
-	thread = ILThreadSelf();
+	thread = _ILThreadGetSelf();
 
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
 
@@ -125,7 +125,7 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 		case SIGSEGV:
 		case SIGBUS:
 
-			thread = ILThreadSelf();
+			thread = _ILThreadGetSelf();
 
 			context.memoryAddress = info->si_addr;
 			context.type = IL_INTERRUPT_TYPE_ILLEGAL_MEMORY_ACCESS;
@@ -172,7 +172,7 @@ static void __signal_handler(int signal)
 	ILThread *thread;
 	ILInterruptContext context;
 
-	thread = ILThreadSelf();
+	thread = _ILThreadGetSelf();
 
 	switch (signal)
 	{

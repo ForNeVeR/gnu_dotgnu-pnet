@@ -429,7 +429,7 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 
 	if(initiallyOwned)
 	{
-		mutex->owner = &((ILThreadSelf())->wakeup);
+		mutex->owner = &((_ILThreadGetSelf())->wakeup);
 		mutex->count = 1;		
 		AddMutexToWakeup(mutex, mutex->owner);
 	}
@@ -493,7 +493,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 			if(initiallyOwned)
 			{
 				owned = (ILWaitOne(&(mutex->parent.parent), 0) == 0);
-				AddMutexToWakeup(&(mutex->parent), &(ILThreadSelf()->wakeup));
+				AddMutexToWakeup(&(mutex->parent), &(_ILThreadGetSelf()->wakeup));
 			}
 			else
 			{
@@ -535,7 +535,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	mutex->parent.parent.signalFunc = MutexSignal;
 	if(initiallyOwned)
 	{
-		mutex->parent.owner = &((ILThreadSelf())->wakeup);
+		mutex->parent.owner = &((_ILThreadGetSelf())->wakeup);
 		mutex->parent.count = 1;
 		AddMutexToWakeup(&(mutex->parent), mutex->parent.owner);
 	}
@@ -571,7 +571,7 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 	/* Lock down the mutex */
 	_ILMutexLock(&(mutex->parent.lock));
 
-	wakeup = &ILThreadSelf()->wakeup;
+	wakeup = &_ILThreadGetSelf()->wakeup;
 
 	/* Determine what to do based on the mutex's state */
 	if((mutex->parent.kind & IL_WAIT_MUTEX) == 0)
@@ -684,9 +684,9 @@ ILWaitHandle *ILWaitMonitorCreate(void)
  */
 int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 {
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = _ILThreadGetSelf();
 	ILWaitMonitor *monitor = (ILWaitMonitor *)handle;
-	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
+	_ILWakeup *wakeup = &(thread->wakeup);
 	int result, result2;
 	unsigned long saveCount;
 
@@ -794,7 +794,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 static IL_INLINE int PrivateWaitMonitorPulse(ILWaitHandle *handle, int all)
 {
 	ILWaitMonitor *monitor = (ILWaitMonitor *)handle;
-	_ILWakeup *wakeup = &((ILThreadSelf())->wakeup);
+	_ILWakeup *wakeup = &((_ILThreadGetSelf())->wakeup);
 	int result;
 
 	/* Lock down the monitor */

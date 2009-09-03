@@ -143,7 +143,7 @@ static int _ILLeaveWaitHandle(ILThread *thread, ILWaitHandle *handle, int ok)
 
 int ILSignalAndWait(ILWaitHandle *signalHandle, ILWaitHandle *waitHandle, ILUInt32 timeout)
 {
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = _ILThreadGetSelf();
 	_ILWakeup *wakeup = &(thread->wakeup);
 	int result;
 
@@ -208,7 +208,7 @@ int ILSignalAndWait(ILWaitHandle *signalHandle, ILWaitHandle *waitHandle, ILUInt
 
 int ILWaitOne(ILWaitHandle *handle, ILUInt32 timeout)
 {
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = _ILThreadGetSelf();
 	_ILWakeup *wakeup = &(thread->wakeup);
 	int result;
 
@@ -266,7 +266,7 @@ int ILWaitOne(ILWaitHandle *handle, ILUInt32 timeout)
 
 int ILWaitAny(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
 {
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = _ILThreadGetSelf();
 	_ILWakeup *wakeup = &(thread->wakeup);
 	int result;
 	ILUInt32 index, index2;
@@ -358,7 +358,7 @@ int ILWaitAny(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
 
 int ILWaitAll(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
 {
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = _ILThreadGetSelf();
 	_ILWakeup *wakeup = &(thread->wakeup);
 	int result;
 	ILUInt32 index, index2;
@@ -466,7 +466,7 @@ int ILWaitAll(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
  */
 int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout)
 {	
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = _ILThreadGetSelf();
 	int result, retval = 0, threadstate = 0;
 	
 	for (;;)

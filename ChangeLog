@@ -1,3 +1,16 @@
+2009-09-03  Klaus Treichel  <ktreichel@web.de>
+
+	* support/no_thread.c: Delete obsolete file
+
+	* support/interrupt_posix.c: Replace calls to ILThreadSelf by calls to
+	_ILThreadGetSelf.
+
+	* support/interrupt_win32.c: likewise
+
+	* support/wait.c: likewise
+
+	* support/wait_mutex.c: likewise
+
 2009-09-02  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add configure switch --enable-tls to allow enabling

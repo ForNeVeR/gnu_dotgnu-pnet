@@ -37,7 +37,7 @@ static LPTOP_LEVEL_EXCEPTION_FILTER __previousFilter;
 
 static LONG CALLBACK __UnhandledExceptionFilter(EXCEPTION_POINTERS* ExceptionInfo)
 {
-	ILThread *thread = ILThreadSelf();
+	ILThread *thread = _ILThreadGetSelf();
 	ILInterruptContext context;
 
 	context.instructionAddress = ExceptionInfo->ExceptionRecord->ExceptionAddress;

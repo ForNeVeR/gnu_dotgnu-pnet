@@ -72,6 +72,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	if((ILMethod_CallConv(method) & IL_META_CALLCONV_MASK) ==
 			IL_META_CALLCONV_VARARG)
 	{
+		METADATA_UNLOCK(thread);
 		*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 		return 0;
 	}
@@ -91,6 +92,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		if(!_ILVerify(coder, &start, method, &code,
 					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
 		{
+			METADATA_UNLOCK(thread);
 			*errorCode = IL_CONVERT_VERIFY_FAILED;
 			return 0;
 		}
@@ -99,6 +101,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	{
 		/* All other cases should be handled in the jit coder. */
 
+		METADATA_UNLOCK(thread);
 		*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 		return 0;
 	}
@@ -577,7 +580,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 						(ILObject *)ILStringCreate(thread, errorInfo));
 				}
 
-				ILExecThreadSetException(thread, obj);				
+				ILExecThreadSetException(thread, obj);
 			}
 			break;
 		}

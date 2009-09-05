@@ -2128,6 +2128,8 @@ static void _ILJitThrowCurrentException(ILJITCoder *coder)
 	jit_insn_throw(coder->jitFunction, thrownException);
 }
 
+static int _ILJitCompile(jit_function_t func);
+
 /*
  * The on demand driver function for libjit.
  */
@@ -2248,8 +2250,12 @@ static void *_ILJitOnDemandDriver(ILJitFunction func)
 		/* Unlock the context. */
 		jit_context_build_end(context);
 
-		/* Unlock the metadata. */
-		METADATA_UNLOCK(process);
+		/* This is ugly but it's the only fast solution now */
+		if(onDemandCompiler != _ILJitCompile)
+		{
+			/* Unlock the metadata. */
+			METADATA_UNLOCK(process);
+		}
 
 		/* And throw an exception. */
 		jit_exception_builtin(result);
@@ -3455,6 +3461,7 @@ static int _ILJitCompile(jit_function_t func)
 
 	if(!method)
 	{
+		METADATA_UNLOCK(thread->process);
 		return JIT_RESULT_COMPILE_ERROR;
 	}
 

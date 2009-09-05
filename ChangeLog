@@ -1,3 +1,14 @@
+2009-09-05  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/convert.c (ConvertMethod): Unlock the metadata here if the
+	function doesn't return with success.
+
+	* engine/jitc.c (_ILJitOnDemandDriver): Unlock the metadata on failure
+	only if the on demand compiler function was != _ILJitCompile because
+	the metadata was unlocked there in case of failure.
+	(_ILJitCompile): Unlock the metadata if there is no method attached to
+	the jit function to be consistent with _ILConvertMethod.
+
 2009-09-03  Klaus Treichel  <ktreichel@web.de>
 
 	* support/no_thread.c: Delete obsolete file

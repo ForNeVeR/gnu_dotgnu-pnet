@@ -23,6 +23,29 @@
 #define	_THR_DEFS_H
 
 /*
+ * NOTE: For modifying a thread's state
+ * If the thread's state is going to be modified do it the following way:
+ * 1. lock the thread
+ * 2. load the thread's state to a local variable
+ * 3. do what you want to do with the thread's state with the local variable
+ * 4. store the local variable to the thread's state
+ * 5. unlock the thread
+ *
+ * This is done this way to be able to query the current thread's state
+ * without having to lock the thread.
+ * The reader will read the consistent state before the thread was locked
+ * until all changes are done.
+ * Additionally the compiler is able to hold the thread's state in a
+ * register instead of having to read and write the volatile state multiple
+ * times.
+ */
+
+/*
+ * Define IL_THREAD_DEBUG for enabling threading debug features.
+ */
+/* #define IL_TRHEAD_DEBUG */
+
+/*
  * Predicate function for the _ILMonitorWait functions.
  * The function has to return 0 if the predicate is not true so that the
  * wait has to be called again and != 0 otherwise.
@@ -38,8 +61,9 @@ typedef int (*ILMonitorPredicate)(void *);
 #define IL_THREAD_ERR_INTERRUPT				0x80131519
 #define IL_THREAD_ERR_INVALID_TIMEOUT		0x80131502
 #define IL_THREAD_ERR_SYNCLOCK				0x80131518
+#define IL_THREAD_ERR_ABORTED				0xFFFFFFFC
 #define IL_THREAD_ERR_INVALID_RELEASECOUNT	0xFFFFFFFD
-#define IL_THREAD_ERR_IN_USE				0xFFFFFFFE
+#define IL_THREAD_ERR_OUTOFMEMORY			0xFFFFFFFE
 #define IL_THREAD_ERR_UNKNOWN				0xFFFFFFFF
 
 /*
@@ -127,7 +151,7 @@ struct _tagILThread
 	_ILMutex						lock;
 	_ILThreadHandle		volatile	handle;
 	_ILThreadIdentifier	volatile	identifier;
-	unsigned short    	volatile	state;
+	ILUInt16	    	volatile	state;
 	unsigned char     	volatile	resumeRequested;
 	unsigned char     	volatile	suspendRequested;
 	unsigned int	  	volatile  	numLocksHeld;
@@ -154,6 +178,8 @@ struct _tagILThread
 #define	IL_TS_PUBLIC_FLAGS		0x01FF
 #define	IL_TS_SUSPENDED_SELF	0x0200
 #define	IL_TS_INTERRUPTED		0x0400
+#define IL_TS_INTERRUPTED_OR_ABORT_REQUESTED \
+		(IL_TS_INTERRUPTED | IL_TS_ABORT_REQUESTED)
 
 /*
  * Wait handle kinds.
@@ -199,18 +225,33 @@ typedef void (*ILWaitUnregisterFunc)(ILWaitHandle *handle, _ILWakeup *wakeup,
 
 typedef int (*ILWaitSignalFunc)(ILWaitHandle *handle);
 
+typedef struct _tagILWaitHandleVtable _ILWaitHandleVtable;
+struct _tagILWaitHandleVtable
+{
+	const int					kind;
+	const ILWaitCloseFunc		closeFunc;
+	const ILWaitRegisterFunc	registerFunc;
+	const ILWaitUnregisterFunc	unregisterFunc;
+	const ILWaitSignalFunc		signalFunc;
+};
+
 /*
  * Internal structure of a wait handle.
  */
 struct _tagILWaitHandle
 {
-	_ILMutex				      lock;
-	int					 volatile kind;
-	ILWaitCloseFunc		 volatile closeFunc;
-	ILWaitRegisterFunc	 volatile registerFunc;
-	ILWaitUnregisterFunc volatile unregisterFunc;
-    ILWaitSignalFunc		 volatile signalFunc;
+	const _ILWaitHandleVtable  *vtable;
+	_ILMutex					lock;
 };
+
+/*
+ * Some macros for accessing the waithandle members
+ */
+#define _ILWaitHandle_kind(handle)				((handle)->vtable->kind)
+#define _ILWaitHandle_closeFunc(handle)			((handle)->vtable->closeFunc)
+#define _ILWaitHandle_registerFunc(handle)		((handle)->vtable->registerFunc)
+#define _ILWaitHandle_unregisterFunc(handle)	((handle)->vtable->unregisterFunc)
+#define _ILWaitHandle_signalFunc(handle)		((handle)->vtable->signalFunc)
 
 /*
  * Internal structure of a wait event handle.
@@ -269,7 +310,7 @@ typedef struct
 typedef struct _tagILMonitor ILMonitor;
 
 /*
- * Pool used ba the monitor.
+ * Pool used by the monitor.
  */
 typedef struct _tagILMonitorPool ILMonitorPool;
 struct _tagILMonitorPool

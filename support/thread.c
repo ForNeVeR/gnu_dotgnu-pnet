@@ -186,6 +186,8 @@ static void _ILThreadRunAndFreeCleanups(ILThread *thread)
 
 static void _ILPrivateThreadDestroy(ILThread *thread, int allowSelf)
 {
+	ILUInt16 threadState;
+
 	/* Bail out if this is the current thread or main thread */
 	if((thread == _ILThreadGetSelf() && !allowSelf) || thread == &mainThread)
 	{
@@ -195,13 +197,16 @@ static void _ILPrivateThreadDestroy(ILThread *thread, int allowSelf)
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
+	threadState = thread->state;
+
 	/* Don't terminate the thread or adjust counts if it has already been stopped */
-	if((thread->state & IL_TS_STOPPED) == 0)
+	if((threadState & IL_TS_STOPPED) == 0)
 	{
-		thread->state |= IL_TS_STOPPED;
+		threadState |= IL_TS_STOPPED;
+		thread->state = threadState;
 
 		/* Only terminate the system thread if one was created */
-		if((thread->state & IL_TS_UNSTARTED) == 0)
+		if((threadState & IL_TS_UNSTARTED) == 0)
 		{
 			/* Terminating the thread is unsafe so just don't
 			   destroy now and tell the thread to destroy itself
@@ -228,7 +233,7 @@ static void _ILPrivateThreadDestroy(ILThread *thread, int allowSelf)
 	}
 
 	/* Only destroy the system thread if one was created */
-	if((thread->state & IL_TS_UNSTARTED) == 0)
+	if((threadState & IL_TS_UNSTARTED) == 0)
 	{
 		_ILThreadDestroy(thread);
 	}
@@ -306,7 +311,7 @@ void *ILThreadRunSelf(void *(* thread_func)(void *), void *arg)
 }
 
 void _ILThreadRun(ILThread *thread)
-{	
+{
 	/* When a thread starts, it blocks until the ILThreadStart function
 	   has finished setup */
 	/* Wait until the starting thread has released the lock */
@@ -325,10 +330,15 @@ void _ILThreadRun(ILThread *thread)
 	
 	_ILMutexLock(&(thread->lock));
 	{
+		ILUInt16 threadState;
+
+		threadState = thread->state;
+
 		/* Mark the thread as stopped */
-		thread->state |= IL_TS_STOPPED;	
+		threadState |= IL_TS_STOPPED;	
+		thread->state = threadState;
 		/* Change the thread count */		
-		_ILThreadAdjustCount(-1, ((thread->state & IL_TS_BACKGROUND) != 0) ? -1 : 0);
+		_ILThreadAdjustCount(-1, ((threadState & IL_TS_BACKGROUND) != 0) ? -1 : 0);
 	}
 	_ILMutexUnlock(&(thread->lock));
 
@@ -400,12 +410,15 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *startArg)
 int ILThreadStart(ILThread *thread)
 {
 	int result;
+	ILUInt16 threadState;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
+	threadState = thread->state;
+
 	/* Are we in the correct state to start? */
-	if((thread->state & IL_TS_UNSTARTED) != 0)
+	if((threadState & IL_TS_UNSTARTED) != 0)
 	{
 		/* Create the new thread */
 		if(!_ILThreadCreateSystem(thread))
@@ -415,10 +428,11 @@ int ILThreadStart(ILThread *thread)
 		else
 		{
 			/* Set the thread state to running (0) */
-			thread->state &= ~IL_TS_UNSTARTED;
-			thread->state |= IL_TS_RUNNING;
+			threadState &= ~IL_TS_UNSTARTED;
+			threadState |= IL_TS_RUNNING;
+			thread->state = threadState;
 
-			_ILThreadAdjustCount(1, (thread->state & IL_TS_BACKGROUND) ? 1 : 0);
+			_ILThreadAdjustCount(1, (threadState & IL_TS_BACKGROUND) ? 1 : 0);
 
 			result = 1;
 		}
@@ -430,6 +444,7 @@ int ILThreadStart(ILThread *thread)
 
 	/* Unlock the thread object and return */
 	_ILMutexUnlock(&(thread->lock));
+
 	return result;
 }
 
@@ -459,42 +474,44 @@ int ILThreadSuspend(ILThread *thread)
 
 int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
 {
-	unsigned int state;
+	ILUInt16 threadState;
 	int result = IL_SUSPEND_OK;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
-	state = thread->state;
-	if ((state & (IL_TS_ABORT_REQUESTED)) != 0)
+	threadState = thread->state;
+	if((threadState & (IL_TS_ABORT_REQUESTED)) != 0)
 	{
-		return IL_WAIT_ABORTED;
+		result = IL_WAIT_ABORTED;
 	}
-	else if((state & IL_TS_SUSPENDED) != 0)
+	else if((threadState & IL_TS_SUSPENDED) != 0)
 	{
 		/* Nothing to do here - it is already suspended */
 	}
-	else if((state & (IL_TS_UNSTARTED | IL_TS_STOPPED)) != 0)
+	else if((threadState & (IL_TS_UNSTARTED | IL_TS_STOPPED)) != 0)
 	{
 		/* We cannot suspend a thread that was never started
 		   in the first place, or is stopped */
 		result = IL_SUSPEND_FAILED;
 	}
-	else if(((state & IL_TS_WAIT_SLEEP_JOIN) != 0) || requestOnly)
+	else if(((threadState & IL_TS_WAIT_SLEEP_JOIN) != 0) || requestOnly)
 	{
 		/* Request a suspend, but otherwise ignore the request */
-		thread->state |= IL_TS_SUSPEND_REQUESTED;
+		threadState |= IL_TS_SUSPEND_REQUESTED;
+		thread->state = threadState;
 
 		result = IL_SUSPEND_REQUESTED;
 	}
 	else if(_ILThreadIsSelf(thread))
 	{
 		/* Mark the thread as suspended */
-		thread->state &= ~ IL_TS_SUSPEND_REQUESTED;
-		thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
+		threadState &= ~ IL_TS_SUSPEND_REQUESTED;
+		threadState |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
+		thread->state = threadState;
 		thread->resumeRequested = 0;
-		
+
 		/* Unlock the thread object prior to suspending */
 		_ILMutexUnlock(&(thread->lock));
 
@@ -507,7 +524,8 @@ int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
 	else
 	{
 		/* Mark the thread as suspended and waiting for a resume */
-		thread->state |= IL_TS_SUSPENDED;
+		threadState |= IL_TS_SUSPENDED;
+		thread->state = threadState;
 		thread->resumeRequested = 0;
 
 		/* Put the thread to sleep temporarily */
@@ -544,34 +562,37 @@ int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
 
 void ILThreadResume(ILThread *thread)
 {
-	unsigned int state;
+	ILUInt16 threadState;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
-	state = thread->state;
-	if((state & IL_TS_SUSPENDED) != 0)
+	threadState = thread->state;
+	if((threadState & IL_TS_SUSPENDED) != 0)
 	{
-		if((state & IL_TS_SUSPENDED_SELF) != 0)
+		if((threadState & IL_TS_SUSPENDED_SELF) != 0)
 		{
 			/* The thread put itself to sleep */
-			thread->state &= ~(IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
-			thread->state |= IL_TS_RUNNING;
+			threadState &= ~(IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
+			threadState |= IL_TS_RUNNING;
+			thread->state = threadState;
 			_ILThreadResumeSelf(thread);
 		}
 		else
 		{
 			/* Someone else suspended the thread */
-			thread->state &= ~IL_TS_SUSPENDED;
-			thread->state |= IL_TS_RUNNING;			
+			threadState &= ~IL_TS_SUSPENDED;
+			threadState |= IL_TS_RUNNING;
+			thread->state = threadState;
 			_ILThreadResumeOther(thread);
 		}
 	}
-	else if((state & IL_TS_SUSPEND_REQUESTED) != 0)
+	else if((threadState & IL_TS_SUSPEND_REQUESTED) != 0)
 	{
 		/* A suspend was requested, but it hadn't started yet */
-		thread->state &= ~IL_TS_SUSPEND_REQUESTED;
+		threadState &= ~IL_TS_SUSPEND_REQUESTED;
+		thread->state = threadState;
 	}
 
 	/* Unlock the thread object */
@@ -580,14 +601,18 @@ void ILThreadResume(ILThread *thread)
 
 void ILThreadInterrupt(ILThread *thread)
 {
+	ILUInt16 threadState;
+
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
 	/* Determine what to do based on the thread's state */
-	if((thread->state & IL_TS_STOPPED) == 0)
+	threadState = thread->state;
+	if((threadState & IL_TS_STOPPED) == 0)
 	{
 		/* Mark the thread as interrupted */
-		thread->state |= IL_TS_INTERRUPTED;
+		threadState |= IL_TS_INTERRUPTED;
+		thread->state = threadState;
 
 		/* Unlock the thread object: we never hold the thread
 		   lock when updating the thread's wakeup object */
@@ -607,21 +632,24 @@ void ILThreadInterrupt(ILThread *thread)
 int ILThreadSelfAborting()
 {
 	int result;
+	ILUInt16 threadState;
 	ILThread *thread = _ILThreadGetSelf();
 	
 	_ILMutexLock(&(thread->lock));
 	
 	/* Determine if we've already seen the abort request or not */
-	if((thread->state & IL_TS_ABORTED) != 0)
+	threadState = thread->state;
+	if((threadState & IL_TS_ABORTED) != 0)
 	{
 		/* Already aborted */
 		result = 0;
 	}
-	else if((thread->state & IL_TS_ABORT_REQUESTED) != 0)
+	else if((threadState & IL_TS_ABORT_REQUESTED) != 0)
 	{
 		/* Abort was requested */
-		thread->state &= ~IL_TS_ABORT_REQUESTED;
-		thread->state |= IL_TS_ABORTED;
+		threadState &= ~IL_TS_ABORT_REQUESTED;
+		threadState |= IL_TS_ABORTED;
+		thread->state = threadState;
 		result = 1;
 	}
 	else
@@ -648,11 +676,14 @@ void ILThreadSigAbort(ILThread *thread)
 int ILThreadAbort(ILThread *thread)
 {
 	int result;
+	ILUInt16 threadState;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
-	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	threadState = thread->state;
+
+	if((threadState & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
 	{
 		/* The thread is already processing an abort or an abort request */
 		result = 0;
@@ -660,19 +691,25 @@ int ILThreadAbort(ILThread *thread)
 	else
 	{
 		/* Mark the thread as needing to be aborted */
-		thread->state |= IL_TS_ABORT_REQUESTED;
+		threadState |= IL_TS_ABORT_REQUESTED;
 
 		/* If the thread is in the "wait/sleep/join" state, then interrupt it */
-		if((thread->state & IL_TS_WAIT_SLEEP_JOIN) != 0)
+		if((threadState & IL_TS_WAIT_SLEEP_JOIN) != 0)
 		{
-			_ILWakeupInterrupt(&(thread->wakeup));
+			thread->state = threadState;
 
+			/* Unlock the thread object: we never hold the thread
+			   lock when updating the thread's wakeup object */
 			_ILMutexUnlock(&(thread->lock));
+
+			_ILWakeupInterrupt(&(thread->wakeup));
 
 			return 0;
 		}
-		else if (((thread->state & (IL_TS_SUSPENDED_SELF | IL_TS_SUSPENDED))) != 0)
+		else if (((threadState & (IL_TS_SUSPENDED_SELF | IL_TS_SUSPENDED))) != 0)
 		{
+			thread->state = threadState;
+
 			_ILMutexUnlock(&(thread->lock));
 
 			ILThreadResume(thread);
@@ -725,15 +762,19 @@ int ILThreadAbortReset(void)
 {
 	ILThread *thread = _ILThreadGetSelf();
 	int result;
+	ILUInt16 threadState;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
+	threadState = thread->state;
+
 	/* Reset the "abort" and "abort requested" flags */
-	if((thread->state & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
+	if((threadState & (IL_TS_ABORTED | IL_TS_ABORT_REQUESTED)) != 0)
 	{
-		thread->state &= ~(IL_TS_ABORTED | IL_TS_ABORT_REQUESTED);
-		thread->state &= ~(IL_TS_INTERRUPTED);
+		threadState &= ~(IL_TS_ABORTED | IL_TS_ABORT_REQUESTED);
+		threadState &= ~(IL_TS_INTERRUPTED);
+		thread->state = threadState;
 
 		_ILWakeupCancelInterrupt(&thread->wakeup);
 
@@ -753,6 +794,7 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 {
 	ILThread *self = _ILThreadGetSelf();
 	int result;
+	ILUInt16 threadState;
 
 	/* Bail out if we are trying to join with ourselves */
 	if(self == thread)
@@ -763,13 +805,15 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
+	threadState = thread->state;
+
 	/* Determine what to do based on the thread's state */
-	if((thread->state & IL_TS_STOPPED) != 0)
+	if((threadState & IL_TS_STOPPED) != 0)
 	{
 		/* The thread is already stopped, so return immediately */
 		result = IL_JOIN_OK;
 	}
-	else if ((thread->state & IL_TS_UNSTARTED) != 0)
+	else if ((threadState & IL_TS_UNSTARTED) != 0)
 	{
 		/* Can't join a thread that hasn't started */
 		result = IL_JOIN_UNSTARTED;
@@ -797,12 +841,15 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 			}
 			else
 			{
+				ILUInt16 selfState;
+
 				/* Unlock the foreign thread */
 				_ILMutexUnlock(&(thread->lock));
 
 				/* Put ourselves into the "wait/sleep/join" state */
 				_ILMutexLock(&(self->lock));
-				if((self->state & (IL_TS_ABORT_REQUESTED)) != 0)
+				selfState = self->state;
+				if((selfState & (IL_TS_ABORT_REQUESTED)) != 0)
 				{
 					/* The current thread is aborted */
 					_ILMutexUnlock(&(self->lock));
@@ -811,7 +858,8 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 					_ILMutexUnlock(&(thread->lock));
 					return IL_JOIN_ABORTED;
 				}
-				self->state |= IL_TS_WAIT_SLEEP_JOIN;
+				selfState |= IL_TS_WAIT_SLEEP_JOIN;
+				self->state = selfState;
 				_ILMutexUnlock(&(self->lock));
 
 				result = _ILWakeupWait(&(self->wakeup), ms, (void **)0);
@@ -835,24 +883,28 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 				/* Remove ourselves from the "wait/sleep/join" state,
 				and check for a pending interrupt */
 				_ILMutexLock(&(self->lock));
-				if((self->state & IL_TS_INTERRUPTED) != 0)
+
+				selfState = self->state;
+				if((selfState & IL_TS_INTERRUPTED) != 0)
 				{
 					result = IL_JOIN_INTERRUPTED;
 				}
-				self->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
-				
+				selfState &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
+				self->state = selfState;
 				/* Check and process any pending suspend request */
 				if ((thread->state & IL_TS_SUSPEND_REQUESTED) != 0)
 				{
-					thread->state &= ~IL_TS_SUSPEND_REQUESTED;
-					thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
-					thread->resumeRequested = 0;
-
 					/* Unlock the thread object prior to suspending */
 					_ILMutexUnlock(&(self->lock));
 
 					/* Lock down the foreign thread again */
 					_ILMutexLock(&(thread->lock));
+
+					threadState = thread->state;
+					threadState &= ~IL_TS_SUSPEND_REQUESTED;
+					threadState |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
+					thread->state = threadState;
+					thread->resumeRequested = 0;
 
 					/* Remove ourselves from the foreign thread's join queue */
 					_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
@@ -897,18 +949,22 @@ int ILThreadGetBackground(ILThread *thread)
 void ILThreadSetBackground(ILThread *thread, int flag)
 {
 	int change = 0;
+	ILUInt16 threadState;
 
 	/* Lock down the thread object */
 	_ILMutexLock(&(thread->lock));
 
+	threadState = thread->state;
+
 	/* Change the background state of the thread */
 	if(flag)
 	{
-		if(!(thread->state & IL_TS_BACKGROUND))
+		if(!(threadState & IL_TS_BACKGROUND))
 		{
-			thread->state |= IL_TS_BACKGROUND;
-			
-			if(!(thread->state & (IL_TS_UNSTARTED | IL_TS_STOPPED)))
+			threadState |= IL_TS_BACKGROUND;
+			thread->state = threadState;
+
+			if(!(threadState & (IL_TS_UNSTARTED | IL_TS_STOPPED)))
 			{
 				_ILThreadAdjustCount(0, 1);
 			}
@@ -916,12 +972,13 @@ void ILThreadSetBackground(ILThread *thread, int flag)
 	}
 	else
 	{
-		if((thread->state & IL_TS_BACKGROUND))
+		if((threadState & IL_TS_BACKGROUND))
 		{
-			thread->state &= ~IL_TS_BACKGROUND;
+			threadState &= ~IL_TS_BACKGROUND;
+			thread->state = threadState;
 			change = -1;
 
-			if(!(thread->state & (IL_TS_UNSTARTED | IL_TS_STOPPED)))
+			if(!(threadState & (IL_TS_UNSTARTED | IL_TS_STOPPED)))
 			{
 				_ILThreadAdjustCount(0, -1);
 			}
@@ -982,29 +1039,33 @@ int ILThreadSleep(ILUInt32 ms)
 {
 	ILThread *thread = _ILThreadGetSelf();
 	int result;
+	ILUInt16 threadState;
 
 	/* Lock down the thread */
 	_ILMutexLock(&(thread->lock));
 
-	/* Bail out if the current thread is aborted or interrupted */
+	threadState = thread->state;
 
-	if (thread->state & (IL_TS_ABORT_REQUESTED))
+	/* Bail out if the current thread is aborted or interrupted */
+	if(threadState & (IL_TS_ABORT_REQUESTED))
 	{
 		_ILMutexUnlock(&(thread->lock));
 		
 		return IL_WAIT_ABORTED;
 	}
-	else if (thread->state & IL_TS_INTERRUPTED)
+	else if (threadState & IL_TS_INTERRUPTED)
 	{
-		thread->state &= ~(IL_TS_INTERRUPTED);
-		
+		threadState &= ~(IL_TS_INTERRUPTED);
+		thread->state = threadState;
+
 		_ILMutexUnlock(&(thread->lock));
 
 		return IL_WAIT_INTERRUPTED;
 	}
 
 	/* Put the thread into the "wait/sleep/join" state */
-	thread->state |= IL_TS_WAIT_SLEEP_JOIN;
+	threadState |= IL_TS_WAIT_SLEEP_JOIN;
+	thread->state = threadState;
 
 	/* Unlock the thread to allow others to access it */
 	_ILMutexUnlock(&(thread->lock));
@@ -1029,24 +1090,26 @@ int ILThreadSleep(ILUInt32 ms)
 	/* Lock down the thread again */
 	_ILMutexLock(&(thread->lock));
 
-	if (thread->state & (IL_TS_ABORT_REQUESTED))
+	threadState = thread->state;
+	if(threadState & (IL_TS_ABORT_REQUESTED))
 	{
 		result = IL_WAIT_ABORTED;
 	}
-	else if (thread->state & IL_TS_INTERRUPTED)
+	else if(threadState & IL_TS_INTERRUPTED)
 	{
 		result = IL_WAIT_INTERRUPTED;
 	}
 
 	/* Exit from the "wait/sleep/join" and "interrupted" states */
-	thread->state &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
+	threadState &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
 
 	/* Did someone else ask us to suspend? */
-	if((thread->state & IL_TS_SUSPEND_REQUESTED) != 0)
+	if((threadState & IL_TS_SUSPEND_REQUESTED) != 0)
 	{
 		/* Suspend the current thread */
-		thread->state &= ~IL_TS_SUSPEND_REQUESTED;
-		thread->state |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
+		threadState &= ~IL_TS_SUSPEND_REQUESTED;
+		threadState |= IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF;
+		thread->state = threadState;
 		thread->resumeRequested = 0;
 
 		/* Unlock the thread object prior to suspending */
@@ -1058,6 +1121,8 @@ int ILThreadSleep(ILUInt32 ms)
 		/* We are resumed, and the thread object is already unlocked */
 		return result;
 	}
+
+	thread->state = threadState;
 
 	/* Unlock the thread and exit */
 	_ILMutexUnlock(&(thread->lock));

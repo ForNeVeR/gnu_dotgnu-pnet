@@ -104,6 +104,18 @@ static int EventSignal(ILWaitHandle *waitHandle)
 }
 
 /*
+ * The WaitHandleVtable for events
+ */
+static const _ILWaitHandleVtable _ILWaitEventVtable =
+{
+	IL_WAIT_EVENT,
+	(ILWaitCloseFunc)EventClose,
+	(ILWaitRegisterFunc)EventRegister,
+	(ILWaitUnregisterFunc)EventUnregister,
+	(ILWaitSignalFunc)EventSignal
+};
+
+/*
  * Creates and returns a new wait event.
  *
  * @param manualReset  If false (0), the event automatically resets itself
@@ -125,11 +137,7 @@ ILWaitHandle *ILWaitEventCreate(int manualReset, int initialState)
 	_ILMutexCreate(&(event->parent.lock));
 
 	/* setup event callbacks */
-	event->parent.kind = IL_WAIT_EVENT;
-	event->parent.closeFunc = (ILWaitCloseFunc)EventClose;	
-	event->parent.registerFunc = (ILWaitRegisterFunc)EventRegister;
-	event->parent.unregisterFunc = (ILWaitUnregisterFunc)EventUnregister;
-	event->parent.signalFunc = (ILWaitSignalFunc)EventSignal;
+	event->parent.vtable = &_ILWaitEventVtable;
 
 	_ILWakeupQueueCreate(&(event->queue));
 

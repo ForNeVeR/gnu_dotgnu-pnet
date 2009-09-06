@@ -328,8 +328,8 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
 
 		result = IL_WAITREG_ACQUIRED;
 
-		if (mutex->parent.kind == IL_WAIT_MUTEX
-			|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+		if (_ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_MUTEX
+			|| _ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_NAMED_MUTEX)
 		{
 			/* Newly aquired mutex so add it to the wakeup's owned mutex list */
 
@@ -376,8 +376,8 @@ static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 	{
 		if(--(mutex->count) == 0)
 		{
-			if (mutex->parent.kind == IL_WAIT_MUTEX
-				|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+			if (_ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_MUTEX
+				|| _ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_NAMED_MUTEX)
 			{
 				RemoveMutexFromWakeup(mutex, wakeup);
 			}
@@ -392,8 +392,8 @@ static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 	}
 	else if (mutex->owner == wakeup && mutex->count == 1)
 	{
-		if (mutex->parent.kind == IL_WAIT_MUTEX
-			|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+		if (_ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_MUTEX
+			|| _ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_NAMED_MUTEX)
 		{
 			/* Newly aquired mutex so add it to the wakeup's owned mutex list */
 			AddMutexToWakeup(mutex, wakeup);		
@@ -409,6 +409,30 @@ static int MutexSignal(ILWaitHandle *waitHandle)
 	return ILWaitMutexRelease(waitHandle) > 0;
 }
 
+/*
+ * The WaitHandleVtable for mutexes
+ */
+static const _ILWaitHandleVtable _ILWaitMutexVtable =
+{
+	IL_WAIT_MUTEX,
+	(ILWaitCloseFunc)MutexClose,
+	(ILWaitRegisterFunc)MutexRegister,
+	(ILWaitUnregisterFunc)MutexUnregister,
+	(ILWaitSignalFunc)MutexSignal
+};
+
+/*
+ * The WaitHandleVtable for named mutexes
+ */
+static const _ILWaitHandleVtable _ILWaitMutexNamedVtable =
+{
+	IL_WAIT_NAMED_MUTEX,
+	(ILWaitCloseFunc)MutexCloseNamed,
+	(ILWaitRegisterFunc)MutexRegister,
+	(ILWaitUnregisterFunc)MutexUnregister,
+	(ILWaitSignalFunc)MutexSignal
+};
+
 ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 {
 	ILWaitMutex *mutex;
@@ -420,12 +444,8 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
 	}
 
 	/* Initialize the mutex */
+	mutex->parent.vtable = &_ILWaitMutexVtable;
 	_ILMutexCreate(&(mutex->parent.lock));
-	mutex->parent.kind = IL_WAIT_MUTEX;
-	mutex->parent.closeFunc = (ILWaitCloseFunc)MutexClose;
-	mutex->parent.registerFunc = (ILWaitRegisterFunc)MutexRegister;
-	mutex->parent.unregisterFunc = (ILWaitUnregisterFunc)MutexUnregister;
-	mutex->parent.signalFunc = MutexSignal;
 
 	if(initiallyOwned)
 	{
@@ -527,12 +547,8 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	}
 
 	/* Initialize the mutex */
+	mutex->parent.parent.vtable = &_ILWaitMutexNamedVtable;
 	_ILMutexCreate(&(mutex->parent.parent.lock));
-	mutex->parent.parent.kind = IL_WAIT_NAMED_MUTEX;
-	mutex->parent.parent.closeFunc = (ILWaitCloseFunc)MutexCloseNamed;
-	mutex->parent.parent.registerFunc = (ILWaitRegisterFunc)MutexRegister;
-	mutex->parent.parent.unregisterFunc = (ILWaitUnregisterFunc)MutexUnregister;
-	mutex->parent.parent.signalFunc = MutexSignal;
 	if(initiallyOwned)
 	{
 		mutex->parent.owner = &((_ILThreadGetSelf())->wakeup);
@@ -574,7 +590,7 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 	wakeup = &_ILThreadGetSelf()->wakeup;
 
 	/* Determine what to do based on the mutex's state */
-	if((mutex->parent.kind & IL_WAIT_MUTEX) == 0)
+	if((_ILWaitHandle_kind(&(mutex->parent)) & IL_WAIT_MUTEX) == 0)
 	{
 		/* This isn't actually a mutex */
 		result = IL_WAITMUTEX_RELEASE_FAIL;
@@ -589,8 +605,8 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 		/* The count has returned to zero, so find something
 		   else to give the ownership of the mutex to */
 
-		if (mutex->parent.kind == IL_WAIT_MUTEX
-			|| mutex->parent.kind == IL_WAIT_NAMED_MUTEX)
+		if (_ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_MUTEX
+			|| _ILWaitHandle_kind(&(mutex->parent)) == IL_WAIT_NAMED_MUTEX)
 		{
 			RemoveMutexFromWakeup(mutex, wakeup);
 		}
@@ -638,6 +654,18 @@ static int MonitorClose(ILWaitMonitor *monitor)
 	return IL_WAITCLOSE_FREE;
 }
 
+/*
+ * The WaitHandleVtable for wait monitors
+ */
+static const _ILWaitHandleVtable _ILWaitMonitorVtable =
+{
+	IL_WAIT_MONITOR,
+	(ILWaitCloseFunc)MonitorClose,
+	(ILWaitRegisterFunc)MutexRegister,
+	(ILWaitUnregisterFunc)MutexUnregister,
+	(ILWaitSignalFunc)MutexSignal
+};
+
 ILWaitHandle *ILWaitMonitorCreate(void)
 {
 	ILWaitMonitor *monitor;
@@ -649,13 +677,8 @@ ILWaitHandle *ILWaitMonitorCreate(void)
 	}
 
 	/* Initialize the monitor fields */
+	monitor->parent.parent.vtable = &_ILWaitMonitorVtable;
 	_ILMutexCreate(&(monitor->parent.parent.lock));
-	monitor->parent.parent.kind = IL_WAIT_MONITOR;
-	monitor->parent.parent.closeFunc = (ILWaitCloseFunc)MonitorClose;
-	monitor->parent.parent.registerFunc = (ILWaitRegisterFunc)MutexRegister;
-	monitor->parent.parent.unregisterFunc =
-			(ILWaitUnregisterFunc)MutexUnregister;
-	monitor->parent.parent.signalFunc = MutexSignal;
 	monitor->parent.owner = 0;
 	monitor->parent.count = 0;
 	monitor->waiters = 0;
@@ -703,7 +726,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 	++monitor->waiters;
 
 	/* Determine what to do based on the monitor's state */
-	if(monitor->parent.parent.kind != IL_WAIT_MONITOR)
+	if(_ILWaitHandle_kind(&(monitor->parent.parent)) != IL_WAIT_MONITOR)
 	{
 		/* This isn't actually a monitor */
 		result = 0;
@@ -801,7 +824,7 @@ static IL_INLINE int PrivateWaitMonitorPulse(ILWaitHandle *handle, int all)
 	_ILMutexLock(&(monitor->parent.parent.lock));
 
 	/* Determine what to do based on the monitor's state */
-	if(monitor->parent.parent.kind != IL_WAIT_MONITOR)
+	if(_ILWaitHandle_kind(&(monitor->parent.parent)) != IL_WAIT_MONITOR)
 	{
 		/* This isn't actually a monitor */
 		result = 0;

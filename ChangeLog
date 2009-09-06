@@ -1,3 +1,34 @@
+2009-09-06  Klaus Treichel  <ktreichel@web.de>
+
+	* support/thr_defs.h: Add note for how to change a thread's state.
+	Add IL_THREAD_ERR_ABORTED to the threading error codes.
+	Change the member state in the ILThread to ILUInt16.
+	Add IL_TS_INTERRUPTED_OR_ABORT_REQUESTED to the thread state masks.
+	Add the ILWaitHandleVtable sructure to hold the members common to all
+	waithandles of one kind.
+	Replace the members common to waithandles of one kind with a reference
+	to a ILWaitHandleVtable sructure.
+	Add macros for accessing the members of a ILWaitHandle.
+
+	* support/thread.c: Change the thread's state modification according
+	to the new note in support/thr_defs.h.
+
+	* support/wait.c: Change the thread's state modification according
+	to the new note in support/thr_defs.h.
+	Use the new macros for accessing the waithandle	members now.
+
+	* support/wait_event.c: Define the waithandle vtable for events and
+	store a reference in the new event's waithandle vtable.
+
+	* support/wait_mutex.c: Define the waithandle vtables for wait mutexes,
+	named wait mutexes and wait monitors and store a reference to the
+	corresponding vtable in the new waithandle's vtable.
+	Use the new macros for accessing the waithandle	members now.
+
+	* support/wait_mutex.h: Change the thread's state modification according
+	to the new note in support/thr_defs.h.
+	Use the new macros for accessing the waithandle	members now.
+
 2009-09-05  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/convert.c (ConvertMethod): Unlock the metadata here if the

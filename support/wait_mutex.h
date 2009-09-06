@@ -57,23 +57,26 @@ static IL_INLINE int ILWaitMutexFastEnter(ILThread *thread, ILWaitHandle *handle
 	 * entered (not just *any* monitor like with MS.NET) is
 	 * locked.  Currently, PNET uses the first option.
 	 */
-	if ((thread->state & (IL_TS_ABORT_REQUESTED)) != 0
-		|| (thread->state & (IL_TS_INTERRUPTED)) != 0)
+	if ((thread->state & (IL_TS_INTERRUPTED_OR_ABORT_REQUESTED)) != 0)
 	{
+		ILUInt16 threadState;
+
 		_ILMutexLock(&thread->lock);
 
-		if ((thread->state & (IL_TS_ABORT_REQUESTED)) != 0)
+		threadState = thread->state;
+		if ((threadState & (IL_TS_ABORT_REQUESTED)) != 0)
 		{
 			result = IL_WAIT_ABORTED;
 		}
-		else if ((thread->state & (IL_TS_INTERRUPTED)) != 0)
+		else if ((threadState & (IL_TS_INTERRUPTED)) != 0)
 		{
 			result = IL_WAIT_INTERRUPTED;
 		}
 		
 		_ILWakeupCancelInterrupt(&(thread->wakeup));
-		thread->state &= ~(IL_TS_INTERRUPTED);
-		
+		threadState &= ~(IL_TS_INTERRUPTED);
+		thread->state = threadState;
+
 		_ILMutexUnlock(&thread->lock);
 	}
 
@@ -99,7 +102,7 @@ static IL_INLINE int ILWaitMutexFastRelease(ILThread *thread, ILWaitHandle *hand
 	int result;
 
 	/* Determine what to do based on the mutex's state */
-	if((mutex->parent.kind & IL_WAIT_MUTEX) == 0)
+	if((_ILWaitHandle_kind(&(mutex->parent)) & IL_WAIT_MUTEX) == 0)
 	{
 		/* This isn't actually a mutex */
 		result = IL_WAITMUTEX_RELEASE_FAIL;

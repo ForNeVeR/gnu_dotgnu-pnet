@@ -63,29 +63,32 @@ struct _tagILInterruptContext
 #endif
 
 #if defined(USE_INTERRUPT_BASED_CHECKS)
-#if (defined(HAVE_SETJMP) || defined(HAVE_SETJMP_H)) \
+#if defined(HAVE_SETJMP_H)
+#include <setjmp.h>
+#endif
+#if (defined(HAVE_SIGSETJMP) || defined(HAVE_SETJMP_H)) && \
+	defined(HAVE_SIGLONGJMP)
+#define IL_SETJMP(buf) sigsetjmp(buf, 1)
+#define IL_LONGJMP(buf, arg) siglongjmp(buf, arg)
+#define IL_JMP_BUFFER sigjmp_buf
+#elif (defined(HAVE_SETJMP) || defined(HAVE_SETJMP_H)) \
 	&& defined(HAVE_LONGJMP)
+/*
+ * NOTE: Posix doesn't specify if the signal mask is saved and restored
+ * using these functions.
+ * You have to check carefully if the signalmask is saved and restored
+ * because this is needed for using longjump pretty safe from inside of a
+ * signal handler.
+ */
+#define IL_SETJMP(buf)			 setjmp(buf)
+#define IL_LONGJMP(buf, arg)	longjmp(buf, arg)
+#define IL_JMP_BUFFER jmp_buf
+#else
+#undef USE_INTERRUPT_BASED_CHECKS
+#endif
+#endif
 
-	#include <setjmp.h>
-
-	#if defined(HAVE_SIGSETJMP) && defined(HAVE_SIGLONGJMP)
-		#define IL_SETJMP(buf) \
-			sigsetjmp(buf, 1)
-
-		#define IL_LONGJMP(buf, arg) \
-			siglongjmp(buf, arg)
-
-		#define IL_JMP_BUFFER sigjmp_buf
-	#else
-		#define IL_SETJMP(buf) \
-			setjmp(buf)
-
-		#define IL_LONGJMP(buf, arg) \
-			longjmp(buf, arg)
-
-		#define IL_JMP_BUFFER jmp_buf
-	#endif
-
+#if defined(USE_INTERRUPT_BASED_CHECKS)
 	#if defined(WIN32) && !(defined(__CYGWIN32__) || defined(__CYGWIN))
 		#define IL_INTERRUPT_SUPPORTS 1
 		#define IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS 1
@@ -117,8 +120,6 @@ struct _tagILInterruptContext
 			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
 		#endif
 	#endif
-
-#endif
 #endif
 
 #endif /* _INTERRUPT_H */

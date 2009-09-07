@@ -1,3 +1,14 @@
+2009-09-07  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add check for the functions _setjmp, _lingjmp and
+	__sigsetjmp (which is the actual implementation of sigsetjmp on linux).
+
+	* support/interrupt.h: Fix the selection of sigsetjmp where sigsetjmp
+	is actually a macro (using __sigsetjmp) and not found by configure.
+
+	* support/interrupt_posix.c: Remove the definition of __USE_GNU as
+	this is handled by configure now.
+
 2009-09-06  Klaus Treichel  <ktreichel@web.de>
 
 	* support/thr_defs.h: Add note for how to change a thread's state.

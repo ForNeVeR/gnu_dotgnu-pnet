@@ -31,10 +31,6 @@
 extern	"C" {
 #endif
 
-#if defined(linux) || defined(__linux) || defined(__linux__)
-	#define __USE_GNU
-#endif
-
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
 	#include <sys/ucontext.h>
 

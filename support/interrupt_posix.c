@@ -81,6 +81,9 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 #elif defined(IL_INTERRUPT_HAVE_X86_64_CONTEXT)
 	ucontext_t *uc;
 	uc = (ucontext_t *)ctx;
+#elif defined(IL_INTERRUPT_HAVE_ARM_CONTEXT)
+	ucontext_t *uc;
+	uc = (ucontext_t *)ctx;
 #endif
 
 	thread = _ILThreadGetSelf();
@@ -139,6 +142,26 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 	context.Rsp = uc->uc_mcontext.gregs[REG_RSP];
 
 	context.instructionAddress = (void *)context.Rip;
+#elif defined(IL_INTERRUPT_HAVE_ARM_CONTEXT)
+	context.R0 = uc->uc_mcontext.arm_r0;
+	context.R1 = uc->uc_mcontext.arm_r1;
+	context.R2 = uc->uc_mcontext.arm_r2;
+	context.R3 = uc->uc_mcontext.arm_r3;
+	context.R4 = uc->uc_mcontext.arm_r4;
+	context.R5 = uc->uc_mcontext.arm_r5;
+	context.R6 = uc->uc_mcontext.arm_r6;
+	context.R7 = uc->uc_mcontext.arm_r7;
+	context.R8 = uc->uc_mcontext.arm_r8;
+	context.R9 = uc->uc_mcontext.arm_r9;
+	context.R10 = uc->uc_mcontext.arm_r10;
+
+	context.Rfp = uc->uc_mcontext.arm_fp;
+	context.Rip = uc->uc_mcontext.arm_ip;
+	context.Rsp = uc->uc_mcontext.arm_sp;
+	context.Rlr = uc->uc_mcontext.arm_lr;
+	context.Rpc = uc->uc_mcontext.arm_pc;
+
+	context.instructionAddress = (void *)context.Rpc;
 #else
 	context.instructionAddress = 0;
 #endif

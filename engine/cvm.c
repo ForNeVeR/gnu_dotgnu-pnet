@@ -114,6 +114,9 @@ extern	"C" {
 	#define VM_CGOTO_BREAKNOEND(val) X86_64_CGOTO(pc)
 	
 #elif defined(CVM_ARM) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define REGISTER_ASM_ARM 1
+
     #define REGISTER_ASM_PC(x)              register x asm ("r4")
     #define REGISTER_ASM_STACK(x)           register x asm ("r5")
     #define REGISTER_ASM_FRAME(x)           register x asm ("r6")
@@ -260,6 +263,24 @@ extern	"C" {
 				pc = (unsigned char *)thread->interruptContext.R12; \
 				stacktop = (CVMWord *)thread->interruptContext.R14; \
 				frame = (CVMWord *)thread->interruptContext.R15; \
+			} \
+			while (0);
+	#elif defined(IL_INTERRUPT_HAVE_ARM_CONTEXT) && defined(REGISTER_ASM_ARM)
+		/*
+		 * If the interrupt subsystem can provide us the arm registers
+		 * at the time of interrupt then we don't need to save anything
+		 */
+		#define INTERRUPT_BACKUP_FRAME()
+		#define INTERRUPT_BACKUP_PC_STACKTOP_FRAME()
+
+		/* We can restore locals directly from the register state
+		   at the time of interrupt */
+		#define INTERRUPT_RESTORE_FROM_THREAD() \
+			do \
+			{ \
+				pc = (unsigned char *)thread->interruptContext.R4; \
+				stacktop = (CVMWord *)thread->interruptContext.R5; \
+				frame = (CVMWord *)thread->interruptContext.R6; \
 			} \
 			while (0);
 	#else

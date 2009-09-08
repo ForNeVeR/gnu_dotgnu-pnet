@@ -89,6 +89,36 @@ struct _tagILInterruptContext
 	ILUInt64	Rsp;
 };
 
+#elif defined(__arm) || defined(__arm__)
+
+struct _tagILInterruptContext
+{
+	int type;
+	
+	void *memoryAddress;
+	void *instructionAddress;
+
+	/* General purpose registers */
+	unsigned long R0;
+	unsigned long R1;
+	unsigned long R2;
+	unsigned long R3;
+	unsigned long R4;
+	unsigned long R5;
+	unsigned long R6;
+	unsigned long R7;
+	unsigned long R8;
+	unsigned long R9;
+	unsigned long R10;
+
+	/* Control registers */
+	unsigned long Rfp;
+	unsigned long Rip;
+	unsigned long Rsp;
+	unsigned long Rlr;
+	unsigned long Rpc;
+};
+
 #else
 
 struct _tagILInterruptContext
@@ -159,6 +189,8 @@ struct _tagILInterruptContext
 				#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
 			#elif defined(__x86_64__) || defined(__x86_64) 
 				#define IL_INTERRUPT_HAVE_X86_64_CONTEXT 1
+			#elif defined(__arm) || defined(__arm__)
+				#define IL_INTERRUPT_HAVE_ARM_CONTEXT 1
 			#endif
 		#endif
 	#endif

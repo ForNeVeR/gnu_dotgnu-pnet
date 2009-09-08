@@ -61,6 +61,7 @@ extern	"C" {
 
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT) || \
 	defined(IL_INTERRUPT_HAVE_X86_64_CONTEXT) || \
+	defined(IL_INTERRUPT_HAVE_ARM_CONTEXT) || \
 	!defined(__GNUC__) || defined(IL_NO_ASM)
 
 #if defined(IL_INTERRUPT_SUPPORTS_ILLEGAL_MEMORY_ACCESS)	

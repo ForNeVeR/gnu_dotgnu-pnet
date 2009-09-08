@@ -239,16 +239,9 @@ extern	"C" {
 		#define INTERRUPT_RESTORE_FROM_THREAD() \
 			do \
 			{ \
-				volatile int tempreg; \
-				tempreg = thread->interruptContext.Ebx; \
-				__asm__ __volatile__ \
-				( "mov %0, %%ebx;" : : "m"(tempreg) ); \
-				tempreg = thread->interruptContext.Edi; \
-				__asm__ __volatile__ \
-				( "mov %0, %%edi;" : : "m"(tempreg) ); \
-				tempreg = thread->interruptContext.Esi; \
-				__asm__ __volatile__ \
-				( "mov %0, %%esi;" : : "m"(tempreg) ); \
+				pc = (unsigned char *)thread->interruptContext.Esi; \
+				stacktop = (CVMWord *)thread->interruptContext.Edi; \
+				frame = (CVMWord *)thread->interruptContext.Ebx; \
 			} \
 			while (0);
 	#elif defined(IL_INTERRUPT_HAVE_X86_64_CONTEXT) && defined(REGISTER_ASM_X86_64)

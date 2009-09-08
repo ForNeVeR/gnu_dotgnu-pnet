@@ -2,6 +2,8 @@
 
 	* engine/cvm.c: Add support for restoring the interpreter state after
 	returnining to the interpreter from a longjmp for X86_64.
+	Change restoring the interpreter register variables after returning to
+	the interpreter from a lngjmp for x86.
 
 	* engine/engine.h: Add x86_64 to the platforms that support interrupt
 	based exception handling.

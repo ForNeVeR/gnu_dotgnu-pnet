@@ -1,3 +1,17 @@
+2009-09-08  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.c: Add support for restoring the interpreter state after
+	returnining to the interpreter from a longjmp for X86_64.
+
+	* engine/engine.h: Add x86_64 to the platforms that support interrupt
+	based exception handling.
+
+	* support/interrupt.h: Add the declaration of the interrupt context for
+	x86_64.
+
+	* support/interrupt_posix.c (__sigaction_handler): Copy the information
+	from the signal context to the interrupt context for x86_64 now too.
+
 2009-09-07  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add check for the functions _setjmp, _lingjmp and

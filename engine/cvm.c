@@ -90,6 +90,9 @@ extern	"C" {
 		return ILMemCmp(dst, src, len);
 	}
 #elif defined(CVM_X86_64) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define REGISTER_ASM_X86_64 1
+
 	/* 16 registers - so we can avoid using esi, edi and ebx. */
 	#define REGISTER_ASM_PC(x)              register x asm("r12")
 	#define REGISTER_ASM_STACK(x)           register x asm("r14") 
@@ -246,6 +249,24 @@ extern	"C" {
 				tempreg = thread->interruptContext.Esi; \
 				__asm__ __volatile__ \
 				( "mov %0, %%esi;" : : "m"(tempreg) ); \
+			} \
+			while (0);
+	#elif defined(IL_INTERRUPT_HAVE_X86_64_CONTEXT) && defined(REGISTER_ASM_X86_64)
+		/*
+		 * If the interrupt subsystem can provide us the x86_64 registers
+		 * at the time of interrupt then we don't need to save anything
+		 */
+		#define INTERRUPT_BACKUP_FRAME()
+		#define INTERRUPT_BACKUP_PC_STACKTOP_FRAME()
+
+		/* We can restore locals directly from the register state
+		   at the time of interrupt */
+		#define INTERRUPT_RESTORE_FROM_THREAD() \
+			do \
+			{ \
+				pc = (unsigned char *)thread->interruptContext.R12; \
+				stacktop = (CVMWord *)thread->interruptContext.R14; \
+				frame = (CVMWord *)thread->interruptContext.R15; \
 			} \
 			while (0);
 	#else

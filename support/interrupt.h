@@ -50,6 +50,45 @@ struct _tagILInterruptContext
 	unsigned int Esp;
 };
 
+#elif defined(__x86_64__) || defined(__x86_64) 
+
+/*
+ * Note: The SysV ABI specifies that the long type is 64 bits wide.
+ * On 64 bit Windows the long datatype is still 32 bits wide.
+ * So we have to use ILUInt64 for the general purpose registers to be
+ * portable.
+ * We don't save the xmm and floating point registers in the context
+ * for now.
+ */
+struct _tagILInterruptContext
+{
+	int type;
+	
+	void *memoryAddress;
+	void *instructionAddress;
+
+	/* General purpose registers */
+	ILUInt64	Rax;
+	ILUInt64	Rbx;
+	ILUInt64	Rcx;
+	ILUInt64	Rdx;
+	ILUInt64	Rsi;
+	ILUInt64	Rdi;
+	ILUInt64	R8;
+	ILUInt64	R9;
+	ILUInt64	R10;
+	ILUInt64	R11;
+	ILUInt64	R12;
+	ILUInt64	R13;
+	ILUInt64	R14;
+	ILUInt64	R15;
+
+	/* Control registers */
+	ILUInt64	Rbp;
+	ILUInt64	Rip;
+	ILUInt64	Rsp;
+};
+
 #else
 
 struct _tagILInterruptContext
@@ -115,9 +154,12 @@ struct _tagILInterruptContext
 			#define IL_INTERRUPT_SUPPORTS_INT_OVERFLOW 1
 		#endif
 
-		#if (defined(__i386) || defined(__i386__)) \
-			&& defined(HAVE_SIGACTION) && defined(HAVE_SYS_UCONTEXT_H)
-			#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
+		#if defined(HAVE_SIGACTION) && defined(HAVE_SYS_UCONTEXT_H)
+			#if (defined(__i386) || defined(__i386__))
+				#define IL_INTERRUPT_HAVE_X86_CONTEXT 1
+			#elif defined(__x86_64__) || defined(__x86_64) 
+				#define IL_INTERRUPT_HAVE_X86_64_CONTEXT 1
+			#endif
 		#endif
 	#endif
 #endif

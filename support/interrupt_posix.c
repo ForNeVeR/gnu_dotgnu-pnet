@@ -62,6 +62,9 @@ extern	"C" {
 	#if !defined(REG_ESP) && defined(ESP)
 		#define REG_ESP ESP
 	#endif
+
+#elif defined(IL_INTERRUPT_HAVE_X86_64_CONTEXT)
+	#include <sys/ucontext.h>
 #endif
 
 #if defined(IL_INTERRUPT_SUPPORTS)
@@ -73,6 +76,9 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 	ILThread *thread;
 	ILInterruptContext context;
 #if defined(IL_INTERRUPT_HAVE_X86_CONTEXT)
+	ucontext_t *uc;
+	uc = (ucontext_t *)ctx;
+#elif defined(IL_INTERRUPT_HAVE_X86_64_CONTEXT)
 	ucontext_t *uc;
 	uc = (ucontext_t *)ctx;
 #endif
@@ -111,6 +117,28 @@ static void __sigaction_handler(int signo, siginfo_t *info, void *ctx)
 	#endif
 	
 	context.instructionAddress = (void *)context.Eip;
+#elif defined(IL_INTERRUPT_HAVE_X86_64_CONTEXT)
+	/* Integer registers */
+	context.Rax = uc->uc_mcontext.gregs[REG_RAX];
+	context.Rbx = uc->uc_mcontext.gregs[REG_RBX];
+	context.Rcx = uc->uc_mcontext.gregs[REG_RCX];
+	context.Rdx = uc->uc_mcontext.gregs[REG_RDX];
+	context.Rdi = uc->uc_mcontext.gregs[REG_RDI];
+	context.Rsi = uc->uc_mcontext.gregs[REG_RSI];
+	context.R8 = uc->uc_mcontext.gregs[REG_R8];
+	context.R9 = uc->uc_mcontext.gregs[REG_R9];
+	context.R10 = uc->uc_mcontext.gregs[REG_R10];
+	context.R11 = uc->uc_mcontext.gregs[REG_R11];
+	context.R12 = uc->uc_mcontext.gregs[REG_R12];
+	context.R13 = uc->uc_mcontext.gregs[REG_R13];
+	context.R14 = uc->uc_mcontext.gregs[REG_R14];
+	context.R15 = uc->uc_mcontext.gregs[REG_R15];
+
+	context.Rbp = uc->uc_mcontext.gregs[REG_RBP];
+	context.Rip = uc->uc_mcontext.gregs[REG_RIP];
+	context.Rsp = uc->uc_mcontext.gregs[REG_RSP];
+
+	context.instructionAddress = (void *)context.Rip;
 #else
 	context.instructionAddress = 0;
 #endif

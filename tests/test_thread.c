@@ -20,6 +20,7 @@
 
 #include "ilunit.h"
 #include "../support/thr_defs.h"
+#include "../support/interlocked.h"
 #include "il_thread.h"
 #include "il_gc.h"
 #if HAVE_UNISTD_H
@@ -1096,6 +1097,384 @@ static void thread_counts(void *arg)
 		/* The GC thread doesn't start until needed so numBackground can be 0 */
 		/* Currently there is one background thread (the finalizer thread) */
 		ILUnitFailed("background thread count has not returned to 0 or 1");
+	}
+}
+
+static void interlocked_exchange(void *arg)
+{
+	volatile ILInt32 value;
+	ILInt32 result;
+	int haveError;
+
+	haveError = 0;
+	value = 0;
+	result = ILInterlockedExchange(&value, 5);
+	if(result != 0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedExchange");
+		ILUnitFailMessage("Expected 0 but was %i", result);
+	}
+	if(value != 5)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect value set in ILInterlockedExchange");
+		ILUnitFailMessage("Expected 5 but was %i", value);
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
+static void interlocked_exchange_pointers(void *arg)
+{
+	void * volatile value;
+	void * result;
+	int haveError;
+
+	haveError = 0;
+	value = 0;
+	result = ILInterlockedExchangePointers(&value, (void *)5);
+	if(result != 0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedExchangePointers");
+		ILUnitFailMessage("Expected 0 but was %p", result);
+	}
+	if(value != (void *)5)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect value set in ILInterlockedExchangePointers");
+		ILUnitFailMessage("Expected 5 but was %p", value);
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
+static void interlocked_compare_and_exchange(void *arg)
+{
+	volatile ILInt32 value;
+	ILInt32 result;
+	int haveError;
+
+	haveError = 0;
+	value = 0;
+	result = ILInterlockedCompareAndExchange(&value, 5, 0);
+	if(result != 0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Expected 0 but was %i", result);
+	}
+	if(value != 5)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Expected 5 but was %i", value);
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
+static void interlocked_compare_and_exchange_fail(void *arg)
+{
+	volatile ILInt32 value;
+	ILInt32 result;
+	int haveError;
+
+	haveError = 0;
+	value = 0;
+	result = ILInterlockedCompareAndExchange(&value, 5, 1);
+	if(result != 0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Expected 0 but was %i", result);
+	}
+	if(value != 0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Expected 0 but was %i", value);
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
+static void interlocked_compare_and_exchange_pointers(void *arg)
+{
+	void * volatile value;
+	void * result;
+	int haveError;
+
+	haveError = 0;
+	value = 0;
+	result = ILInterlockedCompareAndExchangePointers(&value, (void *)5, (void *)0);
+	if(result != 0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Expected 0 but was %p", result);
+	}
+	if(value != (void *)5)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Expected 5 but was %p", value);
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
+static void interlocked_compare_and_exchange_pointers_fail(void *arg)
+{
+	void * volatile value;
+	void * result;
+	int haveError;
+
+	haveError = 0;
+	value = 0;
+	result = ILInterlockedCompareAndExchangePointers(&value, (void *)5, (void *)1);
+	if(result != 0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Expected 0 but was %p", result);
+	}
+	if(value != (void *)0)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Expected 5 but was %p", value);
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
+static void interlocked_increment(void *arg)
+{
+	volatile ILInt32 value;
+	ILInt32 result;
+
+	value = 0;
+	result = ILInterlockedIncrement(&value);
+	if(result != 1)
+	{
+		ILUnitFailed("ILInterlockedIncrement returned the wrong result.\n"
+					 "Expected: 1 bus was %i\n", result);
+	}
+	ILUnitAssert(value == 1);
+}
+
+static void interlocked_decrement(void *arg)
+{
+	volatile ILInt32 value;
+	ILInt32 result;
+
+	value = 1;
+	result = ILInterlockedDecrement(&value);
+	if(result != 0)
+	{
+		ILUnitFailed("ILInterlockedDecrement returned the wrong result.\n"
+					 "Expected: 0 bus was %i\n", result);
+	}
+	ILUnitAssert(value == 0);
+}
+
+static void interlocked_add(void *arg)
+{
+	volatile ILInt32 value;
+	ILInt32 result;
+
+	value = 0;
+	result = ILInterlockedAdd(&value, 5);
+	if(result != 5)
+	{
+		ILUnitFailed("ILInterlockedAdd returned the wrong result.\n"
+					 "Expected: 5 bus was %i\n", result);
+	}
+	ILUnitAssert(value == 5);
+}
+
+static void interlocked_sub(void *arg)
+{
+	volatile ILInt32 value;
+	ILInt32 result;
+
+	value = 10;
+	result = ILInterlockedSub(&value, 10);
+	if(result != 0)
+	{
+		ILUnitFailed("ILInterlockedSub returned the wrong result.\n"
+					 "Expected: 0 bus was %i\n", result);
+	}
+	ILUnitAssert(value == 0);
+}
+
+#define _TEST_START_VALUE	0xAAAAAAAA
+#define _TEST_AND_MASK		0x22222222
+#define _TEST_OR_MASK		0x55555555
+#define _TEST_AND_RESULT	(_TEST_START_VALUE & _TEST_AND_MASK)
+#define _TEST_OR_RESULT		(_TEST_START_VALUE | _TEST_OR_MASK)
+
+static void interlocked_and(void *arg)
+{
+	volatile ILUInt32 value;
+
+	value = _TEST_START_VALUE;
+	ILInterlockedAnd(&value, _TEST_AND_MASK);
+	ILUnitAssert(value == _TEST_AND_RESULT);
+}
+
+static void interlocked_or(void *arg)
+{
+	volatile ILUInt32 value;
+
+	value = _TEST_START_VALUE;
+	ILInterlockedOr(&value, _TEST_OR_MASK);
+	ILUnitAssert(value == _TEST_OR_RESULT);
+}
+
+static void _interlocked_thrash_incdec(void *arg)
+{
+	volatile ILInt32 *ref;
+	int counter;
+
+	ref = (ILInt32 *)arg;
+	for(counter = 0; counter < 1000000; ++counter)
+	{
+		ILInterlockedIncrement(ref);
+		ILInterlockedDecrement(ref);
+	}
+}
+
+static void _interlocked_thrash_addsub(void *arg)
+{
+	volatile ILInt32 *ref;
+	int counter;
+
+	ref = (ILInt32 *)arg;
+	for(counter = 0; counter < 1000000; ++counter)
+	{
+		ILInterlockedAdd(ref, 10);
+		ILInterlockedSub(ref, 10);
+	}
+}
+
+static ILInt32 testValue;
+
+static void interlocked_thrash_incdec(void *arg)
+{
+	ILThread *thread1;
+	ILThread *thread2;
+	int rc;
+	int haveError;
+
+	haveError = 0;
+
+	/* Create two threads */
+	thread1 = ILThreadCreate(_interlocked_thrash_incdec, &testValue);
+	if(!thread1)
+	{
+		ILUnitOutOfMemory();
+	}
+	thread2 = ILThreadCreate(_interlocked_thrash_incdec, &testValue);
+	if(!thread2)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Initialize the test value */
+	testValue = 0;
+
+	/* Start the threads */
+	ILThreadStart(thread1);
+	ILThreadStart(thread2);
+
+	if((rc = ILThreadJoin(thread1, 10000)) != IL_JOIN_OK)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Failed to join thread1 with returncode %i", rc);
+	}
+	if((rc = ILThreadJoin(thread2, 10000)) != IL_JOIN_OK)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Failed to join thread2 with returncode %i", rc);
+	}
+
+	ILThreadDestroy(thread1);
+	ILThreadDestroy(thread2);
+
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+	else
+	{
+		ILUnitAssert(testValue == 0);
+	}
+}
+
+static void interlocked_thrash_addsub(void *arg)
+{
+	ILThread *thread1;
+	ILThread *thread2;
+	int rc;
+	int haveError;
+
+	haveError = 0;
+
+	/* Create two threads */
+	thread1 = ILThreadCreate(_interlocked_thrash_addsub, &testValue);
+	if(!thread1)
+	{
+		ILUnitOutOfMemory();
+	}
+	thread2 = ILThreadCreate(_interlocked_thrash_addsub, &testValue);
+	if(!thread2)
+	{
+		ILUnitOutOfMemory();
+	}
+
+	/* Initialize the test value */
+	testValue = 0;
+
+	/* Start the threads */
+	ILThreadStart(thread1);
+	ILThreadStart(thread2);
+
+	if((rc = ILThreadJoin(thread1, 10000)) != IL_JOIN_OK)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Failed to join thread1 with returncode %i", rc);
+	}
+	if((rc = ILThreadJoin(thread2, 10000)) != IL_JOIN_OK)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Failed to join thread2 with returncode %i", rc);
+	}
+
+	ILThreadDestroy(thread1);
+	ILThreadDestroy(thread2);
+
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+	else
+	{
+		ILUnitAssert(testValue == 0);
 	}
 }
 
@@ -2817,6 +3196,25 @@ void ILUnitRegisterTests(void)
 	ILUnitRegisterSuite("Misc Thread Tests");
 	RegisterSimple(thread_other_object);
 	RegisterSimple(thread_counts);
+
+	/*
+	 * Test the interlocked operations.
+	 */
+	ILUnitRegisterSuite("Interlocked operations");
+	RegisterSimple(interlocked_exchange);
+	RegisterSimple(interlocked_exchange_pointers);
+	RegisterSimple(interlocked_compare_and_exchange);
+	RegisterSimple(interlocked_compare_and_exchange_fail);
+	RegisterSimple(interlocked_compare_and_exchange_pointers);
+	RegisterSimple(interlocked_compare_and_exchange_pointers_fail);
+	RegisterSimple(interlocked_increment);
+	RegisterSimple(interlocked_decrement);
+	RegisterSimple(interlocked_add);
+	RegisterSimple(interlocked_sub);
+	RegisterSimple(interlocked_and);
+	RegisterSimple(interlocked_or);
+	RegisterSimple(interlocked_thrash_incdec);
+	RegisterSimple(interlocked_thrash_addsub);
 
 	/*
 	 * Test wait mutex behaviours.

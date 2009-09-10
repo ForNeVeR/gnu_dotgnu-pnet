@@ -24,6 +24,8 @@
 	(ILInterlockedOr): Add x86 version for an atomic bitwise or of two
 	32 bit integers.
 
+	* tests/test_thread.c: Add tests for the interlocked functions.
+
 2009-09-08  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: Add support for restoring the interpreter state after

@@ -1,3 +1,29 @@
+2009-09-10  Klaus Treichel  <ktreichel@web.de>
+
+	Change internal organization of the interlocked functions.
+
+	* support/interlocked.h: Add documentation notes for the implemented
+	functions.
+
+	* support/interlocked_any.h (ILInterlockedAdd): Add generic function
+	for an atomic addition of two 32 bit integers.
+	(ILInterlockedAnd): Add generic function for an atomic bitwise and of
+	two 32 bit integers.
+	(ILInterlockedSub): Add convinience macro for subtraction of two
+	32 bit integers using ILInterlockedAdd.
+	(ILInterlockedOr): Add generic function for an atomic bitwise or of
+	two 32 bit integers.
+	(ILInterlockedIncrement): Change to a macro using ILInterlockedAdd.
+	(ILInterlockedDecrement): Change to a macro using ILInterlockedSub.
+
+	* support/interlocked_x86.h (ILInterlockedIncrement): Change to more
+	general function ILInterlockedAdd with an additional increment value
+	argument.
+	(ILInterlockedAnd): Add x86 version for an atomic bitwise and of two
+	32 bit integers.
+	(ILInterlockedOr): Add x86 version for an atomic bitwise or of two
+	32 bit integers.
+
 2009-09-08  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: Add support for restoring the interpreter state after

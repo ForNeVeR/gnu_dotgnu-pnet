@@ -1,7 +1,7 @@
 /*
  * interlocked_any.h - Generic implementation of interlocked functions
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * Authors: Thong Nguyen (tum@veridicus.com)
  *
@@ -20,128 +20,183 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#if !defined(IL_HAVE_INTERLOCK)
-
-#define IL_HAVE_INTERLOCK 1
-
+#if !defined(IL_HAVE_INTERLOCKED_MEMORYBARRIER)
 /*
-* Flush cache and set a memory barrier.
-*/
+ * Flush cache and set a memory barrier.
+ */
 static IL_INLINE void ILInterlockedMemoryBarrier()
 {
 	ILThreadAtomicStart();
 	ILThreadAtomicEnd();
 }
+#endif /* !defined(IL_HAVE_INTERLOCKED_MEMORYBARRIER) */
 
+#if !defined(IL_HAVE_INTERLOCKED_EXCHANGE)
+/*
+ * Exchange integers.
+ */
+static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
+											   ILInt32 value)
+{
+	ILInt32 retval;
+
+	ILThreadAtomicStart();
+
+	retval = *dest;
+	*dest = value;
+
+	ILThreadAtomicEnd();
+
+	return retval;
+}
+#endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGE) */
+
+#if !defined(IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS)
+/*
+ * Exchange pointers.
+ */
+static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
+													 void *value)
+{
+	void *retval;
+		
+	ILThreadAtomicStart();
+	
+	retval = *dest;
+	*dest = value;
+	
+	ILThreadAtomicEnd();
+	
+	return retval;
+}
+#endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS) */
+
+#if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE)
 /*
  * Compare and exchange two 32bit integers.
  */
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(ILInt32 *destination, ILInt32 value,
-															ILInt32 comparand)
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
+														 ILInt32 value,
+														 ILInt32 comparand)
 {
 	ILInt32 retval;
 	
 	ILThreadAtomicStart();
 	
-	retval = *destination;
+	retval = *dest;
 	
 	if (retval == comparand)
 	{
-		*destination = value;
+		*dest = value;
 	}
 	
 	ILThreadAtomicEnd();
 	
 	return retval;
 }
+#endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE) */
 
+#if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS)
 /*
- * Increment a 32bit integer.
+ * Compare and exchange two pointers.
  */
-static IL_INLINE ILInt32 ILInterlockedIncrement(ILInt32 *destination)
+static IL_INLINE void *ILInterlockedCompareAndExchangePointers(void * volatile *dest,
+															   void *value,
+															   void *comparand)
 {
-	int retval;
+	void *retval;
+		
+	ILThreadAtomicStart();
+	
+	retval = (void *)*dest;
+	
+	if (retval == comparand)
+	{
+		*dest = value;
+	}
+	
+	ILThreadAtomicEnd();
+	
+	return retval;
+}
+#endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS) */
+
+#if !defined(IL_HAVE_INTERLOCKED_ADD)
+/*
+ * Add the two 32bit integers *dest and value and store the result at *dest.
+ */
+static IL_INLINE ILInt32 ILInterlockedAdd(volatile ILInt32 *dest,
+										  ILInt32 value)
+{
+	ILInt32 retval;
 
 	ILThreadAtomicStart();
 
-	retval = ++(*destination);
+	retval = *dest + value;
+	*dest = retval;
 
 	ILThreadAtomicEnd();
 
 	return retval;	
 }
+#endif /* !defined(IL_HAVE_INTERLOCKED_ADD) */
 
+#if !defined(IL_HAVE_INTERLOCKED_SUB)
+/*
+ * Subtract value from *dest and store the result at *dest.
+ */
+#define ILInterlockedSub(dest, value)	ILInterlockedAdd((dest), -(value))
+#if defined(IL_HAVE_INTERLOCKED_ADD)
+#define IL_HAVE_INTERLOCKED_SUB 1
+#endif
+#endif /* !defined(IL_HAVE_INTERLOCKED_SUB) */
+
+#if !defined(IL_HAVE_INTERLOCKED_INCREMENT)
+/*
+ * Increment a 32bit integer.
+ */
+#define ILInterlockedIncrement(dest) ILInterlockedAdd((dest), 1)
+#if defined(IL_HAVE_INTERLOCKED_ADD)
+#define IL_HAVE_INTERLOCKED_INCREMENT 1
+#endif
+#endif /* !defined(IL_HAVE_INTERLOCKED_INCREMENT) */
+
+#if !defined(IL_HAVE_INTERLOCKED_DECREMENT)
 /*
  * Decrement a 32bit integer.
  */
-static IL_INLINE ILInt32 ILInterlockedDecrement(ILInt32 *destination)
-{
-	int retval;
-
-	ILThreadAtomicStart();
-
-	retval = --(*destination);
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
-
-/*
- * Exchange integers.
- */
-static IL_INLINE ILInt32 ILInterlockedExchange(ILInt32 *destination, ILInt32 value)
-{
-	int retval;
-
-	ILThreadAtomicStart();
-
-	retval = *destination;
-	*destination = value;
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
-
-/*
- * Compare and exchange two pointers.
- */
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers(void **destination, void *value,
-																void *comparand)
-{
-	void *retval;
-		
-	ILThreadAtomicStart();
-	
-	retval = *destination;
-	
-	if (retval == comparand)
-	{
-		*destination = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
-
-/*
- * Exchange pointers.
- */
-static IL_INLINE void *ILInterlockedExchangePointers(void **destination, void *value)
-{
-	void *retval;
-		
-	ILThreadAtomicStart();
-	
-	retval = *destination;	
-	*destination = value;
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
-
+#define ILInterlockedDecrement(dest)	ILInterlockedSub((dest), 1)
+#if defined(IL_HAVE_INTERLOCKED_SUB)
+#define IL_HAVE_INTERLOCKED_DECREMENT 1
 #endif
+#endif /* !defined(IL_HAVE_INTERLOCKED_DECREMENT) */
 
+#if !defined(IL_HAVE_INTERLOCKED_AND)
+/*
+ * Atomic bitwise AND of unsigned 32 bit values
+ */
+static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest,
+									   ILUInt32 value)
+{
+	ILThreadAtomicStart();
+
+	*dest &= value;
+
+	ILThreadAtomicEnd();
+}
+#endif /* !defined(IL_HAVE_INTERLOCKED_AND) */
+
+#if !defined(IL_HAVE_INTERLOCKED_OR)
+/*
+ * Atomic bitwise OR of unsigned 32 bit values
+ */
+static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest,
+									  ILUInt32 value)
+{
+	ILThreadAtomicStart();
+
+	*dest |= value;
+
+	ILThreadAtomicEnd();
+}
+#endif /* !defined(IL_HAVE_INTERLOCKED_OR) */

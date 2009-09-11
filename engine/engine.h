@@ -435,7 +435,7 @@ struct _tagILExecThread
 
 	/* Flag of tasks that need to be performed at safe points in 
 	   managed code */	   
-	volatile int	managedSafePointFlags;
+	volatile ILUInt32	managedSafePointFlags;
 
 	/* System.Threading.Thread object */
 	ILObject *clrThread;

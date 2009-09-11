@@ -1,3 +1,25 @@
+2009-09-11  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_call.c (CHECK_MANAGED_BARRIER): Clear the thread's flags
+	by using the new interlocked functions now.
+	(VMCASE(COP_PREFIX_PROFILE_COUNT)): Fix a compiler warning by adding
+	a cast to ILInt32 * for the pointer to the method call counter.
+
+	* engine/engine.h: Change the member mabagedSafepointFlags to ILUInt32
+	to be able to use interlocked functions.
+
+	* engine/jitc.c (ILRuntimeHandleManagedSafePointFlags): Clear the
+	thread's _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND flag by using the new
+	interlocked functions now.
+
+	* engine/lib_thread.c (_IL_Thread_ResetAbort): Clear the thread's
+	_IL_MANAGED_SAFEPOINT_THREAD_ABORT flag by using the new interlocked
+	functions now.
+
+	* engine/thread.c (_ILExecThreadSelfAborting, _ILExecThreadResumeThread,
+	_ILExecThreadSuspendThread, _ILExecThreadAbortThread): Set and clear
+	the managedSafepointFlags by using the new interlocked functions now.
+
 2009-09-10  Klaus Treichel  <ktreichel@web.de>
 
 	Change internal organization of the interlocked functions.

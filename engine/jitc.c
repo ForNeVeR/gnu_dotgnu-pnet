@@ -1646,9 +1646,8 @@ void ILRuntimeHandleManagedSafePointFlags(ILExecThread *thread)
 	}
 	else if(thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND)
 	{
-		ILThreadAtomicStart();
-		thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
-		ILThreadAtomicEnd();
+		ILInterlockedAnd(&(thread->managedSafePointFlags),
+						 ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND);
 		if(ILThreadGetState(thread->supportThread) & IL_TS_SUSPEND_REQUESTED)
 		{
 			_ILExecThreadSuspendThread(thread, thread->supportThread);

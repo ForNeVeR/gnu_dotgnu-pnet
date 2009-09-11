@@ -22,7 +22,7 @@
 
 #include "engine.h"
 #include "lib_defs.h"
-#include "../support/interlocked.h"
+#include "interlocked.h"
 
 #if HAVE_SYS_TYPES_H
 	#include <sys/types.h>
@@ -452,10 +452,8 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
 
 	if (ILThreadAbortReset())
 	{
-		ILThreadAtomicStart();
-		thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT;
-		ILThreadAtomicEnd();
-
+		ILInterlockedAnd(&(thread->managedSafePointFlags),
+						 ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 		thread->aborting = 0;
 #ifdef IL_USE_CVM
 		thread->abortHandlerEndPC = 0;

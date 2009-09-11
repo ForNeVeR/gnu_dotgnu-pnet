@@ -23,6 +23,7 @@
 #include "engine_private.h"
 #include "lib_defs.h"
 #include "interrupt.h"
+#include "interlocked.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -310,11 +311,9 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 			/* Allocate an instance of "ThreadAbortException" and throw */
 			
 			exception = _ILExecThreadNewThreadAbortException(thread, 0);
-			
-			ILThreadAtomicStart();
-			thread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT;
-			ILThreadAtomicEnd();
 
+			ILInterlockedAnd(&(thread->managedSafePointFlags),
+							 ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 			thread->aborting = 1;
 			thread->threadAbortException = 0;
 #ifdef IL_USE_CVM
@@ -364,9 +363,8 @@ void _ILExecThreadResumeThread(ILExecThread *thread, ILThread *supportThread)
 	}
 
 	/* Remove the _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND flag */
-	ILThreadAtomicStart();			
-	execThread->managedSafePointFlags &= ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
-	ILThreadAtomicEnd();
+	ILInterlockedAnd(&(execThread->managedSafePointFlags),
+					 ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND);
 
 	/* Call the threading subsystem's resume */
 	ILThreadResume(supportThread);
@@ -453,9 +451,8 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 		    flags, the engine needs to check the ThreadState after checking the safepoint
 		    flags (see cvm_call.c) */
 
-		ILThreadAtomicStart();			
-		execThread->managedSafePointFlags |= _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND;
-		ILThreadAtomicEnd();
+		ILInterlockedOr(&(execThread->managedSafePointFlags),
+						_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND);
 
 		ILWaitMonitorLeave(monitor);
 
@@ -499,9 +496,8 @@ void _ILExecThreadAbortThread(ILExecThread *thread, ILThread *supportThread)
 	{
 		/* Mark the flag so the thread self aborts when it next returns
 		   to managed code */
-		ILThreadAtomicStart();
-		execThread->managedSafePointFlags |= _IL_MANAGED_SAFEPOINT_THREAD_ABORT;
-		ILThreadAtomicEnd();
+		ILInterlockedOr(&(execThread->managedSafePointFlags),
+						_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 	}
 
 	ILWaitMonitorLeave(monitor);

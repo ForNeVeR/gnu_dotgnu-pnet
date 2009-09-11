@@ -172,7 +172,7 @@ static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
 		"lock;"
 		"andl %1, %0"
 		: "=m" (*dest)
-		: "r" (value), "m" (*dest)
+		: "er" (value), "m" (*dest)
 		: "memory");
 }
 #define IL_HAVE_INTERLOCKED_AND 1
@@ -187,7 +187,7 @@ static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
 		"lock;"
 		"orl %1, %0"
 		: "=m" (*dest)
-		: "r" (value), "m" (*dest)
+		: "er" (value), "m" (*dest)
 		: "memory");
 }
 #define IL_HAVE_INTERLOCKED_OR 1

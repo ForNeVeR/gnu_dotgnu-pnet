@@ -25,6 +25,10 @@
 
 	* support/interlocked_arm.h: Add interlocked functions for arm.
 
+	* support/interlocked_x86.h (ILInterlockedAnd, ILInterlockedOr):  Add
+	the "e" constraint to value so that gcc can use immediates directly
+	instead of having to load them into a register first.
+
 2009-09-10  Klaus Treichel  <ktreichel@web.de>
 
 	Change internal organization of the interlocked functions.

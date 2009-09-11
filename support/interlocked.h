@@ -120,6 +120,7 @@
 /* TODO: implement native interlocked functions for other processors */
 
 #include "interlocked_x86.h"
+#include "interlocked_arm.h"
 #include "interlocked_any.h"
 
 #endif /* _INTERLOCKED_H_ */

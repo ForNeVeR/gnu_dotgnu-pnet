@@ -20,6 +20,11 @@
 	_ILExecThreadSuspendThread, _ILExecThreadAbortThread): Set and clear
 	the managedSafepointFlags by using the new interlocked functions now.
 
+	* support/interlocked.h: Include the file with new interlocked
+	functions for arm.
+
+	* support/interlocked_arm.h: Add interlocked functions for arm.
+
 2009-09-10  Klaus Treichel  <ktreichel@web.de>
 
 	Change internal organization of the interlocked functions.

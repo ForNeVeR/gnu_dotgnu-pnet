@@ -1,3 +1,8 @@
+2009-09-12  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_gc.c (GetGCHandleTable): Fix a bug where a thread could
+	possibly see an uninitialized gcHandles table.
+
 2009-09-11  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_call.c (CHECK_MANAGED_BARRIER): Clear the thread's flags

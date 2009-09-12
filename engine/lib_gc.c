@@ -150,30 +150,28 @@ static ILGCHandleTable *GetGCHandleTable(ILExecThread *_thread)
 		/* Check again because of race conditions. */
 		if(!(process->gcHandles))
 		{
+			ILGCHandleTable *gcHandles;
+
 			/* Disable finalizers here because we hold the process lock.
 			 * Otherwise we might get a deadlock if finalizers are invoked
 			 * the first time and the finalizer thread is created.
 			 */
 			ILGCDisableFinalizers(-1);
-			process->gcHandles = (ILGCHandleTable *)
+			gcHandles = (ILGCHandleTable *)
 				ILGCAllocPersistent(sizeof(ILGCHandleTable));
 			ILGCEnableFinalizers();
-			if(process->gcHandles)
+			if(!gcHandles)
 			{
-				_ILGCHandleTableInit(process->gcHandles);
-				ILMutexLock(process->gcHandles->lock);
+				/* The table could not be allocated so bail out */
+				ILMutexUnlock(process->lock);
+				return 0;
 			}
-		}
-		else
-		{
-			ILMutexLock(process->gcHandles->lock);
+			_ILGCHandleTableInit(gcHandles);
+			process->gcHandles = gcHandles;
 		}
 		ILMutexUnlock(process->lock);
 	}
-	else
-	{
-		ILMutexLock(process->gcHandles->lock);
-	}
+	ILMutexLock(process->gcHandles->lock);
 	return process->gcHandles;
 }
 

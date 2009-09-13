@@ -1,3 +1,16 @@
+2009-09-13  Klaus Treichel  <ktreichel@web.de>
+
+	* support/interlocked.h: Add note about the interlocked functions
+	always available with a leading underscore using a mutex to protect
+	the value.
+
+	* support/interlocked_any.h: Change according to new note in
+	interlocked.h.
+
+	* support/interlocked_x86.h (ILInterlockedExchange,
+	ILInterlockedExchangePointers): Fix these two native implementatios to
+	use the xchg instead of the cmpxchg opcode.
+
 2009-09-12  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_gc.c (GetGCHandleTable): Fix a bug where a thread could

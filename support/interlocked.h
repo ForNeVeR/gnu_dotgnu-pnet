@@ -115,6 +115,12 @@
  * define: IL_HAVE_INTERLOCKED_OR
  *
  * void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
+ *
+ * NOTE: The versions using a mutex to protect the value are generally
+ * available with the same name and a leading underscore.
+ * This is to allow the usage of the version using the mutex even if a
+ * native version is available if propper protection requires the
+ * consistent availability of more than one interlocked function.
  */
 
 /* TODO: implement native interlocked functions for other processors */

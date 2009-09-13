@@ -31,12 +31,11 @@ static IL_INLINE void ILInterlockedMemoryBarrier()
 }
 #endif /* !defined(IL_HAVE_INTERLOCKED_MEMORYBARRIER) */
 
-#if !defined(IL_HAVE_INTERLOCKED_EXCHANGE)
 /*
  * Exchange integers.
  */
-static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
-											   ILInt32 value)
+static IL_INLINE ILInt32 _ILInterlockedExchange(volatile ILInt32 *dest,
+												ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -49,14 +48,16 @@ static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
 
 	return retval;
 }
+#if !defined(IL_HAVE_INTERLOCKED_EXCHANGE)
+#define ILInterlockedExchange(dest, value) \
+		_ILInterlockedExchange((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGE) */
 
-#if !defined(IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS)
 /*
  * Exchange pointers.
  */
-static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
-													 void *value)
+static IL_INLINE void *_ILInterlockedExchangePointers(void * volatile *dest,
+													  void *value)
 {
 	void *retval;
 		
@@ -69,15 +70,17 @@ static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
 	
 	return retval;
 }
+#if !defined(IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS)
+#define ILInterlockedExchangePointers(dest, value) \
+		_ILInterlockedExchangePointers((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS) */
 
-#if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE)
 /*
  * Compare and exchange two 32bit integers.
  */
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
-														 ILInt32 value,
-														 ILInt32 comparand)
+static IL_INLINE ILInt32 _ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
+														  ILInt32 value,
+														  ILInt32 comparand)
 {
 	ILInt32 retval;
 	
@@ -94,15 +97,17 @@ static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
 	
 	return retval;
 }
+#if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE)
+#define ILInterlockedCompareAndExchange(dest, value, comparand) \
+		_ILInterlockedCompareAndExchange((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE) */
 
-#if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS)
 /*
  * Compare and exchange two pointers.
  */
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers(void * volatile *dest,
-															   void *value,
-															   void *comparand)
+static IL_INLINE void *_ILInterlockedCompareAndExchangePointers(void * volatile *dest,
+																void *value,
+																void *comparand)
 {
 	void *retval;
 		
@@ -119,14 +124,16 @@ static IL_INLINE void *ILInterlockedCompareAndExchangePointers(void * volatile *
 	
 	return retval;
 }
+#if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS)
+#define ILInterlockedCompareAndExchangePointers(dest, value, comparand) \
+		_ILInterlockedCompareAndExchangePointers((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS) */
 
-#if !defined(IL_HAVE_INTERLOCKED_ADD)
 /*
  * Add the two 32bit integers *dest and value and store the result at *dest.
  */
-static IL_INLINE ILInt32 ILInterlockedAdd(volatile ILInt32 *dest,
-										  ILInt32 value)
+static IL_INLINE ILInt32 _ILInterlockedAdd(volatile ILInt32 *dest,
+										   ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -139,44 +146,54 @@ static IL_INLINE ILInt32 ILInterlockedAdd(volatile ILInt32 *dest,
 
 	return retval;	
 }
+#if !defined(IL_HAVE_INTERLOCKED_ADD)
+#define ILInterlockedAdd(dest, value)	_ILInterlockedAdd((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_ADD) */
 
-#if !defined(IL_HAVE_INTERLOCKED_SUB)
 /*
  * Subtract value from *dest and store the result at *dest.
  */
-#define ILInterlockedSub(dest, value)	ILInterlockedAdd((dest), -(value))
+#define _ILInterlockedSub(dest, value)	_ILInterlockedAdd((dest), -(value))
+#if !defined(IL_HAVE_INTERLOCKED_SUB)
 #if defined(IL_HAVE_INTERLOCKED_ADD)
+#define ILInterlockedSub(dest, value)	ILInterlockedAdd((dest), -(value))
 #define IL_HAVE_INTERLOCKED_SUB 1
+#else
+#define ILInterlockedSub(dest, value)	_ILInterlockedSub((dest), (value))
 #endif
 #endif /* !defined(IL_HAVE_INTERLOCKED_SUB) */
 
-#if !defined(IL_HAVE_INTERLOCKED_INCREMENT)
 /*
  * Increment a 32bit integer.
  */
-#define ILInterlockedIncrement(dest) ILInterlockedAdd((dest), 1)
+#define _ILInterlockedIncrement(dest)	_ILInterlockedAdd((dest), 1)
+#if !defined(IL_HAVE_INTERLOCKED_INCREMENT)
 #if defined(IL_HAVE_INTERLOCKED_ADD)
+#define ILInterlockedIncrement(dest)	ILInterlockedAdd((dest), 1)
 #define IL_HAVE_INTERLOCKED_INCREMENT 1
+#else
+#define ILInterlockedIncrement(dest)	_ILInterlockedIncrement((dest))
 #endif
 #endif /* !defined(IL_HAVE_INTERLOCKED_INCREMENT) */
 
-#if !defined(IL_HAVE_INTERLOCKED_DECREMENT)
 /*
  * Decrement a 32bit integer.
  */
-#define ILInterlockedDecrement(dest)	ILInterlockedSub((dest), 1)
+#define _ILInterlockedDecrement(dest)	_ILInterlockedSub((dest), 1)
+#if !defined(IL_HAVE_INTERLOCKED_DECREMENT)
 #if defined(IL_HAVE_INTERLOCKED_SUB)
+#define ILInterlockedDecrement(dest)	ILInterlockedSub((dest), 1)
 #define IL_HAVE_INTERLOCKED_DECREMENT 1
+#else
+#define ILInterlockedDecrement(dest)	_ILInterlockedDecrement((dest))
 #endif
 #endif /* !defined(IL_HAVE_INTERLOCKED_DECREMENT) */
 
-#if !defined(IL_HAVE_INTERLOCKED_AND)
 /*
  * Atomic bitwise AND of unsigned 32 bit values
  */
-static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest,
-									   ILUInt32 value)
+static IL_INLINE void _ILInterlockedAnd(volatile ILUInt32 *dest,
+										ILUInt32 value)
 {
 	ILThreadAtomicStart();
 
@@ -184,14 +201,15 @@ static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest,
 
 	ILThreadAtomicEnd();
 }
+#if !defined(IL_HAVE_INTERLOCKED_AND)
+#define ILInterlockedAnd(dest, value)	_ILInterlockedAnd((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_AND) */
 
-#if !defined(IL_HAVE_INTERLOCKED_OR)
 /*
  * Atomic bitwise OR of unsigned 32 bit values
  */
-static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest,
-									  ILUInt32 value)
+static IL_INLINE void _ILInterlockedOr(volatile ILUInt32 *dest,
+									   ILUInt32 value)
 {
 	ILThreadAtomicStart();
 
@@ -199,4 +217,6 @@ static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest,
 
 	ILThreadAtomicEnd();
 }
+#if !defined(IL_HAVE_INTERLOCKED_OR)
+#define ILInterlockedOr(dest, value)	_ILInterlockedOr((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_OR) */

@@ -58,12 +58,10 @@ static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
 
 	__asm__ __volatile__ 
 	(
-		"1:;"
-		"lock;"
-		"cmpxchgl %2, %0;"
-		"jne 1b"
-		: "=m" (*dest), "=a" (retval)
-		: "r" (value), "m" (*dest), "a" (*dest)
+		"xchgl %2, %0;"
+		: "=m" (*dest), "=r" (retval)
+		: "1" (value), "m" (*dest)
+		: "memory"
 	);
 
 	return retval;
@@ -80,16 +78,14 @@ static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
 
 	__asm__ __volatile__ 
 	(
-		"1:;"
-		"lock;"
 #if defined(__x86_64__)
-		"cmpxchgq %2, %0;"
+		"xchgq %2, %0;"
 #else
-		"cmpxchgl %2, %0;"
+		"xchgl %2, %0;"
 #endif
-		"jne 1b"
-		: "=m" (*dest), "=a" (retval)
-		: "r" (value), "m" (*dest), "a" (*dest)
+		: "=m" (*dest), "=r" (retval)
+		: "1" (value), "m" (*dest)
+		: "memory"
 	);
 
 	return retval;

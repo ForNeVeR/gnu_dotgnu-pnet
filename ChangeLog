@@ -1,3 +1,29 @@
+2009-10-11  Klaus Treichel  <ktreichel@web.de>
+
+	* support/Makefile.am: add interlocked_arm.h and interlocked_ppc.h to
+	the sources.
+
+	* support/interlocked.h: Add notes ablut the now available relaxed,
+	acquire, release and full memory order semantics of the available
+	interlocked functions.
+	Include interlocked_ppc.h.
+
+	* support/interlocked_any.h: Add alternative implementations for the
+	interlocked functions if no native implementation is available.
+
+	* support/interlocked_arm.h: Add definitions for the interlocked
+	functions with acquire, release and full semantics.
+
+	* support/interlocked_x86.h: Append _Full to all interlocked functions
+	because lock prefixed functions are a full memory barrier.
+
+	* support/interlocked_ppc.h: Add native interlocked functions for
+	32 bit powerpc.
+
+	* tests/test_thread.c: Add tests for interlocked load and store.
+	Change the interlocked functions in the thrash tests to acquire and
+	release.
+
 2009-09-13  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked.h: Add note about the interlocked functions

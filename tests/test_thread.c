@@ -1100,6 +1100,80 @@ static void thread_counts(void *arg)
 	}
 }
 
+static void interlocked_load(void *arg)
+{
+	volatile ILInt32 value;
+	void * volatile ptrValue;
+	int haveError;
+
+	haveError = 0;
+	value = 1;
+	if(ILInterlockedLoad(&value) != 1)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoad");
+	}
+	if(ILInterlockedLoad_Acquire(&value) != 1)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoad_Acquire");
+	}
+	ptrValue = (void *)1;
+	if(ILInterlockedLoadPointer(&ptrValue) != (void *)1)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadPointer");
+	}
+	if(ILInterlockedLoadPointer_Acquire(&ptrValue) != (void *)1)
+	{
+		haveError = 1;
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadPointer_Acquire");
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
+static void interlocked_store(void *arg)
+{
+	volatile ILInt32 value;
+	void * volatile ptrValue;
+	int haveError;
+
+	haveError = 0;
+	value = 1;
+	ILInterlockedStore(&value, 2);
+	if(value != 2)
+	{
+		haveError = 1;
+		ILUnitFailMessage("ILInterlockedStore doesn't store the correct value");
+	}
+	ILInterlockedStore_Release(&value, 3);
+	if(value != 3)
+	{
+		haveError = 1;
+		ILUnitFailMessage("ILInterlockedStore_Release doesn't store the correct value");
+	}
+	ptrValue = (void *)1;
+	ILInterlockedStorePointer(&ptrValue, (void *)2);
+	if(ptrValue != (void *)2)
+	{
+		haveError = 1;
+		ILUnitFailMessage("ILInterlockedStorePointer doesn't store the correct value");
+	}
+	ILInterlockedStorePointer_Release(&ptrValue, (void *)3);
+	if(ptrValue != (void *)3)
+	{
+		haveError = 1;
+		ILUnitFailMessage("ILInterlockedStorePointer_Release doesn't store the correct value");
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+}
+
 static void interlocked_exchange(void *arg)
 {
 	volatile ILInt32 value;
@@ -1354,8 +1428,8 @@ static void _interlocked_thrash_incdec(void *arg)
 	ref = (ILInt32 *)arg;
 	for(counter = 0; counter < 1000000; ++counter)
 	{
-		ILInterlockedIncrement(ref);
-		ILInterlockedDecrement(ref);
+		ILInterlockedIncrement_Acquire(ref);
+		ILInterlockedDecrement_Release(ref);
 	}
 }
 
@@ -1367,8 +1441,8 @@ static void _interlocked_thrash_addsub(void *arg)
 	ref = (ILInt32 *)arg;
 	for(counter = 0; counter < 1000000; ++counter)
 	{
-		ILInterlockedAdd(ref, 10);
-		ILInterlockedSub(ref, 10);
+		ILInterlockedAdd_Acquire(ref, 10);
+		ILInterlockedSub_Release(ref, 10);
 	}
 }
 
@@ -3201,6 +3275,8 @@ void ILUnitRegisterTests(void)
 	 * Test the interlocked operations.
 	 */
 	ILUnitRegisterSuite("Interlocked operations");
+	RegisterSimple(interlocked_load);
+	RegisterSimple(interlocked_store);
 	RegisterSimple(interlocked_exchange);
 	RegisterSimple(interlocked_exchange_pointers);
 	RegisterSimple(interlocked_compare_and_exchange);

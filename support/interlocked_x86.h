@@ -25,37 +25,124 @@
 
 #if defined(__GNUC__)
 
+#if defined(__SSE2__) || defined(__sse2__)
+#define _IL_INTERLOCKED_X86_MFENCE	"mfence;"
+#else
+#define _IL_INTERLOCKED_X86_MFENCE	"lock; addl $0,0(%%esp);"
+#endif
+
 /*
  * Flush cache and set a memory barrier.
  */
 static IL_INLINE void ILInterlockedMemoryBarrier()
 {
-#if defined(__SSE2__) || defined(__sse2__)
 	__asm__ __volatile__
 	(
-		"mfence"
+		_IL_INTERLOCKED_X86_MFENCE
 		:::
 		"memory"
 	);
-#else
-	__asm__ __volatile__
-	(
-		"lock; addl $0,0(%%esp)"
-		:::
-		"memory"
-	);
-#endif
 }
 #define IL_HAVE_INTERLOCKED_MEMORYBARRIER 1
 
 /*
- * Exchange two 32 bit integers.
+ * NOTE: All operations on x86 using the lock prefix have full barrier
+ * semantics.
  */
-static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
-											   ILInt32 value)
+
+/*
+ * Load a 32 bit value from a location with acquire semantics.
+ */
+static IL_INLINE ILInt32 ILInterlockedLoad_Acquire(const volatile ILInt32 *dest)
 {
 	ILInt32 retval;
 
+	__asm__ __volatile__ 
+	(
+	    "movl	%1, %0;"
+		_IL_INTERLOCKED_X86_MFENCE
+	    : "=r" (retval)
+	    : "m" (*dest)
+		: "memory"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_LOAD_ACQUIRE
+
+/*
+ * Load a pointer value from a location with acquire semantics.
+ */
+static IL_INLINE void * ILInterlockedLoadPointer_Acquire(void * const volatile *dest)
+{
+	void *retval;
+
+	__asm__ __volatile__ 
+	(
+#if defined(__x86_64__)
+	    "movq	%1, %0;"
+#else
+	    "movl	%1, %0;"
+#endif
+		_IL_INTERLOCKED_X86_MFENCE
+	    : "=r" (retval)
+	    : "m" (*dest)
+		: "memory"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_LOADPOINTER_ACQUIRE
+
+/*
+ * Store a 32 bit value to a location with release semantics.
+ */
+static IL_INLINE void ILInterlockedStore_Release(volatile ILInt32 *dest,
+												 ILInt32 value)
+{
+	__asm__ __volatile__ 
+	(
+		_IL_INTERLOCKED_X86_MFENCE
+		"movl	%1, %0;"
+		: "=m" (*dest)
+		: "er" (value)
+		: "memory"
+	);
+}
+#define IL_HAVE_INTERLOCKED_STORE_RELEASE 1
+
+/*
+ * Store a pointer value to a location with release semantics.
+ */
+static IL_INLINE void ILInterlockedStorePointer_Release(void * volatile *dest,
+														void *value)
+{
+	__asm__ __volatile__ 
+	(
+		_IL_INTERLOCKED_X86_MFENCE
+#if defined(__x86_64__)
+		"movq	%1, %0;"
+#else
+		"movl	%1, %0;"
+#endif
+		: "=m" (*dest)
+		: "er" (value)
+		: "memory"
+	);
+}
+#define IL_HAVE_INTERLOCKED_STOREPOINTER_RELEASE 1
+
+/*
+ * Exchange two 32 bit integers.
+ */
+static IL_INLINE ILInt32 ILInterlockedExchange_Full(volatile ILInt32 *dest,
+													ILInt32 value)
+{
+	ILInt32 retval;
+
+	/*
+	 * NOTE: xchg has an implicit lock if a memory operand is involved.
+	 */
 	__asm__ __volatile__ 
 	(
 		"xchgl %2, %0;"
@@ -66,16 +153,19 @@ static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE 1
+#define IL_HAVE_INTERLOCKED_EXCHANGE_FULL 1
 
 /*
  * Exchange pointers.
  */
-static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
-													 void *value)
+static IL_INLINE void *ILInterlockedExchangePointers_Full(void * volatile *dest,
+														  void *value)
 {
 	void *retval;
 
+	/*
+	 * NOTE: xchg has an implicit lock if a memory operand is involved.
+	 */
 	__asm__ __volatile__ 
 	(
 #if defined(__x86_64__)
@@ -90,7 +180,7 @@ static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_FULL 1
 
 /*
  * Compare and exchange two 32bit integers.
@@ -112,6 +202,30 @@ static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
 	return retval;
 }
 #define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE 1
+
+/*
+ * Compare and exchange two 32bit integers with full semantics.
+ * x86 has full semantics with the lock prefix but gcc might move memory
+ * loads before this statement so we have to add the "memory" clobber here.
+ */
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchange_Full(volatile ILInt32 *dest,
+															  ILInt32 value,
+															  ILInt32 comparand)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__
+	(
+		"lock;"
+		"cmpxchgl %2, %0"
+		: "=m" (*dest), "=a" (retval)
+		: "r" (value), "m" (*dest), "a" (comparand)
+		: "memory"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_FULL 1
 
 /*
  * Compare and exchange two pointers.
@@ -139,10 +253,36 @@ static IL_INLINE void *ILInterlockedCompareAndExchangePointers(void * volatile *
 #define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS 1
 
 /*
+ * Compare and exchange two pointers.
+ */
+static IL_INLINE void *ILInterlockedCompareAndExchangePointers_Full(void * volatile *dest,
+																	void *value,
+																	void *comparand)
+{
+	void *retval;
+
+	__asm__ __volatile__
+	(
+		"lock;"
+#if defined(__x86_64__)
+		"cmpxchgq %2, %0;"
+#else
+		"cmpxchgl %2, %0;"
+#endif
+		: "=m" (*dest), "=a" (retval)
+		: "r" (value), "m" (*dest), "a" (comparand)
+		: "memory"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_FULL 1
+
+/*
  * Add two 32 bit integer values.
  */
-static IL_INLINE ILInt32 ILInterlockedAdd(volatile ILInt32 *dest,
-										 ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedAdd_Full(volatile ILInt32 *dest,
+											   ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -151,17 +291,19 @@ static IL_INLINE ILInt32 ILInterlockedAdd(volatile ILInt32 *dest,
 		"lock;"
 		"xaddl %0, %1"
 		: "=r" (retval), "=m" (*dest)
-		: "0" (value), "m" (*dest) : "memory"
+		: "0" (value), "m" (*dest)
+		: "memory"
 	);
 
 	return retval + value;
 }
-#define IL_HAVE_INTERLOCKED_ADD 1
+#define IL_HAVE_INTERLOCKED_ADD_FULL 1
 
 /*
  * 32bit bitwise AND
  */
-static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedAnd_Full(volatile ILUInt32 *dest,
+											ILUInt32 value)
 {
 	__asm__ __volatile__ 
 	(
@@ -171,12 +313,13 @@ static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
 		: "er" (value), "m" (*dest)
 		: "memory");
 }
-#define IL_HAVE_INTERLOCKED_AND 1
+#define IL_HAVE_INTERLOCKED_AND_FULL 1
 
 /*
  * 32bit bitwise OR
  */
-static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedOr_Full(volatile ILUInt32 *dest,
+										   ILUInt32 value)
 {
 	__asm__ __volatile__ 
 	(
@@ -186,7 +329,7 @@ static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
 		: "er" (value), "m" (*dest)
 		: "memory");
 }
-#define IL_HAVE_INTERLOCKED_OR 1
+#define IL_HAVE_INTERLOCKED_OR_FULL 1
 
 #endif /* defined(__GNUC__) */
 

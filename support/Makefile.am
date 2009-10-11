@@ -33,6 +33,8 @@ libILSupport_a_SOURCES = aes.c \
 						 hb_gc.c \
 						 interlocked.h \
 						 interlocked_any.h \
+						 interlocked_arm.h \
+						 interlocked_ppc.h \
 						 interlocked_x86.h \
 						 intern.c \
 						 interrupt.c \

@@ -171,7 +171,7 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 			   for each class is used.
 			   If there was one extra object created it will be collected by
 			   the garbage collector */
-			ILInterlockedCompareAndExchangePointers((void **)&(classPrivate->clrType), obj, 0);
+			ILInterlockedCompareAndExchangeP((void **)&(classPrivate->clrType), obj, 0);
 		}
 	}
 

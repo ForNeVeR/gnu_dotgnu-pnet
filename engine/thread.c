@@ -312,8 +312,8 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 			
 			exception = _ILExecThreadNewThreadAbortException(thread, 0);
 
-			ILInterlockedAnd(&(thread->managedSafePointFlags),
-							 ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
+			ILInterlockedAndU4(&(thread->managedSafePointFlags),
+							   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 			thread->aborting = 1;
 			thread->threadAbortException = 0;
 #ifdef IL_USE_CVM
@@ -363,8 +363,8 @@ void _ILExecThreadResumeThread(ILExecThread *thread, ILThread *supportThread)
 	}
 
 	/* Remove the _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND flag */
-	ILInterlockedAnd(&(execThread->managedSafePointFlags),
-					 ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND);
+	ILInterlockedAndU4(&(execThread->managedSafePointFlags),
+					   ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND);
 
 	/* Call the threading subsystem's resume */
 	ILThreadResume(supportThread);
@@ -451,8 +451,8 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 		    flags, the engine needs to check the ThreadState after checking the safepoint
 		    flags (see cvm_call.c) */
 
-		ILInterlockedOr(&(execThread->managedSafePointFlags),
-						_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND);
+		ILInterlockedOrU4(&(execThread->managedSafePointFlags),
+						  _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND);
 
 		ILWaitMonitorLeave(monitor);
 
@@ -496,8 +496,8 @@ void _ILExecThreadAbortThread(ILExecThread *thread, ILThread *supportThread)
 	{
 		/* Mark the flag so the thread self aborts when it next returns
 		   to managed code */
-		ILInterlockedOr(&(execThread->managedSafePointFlags),
-						_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
+		ILInterlockedOrU4(&(execThread->managedSafePointFlags),
+						  _IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 	}
 
 	ILWaitMonitorLeave(monitor);

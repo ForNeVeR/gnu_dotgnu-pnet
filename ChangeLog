@@ -1,3 +1,24 @@
+2009-10-28  Klaus Treichel  <ktreichel@web.de>
+
+	* support/interlocked.h, support/interlocked_any.h,
+	support/interlocked_arm.h, support/interlocked_x86.h: Extend interlocked
+	functions to support multiple native types.
+
+	* support/monitor.c: Adjust calls to interlocked functions to the
+	new extended name scheme with type specifier.
+
+	* test/test_thread.c: likewise
+
+	* engine/cvm_call.c: likewise
+
+	* engine/lib_defs.h: likewise
+
+	* engine/lib_object.c: likewise
+
+	* engine/thread.c: likewise
+
+	* engine/lib_thread.c: Use the new interlocked functions where possible.
+
 2009-10-11  Klaus Treichel  <ktreichel@web.de>
 
 	* support/Makefile.am: add interlocked_arm.h and interlocked_ppc.h to

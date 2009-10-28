@@ -351,8 +351,7 @@ static int MonitorPredicate(void *mon)
 
 	monitor = (ILMonitor *)mon;
 	thread = _ILThreadGetSelf();
-	ILInterlockedCompareAndExchangePointers((void **)&(monitor->owner),
-											thread, 0);
+	ILInterlockedCompareAndExchangeP((void **)&(monitor->owner), thread, 0);
 	return (monitor->owner == thread);
 }
 

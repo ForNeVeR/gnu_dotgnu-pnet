@@ -53,130 +53,6 @@ static IL_INLINE void ILInterlockedMemoryBarrier()
 }
 #define IL_HAVE_INTERLOCKED_MEMORYBARRIER 1
 
-/*
- * Load a 32 bit value from a location.
- */
-static IL_INLINE ILInt32 ILInterlockedLoad(const volatile ILInt32 *dest)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__
-	(
-		"\tldr	%0, %1\n"
-		: "=r" (retval)
-		: "m" (*dest)
-	);
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_LOAD 1
-
-static IL_INLINE ILInt32 ILInterlockedLoad_Acquire(const volatile ILInt32 *dest)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__
-	(
-		"\tldr	%0, %1\n"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=r" (retval)
-		: "m" (*dest)
-		: "memory"
-	);
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_LOAD_ACQUIRE 1
-
-/*
- * Load a pointer value from a location.
- */
-static IL_INLINE void *ILInterlockedLoadPointer(void * const volatile *dest)
-{
-	void *retval;
-
-	__asm__ __volatile__
-	(
-		"\tldr	%0, %1\n"
-		: "=r" (retval)
-		: "m" (*dest)
-	);
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_LOADPOINTER 1
-
-static IL_INLINE void *ILInterlockedLoadPointer_Acquire(void * const volatile *dest)
-{
-	void *retval;
-
-	__asm__ __volatile__
-	(
-		"\tldr	%0, %1\n"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=r" (retval)
-		: "m" (*dest)
-		: "memory"
-	);
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_LOADPOINTER_ACQUIRE 1
-
-/*
- * Store a 32 bit value to a location.
- */
-static IL_INLINE void ILInterlockedStore(volatile ILInt32 *dest,
-										 ILInt32 value)
-{
-	__asm__ __volatile__
-	(
-		"\tstr	%1, %0\n"
-		: "=m" (*dest)
-		: "r" (value)
-	);
-}
-#define IL_HAVE_INTERLOCKED_STORE 1
-
-static IL_INLINE void ILInterlockedStore_Release(volatile ILInt32 *dest,
-												 ILInt32 value)
-{
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"\tstr	%1, %0\n"
-		: "=m" (*dest)
-		: "r" (value)
-		: "memory"
-	);
-}
-#define IL_HAVE_INTERLOCKED_STORE_RELEASE 1
-
-/*
- * Store a pointer value to a location.
- */
-static IL_INLINE void ILInterlockedStorePointer(void * volatile *dest,
-												void *value)
-{
-	__asm__ __volatile__
-	(
-		"\tstr	%1, %0\n"
-		: "=m" (*dest)
-		: "r" (value)
-	);
-}
-#define IL_HAVE_INTERLOCKED_STOREPOINTER 1
-
-static IL_INLINE void ILInterlockedStorePointer_Release(void * volatile *dest,
-														void *value)
-{
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"\tstr	%1, %0\n"
-		: "=m" (*dest)
-		: "r" (value)
-		: "memory"
-	);
-}
-#define IL_HAVE_INTERLOCKED_STOREPOINTER_RELEASE 1
-
 #if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || \
 	defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6ZK__) || \
 	defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || \
@@ -190,8 +66,8 @@ static IL_INLINE void ILInterlockedStorePointer_Release(void * volatile *dest,
 /*
  * Exchange two 32 bit integers.
  */
-static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
-											   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedExchangeI4(volatile ILInt32 *dest,
+												 ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -209,10 +85,10 @@ static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
 	);
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4 1
 
-static IL_INLINE ILInt32 ILInterlockedExchange_Acquire(volatile ILInt32 *dest,
-													   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedExchangeI4_Acquire(volatile ILInt32 *dest,
+														 ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -231,10 +107,10 @@ static IL_INLINE ILInt32 ILInterlockedExchange_Acquire(volatile ILInt32 *dest,
 	);
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE_ACQUIRE 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4_ACQUIRE 1
 
-static IL_INLINE ILInt32 ILInterlockedExchange_Release(volatile ILInt32 *dest,
-													   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedExchangeI4_Release(volatile ILInt32 *dest,
+														 ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -253,9 +129,383 @@ static IL_INLINE ILInt32 ILInterlockedExchange_Release(volatile ILInt32 *dest,
 	);
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE_RELEASE 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4_RELEASE 1
 
-static IL_INLINE ILInt32 ILInterlockedExchange_Full(volatile ILInt32 *dest,
+static IL_INLINE ILInt32 ILInterlockedExchangeI4_Full(volatile ILInt32 *dest,
+													  ILInt32 value)
+{
+	ILInt32 retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		"1:"
+		"ldrex  %0, [%3];"
+		"strex  %1, %4, [%3];"
+		"teq            %1, #0;"
+		"bne            1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4_FULL 1
+
+/*
+ * Exchange pointers.
+ */
+static IL_INLINE void *ILInterlockedExchangeP(void * volatile *dest,
+											  void *value)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex  %0, [%3];"
+		"strex  %1, %4, [%3];"
+		"teq        %1, #0;"
+		"bne        1b;"
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP 1
+
+static IL_INLINE void *ILInterlockedExchangeP_Acquire(void * volatile *dest,
+													  void *value)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex  %0, [%3];"
+		"strex  %1, %4, [%3];"
+		"teq        %1, #0;"
+		"bne        1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP_ACQUIRE 1
+
+static IL_INLINE void *ILInterlockedExchangeP_Release(void * volatile *dest,
+													  void *value)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		"1:"
+		"ldrex  %0, [%3];"
+		"strex  %1, %4, [%3];"
+		"teq        %1, #0;"
+		"bne        1b;"
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP_RELEASE 1
+
+static IL_INLINE void *ILInterlockedExchangeP_Full(void * volatile *dest,
+												   void *value)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		"1:"
+		"ldrex  %0, [%3];"
+		"strex  %1, %4, [%3];"
+		"teq        %1, #0;"
+		"bne        1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP_FULL 1
+
+/*
+ * Compare and exchange two 32bit integers.
+ */
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4(volatile ILInt32 *dest,
+														   ILInt32 value,
+														   ILInt32 comparand)
+{
+	ILInt32 retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4 1
+
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Acquire(volatile ILInt32 *dest,
+																   ILInt32 value,
+																   ILInt32 comparand)
+{
+	ILInt32 retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_ACQUIRE 1
+
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Release(volatile ILInt32 *dest,
+																   ILInt32 value,
+																   ILInt32 comparand)
+{
+	ILInt32 retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_RELEASE 1
+
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Full(volatile ILInt32 *dest,
+																ILInt32 value,
+																ILInt32 comparand)
+{
+	ILInt32 retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_FULL 1
+
+/*
+ * Compare and exchange two pointers.
+ */
+static IL_INLINE void *ILInterlockedCompareAndExchangeP(void * volatile *dest,
+														void *value,
+														void *comparand)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP 1
+
+static IL_INLINE void *ILInterlockedCompareAndExchangeP_Acquire(void * volatile *dest,
+																void *value,
+																void *comparand)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_ACQUIRE 1
+
+static IL_INLINE void *ILInterlockedCompareAndExchangeP_Release(void * volatile *dest,
+																void *value,
+																void *comparand)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_RELEASE 1
+
+static IL_INLINE void *ILInterlockedCompareAndExchangeP_Full(void * volatile *dest,
+															 void *value,
+															 void *comparand)
+{
+	void *retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		"1:"
+		"ldrex			%0, [%3];"
+		"teq			%0, %5;"
+		"strexeq	%1, %4, [%3];"
+		"teq			%1, #0;"
+		"bne			1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "r" (value), "Jr" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_FULL 1
+
+/*
+ * Add two 32 bit integer values.
+ */
+static IL_INLINE ILInt32 ILInterlockedAddI4(volatile ILInt32 *dest,
+											ILInt32 value)
+{
+	ILInt32 retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex		%0, [%3];"
+		"add		%0,	%0, %4;"
+		"strex	%1, %0, [%3];"
+		"teq		%1, #0;"
+		"bne		1b;"
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "Jr" (value)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_ADDI4 1
+
+static IL_INLINE ILInt32 ILInterlockedAddI4_Acquire(volatile ILInt32 *dest,
+													ILInt32 value)
+{
+	ILInt32 retval;
+	ILInt32 state;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"ldrex		%0, [%3];"
+		"add		%0,	%0, %4;"
+		"strex	%1, %0, [%3];"
+		"teq		%1, #0;"
+		"bne		1b;"
+		_IL_INTERLOCKED_ARM_MEMORYBARRIER
+		: "=&r" (retval), "=&r" (state), "+m" (*dest)
+		: "r" (dest), "Jr" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_ADDI4_ACQUIRE 1
+
+static IL_INLINE ILInt32 ILInterlockedAddI4_Release(volatile ILInt32 *dest,
 													ILInt32 value)
 {
 	ILInt32 retval;
@@ -265,380 +515,6 @@ static IL_INLINE ILInt32 ILInterlockedExchange_Full(volatile ILInt32 *dest,
 	(
 		_IL_INTERLOCKED_ARM_MEMORYBARRIER
 		"1:"
-		"ldrex  %0, [%3];"
-		"strex  %1, %4, [%3];"
-		"teq            %1, #0;"
-		"bne            1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGE_FULL 1
-
-/*
- * Exchange pointers.
- */
-static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
-													 void *value)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex  %0, [%3];"
-		"strex  %1, %4, [%3];"
-		"teq        %1, #0;"
-		"bne        1b;"
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS 1
-
-static IL_INLINE void *ILInterlockedExchangePointers_Acquire(void * volatile *dest,
-															 void *value)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex  %0, [%3];"
-		"strex  %1, %4, [%3];"
-		"teq        %1, #0;"
-		"bne        1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_ACQUIRE 1
-
-static IL_INLINE void *ILInterlockedExchangePointers_Release(void * volatile *dest,
-															 void *value)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"1:"
-		"ldrex  %0, [%3];"
-		"strex  %1, %4, [%3];"
-		"teq        %1, #0;"
-		"bne        1b;"
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_RELEASE 1
-
-static IL_INLINE void *ILInterlockedExchangePointers_Full(void * volatile *dest,
-														  void *value)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"1:"
-		"ldrex  %0, [%3];"
-		"strex  %1, %4, [%3];"
-		"teq        %1, #0;"
-		"bne        1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_FULL 1
-
-/*
- * Compare and exchange two 32bit integers.
- */
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
-														 ILInt32 value,
-														 ILInt32 comparand)
-{
-	ILInt32 retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE 1
-
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange_Acquire(volatile ILInt32 *dest,
-																 ILInt32 value,
-																 ILInt32 comparand)
-{
-	ILInt32 retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_ACQUIRE 1
-
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange_Release(volatile ILInt32 *dest,
-																 ILInt32 value,
-																 ILInt32 comparand)
-{
-	ILInt32 retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_RELEASE 1
-
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange_Full(volatile ILInt32 *dest,
-															  ILInt32 value,
-															  ILInt32 comparand)
-{
-	ILInt32 retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_FULL 1
-
-/*
- * Compare and exchange two pointers.
- */
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers(void * volatile *dest,
-															   void *value,
-															   void *comparand)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS 1
-
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers_Acquire(void * volatile *dest,
-																	   void *value,
-																	   void *comparand)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_ACQUIRE 1
-
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers_Release(void * volatile *dest,
-																	   void *value,
-																	   void *comparand)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_RELEASE 1
-
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers_Full(void * volatile *dest,
-																	void *value,
-																	void *comparand)
-{
-	void *retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"1:"
-		"ldrex			%0, [%3];"
-		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
-		"teq			%1, #0;"
-		"bne			1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "r" (value), "Jr" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_FULL 1
-
-/*
- * Add two 32 bit integer values.
- */
-static IL_INLINE ILInt32 ILInterlockedAdd(volatile ILInt32 *dest,
-										  ILInt32 value)
-{
-	ILInt32 retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex		%0, [%3];"
-		"add		%0,	%0, %4;"
-		"strex	%1, %0, [%3];"
-		"teq		%1, #0;"
-		"bne		1b;"
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "Jr" (value)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_ADD 1
-
-static IL_INLINE ILInt32 ILInterlockedAdd_Acquire(volatile ILInt32 *dest,
-												  ILInt32 value)
-{
-	ILInt32 retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"ldrex		%0, [%3];"
-		"add		%0,	%0, %4;"
-		"strex	%1, %0, [%3];"
-		"teq		%1, #0;"
-		"bne		1b;"
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		: "=&r" (retval), "=&r" (state), "+m" (*dest)
-		: "r" (dest), "Jr" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_ADD_ACQUIRE 1
-
-static IL_INLINE ILInt32 ILInterlockedAdd_Release(volatile ILInt32 *dest,
-												  ILInt32 value)
-{
-	ILInt32 retval;
-	ILInt32 state;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_ARM_MEMORYBARRIER
-		"1:"
 		"ldrex		%0, [%3];"
 		"add		%0,	%0, %4;"
 		"strex	%1, %0, [%3];"
@@ -651,10 +527,10 @@ static IL_INLINE ILInt32 ILInterlockedAdd_Release(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_ADD_RELEASE 1
+#define IL_HAVE_INTERLOCKED_ADDI4_RELEASE 1
 
-static IL_INLINE ILInt32 ILInterlockedAdd_Full(volatile ILInt32 *dest,
-											   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedAddI4_Full(volatile ILInt32 *dest,
+												 ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -676,13 +552,13 @@ static IL_INLINE ILInt32 ILInterlockedAdd_Full(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_ADD_FULL 1
+#define IL_HAVE_INTERLOCKED_ADDI4_FULL 1
 
 /*
  * Subtract two 32 bit integer values.
  */
-static IL_INLINE ILInt32 ILInterlockedSub(volatile ILInt32 *dest,
-										  ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4(volatile ILInt32 *dest,
+											ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -702,10 +578,10 @@ static IL_INLINE ILInt32 ILInterlockedSub(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB 1
+#define IL_HAVE_INTERLOCKED_SUBI4 1
 
-static IL_INLINE ILInt32 ILInterlockedSub_Acquire(volatile ILInt32 *dest,
-												  ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4_Acquire(volatile ILInt32 *dest,
+													ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -726,10 +602,10 @@ static IL_INLINE ILInt32 ILInterlockedSub_Acquire(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB_ACQUIRE 1
+#define IL_HAVE_INTERLOCKED_SUBI4_ACQUIRE 1
 
-static IL_INLINE ILInt32 ILInterlockedSub_Release(volatile ILInt32 *dest,
-												  ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4_Release(volatile ILInt32 *dest,
+													ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -750,10 +626,10 @@ static IL_INLINE ILInt32 ILInterlockedSub_Release(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB_RELEASE 1
+#define IL_HAVE_INTERLOCKED_SUBI4_RELEASE 1
 
-static IL_INLINE ILInt32 ILInterlockedSub_Full(volatile ILInt32 *dest,
-											   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4_Full(volatile ILInt32 *dest,
+												 ILInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -775,12 +651,13 @@ static IL_INLINE ILInt32 ILInterlockedSub_Full(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB_FULL 1
+#define IL_HAVE_INTERLOCKED_SUBI4_FULL 1
 
 /*
  * 32bit bitwise AND
  */
-static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedAndU4(volatile ILUInt32 *dest,
+										 ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -798,10 +675,10 @@ static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
 		: "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_AND 1
+#define IL_HAVE_INTERLOCKED_ANDU4 1
 
-static IL_INLINE void ILInterlockedAnd_Acquire(volatile ILUInt32 *dest,
-											   ILUInt32 value)
+static IL_INLINE void ILInterlockedAndU4_Acquire(volatile ILUInt32 *dest,
+												 ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -820,10 +697,10 @@ static IL_INLINE void ILInterlockedAnd_Acquire(volatile ILUInt32 *dest,
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_AND_ACQUIRE 1
+#define IL_HAVE_INTERLOCKED_ANDU4_ACQUIRE 1
 
-static IL_INLINE void ILInterlockedAnd_Release(volatile ILUInt32 *dest,
-											   ILUInt32 value)
+static IL_INLINE void ILInterlockedAndU4_Release(volatile ILUInt32 *dest,
+												 ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -842,10 +719,10 @@ static IL_INLINE void ILInterlockedAnd_Release(volatile ILUInt32 *dest,
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_AND_RELEASE 1
+#define IL_HAVE_INTERLOCKED_ANDU4_RELEASE 1
 
-static IL_INLINE void ILInterlockedAnd_Full(volatile ILUInt32 *dest,
-											ILUInt32 value)
+static IL_INLINE void ILInterlockedAndU4_Full(volatile ILUInt32 *dest,
+											  ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -865,12 +742,13 @@ static IL_INLINE void ILInterlockedAnd_Full(volatile ILUInt32 *dest,
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_AND_FULL 1
+#define IL_HAVE_INTERLOCKED_ANDU4_FULL 1
 
 /*
  * 32bit bitwise OR
  */
-static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedOrU4(volatile ILUInt32 *dest,
+										ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -888,9 +766,10 @@ static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
 		: "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_OR 1
+#define IL_HAVE_INTERLOCKED_ORU4 1
 
-static IL_INLINE void ILInterlockedOr_Acquire(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedOrU4_Acquire(volatile ILUInt32 *dest,
+												ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -909,9 +788,10 @@ static IL_INLINE void ILInterlockedOr_Acquire(volatile ILUInt32 *dest, ILUInt32 
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_OR_ACQUIRE 1
+#define IL_HAVE_INTERLOCKED_ORU4_ACQUIRE 1
 
-static IL_INLINE void ILInterlockedOr_Release(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedOrU4_Release(volatile ILUInt32 *dest,
+												ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -930,9 +810,10 @@ static IL_INLINE void ILInterlockedOr_Release(volatile ILUInt32 *dest, ILUInt32 
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_OR_RELEASE 1
+#define IL_HAVE_INTERLOCKED_ORU4_RELEASE 1
 
-static IL_INLINE void ILInterlockedOr_Full(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedOrU4_Full(volatile ILUInt32 *dest,
+											 ILUInt32 value)
 {
 	ILInt32 retval;
 	ILInt32 state;
@@ -952,15 +833,15 @@ static IL_INLINE void ILInterlockedOr_Full(volatile ILUInt32 *dest, ILUInt32 val
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_OR_FULL 1
+#define IL_HAVE_INTERLOCKED_ORU4_FULL 1
 
 #else /* __ARM_ARCH__ <= 5 || __ARM_ARCH_6M__ */
 
 /*
  * Exchange two 32 bit integers.
  */
-static IL_INLINE ILInt32 ILInterlockedExchange_Full(volatile ILInt32 *dest,
-													ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedExchangeI4_Full(volatile ILInt32 *dest,
+													  ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -974,13 +855,13 @@ static IL_INLINE ILInt32 ILInterlockedExchange_Full(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE_FULL 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4_FULL 1
 
 /*
  * Exchange pointers.
  */
-static IL_INLINE void *ILInterlockedExchangePointers_Full(void * volatile *dest,
-														  void *value)
+static IL_INLINE void *ILInterlockedExchangeP_Full(void * volatile *dest,
+												   void *value)
 {
 	void *retval;
 
@@ -994,7 +875,7 @@ static IL_INLINE void *ILInterlockedExchangePointers_Full(void * volatile *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_FULL 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEP_FULL 1
 
 #endif /* __ARM_ARCH__ <= 5  || __ARM_ARCH_6M__ */
 

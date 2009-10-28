@@ -146,7 +146,7 @@ extern	"C" {
 		(&(GetObjectLockWord(thread, obj)))
 
 	#define CompareAndExchangeObjectLockWord(thread, obj, value, comparand) \
-		(ILLockWord)((ILInterlockedCompareAndExchangePointers \
+		(ILLockWord)((ILInterlockedCompareAndExchangeP_Full \
 			((void **)GetObjectLockWordPtr(thread, obj), (void *)value, (void *)comparand)))
 
 #endif

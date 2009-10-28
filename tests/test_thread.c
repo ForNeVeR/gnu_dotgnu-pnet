@@ -1108,26 +1108,26 @@ static void interlocked_load(void *arg)
 
 	haveError = 0;
 	value = 1;
-	if(ILInterlockedLoad(&value) != 1)
+	if(ILInterlockedLoadI4(&value) != 1)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedLoad");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadI4");
 	}
-	if(ILInterlockedLoad_Acquire(&value) != 1)
+	if(ILInterlockedLoadI4_Acquire(&value) != 1)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedLoad_Acquire");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadI4_Acquire");
 	}
 	ptrValue = (void *)1;
-	if(ILInterlockedLoadPointer(&ptrValue) != (void *)1)
+	if(ILInterlockedLoadP(&ptrValue) != (void *)1)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadPointer");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadP");
 	}
-	if(ILInterlockedLoadPointer_Acquire(&ptrValue) != (void *)1)
+	if(ILInterlockedLoadP_Acquire(&ptrValue) != (void *)1)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadPointer_Acquire");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedLoadP_Acquire");
 	}
 	if(haveError)
 	{
@@ -1143,30 +1143,30 @@ static void interlocked_store(void *arg)
 
 	haveError = 0;
 	value = 1;
-	ILInterlockedStore(&value, 2);
+	ILInterlockedStoreI4(&value, 2);
 	if(value != 2)
 	{
 		haveError = 1;
-		ILUnitFailMessage("ILInterlockedStore doesn't store the correct value");
+		ILUnitFailMessage("ILInterlockedStoreI4 doesn't store the correct value");
 	}
-	ILInterlockedStore_Release(&value, 3);
+	ILInterlockedStoreI4_Release(&value, 3);
 	if(value != 3)
 	{
 		haveError = 1;
-		ILUnitFailMessage("ILInterlockedStore_Release doesn't store the correct value");
+		ILUnitFailMessage("ILInterlockedStoreI4_Release doesn't store the correct value");
 	}
 	ptrValue = (void *)1;
-	ILInterlockedStorePointer(&ptrValue, (void *)2);
+	ILInterlockedStoreP(&ptrValue, (void *)2);
 	if(ptrValue != (void *)2)
 	{
 		haveError = 1;
-		ILUnitFailMessage("ILInterlockedStorePointer doesn't store the correct value");
+		ILUnitFailMessage("ILInterlockedStoreP doesn't store the correct value");
 	}
-	ILInterlockedStorePointer_Release(&ptrValue, (void *)3);
+	ILInterlockedStoreP_Release(&ptrValue, (void *)3);
 	if(ptrValue != (void *)3)
 	{
 		haveError = 1;
-		ILUnitFailMessage("ILInterlockedStorePointer_Release doesn't store the correct value");
+		ILUnitFailMessage("ILInterlockedStoreP_Release doesn't store the correct value");
 	}
 	if(haveError)
 	{
@@ -1182,17 +1182,17 @@ static void interlocked_exchange(void *arg)
 
 	haveError = 0;
 	value = 0;
-	result = ILInterlockedExchange(&value, 5);
+	result = ILInterlockedExchangeI4(&value, 5);
 	if(result != 0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedExchange");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedExchangeI4");
 		ILUnitFailMessage("Expected 0 but was %i", result);
 	}
 	if(value != 5)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect value set in ILInterlockedExchange");
+		ILUnitFailMessage("Incorrect value set in ILInterlockedExchangeI4");
 		ILUnitFailMessage("Expected 5 but was %i", value);
 	}
 	if(haveError)
@@ -1209,17 +1209,17 @@ static void interlocked_exchange_pointers(void *arg)
 
 	haveError = 0;
 	value = 0;
-	result = ILInterlockedExchangePointers(&value, (void *)5);
+	result = ILInterlockedExchangeP(&value, (void *)5);
 	if(result != 0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedExchangePointers");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedExchangeP");
 		ILUnitFailMessage("Expected 0 but was %p", result);
 	}
 	if(value != (void *)5)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect value set in ILInterlockedExchangePointers");
+		ILUnitFailMessage("Incorrect value set in ILInterlockedExchangeP");
 		ILUnitFailMessage("Expected 5 but was %p", value);
 	}
 	if(haveError)
@@ -1236,17 +1236,17 @@ static void interlocked_compare_and_exchange(void *arg)
 
 	haveError = 0;
 	value = 0;
-	result = ILInterlockedCompareAndExchange(&value, 5, 0);
+	result = ILInterlockedCompareAndExchangeI4(&value, 5, 0);
 	if(result != 0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangeI4");
 		ILUnitFailMessage("Expected 0 but was %i", result);
 	}
 	if(value != 5)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangeI4");
 		ILUnitFailMessage("Expected 5 but was %i", value);
 	}
 	if(haveError)
@@ -1263,17 +1263,17 @@ static void interlocked_compare_and_exchange_fail(void *arg)
 
 	haveError = 0;
 	value = 0;
-	result = ILInterlockedCompareAndExchange(&value, 5, 1);
+	result = ILInterlockedCompareAndExchangeI4(&value, 5, 1);
 	if(result != 0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangeI4");
 		ILUnitFailMessage("Expected 0 but was %i", result);
 	}
 	if(value != 0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchange");
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangeI4");
 		ILUnitFailMessage("Expected 0 but was %i", value);
 	}
 	if(haveError)
@@ -1290,17 +1290,17 @@ static void interlocked_compare_and_exchange_pointers(void *arg)
 
 	haveError = 0;
 	value = 0;
-	result = ILInterlockedCompareAndExchangePointers(&value, (void *)5, (void *)0);
+	result = ILInterlockedCompareAndExchangeP(&value, (void *)5, (void *)0);
 	if(result != 0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangeP");
 		ILUnitFailMessage("Expected 0 but was %p", result);
 	}
 	if(value != (void *)5)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangeP");
 		ILUnitFailMessage("Expected 5 but was %p", value);
 	}
 	if(haveError)
@@ -1317,17 +1317,17 @@ static void interlocked_compare_and_exchange_pointers_fail(void *arg)
 
 	haveError = 0;
 	value = 0;
-	result = ILInterlockedCompareAndExchangePointers(&value, (void *)5, (void *)1);
+	result = ILInterlockedCompareAndExchangeP(&value, (void *)5, (void *)1);
 	if(result != 0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Incorrect return value of ILInterlockedCompareAndExchangeP");
 		ILUnitFailMessage("Expected 0 but was %p", result);
 	}
 	if(value != (void *)0)
 	{
 		haveError = 1;
-		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangePointers");
+		ILUnitFailMessage("Incorrect value set in ILInterlockedCompareAndExchangeP");
 		ILUnitFailMessage("Expected 5 but was %p", value);
 	}
 	if(haveError)
@@ -1342,10 +1342,10 @@ static void interlocked_increment(void *arg)
 	ILInt32 result;
 
 	value = 0;
-	result = ILInterlockedIncrement(&value);
+	result = ILInterlockedIncrementI4(&value);
 	if(result != 1)
 	{
-		ILUnitFailed("ILInterlockedIncrement returned the wrong result.\n"
+		ILUnitFailed("ILInterlockedIncrementI4 returned the wrong result.\n"
 					 "Expected: 1 bus was %i\n", result);
 	}
 	ILUnitAssert(value == 1);
@@ -1357,10 +1357,10 @@ static void interlocked_decrement(void *arg)
 	ILInt32 result;
 
 	value = 1;
-	result = ILInterlockedDecrement(&value);
+	result = ILInterlockedDecrementI4(&value);
 	if(result != 0)
 	{
-		ILUnitFailed("ILInterlockedDecrement returned the wrong result.\n"
+		ILUnitFailed("ILInterlockedDecrementI4 returned the wrong result.\n"
 					 "Expected: 0 bus was %i\n", result);
 	}
 	ILUnitAssert(value == 0);
@@ -1372,10 +1372,10 @@ static void interlocked_add(void *arg)
 	ILInt32 result;
 
 	value = 0;
-	result = ILInterlockedAdd(&value, 5);
+	result = ILInterlockedAddI4(&value, 5);
 	if(result != 5)
 	{
-		ILUnitFailed("ILInterlockedAdd returned the wrong result.\n"
+		ILUnitFailed("ILInterlockedAddI4 returned the wrong result.\n"
 					 "Expected: 5 bus was %i\n", result);
 	}
 	ILUnitAssert(value == 5);
@@ -1387,10 +1387,10 @@ static void interlocked_sub(void *arg)
 	ILInt32 result;
 
 	value = 10;
-	result = ILInterlockedSub(&value, 10);
+	result = ILInterlockedSubI4(&value, 10);
 	if(result != 0)
 	{
-		ILUnitFailed("ILInterlockedSub returned the wrong result.\n"
+		ILUnitFailed("ILInterlockedSubI4 returned the wrong result.\n"
 					 "Expected: 0 bus was %i\n", result);
 	}
 	ILUnitAssert(value == 0);
@@ -1407,7 +1407,7 @@ static void interlocked_and(void *arg)
 	volatile ILUInt32 value;
 
 	value = _TEST_START_VALUE;
-	ILInterlockedAnd(&value, _TEST_AND_MASK);
+	ILInterlockedAndU4(&value, _TEST_AND_MASK);
 	ILUnitAssert(value == _TEST_AND_RESULT);
 }
 
@@ -1416,7 +1416,7 @@ static void interlocked_or(void *arg)
 	volatile ILUInt32 value;
 
 	value = _TEST_START_VALUE;
-	ILInterlockedOr(&value, _TEST_OR_MASK);
+	ILInterlockedOrU4(&value, _TEST_OR_MASK);
 	ILUnitAssert(value == _TEST_OR_RESULT);
 }
 
@@ -1428,8 +1428,8 @@ static void _interlocked_thrash_incdec(void *arg)
 	ref = (ILInt32 *)arg;
 	for(counter = 0; counter < 1000000; ++counter)
 	{
-		ILInterlockedIncrement_Acquire(ref);
-		ILInterlockedDecrement_Release(ref);
+		ILInterlockedIncrementI4_Acquire(ref);
+		ILInterlockedDecrementI4_Release(ref);
 	}
 }
 
@@ -1441,8 +1441,8 @@ static void _interlocked_thrash_addsub(void *arg)
 	ref = (ILInt32 *)arg;
 	for(counter = 0; counter < 1000000; ++counter)
 	{
-		ILInterlockedAdd_Acquire(ref, 10);
-		ILInterlockedSub_Release(ref, 10);
+		ILInterlockedAddI4_Acquire(ref, 10);
+		ILInterlockedSubI4_Release(ref, 10);
 	}
 }
 

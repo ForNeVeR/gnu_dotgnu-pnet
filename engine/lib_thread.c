@@ -63,7 +63,7 @@ ILInt32 _IL_Interlocked_CompareExchange_Riii
 						 ILInt32 value,
 						 ILInt32 comparand)
 {
-	return ILInterlockedCompareAndExchange(location1, value, comparand);
+	return ILInterlockedCompareAndExchangeI4_Full(location1, value, comparand);
 }
 
 /*
@@ -71,7 +71,7 @@ ILInt32 _IL_Interlocked_CompareExchange_Riii
 */
 ILInt32 _IL_Interlocked_Increment_Ri(ILExecThread *thread, ILInt32 *location)
 {
-	return ILInterlockedIncrement(location);
+	return ILInterlockedIncrementI4_Full(location);
 }
 
 
@@ -80,7 +80,7 @@ ILInt32 _IL_Interlocked_Increment_Ri(ILExecThread *thread, ILInt32 *location)
 */
 ILInt32 _IL_Interlocked_Decrement_Ri(ILExecThread *thread, ILInt32 *location)
 {
-	return ILInterlockedDecrement(location);
+	return ILInterlockedDecrementI4_Full(location);
 }
 
 /*
@@ -89,7 +89,7 @@ ILInt32 _IL_Interlocked_Decrement_Ri(ILExecThread *thread, ILInt32 *location)
 ILInt32 _IL_Interlocked_Exchange_Rii(ILExecThread *thread,
 									 ILInt32 *location, ILInt32 value)
 {
-	return ILInterlockedExchange(location, value);
+	return ILInterlockedExchangeI4_Full(location, value);
 }
 
 /*************************************/
@@ -101,13 +101,7 @@ ILInt32 _IL_Interlocked_Exchange_Rii(ILExecThread *thread,
  */
 ILInt64 _IL_Interlocked_Increment_Rl(ILExecThread *thread, ILInt64 *location)
 {
-	ILInt64 value;
-	ILThreadAtomicStart();
-	ILMemCpy(&value, location, sizeof(ILInt64));
-	++value;
-	ILMemCpy(location, &value, sizeof(ILInt64));
-	ILThreadAtomicEnd();
-	return value;
+	return ILInterlockedIncrementI8_Full(location);
 }
 
 /*
@@ -115,13 +109,7 @@ ILInt64 _IL_Interlocked_Increment_Rl(ILExecThread *thread, ILInt64 *location)
  */
 ILInt64 _IL_Interlocked_Decrement_Rl(ILExecThread *thread, ILInt64 *location)
 {
-	ILInt64 value;
-	ILThreadAtomicStart();
-	ILMemCpy(&value, location, sizeof(ILInt64));
-	--value;
-	ILMemCpy(location, &value, sizeof(ILInt64));
-	ILThreadAtomicEnd();
-	return value;
+	return ILInterlockedDecrementI8_Full(location);
 }
 
 /*************************************/
@@ -134,21 +122,7 @@ ILInt64 _IL_Interlocked_Decrement_Rl(ILExecThread *thread, ILInt64 *location)
 ILFloat _IL_Interlocked_Exchange_Rff(ILExecThread *thread,
 								     ILFloat *location, ILFloat value)
 {
-#if (SIZEOF_FLOAT == 4)
-	ILInt32 retval;
-
-	/* memcpy to get rid of type-punned pointer warning */
-	retval = ILInterlockedExchange((ILInt32 *)location, *(ILInt32 *)(void *)&value);
-
-	return *(ILFloat *)(void *)&retval;
-#else
-	ILFloat orig;
-	ILThreadAtomicStart();
-	orig = *location;
-	*location = value;
-	ILThreadAtomicEnd();
-	return orig;
-#endif
+	return ILInterlockedExchangeR4_Full(location, value);
 }
 
 /*
@@ -158,23 +132,7 @@ ILFloat _IL_Interlocked_Exchange_Rff(ILExecThread *thread,
 ILFloat _IL_Interlocked_CompareExchange_Rfff(ILExecThread *thread, ILFloat *location1,
 						ILFloat value, ILFloat comparand)
 {
-#if (SIZEOF_FLOAT == 4)
-	ILInt32 retval;
-
-	retval = ILInterlockedCompareAndExchange((ILInt32 *)location1, *((ILInt32 *)(void *)&value), *((ILInt32 *)(void *)&comparand));
-
-	return *(ILFloat *)(void *)&retval;
-#else
-	ILFloat orig;
-	ILThreadAtomicStart();
-	if((orig = *location1) == comparand)
-	{
-		*location1 = value;
-	}
-	ILThreadAtomicEnd();
-
-	return orig;
-#endif
+	return ILInterlockedCompareAndExchangeR4_Full(location1, value, comparand);
 }
 
 /***************************************/
@@ -187,7 +145,8 @@ ILFloat _IL_Interlocked_CompareExchange_Rfff(ILExecThread *thread, ILFloat *loca
 ILObject *_IL_Interlocked_Exchange_RObjectObject
 (ILExecThread *thread, ILObject **location, ILObject *value)
 {
-	return ILInterlockedExchangePointers((void **)location, (void *)value);
+	return (ILObject *)ILInterlockedExchangeP_Full((void **)location,
+												   (void *)value);
 }
 
 /*
@@ -200,7 +159,7 @@ ILObject *_IL_Interlocked_CompareExchange_RObjectObjectObject
 						 ILObject *value,
 						 ILObject *comparand)
 {
-	return (ILObject *)ILInterlockedCompareAndExchangePointers((void **)location1, (void *)value, (void *)comparand);
+	return (ILObject *)ILInterlockedCompareAndExchangeP_Full((void **)location1, (void *)value, (void *)comparand);
 }
 
 /*
@@ -432,7 +391,7 @@ ILBool _IL_Thread_InternalJoin(ILExecThread *thread, ILObject *_this,
  */
 void _IL_Thread_MemoryBarrier(ILExecThread *thread)
 {
-	ILThreadMemoryBarrier();
+	ILInterlockedMemoryBarrier();
 }
 
 /*
@@ -452,8 +411,8 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
 
 	if (ILThreadAbortReset())
 	{
-		ILInterlockedAnd(&(thread->managedSafePointFlags),
-						 ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
+		ILInterlockedAndU4(&(thread->managedSafePointFlags),
+						   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 		thread->aborting = 0;
 #ifdef IL_USE_CVM
 		thread->abortHandlerEndPC = 0;
@@ -648,9 +607,7 @@ ILBool _IL_Thread_CanStartThreads(ILExecThread *_thread)
  */
 ILInt8 _IL_Thread_VolatileRead_Rb(ILExecThread *thread, ILInt8 *address)
 {
-	ILInterlockedMemoryBarrier();
-	
-	return *((volatile ILInt8 *)address);
+	return ILInterlockedLoadI1(address);
 }
 
 /*
@@ -658,9 +615,7 @@ ILInt8 _IL_Thread_VolatileRead_Rb(ILExecThread *thread, ILInt8 *address)
  */
 ILUInt8 _IL_Thread_VolatileRead_RB(ILExecThread *thread, ILUInt8 *address)
 {
-	ILInterlockedMemoryBarrier();
-	
-	return *((volatile ILUInt8 *)address);
+	return ILInterlockedLoadU1(address);
 }
 
 /*
@@ -668,9 +623,7 @@ ILUInt8 _IL_Thread_VolatileRead_RB(ILExecThread *thread, ILUInt8 *address)
  */
 ILInt16 _IL_Thread_VolatileRead_Rs(ILExecThread *thread, ILInt16 *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILInt16 *)address);
+	return ILInterlockedLoadI2(address);
 }
 
 /*
@@ -678,9 +631,7 @@ ILInt16 _IL_Thread_VolatileRead_Rs(ILExecThread *thread, ILInt16 *address)
  */
 ILUInt16 _IL_Thread_VolatileRead_RS(ILExecThread *thread, ILUInt16 *address)
 {
-	ILInterlockedMemoryBarrier();
-	
-	return *((volatile ILUInt16 *)address);
+	return ILInterlockedLoadU2(address);
 }
 
 /*
@@ -688,9 +639,7 @@ ILUInt16 _IL_Thread_VolatileRead_RS(ILExecThread *thread, ILUInt16 *address)
  */
 ILInt32 _IL_Thread_VolatileRead_Ri(ILExecThread *thread, ILInt32 *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILInt32 *)address);
+	return ILInterlockedLoadI4(address);
 }
 
 /*
@@ -698,9 +647,7 @@ ILInt32 _IL_Thread_VolatileRead_Ri(ILExecThread *thread, ILInt32 *address)
  */
 ILUInt32 _IL_Thread_VolatileRead_RI(ILExecThread *thread, ILUInt32 *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILUInt32 *)address);
+	return ILInterlockedLoadU4(address);
 }
 
 /*
@@ -708,9 +655,7 @@ ILUInt32 _IL_Thread_VolatileRead_RI(ILExecThread *thread, ILUInt32 *address)
  */
 ILInt64 _IL_Thread_VolatileRead_Rl(ILExecThread *thread, ILInt64 *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILInt64 *)address);
+	return ILInterlockedLoadI8(address);
 }
 
 /*
@@ -718,9 +663,7 @@ ILInt64 _IL_Thread_VolatileRead_Rl(ILExecThread *thread, ILInt64 *address)
  */
 ILUInt64 _IL_Thread_VolatileRead_RL(ILExecThread *thread, ILUInt64 *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILUInt64 *)address);
+	return ILInterlockedLoadU8(address);
 }
 
 /*
@@ -729,9 +672,7 @@ ILUInt64 _IL_Thread_VolatileRead_RL(ILExecThread *thread, ILUInt64 *address)
 ILNativeInt _IL_Thread_VolatileRead_Rj(ILExecThread *thread,
 									   ILNativeInt *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILNativeInt *)address);
+	return (ILNativeInt)ILInterlockedLoadP((void **)address);
 }
 
 /*
@@ -740,9 +681,7 @@ ILNativeInt _IL_Thread_VolatileRead_Rj(ILExecThread *thread,
 ILNativeUInt _IL_Thread_VolatileRead_RJ(ILExecThread *thread,
 										ILNativeUInt *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILNativeUInt *)address);
+	return (ILNativeUInt)ILInterlockedLoadP((void **)address);
 }
 
 /*
@@ -750,9 +689,7 @@ ILNativeUInt _IL_Thread_VolatileRead_RJ(ILExecThread *thread,
  */
 ILFloat _IL_Thread_VolatileRead_Rf(ILExecThread *thread, ILFloat *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILFloat *)address);
+	return ILInterlockedLoadR4(address);
 }
 
 /*
@@ -760,9 +697,7 @@ ILFloat _IL_Thread_VolatileRead_Rf(ILExecThread *thread, ILFloat *address)
  */
 ILDouble _IL_Thread_VolatileRead_Rd(ILExecThread *thread, ILDouble *address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return *((volatile ILDouble *)address);
+	return ILInterlockedLoadR8(address);
 }
 
 /*
@@ -771,9 +706,7 @@ ILDouble _IL_Thread_VolatileRead_Rd(ILExecThread *thread, ILDouble *address)
 ILObject *_IL_Thread_VolatileRead_RObject(ILExecThread *thread,
 										  ILObject **address)
 {
-	ILInterlockedMemoryBarrier();
-
-	return (ILObject *)(*((ILObject volatile * volatile *)address));
+	return (ILObject *)ILInterlockedLoadP((void **)address);
 }
 
 /*
@@ -782,9 +715,7 @@ ILObject *_IL_Thread_VolatileRead_RObject(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_Rbb(ILExecThread *thread,
 								  ILInt8 *address, ILInt8 value)
 {
-	*((volatile ILInt8 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreI1_Acquire(address, value);
 }
 
 /*
@@ -793,9 +724,7 @@ void _IL_Thread_VolatileWrite_Rbb(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_RBB(ILExecThread *thread,
 								  ILUInt8 *address, ILUInt8 value)
 {
-	*((volatile ILUInt8 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreU1_Acquire(address, value);
 }
 
 /*
@@ -804,9 +733,7 @@ void _IL_Thread_VolatileWrite_RBB(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_Rss(ILExecThread *thread,
 								  ILInt16 *address, ILInt16 value)
 {
-	*((volatile ILInt16 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreI2_Acquire(address, value);
 }
 
 /*
@@ -815,9 +742,7 @@ void _IL_Thread_VolatileWrite_Rss(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_RSS(ILExecThread *thread,
 								  ILUInt16 *address, ILUInt16 value)
 {
-	*((volatile ILUInt16 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreU2_Acquire(address, value);
 }
 
 /*
@@ -826,9 +751,7 @@ void _IL_Thread_VolatileWrite_RSS(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_Rii(ILExecThread *thread,
 								  ILInt32 *address, ILInt32 value)
 {
-	*((volatile ILInt32 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreI4_Acquire(address, value);
 }
 
 /*
@@ -837,9 +760,7 @@ void _IL_Thread_VolatileWrite_Rii(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_RII(ILExecThread *thread,
 								  ILUInt32 *address, ILUInt32 value)
 {
-	*((volatile ILUInt32 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreU4_Acquire(address, value);
 }
 
 /*
@@ -848,9 +769,7 @@ void _IL_Thread_VolatileWrite_RII(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_Rll(ILExecThread *thread,
 								  ILInt64 *address, ILInt64 value)
 {
-	*((volatile ILInt64 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreI8_Acquire(address, value);
 }
 
 /*
@@ -859,9 +778,7 @@ void _IL_Thread_VolatileWrite_Rll(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_RLL(ILExecThread *thread,
 								  ILUInt64 *address, ILUInt64 value)
 {
-	*((volatile ILUInt64 *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreU8_Acquire(address, value);
 }
 
 /*
@@ -870,9 +787,7 @@ void _IL_Thread_VolatileWrite_RLL(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_Rjj(ILExecThread *thread,
 								  ILNativeInt *address, ILNativeInt value)
 {
-	*((volatile ILNativeInt *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreP_Acquire((void **)address, (void *)value);
 }
 
 /*
@@ -881,9 +796,7 @@ void _IL_Thread_VolatileWrite_Rjj(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_RJJ(ILExecThread *thread,
 								  ILNativeUInt *address, ILNativeUInt value)
 {
-	*((volatile ILNativeUInt *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreP_Acquire((void **)address, (void *)value);
 }
 
 /*
@@ -892,9 +805,7 @@ void _IL_Thread_VolatileWrite_RJJ(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_Rff(ILExecThread *thread,
 								  ILFloat *address, ILFloat value)
 {
-	*((volatile ILFloat *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreR4_Acquire(address, value);
 }
 
 /*
@@ -903,9 +814,7 @@ void _IL_Thread_VolatileWrite_Rff(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_Rdd(ILExecThread *thread,
 								  ILDouble *address, ILDouble value)
 {
-	*((volatile ILDouble *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreR8_Acquire(address, value);
 }
 
 /*
@@ -914,9 +823,7 @@ void _IL_Thread_VolatileWrite_Rdd(ILExecThread *thread,
 void _IL_Thread_VolatileWrite_RObjectObject(ILExecThread *thread,
 											ILObject **address, ILObject *value)
 {
-	*((volatile ILObject * volatile *)address) = value;
-
-	ILInterlockedMemoryBarrier();
+	ILInterlockedStoreP_Acquire((void **)address, (void *)value);
 }
 
 /*

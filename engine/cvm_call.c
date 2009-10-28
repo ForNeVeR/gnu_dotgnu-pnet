@@ -103,8 +103,8 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 		{ \
 			if (_ILExecThreadSelfAborting(thread) == 0) \
 			{ \
-				ILInterlockedAnd(&(thread->managedSafePointFlags), \
-								 ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT); \
+				ILInterlockedAndU4(&(thread->managedSafePointFlags), \
+								   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT); \
 				stacktop[0].ptrValue = thread->thrownException; \
 				thread->thrownException = 0; \
 				stacktop += 1; \
@@ -113,8 +113,8 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 		} \
 		else if (thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND) \
 		{ \
-			ILInterlockedAnd(&(thread->managedSafePointFlags), \
-							 ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND); \
+			ILInterlockedAndU4(&(thread->managedSafePointFlags), \
+							   ~_IL_MANAGED_SAFEPOINT_THREAD_SUSPEND); \
 			if (ILThreadGetState(thread->supportThread) & IL_TS_SUSPEND_REQUESTED) \
 			{ \
 				_ILExecThreadSuspendThread(thread, thread->supportThread); \
@@ -2122,7 +2122,7 @@ VMBREAK(COP_PREFIX_PACK_VARARGS);
 VMCASE(COP_PREFIX_PROFILE_COUNT):
 {
 	BEGIN_NATIVE_CALL();	
-	ILInterlockedIncrement((ILInt32 *)(&method->count));
+	ILInterlockedIncrementI4((ILInt32 *)(&method->count));
 	END_NATIVE_CALL();
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE,0);
 }

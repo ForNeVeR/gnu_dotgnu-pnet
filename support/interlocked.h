@@ -88,61 +88,61 @@
  *
  * Exchange integers.
  * Returns the original value at *dest.
- * define: IL_HAVE_INTERLOCKED_EXCHANGE
- * define: IL_HAVE_INTERLOCKED_EXCHANGE_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_EXCHANGE_RELEASE
- * define: IL_HAVE_INTERLOCKED_EXCHANGE_FULL
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEI4
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEI4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEI4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEI4_FULL
  *
  * ILInt32 ILInterlockedExchange(volatile ILInt32 *dest, ILInt32 value)
  *
  * Exchange pointers.
  * Returns the original value at *dest 
- * define: IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS
- * define: IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_RELEASE
- * define: IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_FULL
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEP
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEP_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEP_RELEASE
+ * define: IL_HAVE_INTERLOCKED_EXCHANGEP_FULL
  *
- * void *ILInterlockedExchangePointers(void * volatile *dest, void *value)
+ * void *ILInterlockedExchangeP(void * volatile *dest, void *value)
  *
  * Compare and exchange two 32bit integers.
  * Returns the original value at *dest 
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_RELEASE
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_FULL
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_FULL
  *
- * ILInt32 ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
- *										   ILInt32 value,
- *										   ILInt32 comparand)
+ * ILInt32 ILInterlockedCompareAndExchangeI4(volatile ILInt32 *dest,
+ *											 ILInt32 value,
+ *											 ILInt32 comparand)
  *
  * Compare and exchange two pointers.
  * Returns the original value at *dest 
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_RELEASE
- * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_FULL
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_RELEASE
+ * define: IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_FULL
  * 
- * void *ILInterlockedCompareAndExchangePointers(void * volatile *dest,
- *												 void *value,
- *												 void *comparand)
+ * void *ILInterlockedCompareAndExchangeP(void * volatile *dest,
+ *										  void *value,
+ *										  void *comparand)
  *
  * Add the 32 bit values *dest and value and store the result at *dest.
  * Returns the result od the addition (new value at *dest)
- * define: IL_HAVE_INTERLOCKED_ADD
- * define: IL_HAVE_INTERLOCKED_ADD_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_ADD_RELEASE
- * define: IL_HAVE_INTERLOCKED_ADD_FULL
+ * define: IL_HAVE_INTERLOCKED_ADDI4
+ * define: IL_HAVE_INTERLOCKED_ADDI4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_ADDI4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_ADDI4_FULL
  *
- * ILInt32 ILInterlockedAdd(volatile ILInt32 *dest, ILInt32 value)
+ * ILInt32 ILInterlockedAddI4(volatile ILInt32 *dest, ILInt32 value)
  *
  * Substract the 32 bit values *dest and value and store the result at *dest.
  * Returns the result od the subtraction (new value at *dest)
- * define: IL_HAVE_INTERLOCKED_SUB
- * define: IL_HAVE_INTERLOCKED_SUB_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_SUB_RELEASE
- * define: IL_HAVE_INTERLOCKED_SUB_FULL
+ * define: IL_HAVE_INTERLOCKED_SUBI4
+ * define: IL_HAVE_INTERLOCKED_SUBI4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_SUBI4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_SUBI4_FULL
  *
- * ILInt32 ILInterlockedSub(volatile ILInt32 *dest, ILInt32 value)
+ * ILInt32 ILInterlockedSubI4(volatile ILInt32 *dest, ILInt32 value)
  *
  * NOTE: If not defined by the arch specific definition it is a implemented
  * by a macro that is using ILInterlockedAdd with value negated.
@@ -150,12 +150,12 @@
  *
  * Increment a 32bit integer.
  * Returns the value of the incremented integer.
- * define: IL_HAVE_INTERLOCKED_INCREMENT
- * define: IL_HAVE_INTERLOCKED_INCREMENT_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_INCREMENT_RELEASE
- * define: IL_HAVE_INTERLOCKED_INCREMENT_FULL
+ * define: IL_HAVE_INTERLOCKED_INCREMENTI4
+ * define: IL_HAVE_INTERLOCKED_INCREMENTI4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_INCREMENTI4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_INCREMENTI4_FULL
  *
- * ILInt32 ILInterlockedIncrement(volatile ILInt32 *dest)
+ * ILInt32 ILInterlockedIncrementI4(volatile ILInt32 *dest)
  *
  * NOTE: If not defined by the arch specific definition it is a implemented
  * by a macro that is using ILInterlockedAdd with a value of 1.
@@ -163,32 +163,32 @@
  *
  * Decrement a 32bit integer.
  * Returns the value of the decremented integer.
- * define: IL_HAVE_INTERLOCKED_DECREMENT
- * define: IL_HAVE_INTERLOCKED_DECREMENT_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_DECREMENT_RELEASE
- * define: IL_HAVE_INTERLOCKED_DECREMENT_FULL
+ * define: IL_HAVE_INTERLOCKED_DECREMENTI4
+ * define: IL_HAVE_INTERLOCKED_DECREMENTI4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_DECREMENTI4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_DECREMENTI4_FULL
  *
- * ILInt32 ILInterlockedDecrement(volatile ILInt32 *dest)
+ * ILInt32 ILInterlockedDecrementI4(volatile ILInt32 *dest)
  *
  * NOTE: If not defined by the arch specific definition it is a implemented
  * by a macro that is using ILInterlockedSub with a value of 1.
  * (See interlocked_any.h)
  *
  * Bitwise AND of *dest and value and the result is stored at *dest
- * define: IL_HAVE_INTERLOCKED_AND
- * define: IL_HAVE_INTERLOCKED_AND_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_AND_RELEASE
- * define: IL_HAVE_INTERLOCKED_AND_FULL
+ * define: IL_HAVE_INTERLOCKED_ANDU4
+ * define: IL_HAVE_INTERLOCKED_ANDU4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_ANDU4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_ANDU4_FULL
  *
- * void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
+ * void ILInterlockedAndU4(volatile ILUInt32 *dest, ILUInt32 value)
  *
  * Bitwise OR of *dest and value and the result is stored at *dest
- * define: IL_HAVE_INTERLOCKED_OR
- * define: IL_HAVE_INTERLOCKED_OR_ACQUIRE
- * define: IL_HAVE_INTERLOCKED_OR_RELEASE
- * define: IL_HAVE_INTERLOCKED_OR_FULL
+ * define: IL_HAVE_INTERLOCKED_ORU4
+ * define: IL_HAVE_INTERLOCKED_ORU4_ACQUIRE
+ * define: IL_HAVE_INTERLOCKED_ORU4_RELEASE
+ * define: IL_HAVE_INTERLOCKED_ORU4_FULL
  *
- * void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
+ * void ILInterlockedOrU4(volatile ILUInt32 *dest, ILUInt32 value)
  *
  * NOTE: If archdependent versions with the _Aquire or _Release suffix
  * are not defined they will be mapped to the version with the _Full suffix.

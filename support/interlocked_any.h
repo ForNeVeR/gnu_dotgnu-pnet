@@ -2683,7 +2683,7 @@ static IL_INLINE ILInt64 ILInterlockedAddI8_Full(volatile ILInt64 *dest,
 #define IL_HAVE_INTERLOCKED_DECREMENTI8_FULL 1
 #endif
 
-#if !defined(IL_HAVE_INTERLOCKED_ANDUI4) && \
+#if !defined(IL_HAVE_INTERLOCKED_ANDU4) && \
 	defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEU4)
 static IL_INLINE void ILInterlockedAndU4(volatile ILUInt32 *dest,
 										 ILUInt32 value)
@@ -2748,7 +2748,7 @@ static IL_INLINE void ILInterlockedAndU8_Full(volatile ILUInt64 *dest,
 #define IL_HAVE_INTERLOCKED_ANDU8_FULL 1
 #endif
 
-#if !defined(IL_HAVE_INTERLOCKED_ORUI4) && \
+#if !defined(IL_HAVE_INTERLOCKED_ORU4) && \
 	defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEU4)
 static IL_INLINE void ILInterlockedOrU4(volatile ILUInt32 *dest,
 										ILUInt32 value)

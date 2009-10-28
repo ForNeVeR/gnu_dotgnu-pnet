@@ -17,8 +17,19 @@
 
 	* engine/thread.c: likewise
 
+	* engine/jitc.c: likewise
+
 	* engine/lib_thread.c: Use the new interlocked functions where possible.
 
+	* engine/jitc_profile.c (_ILJitInterlockedIncrement): Add wrapper
+	function for ILInterlockedIncrementI4.
+	(_ILJitProfileIncreaseMethodCallCount): Call the new wrapper function
+	now instead of ILInterlockedIncrementI4 because this might be a macro.
+
+	* engine/jitc_locals.c (_ILJitLocalsInit): Move the initialization blocks
+	to the start of the function only if startlabel and endlabel belong to
+	different blocks (non empty init block).
+ 
 2009-10-11  Klaus Treichel  <ktreichel@web.de>
 
 	* support/Makefile.am: add interlocked_arm.h and interlocked_ppc.h to

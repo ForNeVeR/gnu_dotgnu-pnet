@@ -475,10 +475,18 @@ static int _ILJitLocalsInit(ILJITCoder *coder)
 		{
 			return 0;
 		}
-		if(!jit_insn_move_blocks_to_start(coder->jitFunction, startLabel,
-															  endLabel))
+		/*
+		 * TODO: This additional check for inequal blocks can be removed
+		 * later when label merging is fixed in libjit.
+		 */
+		if(jit_block_from_label(coder->jitFunction, startLabel) !=
+		   jit_block_from_label(coder->jitFunction, endLabel))
 		{
-			return 0;
+			if(!jit_insn_move_blocks_to_start(coder->jitFunction, startLabel,
+																  endLabel))
+			{
+				return 0;
+			}
 		}
 	}
 	return 1;
@@ -610,7 +618,7 @@ static int _ILJitParamsCreate(ILJITCoder *coder)
 {
 	ILJitType signature = jit_function_get_signature(coder->jitFunction);
 #ifdef IL_DEBUGGER
-	int markThis;
+	int markThis = 0;
 #endif
 
 	if(signature)

@@ -65,6 +65,14 @@ static void _ILJitProfileEnd(ILJITCoder *jitCoder, ILMethod *method);
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 #ifndef ENHANCED_PROFILER
 /*
+ * Helper function for atomic increment of a 32 bit signed integer.
+ */
+static ILInt32 _ILJitInterlockedIncrement(volatile ILInt32 *dest)
+{
+	return ILInterlockedIncrementI4(dest);
+}
+
+/*
  * Emit the code to increase the call count of a method.
  */
 static void _ILJitProfileIncreaseMethodCallCount(ILJITCoder *jitCoder, ILMethod *method)
@@ -74,8 +82,8 @@ static void _ILJitProfileIncreaseMethodCallCount(ILJITCoder *jitCoder, ILMethod 
 															(jit_nint)(&(method->count)));
 
 	jit_insn_call_native(jitCoder->jitFunction,
-						 "ILInterlockedIncrement",
-						 ILInterlockedIncrement,
+						 "_ILJitInterlockedIncrement",
+						 _ILJitInterlockedIncrement,
 						 _ILJitSignature_ILInterlockedIncrement,
 						 &callCounter, 1, JIT_CALL_NOTHROW);
 }

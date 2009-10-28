@@ -1,7 +1,8 @@
 2009-10-28  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked.h, support/interlocked_any.h,
-	support/interlocked_arm.h, support/interlocked_x86.h: Extend interlocked
+	support/interlocked_arm.h, support/interlocked_ppc.h,
+	support/interlocked_x86.h: Extend interlocked
 	functions to support multiple native types.
 
 	* support/monitor.c: Adjust calls to interlocked functions to the

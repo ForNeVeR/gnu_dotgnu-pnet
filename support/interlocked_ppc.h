@@ -56,7 +56,7 @@ static IL_INLINE void ILInterlockedMemoryBarrier()
 /*
  * Load a 32 bit value from a location with acquire semantics.
  */
-static IL_INLINE ILInt32 ILInterlockedLoad_Acquire(const volatile ILInt32 *dest)
+static IL_INLINE ILInt32 ILInterlockedLoadI4_Acquire(const volatile ILInt32 *dest)
 {
 	ILInt32 retval;
 
@@ -74,12 +74,12 @@ static IL_INLINE ILInt32 ILInterlockedLoad_Acquire(const volatile ILInt32 *dest)
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_LOAD_ACQUIRE
+#define IL_HAVE_INTERLOCKED_LOADI4_ACQUIRE
 
 /*
  * Load a pointer value from a location with acquire semantics.
  */
-static IL_INLINE void *ILInterlockedLoadPointer_Acquire(void * const volatile *dest)
+static IL_INLINE void *ILInterlockedLoadP_Acquire(void * const volatile *dest)
 {
 	void *retval;
 
@@ -97,13 +97,13 @@ static IL_INLINE void *ILInterlockedLoadPointer_Acquire(void * const volatile *d
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_LOADPOINTER_ACQUIRE
+#define IL_HAVE_INTERLOCKED_LOADP_ACQUIRE
 
 /*
  * Store a 32 bit value to a location with release semantics.
  */
-static IL_INLINE void ILInterlockedStore_Release(volatile ILInt32 *dest,
-												 ILInt32 value)
+static IL_INLINE void ILInterlockedStoreI4_Release(volatile ILInt32 *dest,
+												   ILInt32 value)
 {
 	__asm__ __volatile__ 
 	(
@@ -114,14 +114,14 @@ static IL_INLINE void ILInterlockedStore_Release(volatile ILInt32 *dest,
 		: "memory"
 	);
 }
-#define IL_HAVE_INTERLOCKED_STORE_RELEASE 1
+#define IL_HAVE_INTERLOCKED_STOREI4_RELEASE 1
 
 /*
  * Store a pointer value to a location with release semantics.
  * TODO: Add support for ppc64
  */
-static IL_INLINE void ILInterlockedStorePointer_Release(void * volatile *dest,
-														void *value)
+static IL_INLINE void ILInterlockedStoreP_Release(void * volatile *dest,
+												  void *value)
 {
 	__asm__ __volatile__ 
 	(
@@ -132,13 +132,13 @@ static IL_INLINE void ILInterlockedStorePointer_Release(void * volatile *dest,
 		: "memory"
 	);
 }
-#define IL_HAVE_INTERLOCKED_STOREPOINTER_RELEASE 1
+#define IL_HAVE_INTERLOCKED_STOREP_RELEASE 1
 
 /*
  * Exchange two 32 bit integers.
  */
-static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
-											   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedExchangeI4(volatile ILInt32 *dest,
+												 ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -155,10 +155,10 @@ static IL_INLINE ILInt32 ILInterlockedExchange(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4 1
 
-static IL_INLINE ILInt32 ILInterlockedExchange_Acquire(volatile ILInt32 *dest,
-													   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedExchangeI4_Acquire(volatile ILInt32 *dest,
+														 ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -176,10 +176,10 @@ static IL_INLINE ILInt32 ILInterlockedExchange_Acquire(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE_ACQUIRE 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4_ACQUIRE 1
 
-static IL_INLINE ILInt32 ILInterlockedExchange_Release(volatile ILInt32 *dest,
-													   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedExchangeI4_Release(volatile ILInt32 *dest,
+														 ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -197,9 +197,373 @@ static IL_INLINE ILInt32 ILInterlockedExchange_Release(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_EXCHANGE_RELEASE 1
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4_RELEASE 1
 
-static IL_INLINE ILInt32 ILInterlockedExchange_Full(volatile ILInt32 *dest,
+static IL_INLINE ILInt32 ILInterlockedExchangeI4_Full(volatile ILInt32 *dest,
+													  ILInt32 value)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__ 
+	(
+		_IL_INTERLOCKED_PPC_LWSYNC
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEI4_FULL 1
+
+/*
+ * Exchange pointers.
+ *
+ * FIXME: Add support for the 64bit powerpc
+ */
+static IL_INLINE void *ILInterlockedExchangeP(void * volatile *dest,
+											  void *value)
+{
+	void *retval;
+
+	__asm__ __volatile__ 
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP 1
+
+static IL_INLINE void *ILInterlockedExchangeP_Acquire(void * volatile *dest,
+													  void *value)
+{
+	void *retval;
+
+	__asm__ __volatile__ 
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP_ACQUIRE 1
+
+static IL_INLINE void *ILInterlockedExchangeP_Release(void * volatile *dest,
+													  void *value)
+{
+	void *retval;
+
+	__asm__ __volatile__ 
+	(
+		_IL_INTERLOCKED_PPC_LWSYNC
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP_RELEASE 1
+
+static IL_INLINE void *ILInterlockedExchangeP_Full(void * volatile *dest,
+												   void *value)
+{
+	void *retval;
+
+	__asm__ __volatile__ 
+	(
+		_IL_INTERLOCKED_PPC_LWSYNC
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_EXCHANGEP_FULL 1
+
+/*
+ * Compare and exchange two 32bit integers.
+ */
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4(volatile ILInt32 *dest,
+														   ILInt32 value,
+														   ILInt32 comparand)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4 1
+
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Acquire(volatile ILInt32 *dest,
+																   ILInt32 value,
+																   ILInt32 comparand)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_ACQUIRE 1
+
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Release(volatile ILInt32 *dest,
+																   ILInt32 value,
+																   ILInt32 comparand)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_PPC_LWSYNC
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_RELEASE 1
+
+static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Full(volatile ILInt32 *dest,
+																ILInt32 value,
+																ILInt32 comparand)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_PPC_LWSYNC
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_FULL 1
+
+/*
+ * Compare and exchange two pointers.
+ * TODO: Add ppc64 support
+ */
+static IL_INLINE void *ILInterlockedCompareAndExchangeP(void * volatile *dest,
+														void *value,
+														void *comparand)
+{
+	void *retval;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP 1
+
+static IL_INLINE void *ILInterlockedCompareAndExchangeP_Acquire(void * volatile *dest,
+																void *value,
+																void *comparand)
+{
+	void *retval;
+
+	__asm__ __volatile__
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_ACQUIRE 1
+
+static IL_INLINE void *ILInterlockedCompareAndExchangeP_Release(void * volatile *dest,
+																void *value,
+																void *comparand)
+{
+	void *retval;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_PPC_LWSYNC
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_RELEASE 1
+
+static IL_INLINE void *ILInterlockedCompareAndExchangeP_Full(void * volatile *dest,
+															 void *value,
+															 void *comparand)
+{
+	void *retval;
+
+	__asm__ __volatile__
+	(
+		_IL_INTERLOCKED_PPC_LWSYNC
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tcmpw		%0, %4\n"
+		"\tbne		2f\n"
+		"\tstwcx.	%3, 0, %2\n"
+		"\tbne-		1b\n"
+		"2:"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=&r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value), "r" (comparand)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_FULL 1
+
+/*
+ * Add two 32 bit integer values.
+ */
+static IL_INLINE ILInt32 ILInterlockedAddI4(volatile ILInt32 *dest,
+											ILInt32 value)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__ 
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tadd		%0, %0, %3\n"
+		"\tstwcx.	%0, 0, %2\n"
+		"\tbne-		1b\n"
+		: "=r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value)
+		: "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_ADDI4 1
+
+static IL_INLINE ILInt32 ILInterlockedAddI4_Acquire(volatile ILInt32 *dest,
+													ILInt32 value)
+{
+	ILInt32 retval;
+
+	__asm__ __volatile__ 
+	(
+		"1:"
+		"\tlwarx	%0, 0, %2\n"
+		"\tadd		%0, %0, %3\n"
+		"\tstwcx.	%0, 0, %2\n"
+		"\tbne-		1b\n"
+		_IL_INTERLOCKED_PPC_LWSYNC
+		: "=r" (retval), "=m" (*dest)
+		: "r" (dest), "r" (value)
+		: "memory", "cc"
+	);
+
+	return retval;
+}
+#define IL_HAVE_INTERLOCKED_ADDI4_ACQUIRE 1
+
+static IL_INLINE ILInt32 ILInterlockedAddI4_Release(volatile ILInt32 *dest,
 													ILInt32 value)
 {
 	ILInt32 retval;
@@ -209,370 +573,6 @@ static IL_INLINE ILInt32 ILInterlockedExchange_Full(volatile ILInt32 *dest,
 		_IL_INTERLOCKED_PPC_LWSYNC
 		"1:"
 		"\tlwarx	%0, 0, %2\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGE_FULL 1
-
-/*
- * Exchange pointers.
- *
- * FIXME: Add support for the 64bit powerpc
- */
-static IL_INLINE void *ILInterlockedExchangePointers(void * volatile *dest,
-													 void *value)
-{
-	void *retval;
-
-	__asm__ __volatile__ 
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS 1
-
-static IL_INLINE void *ILInterlockedExchangePointers_Acquire(void * volatile *dest,
-															 void *value)
-{
-	void *retval;
-
-	__asm__ __volatile__ 
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_ACQUIRE 1
-
-static IL_INLINE void *ILInterlockedExchangePointers_Release(void * volatile *dest,
-															 void *value)
-{
-	void *retval;
-
-	__asm__ __volatile__ 
-	(
-		_IL_INTERLOCKED_PPC_LWSYNC
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_RELEASE 1
-
-static IL_INLINE void *ILInterlockedExchangePointers_Full(void * volatile *dest,
-														  void *value)
-{
-	void *retval;
-
-	__asm__ __volatile__ 
-	(
-		_IL_INTERLOCKED_PPC_LWSYNC
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_EXCHANGEPOINTERS_FULL 1
-
-/*
- * Compare and exchange two 32bit integers.
- */
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange(volatile ILInt32 *dest,
-														 ILInt32 value,
-														 ILInt32 comparand)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE 1
-
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange_Acquire(volatile ILInt32 *dest,
-																 ILInt32 value,
-																 ILInt32 comparand)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_ACQUIRE 1
-
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange_Release(volatile ILInt32 *dest,
-																 ILInt32 value,
-																 ILInt32 comparand)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_PPC_LWSYNC
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_RELEASE 1
-
-static IL_INLINE ILInt32 ILInterlockedCompareAndExchange_Full(volatile ILInt32 *dest,
-															  ILInt32 value,
-															  ILInt32 comparand)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_PPC_LWSYNC
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGE_FULL 1
-
-/*
- * Compare and exchange two pointers.
- * TODO: Add ppc64 support
- */
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers(void * volatile *dest,
-															   void *value,
-															   void *comparand)
-{
-	void *retval;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS 1
-
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers_Acquire(void * volatile *dest,
-																	   void *value,
-																	   void *comparand)
-{
-	void *retval;
-
-	__asm__ __volatile__
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_ACQUIRE 1
-
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers_Release(void * volatile *dest,
-																	   void *value,
-																	   void *comparand)
-{
-	void *retval;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_PPC_LWSYNC
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_RELEASE 1
-
-static IL_INLINE void *ILInterlockedCompareAndExchangePointers_Full(void * volatile *dest,
-																	void *value,
-																	void *comparand)
-{
-	void *retval;
-
-	__asm__ __volatile__
-	(
-		_IL_INTERLOCKED_PPC_LWSYNC
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tcmpw		%0, %4\n"
-		"\tbne		2f\n"
-		"\tstwcx.	%3, 0, %2\n"
-		"\tbne-		1b\n"
-		"2:"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=&r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value), "r" (comparand)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEPOINTERS_FULL 1
-
-/*
- * Add two 32 bit integer values.
- */
-static IL_INLINE ILInt32 ILInterlockedAdd(volatile ILInt32 *dest,
-										  ILInt32 value)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__ 
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tadd		%0, %0, %3\n"
-		"\tstwcx.	%0, 0, %2\n"
-		"\tbne-		1b\n"
-		: "=r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value)
-		: "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_ADD 1
-
-static IL_INLINE ILInt32 ILInterlockedAdd_Acquire(volatile ILInt32 *dest,
-												  ILInt32 value)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__ 
-	(
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
-		"\tadd		%0, %0, %3\n"
-		"\tstwcx.	%0, 0, %2\n"
-		"\tbne-		1b\n"
-		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=r" (retval), "=m" (*dest)
-		: "r" (dest), "r" (value)
-		: "memory", "cc"
-	);
-
-	return retval;
-}
-#define IL_HAVE_INTERLOCKED_ADD_ACQUIRE 1
-
-static IL_INLINE ILInt32 ILInterlockedAdd_Release(volatile ILInt32 *dest,
-												  ILInt32 value)
-{
-	ILInt32 retval;
-
-	__asm__ __volatile__ 
-	(
-		_IL_INTERLOCKED_PPC_LWSYNC
-		"1:"
-		"\tlwarx	%0, 0, %2\n"
 		"\tadd		%0, %0, %3\n"
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
@@ -583,10 +583,10 @@ static IL_INLINE ILInt32 ILInterlockedAdd_Release(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_ADD_RELEASE 1
+#define IL_HAVE_INTERLOCKED_ADDI4_RELEASE 1
 
-static IL_INLINE ILInt32 ILInterlockedAdd_Full(volatile ILInt32 *dest,
-											   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedAddI4_Full(volatile ILInt32 *dest,
+												 ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -606,13 +606,13 @@ static IL_INLINE ILInt32 ILInterlockedAdd_Full(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_ADD_FULL 1
+#define IL_HAVE_INTERLOCKED_ADDI4_FULL 1
 
 /*
  * Subtract two 32 bit integer values.
  */
-static IL_INLINE ILInt32 ILInterlockedSub(volatile ILInt32 *dest,
-										  ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4(volatile ILInt32 *dest,
+											ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -630,10 +630,10 @@ static IL_INLINE ILInt32 ILInterlockedSub(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB 1
+#define IL_HAVE_INTERLOCKED_SUBI4 1
 
-static IL_INLINE ILInt32 ILInterlockedSub_Acquire(volatile ILInt32 *dest,
-												  ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4_Acquire(volatile ILInt32 *dest,
+													ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -652,10 +652,10 @@ static IL_INLINE ILInt32 ILInterlockedSub_Acquire(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB_ACQUIRE 1
+#define IL_HAVE_INTERLOCKED_SUBI4_ACQUIRE 1
 
-static IL_INLINE ILInt32 ILInterlockedSub_Release(volatile ILInt32 *dest,
-												  ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4_Release(volatile ILInt32 *dest,
+													ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -674,10 +674,10 @@ static IL_INLINE ILInt32 ILInterlockedSub_Release(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB_RELEASE 1
+#define IL_HAVE_INTERLOCKED_SUBI4_RELEASE 1
 
-static IL_INLINE ILInt32 ILInterlockedSub_Full(volatile ILInt32 *dest,
-											   ILInt32 value)
+static IL_INLINE ILInt32 ILInterlockedSubI4_Full(volatile ILInt32 *dest,
+												 ILInt32 value)
 {
 	ILInt32 retval;
 
@@ -697,12 +697,13 @@ static IL_INLINE ILInt32 ILInterlockedSub_Full(volatile ILInt32 *dest,
 
 	return retval;
 }
-#define IL_HAVE_INTERLOCKED_SUB_FULL 1
+#define IL_HAVE_INTERLOCKED_SUBI4_FULL 1
 
 /*
  * 32bit bitwise AND
  */
-static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedAndU4(volatile ILUInt32 *dest,
+										 ILUInt32 value)
 {
 	ILInt32 retval;
 
@@ -718,9 +719,10 @@ static IL_INLINE void ILInterlockedAnd(volatile ILUInt32 *dest, ILUInt32 value)
 		: "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_AND 1
+#define IL_HAVE_INTERLOCKED_ANDU4 1
 
-static IL_INLINE void ILInterlockedAnd_Full(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedAndU4_Full(volatile ILUInt32 *dest,
+											  ILUInt32 value)
 {
 	ILInt32 retval;
 
@@ -738,12 +740,13 @@ static IL_INLINE void ILInterlockedAnd_Full(volatile ILUInt32 *dest, ILUInt32 va
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_AND_FULL 1
+#define IL_HAVE_INTERLOCKED_ANDU4_FULL 1
 
 /*
  * 32bit bitwise OR
  */
-static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedOrU4(volatile ILUInt32 *dest,
+										ILUInt32 value)
 {
 	ILInt32 retval;
 
@@ -759,9 +762,10 @@ static IL_INLINE void ILInterlockedOr(volatile ILUInt32 *dest, ILUInt32 value)
 		: "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_OR 1
+#define IL_HAVE_INTERLOCKED_ORU4 1
 
-static IL_INLINE void ILInterlockedOr_Full(volatile ILUInt32 *dest, ILUInt32 value)
+static IL_INLINE void ILInterlockedOrU4_Full(volatile ILUInt32 *dest,
+											 ILUInt32 value)
 {
 	ILInt32 retval;
 
@@ -779,7 +783,7 @@ static IL_INLINE void ILInterlockedOr_Full(volatile ILUInt32 *dest, ILUInt32 val
 		: "memory", "cc"
 	);
 }
-#define IL_HAVE_INTERLOCKED_OR_FULL 1
+#define IL_HAVE_INTERLOCKED_ORU4_FULL 1
 
 #endif /* defined(__GNUC__) */
 

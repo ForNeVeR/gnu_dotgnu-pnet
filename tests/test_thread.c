@@ -3335,6 +3335,14 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(monitor_timed_wait1);
 }
 
+void ILUnitCleanupTests(void)
+{
+	/*
+	 * Deinitialize the threading subsystem.
+	 */
+	ILThreadDeinit();
+}
+
 #ifdef	__cplusplus
 };
 #endif

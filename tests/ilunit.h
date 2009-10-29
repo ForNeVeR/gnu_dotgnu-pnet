@@ -55,6 +55,12 @@ void ILUnitRegister(const char *name, ILUnitTestFunc func, void *arg);
 void ILUnitRegisterTests(void);
 
 /*
+ * User-supplied function that performs some cleanup after running the
+ * requested tests.
+ */
+void ILUnitCleanupTests(void);
+
+/*
  * Report a test failure with the simple "failed" message
  * and then abort the test.
  */

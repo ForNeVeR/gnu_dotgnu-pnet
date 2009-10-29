@@ -1269,6 +1269,13 @@ void ILUnitRegisterTests(void)
 	RegisterCrypt(test_bignum_oper, bignum_pow_4);
 }
 
+void ILUnitCleanupTests(void)
+{
+	/*
+	 * Nothing to do here.
+	 */
+}
+
 #ifdef	__cplusplus
 };
 #endif

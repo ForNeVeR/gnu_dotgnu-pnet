@@ -190,6 +190,9 @@ int main(int argc, char *argv[])
 		runAllTests();
 	}
 
+	/* Cleanup the tests */
+	ILUnitCleanupTests();
+
 	/* Print a summary of how many tests succeeded or failed */
 	if(!showOnlyFailed || numFailed != 0)
 	{

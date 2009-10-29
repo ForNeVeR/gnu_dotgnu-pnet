@@ -1,3 +1,12 @@
+2009-10-29  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/ilunit.h: Add prototype for test cleanup function
+	ILUnitCleanupTests.
+
+	* tests/ilunit.c (main): Call ILUnitCleanupTests after tests finished.
+
+	* tests/test_crypt.c, tests/test_thread.c : Add ILUnitCleanupTests.
+
 2009-10-28  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked.h, support/interlocked_any.h,

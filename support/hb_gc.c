@@ -115,13 +115,13 @@ extern GC_signed_word GC_bytes_found;
  */
 static void _FinalizerThreadFunc(void *data)
 {
-	GC_TRACE("GC:_FinalizerThread: Finalizer thread started [thread:%p]\n", ILThreadSelf());
+	GC_TRACE("GC:_FinalizerThread: Finalizer thread started [thread:%p]\n", _ILThreadSelf());
 
 	for (;;)
 	{
 		ILWaitOne(_FinalizerSignal, -1);
 
-		GC_TRACE("GC:_FinalizerThread: Signal [thread:%p]\n", ILThreadSelf());
+		GC_TRACE("GC:_FinalizerThread: Signal [thread:%p]\n", _ILThreadSelf());
 
 		/* This *must* to be set before checking for !_FinalizersDisabled to prevent
 		    a race with ILGCDisableFinalizers */
@@ -132,13 +132,13 @@ static void _FinalizerThreadFunc(void *data)
 
 		if (GC_should_invoke_finalizers() && !_FinalizersDisabled)
 		{
-			GC_TRACE("GC:_FinalizerThread: Finalizers running [thread:%p]\n", ILThreadSelf());
+			GC_TRACE("GC:_FinalizerThread: Finalizers running [thread:%p]\n", _ILThreadSelf());
 			
 			++_FinalizingCount;
 
 			GC_invoke_finalizers();
 			
-			GC_TRACE("GC:_FinalizerThread: Finalizers finished [thread:%p]\n", ILThreadSelf());
+			GC_TRACE("GC:_FinalizerThread: Finalizers finished [thread:%p]\n", _ILThreadSelf());
 		}
 
 		_FinalizersRunning = 0;
@@ -149,7 +149,7 @@ static void _FinalizerThreadFunc(void *data)
 		{
 			/* Exit finalizer thread after having invoked finalizers one last time */
 
-			GC_TRACE("GC:_FinalizerThread: Finalizer thread finished [thread:%p]\n", ILThreadSelf());
+			GC_TRACE("GC:_FinalizerThread: Finalizer thread finished [thread:%p]\n", _ILThreadSelf());
 
 			ILWaitEventReset(_FinalizerSignal);
 			/* Wake all waiting threads */
@@ -158,7 +158,7 @@ static void _FinalizerThreadFunc(void *data)
 			return;
 		}
 
-		GC_TRACE("GC:_FinalizerThread: Response [thread:%p]\n", ILThreadSelf());
+		GC_TRACE("GC:_FinalizerThread: Response [thread:%p]\n", _ILThreadSelf());
 
 		ILThreadClearStack(4000);
 
@@ -229,7 +229,7 @@ static int PrivateGCNotifyFinalize(int timeout, int ignoreDisabled)
 	}
 
 	/* Prevent recursive finalization */
-	if (_FinalizersRunningSynchronously || ILThreadSelf() == _FinalizerThread)
+	if (_FinalizersRunningSynchronously || _ILThreadSelf() == _FinalizerThread)
 	{	
 		return 0;
 	}
@@ -265,7 +265,7 @@ static int PrivateGCNotifyFinalize(int timeout, int ignoreDisabled)
 
 				GC_TRACE("PrivateGCInvokeFinalizers: Couldn't " \
 						 "start finalizer thread [thread: %p]\n",
-						 ILThreadSelf());
+						 _ILThreadSelf());
 				
 				_ILMutexUnlock(&_FinalizerLock);
 
@@ -281,11 +281,11 @@ static int PrivateGCNotifyFinalize(int timeout, int ignoreDisabled)
 	/* Signal the finalizer thread */
 
 	GC_TRACE("PrivateGCInvokeFinalizers: Invoking finalizers " \
-			"and waiting [thread: %p]\n", ILThreadSelf());
+			"and waiting [thread: %p]\n", _ILThreadSelf());
 
 	result = ILSignalAndWait(_FinalizerSignal, _FinalizerResponse, timeout);
 	
-	GC_TRACE("PrivateGCInvokeFinalizers: Finalizers finished[thread: %p]\n", ILThreadSelf());
+	GC_TRACE("PrivateGCInvokeFinalizers: Finalizers finished[thread: %p]\n", _ILThreadSelf());
 
 	return result;
 }
@@ -339,7 +339,7 @@ void ILGCDeinit()
 {
 	_FinalizerStopFlag = 1;
 
-	GC_TRACE("ILGCDeinit: Performing final GC [thread:%p]\n", ILThreadSelf());
+	GC_TRACE("ILGCDeinit: Performing final GC [thread:%p]\n", _ILThreadSelf());
 
 	/* Do a final GC */
 	ILGCFullCollection(1000);
@@ -347,20 +347,20 @@ void ILGCDeinit()
 	/* Cleanup the finalizer thread */
 	if (_FinalizerThread && _FinalizerThreadStarted)
 	{
-		GC_TRACE("ILGCDeinit: Peforming last finalizer run [thread:%p]\n", ILThreadSelf());
+		GC_TRACE("ILGCDeinit: Peforming last finalizer run [thread:%p]\n", _ILThreadSelf());
 
 		ILWaitEventSet(_FinalizerSignal);
 		
-		GC_TRACE("ILGCDeinit: Waiting for finalizer thread to end [thread:%p]\n", ILThreadSelf());
+		GC_TRACE("ILGCDeinit: Waiting for finalizer thread to end [thread:%p]\n", _ILThreadSelf());
 
 		/* Wait for the finalizer thread */
 		if (ILThreadJoin(_FinalizerThread, 15000))
 		{
-			GC_TRACE("ILGCDeinit: Finalizer thread finished [thread:%p]\n", ILThreadSelf());			
+			GC_TRACE("ILGCDeinit: Finalizer thread finished [thread:%p]\n", _ILThreadSelf());
 		}
 		else
 		{
-			GC_TRACE("ILGCDeinit: Finalizer thread not responding [thread:%p]\n", ILThreadSelf());
+			GC_TRACE("ILGCDeinit: Finalizer thread not responding [thread:%p]\n", _ILThreadSelf());
 		}
 
 		/* Destroy the finalizer thread */
@@ -433,7 +433,7 @@ int ILGCFullCollection(int timeout)
 	int lastFinalizingCount;
 	int hasThreads;
 
-	hasThreads = ILHasThreads();
+	hasThreads = _ILHasThreads();
 
 	if (timeout < 0)
 	{
@@ -577,7 +577,7 @@ int ILGCDisableFinalizers(int timeout)
 
 	_ILMutexUnlock(&_FinalizerLock);
 
-	if (_FinalizersRunning && ILHasThreads())
+	if (_FinalizersRunning && _ILHasThreads())
 	{
 		/* Invoke and wait so we can guarantee no finalizers will run after this method ends */
 		return (PrivateGCNotifyFinalize(timeout, 1) ? 0 : 1);

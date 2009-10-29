@@ -417,6 +417,13 @@ struct _tagILMonitorPool
 			} while (0)
 
 /*
+ * Some macros that can be used internally as shortcut instead of using
+ * the public interface functions (named without the leading underscore)
+ */
+#define _ILHasThreads()	_ILThreadIsReal
+#define _ILThreadSelf()	_ILThreadGetSelf()
+
+/*
  * Initialize the system-specific thread routines and find the
  * thread handle and identifier for the main thread.
  */

@@ -1,5 +1,15 @@
 2009-10-29  Klaus Treichel  <ktreichel@web.de>
 
+	* support/pt_defs.c: Initialize the thread local variable _myThread
+	with 0.
+
+	* support/thr_defs.h: Add macros for internal use _ILHasThreads and
+	_ILThreadSelf that should be used internally instead of the public
+	functions with the same name without leading underscore.
+
+	* support/hb_gc.c, support/thread.c: Replace calls to the public
+	functions with the internal macros where appropriate.
+
 	* tests/ilunit.h: Add prototype for test cleanup function
 	ILUnitCleanupTests.
 

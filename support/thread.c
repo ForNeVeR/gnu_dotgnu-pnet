@@ -66,7 +66,7 @@ static ILThread mainThread;
 
 int ILHasThreads(void)
 {
-	return _ILThreadIsReal;
+	return _ILHasThreads();
 }
 
 /*
@@ -367,7 +367,7 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *startArg)
 	ILThread *thread;
 
 	/* We cannot create threads if the system doesn't really support them */
-	if(!ILHasThreads())
+	if(!_ILHasThreads())
 	{
 		return 0;
 	}

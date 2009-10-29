@@ -46,7 +46,7 @@ extern	"C" {
  * Define the thread local variable to hold the ILThread value for the
  * current thread.
  */
-_THREAD_ ILThread *_myThread;
+_THREAD_ ILThread *_myThread = 0;
 #else
 /*
  * Thread-specific key that is used to store and retrieve thread objects.

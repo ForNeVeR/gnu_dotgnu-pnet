@@ -1,5 +1,10 @@
 2009-10-29  Klaus Treichel  <ktreichel@web.de>
 
+	* cscc/csharp/cs_grammar.y: Fix parsing for stackalloc.
+
+	* cscc/csharp/cs_misc.tc: Implement semanalyzing and codegeneration for
+	stackalloc.
+
 	* support/pt_defs.c: Initialize the thread local variable _myThread
 	with 0.
 

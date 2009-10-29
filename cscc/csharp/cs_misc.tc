@@ -279,7 +279,8 @@ ILNode_GetType(ILNode_StackAlloc)
  */
 ILNode_GenValue(ILNode_StackAlloc)
 {
-	/* TODO */
+	ILNode_GenValue(node->expr2, info);
+	ILGenSimple(info, IL_PREFIX_OP_LOCALLOC + IL_OP_PREFIX);
 	return ILMachineType_UnmanagedPtr;
 }
 
@@ -297,28 +298,56 @@ JavaGenValue(ILNode_StackAlloc)
  */
 ILNode_SemAnalysis(ILNode_StackAlloc)
 {
-	CSSemValue value1;
-	CSSemValue value2;
+	ILNode *tempNode;
+	ILType *type;
+	CSSemValue value;
 
 	/* Print an error or warning for this construct if necessary */
 	CCUnsafeMessage(info, (ILNode *)node, "unsafe `stackalloc' operator");
 
 	/* Perform semantic analysis on the sub-expressions */
-	value1 = ILNode_SemAnalysis(node->expr1, info, &(node->expr1));
-	value2 = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+	/* The first must be a type */
+	type = CSSemType(node->expr1, info, &(node->expr1));
 
-	/* The first must be a value type */
-	if(!CSSemIsType(value1))
+	/* The second one must be an integer expression */
+	value = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+	if(!CSSemIsValue(value))
 	{
-		/* TODO */
+		CCErrorOnLine(yygetfilename(node), yygetlinenum(node),
+					  "invalid element number count in stackalloc expression");
+	}
+	else
+	{
+		if(!ILCoerce(info, node->expr2, &node->expr2,
+					 CSSemGetType(value), ILType_Int32, 1))
+		{
+			CCErrorOnLine(yygetfilename(node->expr2), yygetlinenum(node->expr2),
+						  "incompatible types in stackalloc element number specifier: "
+						  "no conversion from `%s' to `int'",
+						  CSTypeToName(CSSemGetType(value)));
+		}
+	}
+	/*
+	 * Replace expr1 and expr2 with semguards so that they will not get
+	 * semanalyzed again
+	 */
+	node->expr2 = ILNode_SemGuard_create(node->expr2, value);
+	CSSemSetType(value, type);
+	tempNode = ILNode_SemGuard_create(node->expr1, value);
+	tempNode = ILNode_SizeOf_create(tempNode);
+	node->expr2 = ILNode_Mul_create(tempNode, node->expr2);
+	/* Now semanalyze the final expression again */
+	value = ILNode_SemAnalysis(node->expr2, info, &(node->expr2));
+
+	/* The result has the type "pointer to type" */
+	type = ILTypeCreateRef(info->context, IL_TYPE_COMPLEX_PTR, type);
+	if(!type)
+	{
+		CCOutOfMemory();
 	}
 
-	/* The second must be an "int" */
-	/* TODO */
-
-	/* The result has the type "pointer to value1.type" */
-	CSSemSetRValue(value1, ILType_Int32);	/* TODO */
-	return value1;
+	CSSemSetRValue(value, type);
+	return value;
 }
 
 ILNode_SemAnalysis(ILNode_NewExpression)
@@ -651,6 +680,7 @@ ILNode_SemAnalysis(ILNode_RefValue)
 	CSSemSetRValue(value, node->type);
 	return value;
 }
+
 ILNode_SemAnalysis(ILNode_BaseDestructor)
 {
 	ILNode_MethodDeclaration *caller;
@@ -672,7 +702,18 @@ ILNode_SemAnalysis(ILNode_BaseDestructor)
 	}
 	return ILNode_SemAnalysis(node->destructor,info,&(node->destructor));
 }
+
+/*
+ * Generate value code for the "stackalloc" operator.
+ */
+ILNode_GenDiscard(ILNode_StackAlloc)
+{
+	/* For handling side effects only */
+	ILNode_GenDiscard(node->expr2, info);
+}
+
 ILNode_GenDiscard(ILNode_BaseDestructor)
 {
 	ILNode_GenDiscard(node->destructor,info);
 }
+

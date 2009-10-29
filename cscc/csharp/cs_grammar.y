@@ -1309,7 +1309,7 @@ static ILNode_GenericTypeParameters *TypeActualsToTypeFormals(ILNode *typeArgume
 %type <catchinfo>	CatchNameInfo
 %type <target>		AttributeTarget
 
-%expect 20
+%expect 18
 
 %start CompilationUnit
 %%
@@ -1952,8 +1952,8 @@ PrimarySimpleExpression
 	| PrimaryExpression PTR_OP Identifier	{
 				MakeBinary(DerefField, $1, $3);
 			}
-	| STACKALLOC Type '[' Expression ']'	{
-				MakeBinary(StackAlloc, $2, $4);
+	| STACKALLOC ArrayTypeStart Expression ']'	{
+				MakeBinary(StackAlloc, $2, $3);
 			}
 	| BUILTIN_CONSTANT '(' STRING_LITERAL ')'	{
 				/*

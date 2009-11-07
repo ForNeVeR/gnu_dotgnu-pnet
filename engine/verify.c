@@ -165,6 +165,65 @@ static IL_INLINE int IsSpecialJumpTarget(unsigned long *jumpMask,
 }
 
 /*
+ * Clear valid prefixes for an insn
+ */
+#define CLEAR_VALID_PREFIXES(prefixInfo, p, n) \
+	do { \
+		(prefixInfo).prefixFlags &= ~(p); \
+		(prefixInfo).noFlags &= ~(n); \
+	} while (0)
+
+/*
+ * Initialize the prefix members indicating valid values.
+ */
+#define INIT_PREFIXES(prefixInfo) \
+	do { \
+		(prefixInfo).prefixFlags = 0; \
+		(prefixInfo).noFlags = 0; \
+	} while (0)
+
+/*
+ * Valid prefixes for the different insns.
+ */
+#define VALID_LDIND_PREFIX		(IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_STIND_PREFIX		(IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_LDELEM_PREFIX		(IL_CODER_PREFIX_NO)
+#define VALID_LDELEMA_PREFIX	(IL_CODER_PREFIX_NO | IL_PREFIX_OP_READONLY)
+#define VALID_LDELEM_T_PREFIX	(IL_CODER_PREFIX_NO)
+#define VALID_LDOBJ_PREFIX		(IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_STELEM_PREFIX		(IL_CODER_PREFIX_NO)
+#define VALID_STELEM_T_PREFIX	(IL_CODER_PREFIX_NO)
+#define VALID_LDFLD_PREFIX		(IL_CODER_PREFIX_NO | IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_LDSFLD_PREFIX		(IL_CODER_PREFIX_VOLATILE)
+#define VALID_STFLD_PREFIX		(IL_CODER_PREFIX_NO | IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_STSFLD_PREFIX		(IL_CODER_PREFIX_VOLATILE)
+#define VALID_STOBJ_PREFIX		(IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_CASTCLASS_PREFIX	(IL_CODER_PREFIX_NO)
+#define VALID_CALL_PREFIX		(IL_PREFIX_OP_READONLY)
+#define VALID_CALLVIRT_PREFIX	(IL_CODER_PREFIX_NO | IL_PREFIX_OP_READONLY | IL_CODER_PREFIX_CONSTRAINED)
+#define VALID_CPBLK_PREFIX		(IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_INITBLK_PREFIX	(IL_CODER_PREFIX_UNALIGNED | IL_CODER_PREFIX_VOLATILE)
+#define VALID_LDVIRTFTN_PREFIX	(IL_CODER_PREFIX_NO)
+#define VALID_UNBOX_PREFIX		(IL_CODER_PREFIX_NO)
+
+/*
+ * Valid no flags for the different insns.
+ */
+#define VALID_NO_NONE		(0)
+#define VALID_NO_ALL		(IL_PREFIX_OP_NO_TYPECHECK | IL_PREFIX_OP_NO_RANGECHECK | IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_LDELEM		(IL_PREFIX_OP_NO_TYPECHECK | IL_PREFIX_OP_NO_RANGECHECK | IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_LDELEMA	(IL_PREFIX_OP_NO_TYPECHECK | IL_PREFIX_OP_NO_RANGECHECK | IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_LDELEM_T	(IL_PREFIX_OP_NO_RANGECHECK | IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_STELEM		(IL_PREFIX_OP_NO_TYPECHECK | IL_PREFIX_OP_NO_RANGECHECK | IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_STELEM_T	(IL_PREFIX_OP_NO_RANGECHECK | IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_LDFLD		(IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_STFLD		(IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_CASTCLASS	(IL_PREFIX_OP_NO_TYPECHECK)
+#define VALID_NO_CALLVIRT	(IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_LDVIRTFTN	(IL_PREFIX_OP_NO_NULLCHECK)
+#define VALID_NO_UNBOX		(IL_PREFIX_OP_NO_TYPECHECK)
+
+/*
  * Convert a type into an engine type.
  */
 static ILEngineType TypeToEngineType(ILType *type)
@@ -605,8 +664,18 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 										code->headerSize), \
 						(insn ? insn->name : "none"), __FILE__, __LINE__); \
 			} while (0)
+#define	VERIFY_PREFIX_REPORT()	\
+			do { \
+				fprintf(stderr, "%s::%s [%lX] - invalid prefix for %s at %s:%d\n", \
+						ILClass_Name(ILMethod_Owner(method)), \
+						ILMethod_Name(method), \
+						(unsigned long)(offset + ILMethod_RVA(method) + \
+										code->headerSize), \
+						(insn ? insn->name : "none"), __FILE__, __LINE__); \
+			} while (0)
 #else
 #define	VERIFY_REPORT()	do {} while (0)
+#define	VERIFY_PREFIX_REPORT()	do {} while (0)
 #endif
 #define	VERIFY_TRUNCATED()		VERIFY_REPORT(); goto cleanup
 #define	VERIFY_BRANCH_ERROR()	VERIFY_REPORT(); goto cleanup
@@ -614,6 +683,7 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 #define	VERIFY_STACK_ERROR()	VERIFY_REPORT(); goto cleanup
 #define	VERIFY_TYPE_ERROR()		VERIFY_REPORT(); goto cleanup
 #define	VERIFY_MEMORY_ERROR()	VERIFY_REPORT(); goto cleanup
+#define	VERIFY_PREFIX_ERROR()	VERIFY_PREFIX_REPORT(); goto cleanup
 
 /*
  * Declare global definitions that are required by the include files.
@@ -665,13 +735,13 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILException *exceptions;
 	ILException *exception, *currentException;
 	int hasRethrow;
-	int tailCall = 0;
 	int tryInlineType;
 	int coderFlags;
 	unsigned int tryInlineOpcode;
 	unsigned char *tryInlinePc;
-	ILType *constraintType;
 	ILUInt32 optimizationLevel;
+	ILBool lastInsnWasPrefix;
+	ILCoderPrefixInfo prefixInfo;
 #ifdef IL_CONFIG_DEBUG_LINES
 	int haveDebug = ILDebugPresent(ILProgramItem_Image(method));
 #else
@@ -708,14 +778,15 @@ restart:
 	result = 0;
 	labelList = 0;
 	hasRethrow = 0;
-	isReadOnly = 0;
-	constraintType = 0;
 
 	/* Initialize the memory allocator that is used for temporary
 	   allocation during bytecode verification */
 	ILMemZero(allocator.buffer, sizeof(allocator.buffer));
 	allocator.posn = 0;
 	allocator.overflow = 0;
+
+	/* Reset the prefix information */
+	ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
 
 	/* Set up the coder to process the method */
 	if(!ILCoderSetup(coder, start, method, code))
@@ -1071,6 +1142,7 @@ restart:
 		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_ENTER, 0, 0);
 	}
 
+	lastInsnWasPrefix = 0;
 	while(len > 0)
 	{
 		/* Fetch the instruction information block */
@@ -1125,13 +1197,26 @@ restart:
 		/* Validate the stack height changes */
 		if(stackSize < ((ILUInt32)(insn->popped)) ||
 		   (stackSize - ((ILUInt32)(insn->popped)) + ((ILUInt32)(insn->pushed)))
-		   		> code->maxStack)
+				> code->maxStack)
 		{
 			VERIFY_STACK_ERROR();
 		}
 
+		/*
+		 * Check if all prefix flags are zero, otherwise an invalid prefix
+		 * was used for the last instruction.
+		 */
+		if(!lastInsnWasPrefix)
+		{
+			if((prefixInfo.prefixFlags != 0) || (prefixInfo.noFlags != 0))
+			{
+				VERIFY_PREFIX_ERROR();
+			}
+		}
+
 		/* Verify the instruction */
 		lastWasJump = 0;
+		lastInsnWasPrefix = 0;
 		switch(opcode)
 		{
 			case IL_OP_NOP:   break;

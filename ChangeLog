@@ -1,3 +1,22 @@
+2009-11-07  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_coder.h: Declare the ILCoderPrefixInfo struct and add a
+	pointer to that struct as argument to coder functions where the used
+	prefixes might be interresting.
+
+	* engine/verify.c, engine/verify_call.c, engine/verify_obj.c,
+	engine/verify_ptr.c, engine/verify_var.c: Change the prefix handling to
+	storing the prefixes for a regular opcode in an ILCoderPrefixInfo struct
+	and pass it to the coder function while processing the regular opcode.
+
+	* engine/cvmc.c, engine/cvmc_obj.c, engine/cvmc_ptr.c: Add a pointer to
+	the prefix info struct to the coder functions where needed.
+
+	* engine/jitc.c, engine/jitc_array.c, engine/jitc_obj.c,
+	engine/jitc_ptr.c: likewise
+
+	* engine/null_coder.c: likewise
+	
 2009-10-29  Klaus Treichel  <ktreichel@web.de>
 
 	* cscc/csharp/cs_grammar.y: Fix parsing for stackalloc.

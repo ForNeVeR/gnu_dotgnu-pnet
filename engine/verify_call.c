@@ -1648,7 +1648,30 @@ break;
 
 case IL_OP_CALL:
 {
+	int tailCall;
+
 	/* Call a particular method directly */
+	tailCall = ((prefixInfo.prefixFlags & IL_CODER_PREFIX_TAIL) != 0);
+	if(tailCall)
+	{
+		if(len < 6)
+		{
+			VERIFY_TRUNCATED();
+		}
+
+		/* Check that this instruction is not a branch target */
+		if(IsJumpTarget(jumpMask, offset))
+		{
+			VERIFY_BRANCH_ERROR();
+		}
+
+		/* Check that the instruction following the call is a ret */
+		if(pc[5] != IL_OP_RET)
+		{
+			VERIFY_INSN_ERROR();
+		}
+	}
+
 	methodInfo = GetMethodToken(_ILExecThreadProcess(thread), method, pc,
 								&methodSignature);
 	if(methodInfo && !ILMethod_IsAbstract(methodInfo))
@@ -1659,7 +1682,6 @@ case IL_OP_CALL:
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
 									   &callInfo, tailCall);
-			tailCall = 0;
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -1906,7 +1928,9 @@ callNonvirtualFromVirtual:
 								if(AssignCompatible(method, &(stack[stackSize - 1]),
 													classType, unsafeAllowed))
 								{
-									ILCoderStoreStaticField(coder, fieldInfo, classType, STK_UNARY);
+									ILCoderStoreStaticField(coder, fieldInfo,
+															classType,
+															STK_UNARY, 0);
 								}
 								else
 								{
@@ -1922,19 +1946,19 @@ callNonvirtualFromVirtual:
 									if(IsSubClass(stack[stackSize - 2].typeInfo,
 												ILField_Owner(fieldInfo)) &&
 									AssignCompatible(methodInfo, &(stack[stackSize - 1]),
-			   											classType, unsafeAllowed))
+													 classType, unsafeAllowed))
 									{
 										if(!ILField_IsStatic(fieldInfo))
 										{
 											ILCoderStoreField(coder, ILEngineType_O,
-															stack[stackSize - 2].typeInfo,
-															fieldInfo, classType,
-															STK_BINARY_2);
+															  stack[stackSize - 2].typeInfo,
+															  fieldInfo, classType,
+															  STK_BINARY_2, 0);
 										}
 										else
 										{
 											ILCoderStoreStaticField(coder, fieldInfo, classType,
-																	STK_BINARY_2);
+																	STK_BINARY_2, 0);
 											ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
 										}
 									}
@@ -1957,12 +1981,13 @@ callNonvirtualFromVirtual:
 										{
 											ILCoderStoreField(coder, STK_BINARY_1,
 															stack[stackSize - 2].typeInfo,
-															fieldInfo, classType, STK_BINARY_2);
+															fieldInfo, classType,
+															STK_BINARY_2, 0);
 										}
 										else
 										{
 											ILCoderStoreStaticField(coder, fieldInfo, classType,
-																	STK_BINARY_2);
+																	STK_BINARY_2, 0);
 											ILCoderPop(coder, STK_BINARY_2, ILType_Invalid);
 										}
 									}
@@ -1982,13 +2007,14 @@ callNonvirtualFromVirtual:
 									if(!ILField_IsStatic(fieldInfo))
 									{
 										ILCoderStoreField(coder, STK_BINARY_1,
-														stack[stackSize - 2].typeInfo,
-														fieldInfo, classType, STK_BINARY_2);
+														  stack[stackSize - 2].typeInfo,
+														  fieldInfo, classType,
+														  STK_BINARY_2, 0);
 									}
 									else
 									{
 										ILCoderStoreStaticField(coder, fieldInfo, classType,
-																STK_BINARY_2);
+																STK_BINARY_2, 0);
 										ILCoderPop(coder, STK_BINARY_1, ILType_Invalid);
 									}
 								}
@@ -2003,7 +2029,7 @@ callNonvirtualFromVirtual:
 							if (ILMethod_IsStatic(methodInfo))
 							{
 								classType = ILField_Type(fieldInfo);
-								ILCoderLoadStaticField(coder, fieldInfo, classType);
+								ILCoderLoadStaticField(coder, fieldInfo, classType, 0);
 								stack[stackSize].engineType = TypeToEngineType(classType);
 								stack[stackSize].typeInfo = classType;
 							}
@@ -2019,8 +2045,8 @@ callNonvirtualFromVirtual:
 												ILField_Owner(fieldInfo)))
 										{
 											ILCoderLoadField(coder, ILEngineType_O,
-															stack[stackSize - 1].typeInfo,
-															fieldInfo, classType);
+															 stack[stackSize - 1].typeInfo,
+															 fieldInfo, classType, 0);
 										}
 										else
 										{
@@ -2030,7 +2056,7 @@ callNonvirtualFromVirtual:
 									else
 									{
 										ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
-										ILCoderLoadStaticField(coder, fieldInfo, classType);
+										ILCoderLoadStaticField(coder, fieldInfo, classType, 0);
 									}
 								}
 								else if(!unsafeAllowed &&
@@ -2045,12 +2071,12 @@ callNonvirtualFromVirtual:
 										{
 											ILCoderLoadField(coder, STK_UNARY,
 															stack[stackSize - 1].typeInfo,
-															fieldInfo, classType);
+															fieldInfo, classType, 0);
 										}
 										else
 										{
 											ILCoderPop(coder, STK_UNARY, ILType_Invalid);
-											ILCoderLoadStaticField(coder, fieldInfo, classType);
+											ILCoderLoadStaticField(coder, fieldInfo, classType, 0);
 										}
 									}
 									else
@@ -2068,13 +2094,13 @@ callNonvirtualFromVirtual:
 										{
 											ILCoderLoadField(coder, ILEngineType_MV,
 															stack[stackSize - 1].typeInfo,
-															fieldInfo, classType);
+															fieldInfo, classType, 0);
 										}
 										else
 										{
 											ILCoderPop(coder, ILEngineType_MV,
 													stack[stackSize - 1].typeInfo);
-											ILCoderLoadStaticField(coder, fieldInfo, classType);
+											ILCoderLoadStaticField(coder, fieldInfo, classType, 0);
 										}
 									}
 									else
@@ -2094,12 +2120,12 @@ callNonvirtualFromVirtual:
 									{
 										ILCoderLoadField(coder, STK_UNARY,
 														stack[stackSize - 1].typeInfo,
-														fieldInfo, classType);
+														fieldInfo, classType, 0);
 									}
 									else
 									{
 										ILCoderPop(coder, STK_UNARY, ILType_Invalid);
-										ILCoderLoadStaticField(coder, fieldInfo, classType);
+										ILCoderLoadStaticField(coder, fieldInfo, classType, 0);
 									}
 								}
 								else
@@ -2122,7 +2148,7 @@ callNonvirtualFromVirtual:
 						}
 						/* Not a simple inlinable method so just generate a standard method call */
 						ILCoderCallMethod(coder, &callInfo, &(stack[stackSize]),
-									  methodInfo);
+										  methodInfo);
 					}
 				}
 				else
@@ -2167,12 +2193,36 @@ callNonvirtualFromVirtual:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_CALL_PREFIX, VALID_NO_NONE);
 }
 break;
 
 case IL_OP_CALLI:
 {
+	int tailCall;
+
 	/* Call a method using an indirect method pointer */
+	tailCall = ((prefixInfo.prefixFlags & IL_CODER_PREFIX_TAIL) != 0);
+	if(tailCall)
+	{
+		if(len < 6)
+		{
+			VERIFY_TRUNCATED();
+		}
+
+		/* Check that this instruction is not a branch target */
+		if(IsJumpTarget(jumpMask, offset))
+		{
+			VERIFY_BRANCH_ERROR();
+		}
+
+		/* Check that the instruction following the call is a ret */
+		if(pc[5] != IL_OP_RET)
+		{
+			VERIFY_INSN_ERROR();
+		}
+	}
+
 	if(stackSize < 1)
 	{
 		/* We don't have sufficient arguments on the stack */
@@ -2214,7 +2264,6 @@ case IL_OP_CALLI:
 								   methodSignature, 0,
 								   unsafeAllowed, 0, 1,
 								   &callInfo, tailCall);
-		tailCall = 0;
 		if(numParams >= 0)
 		{
 			returnType = ILTypeGetReturn(methodSignature);
@@ -2314,30 +2363,57 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CONSTRAINED:
 	classInfo = GetClassToken(method, pc);
 	if (classInfo)
 	{		
-		constraintType = ILClassToType(classInfo);
+		prefixInfo.constrainedType = ILClassToType(classInfo);
+		prefixInfo.prefixFlags |= IL_CODER_PREFIX_CONSTRAINED;
+		lastInsnWasPrefix = 1;
 	}
 	else
 	{
 		VERIFY_TYPE_ERROR();
 	}
-	/* TODO: Verify that next instruction is callvirt */
 }
 break;
 
 case IL_OP_CALLVIRT:
 {
+	int tailCall;
+
 	/* Call a virtual or interface method */
+	tailCall = ((prefixInfo.prefixFlags & IL_CODER_PREFIX_TAIL) != 0);
+	if(tailCall)
+	{
+		if(len < 6)
+		{
+			VERIFY_TRUNCATED();
+		}
+
+		/* Check that this instruction is not a branch target */
+		if(IsJumpTarget(jumpMask, offset))
+		{
+			VERIFY_BRANCH_ERROR();
+		}
+
+		/* Check that the instruction following the call is a ret */
+		if(pc[5] != IL_OP_RET)
+		{
+			VERIFY_INSN_ERROR();
+		}
+	}
+
 	methodInfo = GetMethodToken(_ILExecThreadProcess(thread), method, pc, &methodSignature);
 	if(methodInfo)
 	{
-		ILType *_constraintType = constraintType;
+		ILType *constrainedType = 0;
 		int callNonVirtual = 0;
-		
-		constraintType = 0;
+
+		if((prefixInfo.prefixFlags & IL_CODER_PREFIX_CONSTRAINED) != 0)
+		{
+			constrainedType = prefixInfo.constrainedType;
+		}
 		classInfo = ILMethod_Owner(method);
 		if(ILMemberAccessible((ILMember *)methodInfo, classInfo))
 		{
-			if(_constraintType)
+			if(constrainedType)
 			{
 				ILEngineStackItem *item;
 
@@ -2346,10 +2422,10 @@ case IL_OP_CALLVIRT:
 				if (((item->engineType == ILEngineType_M) ||
 					 (item->engineType == ILEngineType_CM) ||
 					 (item->engineType == ILEngineType_T)) &&
-					ILTypeIdentical(_constraintType, item->typeInfo))
+					ILTypeIdentical(constrainedType, item->typeInfo))
 				{
 					ILClass *thisClass = ILClassFromType(ILProgramItem_Image(method),
-														 0, _constraintType, 0);
+														 0, constrainedType, 0);
 
 					if(!ILClassIsValueType(thisClass))
 					{
@@ -2367,13 +2443,13 @@ case IL_OP_CALLVIRT:
 						{
 							methodInfo = (ILMethod *)member;
 							item->engineType = ILEngineType_M;
-							item->typeInfo = _constraintType;
+							item->typeInfo = constrainedType;
 							callNonVirtual = 1;
 						}
 						else
 						{
 							if(BoxPtr(_ILExecThreadProcess(thread), 
-									  _constraintType, thisClass, numParams))
+									  constrainedType, thisClass, numParams))
 							{
 								item->engineType = ILEngineType_O;
 								item->typeInfo = ILType_FromClass(thisClass);
@@ -2394,7 +2470,6 @@ case IL_OP_CALLVIRT:
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
 									   &callInfo, tailCall);
-			tailCall = 0;
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
@@ -2449,6 +2524,7 @@ case IL_OP_CALLVIRT:
 	{
 		ThrowSystem("System", "MissingMethodException");
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_CALLVIRT_PREFIX, VALID_NO_CALLVIRT);
 }
 break;
 
@@ -2488,8 +2564,7 @@ case IL_OP_NEWOBJ:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 1, 0,
-									   &callInfo, tailCall);
-			tailCall = 0;
+									   &callInfo, 0);
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
@@ -2529,8 +2604,7 @@ case IL_OP_NEWOBJ:
 			numParams = MatchSignature(coder, stack, stackSize,
 									   methodSignature, methodInfo,
 									   unsafeAllowed, 0, 0,
-									   &callInfo, tailCall);
-			tailCall = 0;
+									   &callInfo, 0);
 			if(numParams < 0)
 			{
 				VERIFY_TYPE_ERROR();
@@ -2642,6 +2716,8 @@ case IL_OP_PREFIX + IL_PREFIX_OP_LDVIRTFTN:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDVIRTFTN_PREFIX,
+						 VALID_NO_LDVIRTFTN);
 }
 break;
 
@@ -2673,7 +2749,8 @@ case IL_OP_PREFIX + IL_PREFIX_OP_TAIL:
 	}
 
 	/* Set the tail call flag and then advance to the next instruction */
-	tailCall = 1;
+	prefixInfo.prefixFlags |= IL_CODER_PREFIX_TAIL;
+	lastInsnWasPrefix = 1;
 }
 break;
 

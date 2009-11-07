@@ -546,7 +546,6 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_Compare,
 	CVMCoder_Conv,
 	CVMCoder_ToPointer,
-	CVMCoder_PtrPrefix,
 	CVMCoder_ArrayLength,
 	CVMCoder_NewArray,
 	CVMCoder_LocalAlloc,

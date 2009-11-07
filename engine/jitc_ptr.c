@@ -98,7 +98,8 @@ static void StoreRelative(ILJITCoder *coder, ILJitType type)
 /*
  * Handle a pointer indirection opcode.
  */
-static void JITCoder_PtrAccess(ILCoder *coder, int opcode)
+static void JITCoder_PtrAccess(ILCoder *coder, int opcode,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 
@@ -275,7 +276,8 @@ static void JITCoder_PtrDeref(ILCoder *coder, int pos)
  * Handle a pointer indirection opcode for a managed value.
  */
 static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,
-									  ILClass *classInfo)
+									  ILClass *classInfo,
+									  const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILType *type = ILClassToType(classInfo);
@@ -350,14 +352,6 @@ static void JITCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 		}
 		_ILJitStackItemStoreRelative(jitCoder, address, 0, value);
 	}
-}
-
-/*
- * Process a pointer alignment prefix.  An "alignment" value
- * of zero indicates a "volatile" prefix.
- */
-static void JITCoder_PtrPrefix(ILCoder *coder, int alignment)
-{
 }
 
 /*

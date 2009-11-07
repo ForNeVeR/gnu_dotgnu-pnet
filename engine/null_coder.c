@@ -114,7 +114,7 @@ static void Coder_LoadLocal(ILCoder *coder, ILUInt32 num, ILType *type)
 {
 }
 static void Coder_StoreLocal(ILCoder *coder, ILUInt32 num,
-					   		 ILEngineType engineType, ILType *type)
+							 ILEngineType engineType, ILType *type)
 {
 }
 static void Coder_AddrOfLocal(ILCoder *coder, ILUInt32 num)
@@ -127,21 +127,24 @@ static void Coder_Pop(ILCoder *coder, ILEngineType valueType, ILType *type)
 {
 }
 static void Coder_ArrayAccess(ILCoder *coder, int opcode,
-							  ILEngineType indexType, ILType *elemType)
+							  ILEngineType indexType, ILType *elemType,
+							  const ILCoderPrefixInfo *prefixInfo)
 {
 }
-static void Coder_PtrAccess(ILCoder *coder, int opcode)
+static void Coder_PtrAccess(ILCoder *coder, int opcode,
+							const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_PtrDeref(ILCoder *coder, int pos)
 {
 }
 static void Coder_PtrAccessManaged(ILCoder *coder, int opcode,
-								   ILClass *classInfo)
+								   ILClass *classInfo,
+								   const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
-				   		 ILEngineType type1, ILEngineType type2)
+						 ILEngineType type1, ILEngineType type2)
 {
 }
 static void Coder_SwitchStart(ILCoder *coder, ILUInt32 numEntries)
@@ -154,7 +157,7 @@ static void Coder_SwitchEnd(ILCoder *coder)
 {
 }
 static void Coder_Compare(ILCoder *coder, int opcode,
-				   		  ILEngineType type1, ILEngineType type2,
+						  ILEngineType type1, ILEngineType type2,
 						  int invertTest)
 {
 }
@@ -163,9 +166,6 @@ static void Coder_Conv(ILCoder *coder, int opcode, ILEngineType type)
 }
 static void Coder_ToPointer(ILCoder *coder, ILEngineType type1,
 							ILEngineStackItem *type2)
-{
-}
-static void Coder_PtrPrefix(ILCoder *coder, int alignment)
 {
 }
 static void Coder_ArrayLength(ILCoder *coder)
@@ -179,20 +179,24 @@ static void Coder_LocalAlloc(ILCoder *coder, ILEngineType sizeType)
 {
 }
 static void Coder_CastClass(ILCoder *coder, ILClass *classInfo,
-							int throwException)
+							int throwException,
+							const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_LoadField(ILCoder *coder, ILEngineType ptrType,
 							ILType *objectType, ILField *field,
-							ILType *fieldType)
+							ILType *fieldType,
+							const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_LoadThisField(ILCoder *coder, ILField *field,
-							    ILType *fieldType)
+								ILType *fieldType,
+								const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_LoadStaticField(ILCoder *coder, ILField *field,
-							      ILType *fieldType)
+								  ILType *fieldType,
+								  const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_LoadFieldAddr(ILCoder *coder, ILEngineType ptrType,
@@ -206,11 +210,13 @@ static void Coder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 }
 static void Coder_StoreField(ILCoder *coder, ILEngineType ptrType,
 							 ILType *objectType, ILField *field,
-							 ILType *fieldType, ILEngineType valueType)
+							 ILType *fieldType, ILEngineType valueType,
+							 const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_StoreStaticField(ILCoder *coder, ILField *field,
-							       ILType *fieldType, ILEngineType valueType)
+							       ILType *fieldType, ILEngineType valueType,
+								   const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
@@ -218,14 +224,16 @@ static void Coder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 {
 }
 static void Coder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
-							ILEngineType srcPtrType)
+							ILEngineType srcPtrType,
+							const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_InitObject(ILCoder *coder, ILEngineType ptrType,
 							 ILClass *classInfo)
 {
 }
-static void Coder_InitBlock(ILCoder *coder, ILEngineType ptrType)
+static void Coder_InitBlock(ILCoder *coder, ILEngineType ptrType,
+							const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_Box(ILCoder *coder, ILClass *boxClass,
@@ -240,7 +248,8 @@ static void Coder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 					   		 ILEngineType valueType, ILType *smallerType)
 {
 }
-static void Coder_Unbox(ILCoder *coder, ILClass *boxClass)
+static void Coder_Unbox(ILCoder *coder, ILClass *boxClass,
+						const ILCoderPrefixInfo *prefixInfo)
 {
 }
 static void Coder_MakeTypedRef(ILCoder *coder, ILClass *classInfo)
@@ -495,7 +504,6 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_Compare,
 	Coder_Conv,
 	Coder_ToPointer,
-	Coder_PtrPrefix,
 	Coder_ArrayLength,
 	Coder_NewArray,
 	Coder_LocalAlloc,

@@ -247,7 +247,6 @@ static ILJitValue _ILJitLoadField(ILJITCoder *coder, ILJitStackItem *base,
 static void _ILJitStoreField(ILJITCoder *coder, ILJitStackItem *base,
 								   ILJitValue value, ILType *fieldType,
 								   ILUInt32 offset, int mayBeNull)
-								   
 {
 	ILJitType type = _ILJitGetReturnType(fieldType, coder->process);
 
@@ -263,7 +262,8 @@ static void _ILJitStoreField(ILJITCoder *coder, ILJitStackItem *base,
 }
 
 static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
-							   int throwException)
+							   int throwException,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue classTo = jit_value_create_nint_constant(jitCoder->jitFunction,
@@ -334,7 +334,8 @@ static void JITCoder_CastClass(ILCoder *coder, ILClass *classInfo,
 
 static void JITCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 							   ILType *objectType, ILField *field,
-							   ILType *fieldType)
+							   ILType *fieldType,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue value = 0;
@@ -373,7 +374,8 @@ static void JITCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 }
 
 static void JITCoder_LoadThisField(ILCoder *coder, ILField *field,
-							   	   ILType *fieldType)
+								   ILType *fieldType,
+								   const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	_ILJitStackItemNew(param);
@@ -397,7 +399,8 @@ static void JITCoder_LoadThisField(ILCoder *coder, ILField *field,
 }
 
 static void JITCoder_LoadStaticField(ILCoder *coder, ILField *field,
-							         ILType *fieldType)
+									 ILType *fieldType,
+									 const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILJitValue value = 0;
@@ -653,8 +656,9 @@ static void JITCoder_LoadStaticFieldAddr(ILCoder *coder, ILField *field,
 }
 
 static void JITCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
-							    ILType *objectType, ILField *field,
-							    ILType *fieldType, ILEngineType valueType)
+								ILType *objectType, ILField *field,
+								ILType *fieldType, ILEngineType valueType,
+								const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	_ILJitStackItemNew(value);
@@ -682,7 +686,9 @@ static void JITCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
 }
 
 static void JITCoder_StoreStaticField(ILCoder *coder, ILField *field,
-				      ILType *fieldType, ILEngineType valueType)
+									  ILType *fieldType,
+									  ILEngineType valueType,
+									  const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	_ILJitStackItemNew(stackItem);
@@ -826,7 +832,8 @@ static void JITCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 }
 
 static void JITCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
-							   ILEngineType srcPtrType)
+							   ILEngineType srcPtrType,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	_ILJitStackItemNew(size);
@@ -849,7 +856,7 @@ static void JITCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
 }
 
 static void JITCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
-				ILClass *classInfo)
+								ILClass *classInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	ILType *type = ILClassToType(classInfo);
@@ -874,7 +881,8 @@ static void JITCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 						  memSize);
 }
 
-static void JITCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
+static void JITCoder_InitBlock(ILCoder *coder, ILEngineType ptrType,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	_ILJitStackItemNew(size);
@@ -1066,7 +1074,8 @@ static void JITCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
 	_ILJitStackPushNotNullValue(jitCoder, newObj);
 }
 
-static void JITCoder_Unbox(ILCoder *coder, ILClass *boxClass)
+static void JITCoder_Unbox(ILCoder *coder, ILClass *boxClass,
+						   const ILCoderPrefixInfo *prefixInfo)
 {
 	/* We don't have to do anything here: the object reference
 	   points at the start of the object's fields, which is

@@ -21,7 +21,8 @@
 #ifdef IL_CVMC_CODE
 
 static void CVMCoder_CastClass(ILCoder *coder, ILClass *classInfo,
-							   int throwException)
+							   int throwException,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 	if(ILClass_IsInterface(classInfo))
 	{
@@ -274,7 +275,8 @@ static void CVMLoadField(ILCoder *coder, ILEngineType ptrType,
 
 static void CVMCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 							   ILType *objectType, ILField *field,
-							   ILType *fieldType)
+							   ILType *fieldType,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 #ifdef IL_NATIVE_INT64
 	/* Convert I4 to I if necessary */
@@ -288,7 +290,8 @@ static void CVMCoder_LoadField(ILCoder *coder, ILEngineType ptrType,
 }
 
 static void CVMCoder_LoadThisField(ILCoder *coder, ILField *field,
-							   	   ILType *fieldType)
+								   ILType *fieldType,
+								   const ILCoderPrefixInfo *prefixInfo)
 {
 	ILType *enumType;
 
@@ -370,7 +373,8 @@ static void LoadPInvokeFieldAddress(ILCoder *coder, ILField *field,
 #endif /* IL_CONFIG_PINVOKE */
 
 static void CVMCoder_LoadStaticField(ILCoder *coder, ILField *field,
-							         ILType *fieldType)
+									 ILType *fieldType,
+									 const ILCoderPrefixInfo *prefixInfo)
 {
 	ILClass *classInfo;
 
@@ -790,8 +794,9 @@ static void CVMStoreField(ILCoder *coder, ILField *field,
 }
 
 static void CVMCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
-							    ILType *objectType, ILField *field,
-							    ILType *fieldType, ILEngineType valueType)
+								ILType *objectType, ILField *field,
+								ILType *fieldType, ILEngineType valueType,
+								const ILCoderPrefixInfo *prefixInfo)
 {
 	ILUInt32 valueSize = GetStackTypeSize(((ILCVMCoder *)coder)->process, fieldType);
 
@@ -811,7 +816,8 @@ static void CVMCoder_StoreField(ILCoder *coder, ILEngineType ptrType,
 }
 
 static void CVMCoder_StoreStaticField(ILCoder *coder, ILField *field,
-							          ILType *fieldType, ILEngineType valueType)
+									  ILType *fieldType, ILEngineType valueType,
+									  const ILCoderPrefixInfo *prefixInfo)
 {
 	ILUInt32 valueSize = GetStackTypeSize(_ILCoderToILCVMCoder(coder)->process,
 										  fieldType);
@@ -910,7 +916,8 @@ static void CVMCoder_CopyObject(ILCoder *coder, ILEngineType destPtrType,
 }
 
 static void CVMCoder_CopyBlock(ILCoder *coder, ILEngineType destPtrType,
-							   ILEngineType srcPtrType)
+							   ILEngineType srcPtrType,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 #ifdef IL_NATIVE_INT64
 	/* Normalize the pointers */
@@ -965,7 +972,8 @@ static void CVMCoder_InitObject(ILCoder *coder, ILEngineType ptrType,
 	CVM_ADJUST(-1);
 }
 
-static void CVMCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
+static void CVMCoder_InitBlock(ILCoder *coder, ILEngineType ptrType,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 #ifdef IL_NATIVE_INT64
 	/* Normalize the pointer */
@@ -987,7 +995,7 @@ static void CVMCoder_InitBlock(ILCoder *coder, ILEngineType ptrType)
 }
 
 static void CVMCoder_Box(ILCoder *coder, ILClass *boxClass,
-					     ILEngineType valueType, ILUInt32 size)
+						 ILEngineType valueType, ILUInt32 size)
 {
 	ILUInt32 sizeInWords;
 
@@ -1009,7 +1017,7 @@ static void CVMCoder_Box(ILCoder *coder, ILClass *boxClass,
 }
 
 static void CVMCoder_BoxSmaller(ILCoder *coder, ILClass *boxClass,
-					   		    ILEngineType valueType, ILType *smallerType)
+								ILEngineType valueType, ILType *smallerType)
 {
 	/* Align the value on the proper stack word boundary and then box it */
 	switch(ILType_ToElement(smallerType))
@@ -1061,7 +1069,8 @@ static void CVMCoder_BoxPtr(ILCoder *coder, ILClass *boxClass,
 	}
 }
 
-static void CVMCoder_Unbox(ILCoder *coder, ILClass *boxClass)
+static void CVMCoder_Unbox(ILCoder *coder, ILClass *boxClass,
+						   const ILCoderPrefixInfo *prefixInfo)
 {
 	/* We don't have to do anything here: the object reference
 	   points at the start of the object's fields, which is

@@ -5144,7 +5144,6 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_Compare,
 	JITCoder_Conv,
 	JITCoder_ToPointer,
-	JITCoder_PtrPrefix,
 	JITCoder_ArrayLength,
 	JITCoder_NewArray,
 	JITCoder_LocalAlloc,

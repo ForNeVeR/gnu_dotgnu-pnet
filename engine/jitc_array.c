@@ -780,7 +780,8 @@ static void StoreArrayElem(ILJITCoder *coder, ILJitType type)
  * Handle an array access opcode.
  */
 static void JITCoder_ArrayAccess(ILCoder *coder, int opcode,
-								 ILEngineType indexType, ILType *elemType)
+								 ILEngineType indexType, ILType *elemType,
+								 const ILCoderPrefixInfo *prefixInfo)
 {
 	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
 	_ILJitStackItemNew(array);

@@ -95,7 +95,8 @@ case IL_OP_LDARG_0:
 					if(!ILField_IsStatic(fieldInfo))
 					{
 						/* Load the "this"-based field onto the stack */
-						ILCoderLoadThisField(coder, fieldInfo, classType);
+						ILCoderLoadThisField(coder, fieldInfo, classType,
+											 &prefixInfo);
 
 						/* Push the field's type onto the stack */
 						stack[stackSize].engineType =

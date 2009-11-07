@@ -106,7 +106,8 @@ static void StoreArrayElem(ILCoder *coder, int opcode1, int opcode2,
  * Handle an array access opcode.
  */
 static void CVMCoder_ArrayAccess(ILCoder *coder, int opcode,
-								 ILEngineType indexType, ILType *elemType)
+								 ILEngineType indexType, ILType *elemType,
+								 const ILCoderPrefixInfo *prefixInfo)
 {
 	ILUInt32 size;
 
@@ -379,7 +380,8 @@ static void CVMCoder_ArrayAccess(ILCoder *coder, int opcode,
 /*
  * Handle a pointer indirection opcode.
  */
-static void CVMCoder_PtrAccess(ILCoder *coder, int opcode)
+static void CVMCoder_PtrAccess(ILCoder *coder, int opcode,
+							   const ILCoderPrefixInfo *prefixInfo)
 {
 	switch(opcode)
 	{
@@ -543,12 +545,12 @@ void CVMCoder_PtrDeref(ILCoder *coder, int pos)
 {
 	if(pos == 0)
 	{
-		CVMCoder_PtrAccess(coder, IL_OP_LDIND_REF);
+		CVMCoder_PtrAccess(coder, IL_OP_LDIND_REF, 0);
 	}
 	else
 	{
 		CVM_OUT_WIDE(COP_DUP_WORD_N, pos);
-		CVMCoder_PtrAccess(coder, IL_OP_LDIND_REF);
+		CVMCoder_PtrAccess(coder, IL_OP_LDIND_REF, 0);
 		CVMP_OUT_WORD(COP_PREFIX_REPL_WORD_N, pos+1);
 	}
 }
@@ -557,7 +559,8 @@ void CVMCoder_PtrDeref(ILCoder *coder, int pos)
  * Handle a pointer indirection opcode for a managed value.
  */
 static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,
-									  ILClass *classInfo)
+									  ILClass *classInfo,
+									  const ILCoderPrefixInfo *prefixInfo)
 {
 	/* Compute the size of the managed value in memory and on the stack */
 	ILUInt32 memorySize = _ILSizeOfTypeLocked(((ILCVMCoder *)coder)->process, ILType_FromValueType(classInfo));
@@ -599,15 +602,6 @@ static void CVMCoder_PtrAccessManaged(ILCoder *coder, int opcode,
 			CVM_ADJUST(-1);
 		}
 	}
-}
-
-/*
- * Process a pointer alignment prefix.  An "alignment" value
- * of zero indicates a "volatile" prefix.
- */
-static void CVMCoder_PtrPrefix(ILCoder *coder, int alignment)
-{
-	/* TODO */
 }
 
 /*

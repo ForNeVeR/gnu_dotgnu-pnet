@@ -259,7 +259,6 @@ static ILType *GetTypeToken(ILMethod *method, unsigned char *pc)
 ILType *elemType;
 ILClass *classInfo;
 ILType *classType;
-ILBool isReadOnly;
 
 #else /* IL_VERIFY_CODE */
 
@@ -273,7 +272,7 @@ case IL_OP_LDIND_##name: \
 		if(unsafeAllowed || \
 		   PtrCompatible(stack[stackSize - 1].typeInfo, (type))) \
 		{ \
-			ILCoderPtrAccess(coder, opcode); \
+			ILCoderPtrAccess(coder, opcode, &prefixInfo); \
 			STK_UNARY = (engineType); \
 			STK_UNARY_TYPEINFO = 0; \
 		} \
@@ -286,7 +285,7 @@ case IL_OP_LDIND_##name: \
 	        (STK_UNARY == ILEngineType_I4 || STK_UNARY == ILEngineType_I)) \
 	{ \
 		ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0); \
-		ILCoderPtrAccess(coder, opcode); \
+		ILCoderPtrAccess(coder, opcode, &prefixInfo); \
 		STK_UNARY = (engineType); \
 		STK_UNARY_TYPEINFO = 0; \
 	} \
@@ -294,6 +293,7 @@ case IL_OP_LDIND_##name: \
 	{ \
 		VERIFY_TYPE_ERROR(); \
 	} \
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDIND_PREFIX, VALID_NO_NONE); \
 } \
 break
 
@@ -306,7 +306,7 @@ case IL_OP_STIND_##name: \
 		   (STK_BINARY_2 == (engineType) && \
 		    PtrCompatible(stack[stackSize - 2].typeInfo, (type)))) \
 		{ \
-			ILCoderPtrAccess(coder, opcode); \
+			ILCoderPtrAccess(coder, opcode, &prefixInfo); \
 			stackSize -= 2; \
 		} \
 		else \
@@ -323,13 +323,14 @@ case IL_OP_STIND_##name: \
 			   STK_BINARY_2 == ILEngineType_T)))) \
 	{ \
 		ILCoderToPointer(coder, STK_BINARY_1, &(stack[stackSize - 1])); \
-		ILCoderPtrAccess(coder, opcode); \
+		ILCoderPtrAccess(coder, opcode, &prefixInfo); \
 		stackSize -= 2; \
 	} \
 	else \
 	{ \
 		VERIFY_TYPE_ERROR(); \
 	} \
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STIND_PREFIX, VALID_NO_NONE); \
 } \
 break
 
@@ -342,7 +343,8 @@ case IL_OP_LDELEM_##name: \
 	{ \
 		if(elemType == ILType_Void || PtrCompatible(elemType, (type))) \
 		{ \
-			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType); \
+			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType, \
+							   &prefixInfo); \
 			STK_BINARY_1 = (engineType); \
 			STK_TYPEINFO_1 = 0; \
 			--stackSize; \
@@ -356,6 +358,8 @@ case IL_OP_LDELEM_##name: \
 	{ \
 		VERIFY_TYPE_ERROR(); \
 	} \
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDELEM_T_PREFIX, \
+						 VALID_NO_LDELEM_T); \
 } \
 break
 
@@ -370,7 +374,8 @@ case IL_OP_STELEM_##name: \
 	{ \
 		if(elemType == ILType_Void || PtrCompatible(elemType, (type))) \
 		{ \
-			ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType); \
+			ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType, \
+							   &prefixInfo); \
 			stackSize -= 3; \
 		} \
 		else \
@@ -382,6 +387,8 @@ case IL_OP_STELEM_##name: \
 	{ \
 		VERIFY_TYPE_ERROR(); \
 	} \
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STELEM_T_PREFIX, \
+						 VALID_NO_STELEM_T); \
 } \
 break
 
@@ -411,20 +418,29 @@ case IL_OP_LDELEM:
 	   (STK_BINARY_2 == ILEngineType_I4 || STK_BINARY_2 == ILEngineType_I) &&
 	   (elemType = ArrayElementType(stack[stackSize - 2].typeInfo)) != 0)
 	{
-		if(ILTypeIdentical(classType, elemType))
+		if((prefixInfo.prefixFlags & IL_CODER_PREFIX_READONLY) == 0)
 		{
-			int opcode = TypeToLdElemOpcode(elemType);
-			if(opcode != IL_OP_NOP)
+			if(ILTypeIdentical(classType, elemType))
 			{
-				ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType);
-				if(opcode == IL_OP_LDELEMA)
+				int opcode = TypeToLdElemOpcode(elemType);
+				if(opcode != IL_OP_NOP)
 				{
-					ILClass *classInfo = ILClassFromType(ILProgramItem_Image(method), 0, classType, 0);
-					ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo);
+					ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType,
+									   &prefixInfo);
+					if(opcode == IL_OP_LDELEMA)
+					{
+						ILClass *classInfo = ILClassFromType(ILProgramItem_Image(method), 0, classType, 0);
+						ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo,
+												&prefixInfo);
+					}
+					STK_BINARY_1 = TypeToEngineType(elemType);
+					STK_TYPEINFO_1 = elemType;
+					--stackSize;
 				}
-				STK_BINARY_1 = TypeToEngineType(elemType);
-				STK_TYPEINFO_1 = elemType;
-				--stackSize;
+				else
+				{
+					VERIFY_TYPE_ERROR();
+				}
 			}
 			else
 			{
@@ -433,13 +449,35 @@ case IL_OP_LDELEM:
 		}
 		else
 		{
-			VERIFY_TYPE_ERROR();
+			/*
+			 * Skip the exact type match check with the .readonly prefix
+			 */
+			int opcode = TypeToLdElemOpcode(elemType);
+			if(opcode != IL_OP_NOP)
+			{
+				ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType,
+								   &prefixInfo);
+				if(opcode == IL_OP_LDELEMA)
+				{
+					ILClass *classInfo = ILClassFromType(ILProgramItem_Image(method), 0, classType, 0);
+					ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo,
+											&prefixInfo);
+				}
+				STK_BINARY_1 = ILEngineType_CM;
+				STK_TYPEINFO_1 = elemType;
+				--stackSize;
+			}
+			else
+			{
+				VERIFY_TYPE_ERROR();
+			}
 		}
 	}
 	else
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDELEM_PREFIX, VALID_NO_LDELEM);
 }
 break;
 
@@ -455,7 +493,8 @@ case IL_OP_STELEM:
 			int opcode = TypeToStElemOpcode(classType);
 			if(opcode != IL_OP_NOP)
 			{
-				ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType);
+				ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType,
+								   &prefixInfo);
 			}
 			else if(ILType_IsValueType(classType))
 			{
@@ -476,6 +515,7 @@ case IL_OP_STELEM:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STELEM_PREFIX, VALID_NO_STELEM);
 }
 break;
 
@@ -488,7 +528,7 @@ case IL_OP_LDIND_REF:
 	{
 		if(IsObjectRef(stack[stackSize - 1].typeInfo))
 		{
-			ILCoderPtrAccess(coder, opcode);
+			ILCoderPtrAccess(coder, opcode, &prefixInfo);
 			stack[stackSize - 1].engineType = ILEngineType_O;
 		}
 		else
@@ -504,7 +544,7 @@ case IL_OP_LDIND_REF:
 		   There really is nothing else that we can do because there
 		   is no way to determine the actual type */
 		ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0);
-		ILCoderPtrAccess(coder, opcode);
+		ILCoderPtrAccess(coder, opcode, &prefixInfo);
 		stack[stackSize - 1].engineType = ILEngineType_O;
 		stack[stackSize - 1].typeInfo = 0;
 	}
@@ -512,6 +552,7 @@ case IL_OP_LDIND_REF:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDIND_PREFIX, VALID_NO_NONE);
 }
 break;
 
@@ -527,7 +568,7 @@ case IL_OP_STIND_REF:
 							    stack[stackSize - 2].typeInfo,
 								unsafeAllowed))
 			{
-				ILCoderPtrAccess(coder, opcode);
+				ILCoderPtrAccess(coder, opcode, &prefixInfo);
 				stackSize -= 2;
 			}
 			else
@@ -546,13 +587,14 @@ case IL_OP_STIND_REF:
 			STK_BINARY_2 == ILEngineType_O)
 	{
 		ILCoderToPointer(coder, STK_BINARY_1, &(stack[stackSize - 1]));
-		ILCoderPtrAccess(coder, opcode);
+		ILCoderPtrAccess(coder, opcode, &prefixInfo);
 		stackSize -= 2;
 	}
 	else
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STIND_PREFIX, VALID_NO_NONE);
 }
 break;
 
@@ -568,7 +610,7 @@ case IL_OP_LDOBJ:
 		if(classInfo &&
 		   ILTypeIdentical(stack[stackSize - 1].typeInfo, classType))
 		{
-			ILCoderPtrAccessManaged(coder, opcode, classInfo);
+			ILCoderPtrAccessManaged(coder, opcode, classInfo, &prefixInfo);
 			stack[stackSize - 1].engineType = TypeToEngineType(classType);
 			stack[stackSize - 1].typeInfo = classType;
 		}
@@ -583,7 +625,7 @@ case IL_OP_LDOBJ:
 		if(classInfo)
 		{
 			ILCoderToPointer(coder, STK_UNARY, (ILEngineStackItem *)0);
-			ILCoderPtrAccessManaged(coder, opcode, classInfo);
+			ILCoderPtrAccessManaged(coder, opcode, classInfo, &prefixInfo);
 			stack[stackSize - 1].engineType = TypeToEngineType(classType);
 			stack[stackSize - 1].typeInfo = classType;
 		}
@@ -596,6 +638,7 @@ case IL_OP_LDOBJ:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDOBJ_PREFIX, VALID_NO_NONE);
 }
 break;
 
@@ -606,13 +649,13 @@ case IL_OP_STOBJ:
 	if(STK_BINARY_1 == ILEngineType_M || STK_BINARY_1 == ILEngineType_T)
 	{
 		/* NOTE: ILTypeIdentical(stack[stackSize - 1].typeInfo,
-		   				    ILType_FromValueType(classInfo))
+						    ILType_FromValueType(classInfo))
 		   was removed as ECMA spec leaves that check as unspecified. */
 		if((STK_BINARY_2 == ILEngineType_MV || STK_BINARY_2 == ILEngineType_I 
 			|| STK_BINARY_2 == ILEngineType_F)
 			&& classInfo)
 		{
-			ILCoderPtrAccessManaged(coder, opcode, classInfo);
+			ILCoderPtrAccessManaged(coder, opcode, classInfo, &prefixInfo);
 			stackSize -= 2;
 		}
 		else
@@ -626,10 +669,10 @@ case IL_OP_STOBJ:
 	{
 		if(STK_BINARY_2 == ILEngineType_MV && classInfo &&
 		   ILTypeIdentical(stack[stackSize - 1].typeInfo,
-		   				   ILType_FromValueType(classInfo)))
+						   ILType_FromValueType(classInfo)))
 		{
 			ILCoderToPointer(coder, STK_BINARY_1, &(stack[stackSize - 1]));
-			ILCoderPtrAccessManaged(coder, opcode, classInfo);
+			ILCoderPtrAccessManaged(coder, opcode, classInfo, &prefixInfo);
 			stackSize -= 2;
 		}
 		else
@@ -641,32 +684,45 @@ case IL_OP_STOBJ:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STOBJ_PREFIX, VALID_NO_NONE);
 }
 break;
 
 case IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED:
 {
 	/* Process an "unaligned" prefix for pointer access */
-	if(pc[3] == IL_OP_LDIND_I1  || pc[3] == IL_OP_LDIND_U1  ||
-	   pc[3] == IL_OP_LDIND_I2  || pc[3] == IL_OP_LDIND_U2  ||
-	   pc[3] == IL_OP_LDIND_I4  || pc[3] == IL_OP_LDIND_U4  ||
-	   pc[3] == IL_OP_LDIND_I8  || pc[3] == IL_OP_LDIND_I   ||
-	   pc[3] == IL_OP_LDIND_R4  || pc[3] == IL_OP_LDIND_R8  ||
-	   pc[3] == IL_OP_LDIND_REF || pc[3] == IL_OP_LDIND_REF ||
-	   pc[3] == IL_OP_STIND_I1  || pc[3] == IL_OP_STIND_I2  ||
-	   pc[3] == IL_OP_STIND_I4  || pc[3] == IL_OP_STIND_I8  ||
-	   pc[3] == IL_OP_STIND_I   || pc[3] == IL_OP_STIND_R4  ||
-	   pc[3] == IL_OP_STIND_R8  || pc[3] == IL_OP_STIND_REF ||
-	   pc[3] == IL_OP_LDFLD     || pc[3] == IL_OP_STFLD     ||
-	   pc[3] == IL_OP_LDOBJ     || pc[3] == IL_OP_STOBJ     ||
-	   (pc[3] == IL_OP_PREFIX && pc[4] == IL_PREFIX_OP_INITBLK) ||
-	   (pc[3] == IL_OP_PREFIX && pc[4] == IL_PREFIX_OP_CPBLK) ||
-	   (pc[3] == IL_OP_PREFIX && pc[4] == IL_PREFIX_OP_UNALIGNED) ||
-	   (pc[3] == IL_OP_PREFIX && pc[4] == IL_PREFIX_OP_VOLATILE))
+	if(pc[2] == 1 || pc[2] == 2 || pc[2] == 4)
 	{
-		if(pc[2] == 1 || pc[2] == 2 || pc[2] == 4)
+		prefixInfo.prefixFlags |= IL_CODER_PREFIX_UNALIGNED;
+		prefixInfo.unalignedValue = (ILUInt32)pc[2];
+		lastInsnWasPrefix = 1;
+	}
+	else
+	{
+		VERIFY_INSN_ERROR();
+	}
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_VOLATILE:
+{
+	/* Process a "volatile" prefix for pointer access */
+	prefixInfo.prefixFlags |= IL_CODER_PREFIX_VOLATILE;
+	lastInsnWasPrefix = 1;
+}
+break;
+
+case IL_OP_PREFIX + IL_PREFIX_OP_NO:
+{
+	/* Process a "no" prefix for pointer access */
+	if(unsafeAllowed)
+	{
+		/* The no prefix is allowed in unsafe code only. */
+		if(((pc[2] & VALID_NO_ALL) != 0) && ((pc[2] & ~VALID_NO_ALL) == 0))
 		{
-			ILCoderPtrPrefix(coder, (int)(pc[2]));
+			prefixInfo.prefixFlags |= IL_CODER_PREFIX_NO;
+			prefixInfo.noFlags = (ILUInt32)pc[2];
+			lastInsnWasPrefix = 1;
 		}
 		else
 		{
@@ -680,114 +736,11 @@ case IL_OP_PREFIX + IL_PREFIX_OP_UNALIGNED:
 }
 break;
 
-case IL_OP_PREFIX + IL_PREFIX_OP_VOLATILE:
-{
-	/* Process a "volatile" prefix for pointer access */
-	if(pc[2] == IL_OP_LDIND_I1  || pc[2] == IL_OP_LDIND_U1  ||
-	   pc[2] == IL_OP_LDIND_I2  || pc[2] == IL_OP_LDIND_U2  ||
-	   pc[2] == IL_OP_LDIND_I4  || pc[2] == IL_OP_LDIND_U4  ||
-	   pc[2] == IL_OP_LDIND_I8  || pc[2] == IL_OP_LDIND_I   ||
-	   pc[2] == IL_OP_LDIND_R4  || pc[2] == IL_OP_LDIND_R8  ||
-	   pc[2] == IL_OP_LDIND_REF || pc[2] == IL_OP_LDIND_REF ||
-	   pc[2] == IL_OP_STIND_I1  || pc[2] == IL_OP_STIND_I2  ||
-	   pc[2] == IL_OP_STIND_I4  || pc[2] == IL_OP_STIND_I8  ||
-	   pc[2] == IL_OP_STIND_I   || pc[2] == IL_OP_STIND_R4  ||
-	   pc[2] == IL_OP_STIND_R8  || pc[2] == IL_OP_STIND_REF ||
-	   pc[2] == IL_OP_LDFLD     || pc[2] == IL_OP_STFLD     ||
-	   pc[2] == IL_OP_LDOBJ     || pc[2] == IL_OP_STOBJ     ||
-	   pc[2] == IL_OP_LDSFLD    || pc[2] == IL_OP_STSFLD    ||
-	   (pc[2] == IL_OP_PREFIX && pc[3] == IL_PREFIX_OP_INITBLK) ||
-	   (pc[2] == IL_OP_PREFIX && pc[3] == IL_PREFIX_OP_CPBLK) ||
-	   (pc[2] == IL_OP_PREFIX && pc[3] == IL_PREFIX_OP_UNALIGNED) ||
-	   (pc[2] == IL_OP_PREFIX && pc[3] == IL_PREFIX_OP_VOLATILE))
-	{
-		ILCoderPtrPrefix(coder, 0);
-	}
-	else
-	{
-		VERIFY_INSN_ERROR();
-	}
-}
-break;
-
-case IL_OP_PREFIX + IL_PREFIX_OP_NO:
-{
-	/* Process a "no" prefix for pointer access */
-	if(unsafeAllowed)
-	{
-		/* The no prefix is allowed in unsafe code only. */
-		if(pc[2] & IL_PREFIX_OP_NO_TYPECHECK)
-		{
-			if(!(pc[3] == IL_OP_LDELEMA || pc[3] == IL_OP_LDELEM     ||
-				 pc[3] == IL_OP_STELEM  || pc[3] == IL_OP_CASTCLASS  ||
-				 pc[3] == IL_OP_UNBOX))
-			{
-				VERIFY_INSN_ERROR();
-			}
-		}
-		if(pc[2] & IL_PREFIX_OP_NO_RANGECHECK)
-		{
-			if(!(pc[3] == IL_OP_LDELEMA   || pc[3] == IL_OP_LDELEM_I1  ||
-				 pc[3] == IL_OP_LDELEM_U1 || pc[3] == IL_OP_LDELEM_I2  ||
-				 pc[3] == IL_OP_LDELEM_U2 || pc[3] == IL_OP_LDELEM_I4  ||
-				 pc[3] == IL_OP_LDELEM_U4 || pc[3] == IL_OP_LDELEM_I8  ||
-				 pc[3] == IL_OP_LDELEM_I  || pc[3] == IL_OP_LDELEM_R4  ||
-				 pc[3] == IL_OP_LDELEM_R8 || pc[3] == IL_OP_LDELEM_REF ||
-				 pc[3] == IL_OP_STELEM_I  || pc[3] == IL_OP_STELEM_I1  ||
-				 pc[3] == IL_OP_STELEM_I2 || pc[3] == IL_OP_STELEM_I4  ||
-				 pc[3] == IL_OP_STELEM_I8 || pc[3] == IL_OP_STELEM_R4  ||
-				 pc[3] == IL_OP_STELEM_R8 || pc[3] == IL_OP_STELEM_REF))
-			{
-				VERIFY_INSN_ERROR();
-			}
-
-		}
-		if(pc[2] & IL_PREFIX_OP_NO_RANGECHECK)
-		{
-			if(!(pc[3] == IL_OP_LDFLD      || pc[3] == IL_OP_STFLD      ||
-				 pc[3] == IL_OP_CALLVIRT   || pc[3] == IL_OP_LDELEMA    ||
-				 pc[3] == IL_OP_LDELEM_I1  || pc[3] == IL_OP_LDELEM_U1  ||
-				 pc[3] == IL_OP_LDELEM_I2  || pc[3] == IL_OP_LDELEM_U2  ||
-				 pc[3] == IL_OP_LDELEM_I4  || pc[3] == IL_OP_LDELEM_U4  ||
-				 pc[3] == IL_OP_LDELEM_I8  || pc[3] == IL_OP_LDELEM_I   ||
-				 pc[3] == IL_OP_LDELEM_R4  || pc[3] == IL_OP_LDELEM_R8  ||
-				 pc[3] == IL_OP_LDELEM_REF || pc[3] == IL_OP_STELEM_I   ||
-				 pc[3] == IL_OP_STELEM_I1  || pc[3] == IL_OP_STELEM_I2  ||
-				 pc[3] == IL_OP_STELEM_I4  || pc[3] == IL_OP_STELEM_I8  ||
-				 pc[3] == IL_OP_STELEM_R4  || pc[3] == IL_OP_STELEM_R8  ||
-				 pc[3] == IL_OP_STELEM_REF ||
-				 (pc[3] == IL_OP_PREFIX    && pc[4] == IL_PREFIX_OP_LDVIRTFTN)))
-			{
-				VERIFY_INSN_ERROR();
-			}
-		}
-		if(pc[2] & ~(IL_PREFIX_OP_NO_TYPECHECK | IL_PREFIX_OP_NO_RANGECHECK |
-					 IL_PREFIX_OP_NO_RANGECHECK))
-		{
-				VERIFY_INSN_ERROR();
-		}
-		/* TODO: Handle this opcode in the coder. */
-	}
-	else
-	{
-		VERIFY_INSN_ERROR();
-	}
-}
-break;
-
 case IL_OP_PREFIX + IL_PREFIX_OP_READONLY:
 {
 	/* Process a "readonly" prefix for array  access */
-	if(pc[2] == IL_OP_LDELEMA)
-	{
-		/* TODO: Handle this in the ldelema instruction so that a */
-		/* controlled-mutability managed pointer. */
-		isReadOnly = 1;
-	}
-	else
-	{
-		VERIFY_INSN_ERROR();
-	}
+	prefixInfo.prefixFlags |= IL_CODER_PREFIX_READONLY;
+	lastInsnWasPrefix = 1;
 }
 break;
 
@@ -866,7 +819,8 @@ case IL_OP_LDELEM_REF:
 	{
 		if(elemType == ILType_Void || IsObjectRef(elemType))
 		{
-			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType);
+			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, elemType,
+							   &prefixInfo);
 			stack[stackSize - 2].engineType = ILEngineType_O;
 			stack[stackSize - 2].typeInfo = elemType;
 			--stackSize;
@@ -880,6 +834,7 @@ case IL_OP_LDELEM_REF:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDELEM_T_PREFIX, VALID_NO_LDELEM_T);
 }
 break;
 
@@ -891,12 +846,13 @@ case IL_OP_LDELEMA:
 	   (elemType = ArrayElementType(stack[stackSize - 2].typeInfo)) != 0)
 	{
 		classType = GetTypeToken(method, pc);
-		if(!isReadOnly)
+		if((prefixInfo.prefixFlags & IL_CODER_PREFIX_READONLY) == 0)
 		{
 			if(classType &&
 			   (elemType == ILType_Void || ILTypeIdentical(elemType, classType)))
 			{
-				ILCoderArrayAccess(coder, opcode, STK_BINARY_2, classType);
+				ILCoderArrayAccess(coder, opcode, STK_BINARY_2, classType,
+								   &prefixInfo);
 				stack[stackSize - 2].engineType = ILEngineType_M;
 				stack[stackSize - 2].typeInfo = classType;
 				--stackSize;
@@ -913,18 +869,18 @@ case IL_OP_LDELEMA:
 		{
 			/* Perform no type check in this case. */
 			/* But push an controlled-mutability managed pointer on the stack. */
-			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, classType);
+			ILCoderArrayAccess(coder, opcode, STK_BINARY_2, classType,
+							   &prefixInfo);
 			stack[stackSize - 2].engineType = ILEngineType_CM;
 			stack[stackSize - 2].typeInfo = classType;
 			--stackSize;
 		}
-		/* And reset the readonly prefix. */
-		isReadOnly = 0;
 	}
 	else
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDELEMA_PREFIX, VALID_NO_LDELEMA);
 }
 break;
 
@@ -939,9 +895,10 @@ case IL_OP_STELEM_REF:
 	{
 		if(elemType == ILType_Void ||
 		   AssignCompatible(method, &(stack[stackSize - 1]),
-		   					elemType, unsafeAllowed))
+							elemType, unsafeAllowed))
 		{
-			ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType);
+			ILCoderArrayAccess(coder, opcode, STK_TERNARY_2, elemType,
+							   &prefixInfo);
 			stackSize -= 3;
 		}
 		else
@@ -953,6 +910,7 @@ case IL_OP_STELEM_REF:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STELEM_T_PREFIX, VALID_NO_STELEM_T);
 }
 break;
 

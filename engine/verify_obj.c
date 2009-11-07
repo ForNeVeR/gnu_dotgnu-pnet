@@ -280,7 +280,7 @@ case IL_OP_CASTCLASS:
 	{
 		if(classInfo != 0)
 		{
-			ILCoderCastClass(coder, classInfo, 1);
+			ILCoderCastClass(coder, classInfo, 1, &prefixInfo);
 			stack[stackSize - 1].typeInfo = ILClassToType(classInfo);
 		}
 		else
@@ -292,6 +292,8 @@ case IL_OP_CASTCLASS:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_CASTCLASS_PREFIX,
+						 VALID_NO_CASTCLASS);
 }
 break;
 
@@ -303,7 +305,7 @@ case IL_OP_ISINST:
 	{
 		if(classInfo != 0)
 		{
-			ILCoderCastClass(coder, classInfo, 0);
+			ILCoderCastClass(coder, classInfo, 0, &prefixInfo);
 			stack[stackSize - 1].typeInfo = ILClassToType(classInfo);
 		}
 		else
@@ -353,11 +355,11 @@ case IL_OP_UNBOX:
 		   is not of the correct class */
 		if(!IsSubClass(stack[stackSize - 1].typeInfo, classInfo))
 		{
-			ILCoderCastClass(coder, classInfo, 1);
+			ILCoderCastClass(coder, classInfo, 1, &prefixInfo);
 		}
 
 		/* Unbox the object to produce a managed pointer */
-		ILCoderUnbox(coder, classInfo);
+		ILCoderUnbox(coder, classInfo, &prefixInfo);
 		stack[stackSize - 1].engineType = ILEngineType_M;
 		stack[stackSize - 1].typeInfo = ILClassToType(classInfo);
 	}
@@ -365,6 +367,7 @@ case IL_OP_UNBOX:
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_UNBOX_PREFIX, VALID_NO_UNBOX);
 }
 break;
 
@@ -383,18 +386,18 @@ case IL_OP_UNBOX_ANY:
 			   is not of the correct class */
 			if(!IsSubClass(stack[stackSize - 1].typeInfo, classInfo))
 			{
-				ILCoderCastClass(coder, classInfo, 1);
+				ILCoderCastClass(coder, classInfo, 1, &prefixInfo);
 			}
 			stack[stackSize - 1].typeInfo = classType;
 		}
 		else
 		{
-	   		if(!(AssignCompatible(method, &(stack[stackSize - 1]),
+			if(!(AssignCompatible(method, &(stack[stackSize - 1]),
 								  classType,
 								  unsafeAllowed)))
 			{
 				/* To throw the InvalitCastException in this case. */
-				ILCoderCastClass(coder, classInfo, 1);
+				ILCoderCastClass(coder, classInfo, 1, &prefixInfo);
 			}
 			/* Unbox the object to produce a managed pointer */
 			stackItemClass = ILClassFromType(ILProgramItem_Image(method),
@@ -405,10 +408,11 @@ case IL_OP_UNBOX_ANY:
 				ThrowSystem("System", "TypeLoadException");
 			}
 			/* First get the pointer to the value */
-			ILCoderUnbox(coder, stackItemClass);
+			ILCoderUnbox(coder, stackItemClass, &prefixInfo);
 			stack[stackSize - 1].engineType = ILEngineType_M;
 			/* We have to dereference the value in this case. */
-			ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, stackItemClass);
+			ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, stackItemClass,
+									&prefixInfo);
 			stack[stackSize - 1].engineType = TypeToEngineType(classType);
 			stack[stackSize - 1].typeInfo = classType;
 		}
@@ -442,12 +446,13 @@ case IL_OP_LDFLD:
 				{
 					ILCoderLoadField(coder, ILEngineType_O,
 									 stack[stackSize - 1].typeInfo,
-									 fieldInfo, classType);
+									 fieldInfo, classType, &prefixInfo);
 				}
 				else
 				{
 					ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
-					ILCoderLoadStaticField(coder, fieldInfo, classType);
+					ILCoderLoadStaticField(coder, fieldInfo, classType,
+										   &prefixInfo);
 				}
 			}
 			else
@@ -468,12 +473,13 @@ case IL_OP_LDFLD:
 				{
 					ILCoderLoadField(coder, STK_UNARY,
 									 stack[stackSize - 1].typeInfo,
-									 fieldInfo, classType);
+									 fieldInfo, classType, &prefixInfo);
 				}
 				else
 				{
 					ILCoderPop(coder, STK_UNARY, ILType_Invalid);
-					ILCoderLoadStaticField(coder, fieldInfo, classType);
+					ILCoderLoadStaticField(coder, fieldInfo, classType,
+										   &prefixInfo);
 				}
 			}
 			else
@@ -491,13 +497,14 @@ case IL_OP_LDFLD:
 				{
 					ILCoderLoadField(coder, ILEngineType_MV,
 									 stack[stackSize - 1].typeInfo,
-									 fieldInfo, classType);
+									 fieldInfo, classType, &prefixInfo);
 				}
 				else
 				{
 					ILCoderPop(coder, ILEngineType_MV,
 							   stack[stackSize - 1].typeInfo);
-					ILCoderLoadStaticField(coder, fieldInfo, classType);
+					ILCoderLoadStaticField(coder, fieldInfo, classType,
+										   &prefixInfo);
 				}
 			}
 			else
@@ -518,12 +525,13 @@ case IL_OP_LDFLD:
 			{
 				ILCoderLoadField(coder, STK_UNARY,
 								 stack[stackSize - 1].typeInfo,
-								 fieldInfo, classType);
+								 fieldInfo, classType, &prefixInfo);
 			}
 			else
 			{
 				ILCoderPop(coder, STK_UNARY, ILType_Invalid);
-				ILCoderLoadStaticField(coder, fieldInfo, classType);
+				ILCoderLoadStaticField(coder, fieldInfo, classType,
+									   &prefixInfo);
 			}
 		}
 		else
@@ -539,6 +547,7 @@ case IL_OP_LDFLD:
 		   if the field cannot be found */
 		ThrowSystem("System", "MissingFieldException");
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDFLD_PREFIX, VALID_NO_LDFLD);
 }
 break;
 
@@ -657,19 +666,19 @@ case IL_OP_STFLD:
 			if(IsSubClass(stack[stackSize - 2].typeInfo,
 						  ILField_Owner(fieldInfo)) &&
 			   AssignCompatible(method, &(stack[stackSize - 1]),
-			   				    classType, unsafeAllowed))
+								classType, unsafeAllowed))
 			{
 				if(!ILField_IsStatic(fieldInfo))
 				{
 					ILCoderStoreField(coder, ILEngineType_O,
 									  stack[stackSize - 2].typeInfo,
 									  fieldInfo, classType,
-									  STK_BINARY_2);
+									  STK_BINARY_2, &prefixInfo);
 				}
 				else
 				{
 					ILCoderStoreStaticField(coder, fieldInfo, classType,
-											STK_BINARY_2);
+											STK_BINARY_2, &prefixInfo);
 					ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
 				}
 			}
@@ -693,12 +702,13 @@ case IL_OP_STFLD:
 				{
 					ILCoderStoreField(coder, STK_BINARY_1,
 									  stack[stackSize - 2].typeInfo,
-									  fieldInfo, classType, STK_BINARY_2);
+									  fieldInfo, classType, STK_BINARY_2,
+									  &prefixInfo);
 				}
 				else
 				{
 					ILCoderStoreStaticField(coder, fieldInfo, classType,
-											STK_BINARY_2);
+											STK_BINARY_2, &prefixInfo);
 					ILCoderPop(coder, STK_BINARY_2, ILType_Invalid);
 				}
 			}
@@ -720,12 +730,13 @@ case IL_OP_STFLD:
 			{
 				ILCoderStoreField(coder, STK_BINARY_1,
 								  stack[stackSize - 2].typeInfo,
-								  fieldInfo, classType, STK_BINARY_2);
+								  fieldInfo, classType, STK_BINARY_2,
+								  &prefixInfo);
 			}
 			else
 			{
 				ILCoderStoreStaticField(coder, fieldInfo, classType,
-										STK_BINARY_2);
+										STK_BINARY_2, &prefixInfo);
 				ILCoderPop(coder, STK_BINARY_1, ILType_Invalid);
 			}
 		}
@@ -741,6 +752,7 @@ case IL_OP_STFLD:
 		   if the field cannot be found */
 		ThrowSystem("System", "MissingFieldException");
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STFLD_PREFIX, VALID_NO_STFLD);
 }
 break;
 
@@ -751,7 +763,7 @@ case IL_OP_LDSFLD:
 	if(fieldInfo)
 	{
 		classType = ILField_Type(fieldInfo);
-		ILCoderLoadStaticField(coder, fieldInfo, classType);
+		ILCoderLoadStaticField(coder, fieldInfo, classType, &prefixInfo);
 		stack[stackSize].engineType = TypeToEngineType(classType);
 		stack[stackSize].typeInfo = classType;
 		++stackSize;
@@ -762,6 +774,7 @@ case IL_OP_LDSFLD:
 		   if the field cannot be found */
 		ThrowSystem("System", "MissingFieldException");
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_LDSFLD_PREFIX, VALID_NO_NONE);
 }
 break;
 
@@ -796,7 +809,8 @@ case IL_OP_STSFLD:
 		if(AssignCompatible(method, &(stack[stackSize - 1]),
 							classType, unsafeAllowed))
 		{
-			ILCoderStoreStaticField(coder, fieldInfo, classType, STK_UNARY);
+			ILCoderStoreStaticField(coder, fieldInfo, classType, STK_UNARY,
+									&prefixInfo);
 			--stackSize;
 		}
 		else
@@ -810,6 +824,7 @@ case IL_OP_STSFLD:
 		   if the field cannot be found */
 		ThrowSystem("System", "MissingFieldException");
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_STSFLD_PREFIX, VALID_NO_NONE);
 }
 break;
 
@@ -986,7 +1001,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_INITOBJ:
 		{
 			/* Let's do a ldnull followed by stind.ref */
 			ILCoderConstant(coder, IL_OP_LDNULL, pc + 1);
-			ILCoderPtrAccess(coder, IL_OP_STIND_REF);
+			ILCoderPtrAccess(coder, IL_OP_STIND_REF, &prefixInfo);
 			--stackSize;
 		}
 		else
@@ -1015,13 +1030,14 @@ case IL_OP_PREFIX + IL_PREFIX_OP_CPBLK:
 	   IsBlkPointer(STK_TERNARY_2) &&
 	   STK_TERNARY_3 == ILEngineType_I4)
 	{
-		ILCoderCopyBlock(coder, STK_TERNARY_1, STK_TERNARY_2);
+		ILCoderCopyBlock(coder, STK_TERNARY_1, STK_TERNARY_2, &prefixInfo);
 		stackSize -= 3;
 	}
 	else
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_CPBLK_PREFIX, VALID_NO_NONE);
 }
 break;
 
@@ -1033,13 +1049,14 @@ case IL_OP_PREFIX + IL_PREFIX_OP_INITBLK:
 	   STK_TERNARY_2 == ILEngineType_I4 &&
 	   STK_TERNARY_3 == ILEngineType_I4)
 	{
-		ILCoderInitBlock(coder, STK_TERNARY_1);
+		ILCoderInitBlock(coder, STK_TERNARY_1, &prefixInfo);
 		stackSize -= 3;
 	}
 	else
 	{
 		VERIFY_TYPE_ERROR();
 	}
+	CLEAR_VALID_PREFIXES(prefixInfo, VALID_INITBLK_PREFIX, VALID_NO_NONE);
 }
 break;
 

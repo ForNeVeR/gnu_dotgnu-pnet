@@ -96,6 +96,28 @@ typedef struct
 } ILCoderMethodInfo;
 
 /*
+ * Flags set if the corresponding prefix information is valid.
+ */
+#define IL_CODER_PREFIX_CONSTRAINED		0x01
+#define IL_CODER_PREFIX_NO				0x02
+#define IL_CODER_PREFIX_READONLY		0x04
+#define IL_CODER_PREFIX_TAIL			0x08
+#define IL_CODER_PREFIX_UNALIGNED		0x10
+#define IL_CODER_PREFIX_VOLATILE		0x20
+
+/*
+ * Information about the prefixed that tave been applied to an opcode.
+ */
+typedef struct
+{
+	ILUInt32	prefixFlags;
+	ILType	   *constrainedType;
+	ILUInt32	noFlags;
+	ILUInt32	unalignedValue;
+
+} ILCoderPrefixInfo;
+
+/*
  * Inlineable method calls.
  */
 #define	IL_INLINEMETHOD_MONITOR_ENTER		0
@@ -332,12 +354,14 @@ struct _tagILCoderClass
 	 * is known.
 	 */
 	void (*arrayAccess)(ILCoder *coder, int opcode,
-						ILEngineType indexType, ILType *elemType);
+						ILEngineType indexType, ILType *elemType,
+						const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Access a value by dereferencing a pointer.
 	 */
-	void (*ptrAccess)(ILCoder *coder, int opcode);
+	void (*ptrAccess)(ILCoder *coder, int opcode,
+					  const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Access a value by dereferencing a pointer at the specified position.
@@ -348,7 +372,8 @@ struct _tagILCoderClass
 	 * Access a managed value by dereferencing a pointer.
 	 */
 	void (*ptrAccessManaged)(ILCoder *coder, int opcode,
-							 ILClass *classInfo);
+							 ILClass *classInfo,
+							 const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Output a branch instruction.
@@ -394,12 +419,6 @@ struct _tagILCoderClass
 					  ILEngineStackItem *type2);
 
 	/*
-	 * Process a pointer alignment prefix.  An "alignment" value
-	 * of zero indicates a "volatile" prefix.
-	 */
-	void (*ptrPrefix)(ILCoder *coder, int alignment);
-
-	/*
 	 * Get the length of an array.
 	 */
 	void (*arrayLength)(ILCoder *coder);
@@ -422,7 +441,8 @@ struct _tagILCoderClass
 	 * push NULL onto the stack.
 	 */
 	void (*castClass)(ILCoder *coder, ILClass *classInfo,
-					  int throwException);
+					  int throwException,
+					  const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Load the contents of an instance field onto the stack.
@@ -433,19 +453,22 @@ struct _tagILCoderClass
 	 */
 	void (*loadField)(ILCoder *coder, ILEngineType ptrType,
 					  ILType *objectType, ILField *field,
-					  ILType *fieldType);
+					  ILType *fieldType,
+					  const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Load the contents of a static field onto the stack.
 	 */
 	void (*loadStaticField)(ILCoder *coder, ILField *field,
-							ILType *fieldType);
+							ILType *fieldType,
+							const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Load the contents of an instance field onto the stack,
 	 * where the pointer is an object reference in argument 0.
 	 */
-	void (*loadThisField)(ILCoder *coder, ILField *field, ILType *fieldType);
+	void (*loadThisField)(ILCoder *coder, ILField *field, ILType *fieldType,
+						  const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Load the address of an instance field onto the stack.
@@ -470,13 +493,15 @@ struct _tagILCoderClass
 	 */
 	void (*storeField)(ILCoder *coder, ILEngineType ptrType,
 					   ILType *objectType, ILField *field,
-					   ILType *fieldType, ILEngineType valueType);
+					   ILType *fieldType, ILEngineType valueType,
+					   const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Store a value from the stack into a stack field.
 	 */
 	void (*storeStaticField)(ILCoder *coder, ILField *field,
-							 ILType *fieldType, ILEngineType valueType);
+							 ILType *fieldType, ILEngineType valueType,
+							 const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Copy the contents of an object, which has the class "classInfo".
@@ -488,7 +513,8 @@ struct _tagILCoderClass
 	 * Copy the contents of a block of memory.
 	 */
 	void (*copyBlock)(ILCoder *coder, ILEngineType destPtrType,
-					  ILEngineType srcPtrType);
+					  ILEngineType srcPtrType,
+					  const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Initialize the contents of an object, which has the class "classInfo".
@@ -499,7 +525,8 @@ struct _tagILCoderClass
 	/*
 	 * Initialize the contents of a block of memory.
 	 */
-	void (*initBlock)(ILCoder *coder, ILEngineType ptrType);
+	void (*initBlock)(ILCoder *coder, ILEngineType ptrType,
+					  const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Box a value which is already in its natural representation.
@@ -524,7 +551,8 @@ struct _tagILCoderClass
 	/*
 	 * Unbox an object into a managed pointer.
 	 */
-	void (*unbox)(ILCoder *coder, ILClass *boxClass);
+	void (*unbox)(ILCoder *coder, ILClass *boxClass,
+				  const ILCoderPrefixInfo *prefixInfo);
 
 	/*
 	 * Make a typed reference from a pointer.
@@ -950,16 +978,19 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->dup))((coder), (etype), (type)))
 #define	ILCoderPop(coder,etype,type)	\
 			((*((coder)->classInfo->pop))((coder), (etype), (type)))
-#define	ILCoderArrayAccess(coder,opcode,itype,etype)	\
+#define	ILCoderArrayAccess(coder,opcode,itype,etype,prefixInfo)	\
 			((*((coder)->classInfo->arrayAccess))((coder), (opcode), \
-												  (itype), (etype)))
-#define	ILCoderPtrAccess(coder,opcode)	\
-			((*((coder)->classInfo->ptrAccess))((coder), (opcode)))
+												  (itype), (etype), \
+												  (prefixInfo)))
+#define	ILCoderPtrAccess(coder,opcode, prefixInfo)	\
+			((*((coder)->classInfo->ptrAccess))((coder), (opcode), \
+												(prefixInfo)))
 #define	ILCoderPtrDeref(coder,pos)	\
 			((*((coder)->classInfo->ptrDeref))((coder), (pos)))
-#define	ILCoderPtrAccessManaged(coder,opcode,_classInfo)	\
+#define	ILCoderPtrAccessManaged(coder,opcode,_classInfo,prefixInfo)	\
 			((*((coder)->classInfo->ptrAccessManaged))((coder), (opcode), \
-													   (_classInfo)))
+													   (_classInfo), \
+													   (prefixInfo)))
 #define	ILCoderBranch(coder,opcode,dest,type1,type2)	\
 			((*((coder)->classInfo->branch))((coder), (opcode), (dest), \
 											 (type1), (type2)))
@@ -977,8 +1008,6 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->conv))((coder), (opcode), (type)))
 #define	ILCoderToPointer(coder,type1,type2) \
 			((*((coder)->classInfo->toPointer))((coder), (type1), (type2)))
-#define	ILCoderPtrPrefix(coder,alignment) \
-			((*((coder)->classInfo->ptrPrefix))((coder), (alignment)))
 #define	ILCoderArrayLength(coder) \
 			((*((coder)->classInfo->arrayLength))((coder)))
 #define	ILCoderNewArray(coder,arrayType,arrayClass,lengthType) \
@@ -986,19 +1015,21 @@ struct _tagILCoderClass
 											   (arrayClass), (lengthType)))
 #define	ILCoderLocalAlloc(coder,sizeType) \
 			((*((coder)->classInfo->localAlloc))((coder), (sizeType)))
-#define	ILCoderCastClass(coder,_classInfo,throwException) \
+#define	ILCoderCastClass(coder,_classInfo,throwException,prefixInfo) \
 			((*((coder)->classInfo->castClass))((coder), (_classInfo), \
-												(throwException)))
-#define	ILCoderLoadField(coder,ptrType,objectType,field,fieldType) \
+												(throwException), \
+												(prefixInfo)))
+#define	ILCoderLoadField(coder,ptrType,objectType,field,fieldType,prefixInfo) \
 			((*((coder)->classInfo->loadField))((coder), (ptrType), \
 												(objectType), (field), \
-												(fieldType)))
-#define	ILCoderLoadThisField(coder,field,fieldType) \
+												(fieldType), (prefixInfo)))
+#define	ILCoderLoadThisField(coder,field,fieldType,prefixInfo) \
 			((*((coder)->classInfo->loadThisField))((coder), (field), \
-													(fieldType)))
-#define	ILCoderLoadStaticField(coder,field,fieldType) \
+													(fieldType), (prefixInfo)))
+#define	ILCoderLoadStaticField(coder,field,fieldType,prefixInfo) \
 			((*((coder)->classInfo->loadStaticField))((coder), (field), \
-													  (fieldType)))
+													  (fieldType), \
+													  (prefixInfo)))
 #define	ILCoderLoadFieldAddr(coder,ptrType,objectType,field,fieldType) \
 			((*((coder)->classInfo->loadFieldAddr))((coder), (ptrType), \
 												    (objectType), (field), \
@@ -1006,24 +1037,28 @@ struct _tagILCoderClass
 #define	ILCoderLoadStaticFieldAddr(coder,field,fieldType) \
 			((*((coder)->classInfo->loadStaticFieldAddr))((coder), (field), \
 													      (fieldType)))
-#define	ILCoderStoreField(coder,ptrType,objectType,field,fieldType,valueType) \
+#define	ILCoderStoreField(coder,ptrType,objectType,field,fieldType,valueType,prefixInfo) \
 			((*((coder)->classInfo->storeField))((coder), (ptrType), \
 												 (objectType), (field), \
-												 (fieldType), (valueType)))
-#define	ILCoderStoreStaticField(coder,field,fieldType,valueType) \
+												 (fieldType), (valueType), \
+												 (prefixInfo)))
+#define	ILCoderStoreStaticField(coder,field,fieldType,valueType,prefixInfo) \
 			((*((coder)->classInfo->storeStaticField))((coder), (field), \
-											       (fieldType), (valueType)))
+													   (fieldType), \
+													   (valueType), \
+													   (prefixInfo)))
 #define	ILCoderCopyObject(coder,destPtrType,srcPtrType,_classInfo) \
 			((*((coder)->classInfo->copyObject))((coder), (destPtrType), \
 											     (srcPtrType), (_classInfo)))
-#define	ILCoderCopyBlock(coder,destPtrType,srcPtrType) \
+#define	ILCoderCopyBlock(coder,destPtrType,srcPtrType,prefixInfo) \
 			((*((coder)->classInfo->copyBlock))((coder), (destPtrType), \
-											    (srcPtrType)))
+											    (srcPtrType), (prefixInfo)))
 #define	ILCoderInitObject(coder,ptrType,_classInfo) \
 			((*((coder)->classInfo->initObject))((coder), (ptrType), \
 											     (_classInfo)))
-#define	ILCoderInitBlock(coder,ptrType) \
-			((*((coder)->classInfo->initBlock))((coder), (ptrType)))
+#define	ILCoderInitBlock(coder,ptrType,prefixInfo) \
+			((*((coder)->classInfo->initBlock))((coder), (ptrType), \
+												(prefixInfo)))
 #define	ILCoderBox(coder,boxClass,valueType,size) \
 			((*((coder)->classInfo->box))((coder), (boxClass), \
 										  (valueType), (size)))
@@ -1033,8 +1068,8 @@ struct _tagILCoderClass
 #define	ILCoderBoxSmaller(coder,boxClass,valueType,smallerType) \
 			((*((coder)->classInfo->boxSmaller))((coder), (boxClass), \
 										         (valueType), (smallerType)))
-#define	ILCoderUnbox(coder,boxClass) \
-			((*((coder)->classInfo->unbox))((coder), (boxClass)))
+#define	ILCoderUnbox(coder,boxClass,prefixInfo) \
+			((*((coder)->classInfo->unbox))((coder), (boxClass), (prefixInfo)))
 #define	ILCoderMakeTypedRef(coder,_classInfo) \
 			((*((coder)->classInfo->makeTypedRef))((coder), (_classInfo)))
 #define	ILCoderRefAnyVal(coder,_classInfo) \

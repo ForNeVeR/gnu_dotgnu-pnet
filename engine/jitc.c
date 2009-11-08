@@ -77,22 +77,6 @@ extern	"C" {
  */
 /* #define _IL_JIT_ENABLE_INLINE 1 */
 
-/*
- * Acquire and release the metadata lock, while suppressing finalizers
- * Must be kept in sync with convert.c
- */
-#define	METADATA_WRLOCK(process)	\
-			do { \
-				IL_METADATA_WRLOCK(process); \
-				ILGCDisableFinalizers(0); \
-			} while (0)
-#define	METADATA_UNLOCK(process)	\
-			do { \
-				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK(process); \
-				ILGCInvokeFinalizers(0); \
-			} while (0)
-
 #ifdef _IL_JIT_DUMP_FUNCTION
 #ifndef _IL_JIT_ENABLE_DEBUG
 #define _IL_JIT_ENABLE_DEBUG 1

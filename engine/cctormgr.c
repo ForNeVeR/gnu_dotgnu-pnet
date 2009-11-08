@@ -26,22 +26,6 @@ extern	"C" {
 #endif
 
 /*
- * Acquire and release the metadata lock, while suppressing finalizers
- * Must be kept in sync with convert.c
- */
-#define	METADATA_WRLOCK(process)	\
-			do { \
-				IL_METADATA_WRLOCK(process); \
-				ILGCDisableFinalizers(0); \
-			} while (0)
-#define	METADATA_UNLOCK(process)	\
-			do { \
-				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK(process); \
-				ILGCInvokeFinalizers(0); \
-			} while (0)
-
-/*
  * Forward declaration.
  */
 static int _ILCCtorMgr_RunCCtors(ILCCtorMgr *cctorMgr,

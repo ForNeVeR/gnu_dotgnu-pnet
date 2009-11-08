@@ -38,26 +38,21 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 	}
 
 	/* Acquire the metadata write lock and disable finalizers */
-	IL_METADATA_WRLOCK(_ILExecThreadProcess(thread));
-	ILGCDisableFinalizers(0);
+	METADATA_WRLOCK(_ILExecThreadProcess(thread));
 
 	/* Lay out the class's fields.  This will check for layout
 	   again, to avoid race condition situations */
 	if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
 	{
 		/* Throw a "TypeInitializationException" */
-		ILGCEnableFinalizers();
-		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
-		ILGCInvokeFinalizers(0);
+		METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		thread->thrownException = _ILSystemException
 			(thread, "System.TypeInitializationException");
 		return 0;
 	}
 
 	/* Re-enable finalizers and unlock the metadata write lock */
-	ILGCEnableFinalizers();
-	IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
-	ILGCInvokeFinalizers(0);
+	METADATA_UNLOCK(_ILExecThreadProcess(thread));
 	return 1;
 }
 

@@ -1,3 +1,20 @@
+2009-11-08  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.h: Centralize the declarations of METADATA_WRLOCK and
+	METADATA_UNLOCK here.
+
+	* engine/cctormgr.c: Remove local declarations of METADATA_WRLOCK and
+	METADATA_UNLOCK;
+
+	* engine/jitc.c: likewise
+
+	* engine/heap.c (InitializeClass): Replace local implementation with
+	usage of the macros METADATA_WRLOCK and	METADATA_UNLOCK.
+
+	* engine/convert.c: Remove local declarations of METADATA_WRLOCK and
+	METADATA_UNLOCK and adjust the usages so that the process is passed
+	instead of the thread.
+
 2009-11-07  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_coder.h: Declare the ILCoderPrefixInfo struct and add a

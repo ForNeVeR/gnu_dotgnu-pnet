@@ -377,6 +377,22 @@ typedef struct _tagILLocalWatch
 #define _ILExecProcessGetFriendlyName(process) ((process)->friendlyName)
 
 /*
+ * Acquire and release the metadata lock, while suppressing finalizers
+ * during the execution of "ConvertMethod".
+ */
+#define	METADATA_WRLOCK(process)	\
+			do { \
+				IL_METADATA_WRLOCK((process)); \
+				ILGCDisableFinalizers(0); \
+			} while (0)
+#define	METADATA_UNLOCK(process)	\
+			do { \
+				ILGCEnableFinalizers(); \
+				IL_METADATA_UNLOCK((process)); \
+				ILGCInvokeFinalizers(0); \
+			} while (0)
+
+/*
  * Information that is stored in a stack call frame.
  * Offsets are used to refer to the stack instead of
  * pointers.  This allows the stack to be realloc'ed,

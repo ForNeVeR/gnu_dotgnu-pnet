@@ -36,22 +36,6 @@ extern	"C" {
 #define	IL_CONVERT_TYPE_INIT		5
 #define	IL_CONVERT_DLL_NOT_FOUND	6
 
-/*
- * Acquire and release the metadata lock, while suppressing finalizers
- * during the execution of "ConvertMethod".
- */
-#define	METADATA_WRLOCK(thread)	\
-			do { \
-				IL_METADATA_WRLOCK(_ILExecThreadProcess(thread)); \
-				ILGCDisableFinalizers(0); \
-			} while (0)
-#define	METADATA_UNLOCK(thread)	\
-			do { \
-				ILGCEnableFinalizers(); \
-				IL_METADATA_UNLOCK(_ILExecThreadProcess(thread)); \
-				ILGCInvokeFinalizers(0); \
-			} while (0)
-
 #ifdef IL_USE_JIT
 
 /*
@@ -72,7 +56,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	if((ILMethod_CallConv(method) & IL_META_CALLCONV_MASK) ==
 			IL_META_CALLCONV_VARARG)
 	{
-		METADATA_UNLOCK(thread);
+		METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 		return 0;
 	}
@@ -92,7 +76,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		if(!_ILVerify(coder, &start, method, &code,
 					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
 		{
-			METADATA_UNLOCK(thread);
+			METADATA_UNLOCK(_ILExecThreadProcess(thread));
 			*errorCode = IL_CONVERT_VERIFY_FAILED;
 			return 0;
 		}
@@ -101,7 +85,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	{
 		/* All other cases should be handled in the jit coder. */
 
-		METADATA_UNLOCK(thread);
+		METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 		return 0;
 	}
@@ -187,12 +171,12 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	ILInternalInfo ctorfnInfo;
 
 	/* We need the metadata write lock */
-	METADATA_WRLOCK(thread);
+	METADATA_WRLOCK(_ILExecThreadProcess(thread));
 
 	/* Handle locked methods while cctors are executed. */
 	if((start = (unsigned char *)ILCoderHandleLockedMethod(coder, method)))
 	{
-		METADATA_UNLOCK(thread);
+		METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		*errorCode = IL_CONVERT_OK;
 		return start;
 	}
@@ -200,7 +184,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	/* Is the method already converted? */
 	if((start = (unsigned char *)(method->userData)) != 0)
 	{
-		METADATA_UNLOCK(thread);
+		METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		*errorCode = IL_CONVERT_OK;
 		return start;
 	}
@@ -210,7 +194,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	if((ILMethod_CallConv(method) & IL_META_CALLCONV_MASK) ==
 			IL_META_CALLCONV_VARARG)
 	{
-		METADATA_UNLOCK(thread);
+		METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 		return 0;
 	}
@@ -219,7 +203,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	/* Make sure that we can lay out the method's class */
 	if(!_ILLayoutClass(_ILExecThreadProcess(thread), ILMethod_Owner(method)))
 	{
-		METADATA_UNLOCK(thread);
+		METADATA_UNLOCK(_ILExecThreadProcess(thread));
 		*errorCode = IL_CONVERT_TYPE_INIT;
 		return 0;
 	}
@@ -238,7 +222,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		if(!_ILVerify(coder, &start, method, &code,
 					  ILImageIsSecure(ILProgramItem_Image(method)), thread))
 		{
-			METADATA_UNLOCK(thread);
+			METADATA_UNLOCK(_ILExecThreadProcess(thread));
 			*errorCode = IL_CONVERT_VERIFY_FAILED;
 			return 0;
 		}
@@ -264,7 +248,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				   know what to map this method call to */
 				if(!pinv)
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_ENTRY_POINT;
 					return 0;
 				}
@@ -274,14 +258,14 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				module = ILPInvoke_Module(pinv);
 				if(!module)
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_ENTRY_POINT;
 					return 0;
 				}
 				name = ILModule_Name(module);
 				if(!name || *name == '\0')
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_ENTRY_POINT;
 					return 0;
 				}
@@ -289,7 +273,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 									(thread->process, name, pinv);
 				if(!moduleHandle)
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_DLL_NOT_FOUND;
 					*errorInfo = name;
 					return 0;
@@ -337,7 +321,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
 			#endif	/* !IL_WIN32_PLATFORM */
 			#else /* !IL_CONFIG_PINVOKE */
-				METADATA_UNLOCK(thread);
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
 				*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 				return 0;
 			#endif /* IL_CONFIG_PINVOKE */
@@ -351,7 +335,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				   have PInvoke records associated with them */
 				if(pinv)
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_VERIFY_FAILED;
 					return 0;
 				}
@@ -365,14 +349,14 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 						if(!_ILFindInternalCall(ILExecThreadGetProcess(thread),
 												method, 1, &ctorfnInfo))
 						{
-							METADATA_UNLOCK(thread);
+							METADATA_UNLOCK(_ILExecThreadProcess(thread));
 							*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 							return 0;
 						}
 					}
 					else
 					{
-						METADATA_UNLOCK(thread);
+						METADATA_UNLOCK(_ILExecThreadProcess(thread));
 						*errorCode = IL_CONVERT_NOT_IMPLEMENTED;
 						return 0;
 					}
@@ -388,7 +372,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 			default:
 			{
 				/* No idea how to invoke this method */
-				METADATA_UNLOCK(thread);
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
 				*errorCode = IL_CONVERT_VERIFY_FAILED;
 				return 0;
 			}
@@ -398,7 +382,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		/* Bail out if we did not find the underlying native method */
 		if(!(fnInfo.func) && !(ctorfnInfo.func))
 		{
-			METADATA_UNLOCK(thread);
+			METADATA_UNLOCK(_ILExecThreadProcess(thread));
 			if(pinv)
 				*errorCode = IL_CONVERT_ENTRY_POINT;
 			else
@@ -415,7 +399,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 										method, (pinv == 0));
 			if(!cif)
 			{
-				METADATA_UNLOCK(thread);
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
 				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
@@ -431,7 +415,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 												method, (pinv == 0));
 			if(!ctorcif)
 			{
-				METADATA_UNLOCK(thread);
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
 				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
@@ -453,7 +437,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 			if(!ILCoderSetupExtern(coder, &start, method,
 								   fnInfo.func, cif, (pinv == 0)))
 			{
-				METADATA_UNLOCK(thread);
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
 				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
@@ -462,14 +446,14 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				/* Do we need a coder restart due to cache overflow? */
 				if(result != IL_CODER_END_RESTART)
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
 				if(!ILCoderSetupExtern(coder, &start, method,
 									   fnInfo.func, cif, (pinv == 0)))
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
@@ -483,7 +467,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 									   ctorfnInfo.func, ctorcif,
 									   (pinv == 0)))
 			{
-				METADATA_UNLOCK(thread);
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
 				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 				return 0;
 			}
@@ -492,7 +476,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 				/* Do we need a coder restart due to cache overflow? */
 				if(result != IL_CODER_END_RESTART)
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
@@ -501,7 +485,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 										   ctorfnInfo.func, ctorcif,
 										   (pinv == 0)))
 				{
-					METADATA_UNLOCK(thread);
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
@@ -594,9 +578,9 @@ int _ILUnrollMethod(ILExecThread *thread, ILCoder *coder,
 					unsigned char *pc, ILMethod *method)
 {
 	int result;
-	METADATA_WRLOCK(thread);
+	METADATA_WRLOCK(_ILExecThreadProcess(thread));
 	result = _ILCVMUnrollMethod(coder, pc, method);
-	METADATA_UNLOCK(thread);
+	METADATA_UNLOCK(_ILExecThreadProcess(thread));
 	return result;
 }
 

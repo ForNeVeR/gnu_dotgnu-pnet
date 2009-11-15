@@ -517,7 +517,11 @@ ILSysIOHandle ILSysIOSocketAccept(ILSysIOHandle sockfd, unsigned char *addr,
 								  ILInt32 addrLen)
 {
 	CombinedSockAddr sa_addr;
+#ifdef IL_WIN32_NATIVE
 	int sa_len;
+#else
+	socklen_t sa_len;
+#endif
 	int newfd;
 
 	/* Accept the incoming connection */
@@ -587,7 +591,11 @@ ILInt32 ILSysIOSocketRecvFrom(ILSysIOHandle sockfd, void *buf,
 							  unsigned char *addr, ILInt32 addrLen)
 {
 	CombinedSockAddr sa_addr;
+#ifdef IL_WIN32_NATIVE
 	int sa_len;
+#else
+	socklen_t sa_len;
+#endif
 	int result;
 
 	/* Receive the incoming data */
@@ -853,7 +861,11 @@ int ILSysIOSocketGetName(ILSysIOHandle sockfd, unsigned char *addr,
 						 ILInt32 addrLen)
 {
 	CombinedSockAddr sa_addr;
+#ifdef IL_WIN32_NATIVE
 	int sa_len;
+#else
+	socklen_t sa_len;
+#endif
 
 	/* Accept the incoming connection */
 	sa_len = sizeof(CombinedSockAddr);
@@ -1102,10 +1114,11 @@ int ILSysIOSocketGetOption(ILSysIOHandle sockfd, ILInt32 level,
 {
 #ifdef HAVE_GETSOCKOPT
 	ILInt32 nativeLevel, nativeName;
-	int optlen;
 #ifdef IL_WIN32_NATIVE
+	int optlen;
 	ILInt32 optval;
 #else
+	socklen_t optlen;
 	union
 	{
 		ILInt32 value;
@@ -1181,7 +1194,12 @@ int ILSysIOSocketGetLinger(ILSysIOHandle handle, int *enabled, int *seconds)
 {
 #if defined(HAVE_SETSOCKOPT) && defined(SO_LINGER)
 	struct linger _linger;
-	int size=sizeof(struct linger);
+#ifdef IL_WIN32_NATIVE
+	int size;
+#else
+	socklen_t size;
+#endif
+	size=sizeof(struct linger);
 	if(getsockopt((int)(ILNativeInt)handle, SOL_SOCKET, SO_LINGER,
 				  (void *)&(_linger), &size) != 0)
 	{
@@ -1230,7 +1248,11 @@ int ILSysIODiscoverIrDADevices(ILSysIOHandle handle, unsigned char *buf,
 	return 1;
 #elif defined(HAVE_GETSOCKOPT) && defined(IRLMP_ENUMDEVICES)
 	char *nativeBuf;
-	ILInt32 nativeLen;
+#ifdef IL_WIN32_NATIVE
+	int nativeLen;
+#else
+	socklen_t nativeLen;
+#endif
 	struct irda_device_list *list;
 	int i;
 	int index;

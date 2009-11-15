@@ -4,6 +4,17 @@
 	-fno-inline-small-functions and -fno-inline-functions-called-once and
 	add them to NO_INLINE_FUNCTIONS.
 
+	* support/socket.c (ILSysIOSockesAccept): Change sa_len to socklen_t on
+	non windows systems.
+	(ILSysIOSocketRecvFrom): likewise
+	(ILSysIOSocketGetName): likewise
+	(ILSysIOSocketGetOption): Change optlen to socklen_t on non windows
+	systems.
+	(ILSysIOSocketGetLinger): Change size to socklen_t on non windows
+	systems.
+	(ILSysIODiscoverIrDADevices): Change nativeLen to int on windows systems
+	and socklen_t otherwise.
+
 2009-11-08  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h: Centralize the declarations of METADATA_WRLOCK and

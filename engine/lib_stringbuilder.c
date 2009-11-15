@@ -62,7 +62,7 @@ static IL_INLINE ILInt32 NewCapacity(ILInt32 length, ILInt32 oldCapacity)
  */
 static ILObject * Append(ILExecThread * _thread,
 							System_Text_StringBuilder * _this,
-							ILInt16 * value,
+							ILUInt16 * value,
 							ILInt32 length)
 {
 	ILInt32 newLength = _this->buildString->length + length;
@@ -316,7 +316,7 @@ ILObject * _IL_StringBuilder_Append_ac(ILExecThread * _thread,
 		if(ArrayLength(value) > 0)
 		{
 			return Append(_thread, (System_Text_StringBuilder *)_this,
-							(ILInt16 *)ArrayToBuffer(value),
+							(ILUInt16 *)ArrayToBuffer(value),
 							ArrayLength(value));
 		}
 	}
@@ -353,7 +353,7 @@ ILObject * _IL_StringBuilder_Append_acii(ILExecThread * _thread,
 		if(length > 0)
 		{
 			return Append(_thread, (System_Text_StringBuilder *)_this,
-							((ILInt16 *)ArrayToBuffer(value)) + startIndex,
+							((ILUInt16 *)ArrayToBuffer(value)) + startIndex,
 							length);
 		}
 	}
@@ -655,7 +655,7 @@ ILObject * _IL_StringBuilder_Insert_iStringi(ILExecThread * _thread,
 							index,
 							((System_String *)value)->length * count))
 			{
-				ILInt16 * buf = StringToBuffer(BuildString(_this)) + index;
+				ILUInt16 *buf = StringToBuffer(BuildString(_this)) + index;
 				while(count > 0)
 				{
 					ILMemCpy(buf,

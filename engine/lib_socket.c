@@ -41,6 +41,15 @@
 
 #ifdef IL_CONFIG_NETWORKING
 
+typedef union
+{
+	ILUInt8		uint8Values[8];
+	ILInt16		int16Value;
+	ILInt32		int32Value;
+	ILInt64		int64Value;
+	
+} _ILSocketConversionHelper;
+
 /*
  * public static IntPtr GetInvalidHandle();
  */
@@ -431,16 +440,17 @@ void _IL_SocketMethods_WaitHandleSet(ILExecThread *_thread,
  */
 ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread *thread, ILInt64 host)
 {
-	unsigned char volatile value[8];
-	value[0] = (unsigned char)(host >> 56);
-	value[1] = (unsigned char)(host >> 48);
-	value[2] = (unsigned char)(host >> 40);
-	value[3] = (unsigned char)(host >> 32);
-	value[4] = (unsigned char)(host >> 24);
-	value[5] = (unsigned char)(host >> 16);
-	value[6] = (unsigned char)(host >> 8);
-	value[7] = (unsigned char)host;
-	return *((ILInt64 *)value);
+	_ILSocketConversionHelper conv;
+
+	conv.uint8Values[0] = (unsigned char)(host >> 56);
+	conv.uint8Values[1] = (unsigned char)(host >> 48);
+	conv.uint8Values[2] = (unsigned char)(host >> 40);
+	conv.uint8Values[3] = (unsigned char)(host >> 32);
+	conv.uint8Values[4] = (unsigned char)(host >> 24);
+	conv.uint8Values[5] = (unsigned char)(host >> 16);
+	conv.uint8Values[6] = (unsigned char)(host >> 8);
+	conv.uint8Values[7] = (unsigned char)host;
+	return conv.int64Value;
 }
 
 /*
@@ -448,12 +458,13 @@ ILInt64 _IL_IPAddress_HostToNetworkOrder_l(ILExecThread *thread, ILInt64 host)
  */
 ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread *thread, ILInt32 host)
 {
-	unsigned char volatile value[4];
-	value[0] = (unsigned char)(host >> 24);
-	value[1] = (unsigned char)(host >> 16);
-	value[2] = (unsigned char)(host >> 8);
-	value[3] = (unsigned char)host;
-	return *((ILInt32 *)value);
+	_ILSocketConversionHelper conv;
+	
+	conv.uint8Values[0] = (ILUInt8)(host >> 24);
+	conv.uint8Values[1] = (ILUInt8)(host >> 16);
+	conv.uint8Values[2] = (ILUInt8)(host >> 8);
+	conv.uint8Values[3] = (ILUInt8)host;
+	return conv.int32Value;
 }
 
 /*
@@ -461,10 +472,11 @@ ILInt32 _IL_IPAddress_HostToNetworkOrder_i(ILExecThread *thread, ILInt32 host)
  */
 ILInt16 _IL_IPAddress_HostToNetworkOrder_s(ILExecThread *thread, ILInt16 host)
 {
-	unsigned char volatile value[2];
-	value[0] = (unsigned char)(host >> 8);
-	value[1] = (unsigned char)host;
-	return *((ILInt16 *)value);
+	_ILSocketConversionHelper conv;
+	
+	conv.uint8Values[0] = (unsigned char)(host >> 8);
+	conv.uint8Values[1] = (unsigned char)host;
+	return conv.int16Value;
 }
 
 #define	GETBYTE(type,value,offset,shift)	\

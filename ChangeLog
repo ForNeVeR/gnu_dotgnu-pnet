@@ -4,6 +4,19 @@
 	-fno-inline-small-functions and -fno-inline-functions-called-once and
 	add them to NO_INLINE_FUNCTIONS.
 
+	* engine/lib_socket.c (_IL_IPAddress_HostToNetworkOrder_l): Use a
+	conversion helper union to fix a type pruned pointer warning.
+	(_IL_IPAddress_HostToNetworkOrder_i): likewise
+	(_IL_IPAddress_HostToNetworkOrder_s): likewise
+
+	* engine/lib_stringbuilder.c (Append): Change type of value argument from
+	ILInt16 * to ILUInt16 *.
+	(_IL_StringBuilder_Append_ac): Cast value argument in call to Append from
+	ILInt16 * to ILUInt16 *.
+	(_IL_StringBuilder_Appendacii): likewise
+	(_IL_StringBuilder_Insert_iStringi): Change type of buf from ILInt16 * to
+	ILUInt16 *.
+
 	* support/socket.c (ILSysIOSockesAccept): Change sa_len to socklen_t on
 	non windows systems.
 	(ILSysIOSocketRecvFrom): likewise

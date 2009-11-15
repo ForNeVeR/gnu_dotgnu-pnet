@@ -1,3 +1,9 @@
+2009-11-15  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add checks for the gcc options
+	-fno-inline-small-functions and -fno-inline-functions-called-once and
+	add them to NO_INLINE_FUNCTIONS.
+
 2009-11-08  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h: Centralize the declarations of METADATA_WRLOCK and

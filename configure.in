@@ -622,6 +622,34 @@ else
 	NO_INLINE_FUNCTIONS=""
 fi
 
+dnl Check to see whether cc accepts "-fno-inline-small-functions" or not.
+AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-inline-small-functions, ac_cv_prog_cc_no_inline_small_functions,
+[echo 'int main(){return 0;}' > conftest.c
+if test -z "`${CC-cc} -fno-inline-small-functions -o conftest conftest.c 2>&1`"; then
+  ac_cv_prog_cc_no_inline_small_functions=yes
+else
+  ac_cv_prog_cc_no_inline_small_functions=no
+fi
+rm -f conftest*
+])
+if test $ac_cv_prog_cc_no_inline_small_functions = yes ; then
+	NO_INLINE_FUNCTIONS="$NO_INLINE_FUNCTIONS -fno-inline-small-functions"
+fi
+
+dnl Check to see whether cc accepts "-fno-inline-functions-called-once" or not.
+AC_CACHE_CHECK(whether ${CC-cc} accepts -fno-inline-functions-called-once, ac_cv_prog_cc_no_inline_functions_called_once,
+[echo 'int main(){return 0;}' > conftest.c
+if test -z "`${CC-cc} -fno-inline-functions-called-once -o conftest conftest.c 2>&1`"; then
+  ac_cv_prog_cc_no_inline_functions_called_once=yes
+else
+  ac_cv_prog_cc_no_inline_functions_called_once=no
+fi
+rm -f conftest*
+])
+if test $ac_cv_prog_cc_no_inline_functions_called_once = yes ; then
+   NO_INLINE_FUNCTIONS="$NO_INLINE_FUNCTIONS -fno-inline-functions-called-once"
+fi
+
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(memset memcmp memchr memcpy memmove bcopy bzero bcmp)

@@ -44,6 +44,12 @@ public class Manager
 	private Hashtable active;		// Currently active handlers.
 	private Hashtable assemblies;	// Currently loaded region assemblies.
 
+	// static constructor
+	static Manager()
+			{
+				manager = new Manager();
+			}
+
 	// Constructor.
 	private Manager()
 			{
@@ -58,14 +64,7 @@ public class Manager
 			{
 				get
 				{
-					lock(typeof(Manager))
-					{
-						if(manager == null)
-						{
-							manager = new Manager();
-						}
-						return manager;
-					}
+					return manager;
 				}
 			}
 

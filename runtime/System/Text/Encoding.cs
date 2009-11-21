@@ -30,8 +30,96 @@ using System.Security;
 [Serializable]
 public abstract class Encoding
 {
+#if CONFIG_REFLECTION
+	// Loaded copy of the "I18N" assembly.  We need to move
+	// this into a class in "System.Private" eventually.
+	private static Type managerClass;
+	private static Object manager;
+#endif
+
 	// Code page used by this encoding.
 	internal int codePage;
+
+#if CONFIG_REFLECTION
+	// static constructor
+	static Encoding()
+			{
+				Assembly i18nAssembly;
+
+				// Find or load the "I18N" assembly.
+				try
+				{
+					try
+					{
+						i18nAssembly = Assembly.Load("I18N");
+					}
+					catch(NotImplementedException)
+					{
+						// Assembly loading unsupported by the engine.
+						return;
+					}
+					catch(FileNotFoundException)
+					{
+						// Could not locate the I18N assembly.
+						return;
+					}
+					catch(BadImageFormatException)
+					{
+						// Something was wrong with the I18N assembly.
+						return;
+					}
+					catch(SecurityException)
+					{
+						// The engine refused to load I18N.
+						return;
+					}
+				}
+				catch(SystemException)
+				{
+					return;
+				}
+
+				// Find the "I18N.Common.Manager" class.
+				try
+				{
+					managerClass = i18nAssembly.GetType("I18N.Common.Manager");
+				}
+				catch(NotImplementedException)
+				{
+					// "GetType" is not supported by the engine.
+					managerClass = null;
+					return;
+				}
+				if(managerClass == null)
+				{
+					return;
+				}
+
+				// Get the value of the "PrimaryManager" property.
+				try
+				{
+					manager = managerClass.InvokeMember
+								("PrimaryManager",
+								 BindingFlags.GetProperty |
+								 	BindingFlags.Static |
+									BindingFlags.Public,
+								 null, null, null, null, null, null);
+				}
+				catch(MissingMethodException)
+				{
+					return;
+				}
+				catch(SecurityException)
+				{
+					return;
+				}
+				catch(NotImplementedException)
+				{
+					// "InvokeMember" is not supported by the engine.
+					return;
+				}
+			}
+#endif
 
 	// Constructor.
 	protected Encoding()
@@ -229,137 +317,35 @@ public abstract class Encoding
 				return new ForwardingEncoder(this);
 			}
 
-#if CONFIG_REFLECTION
-	// Loaded copy of the "I18N" assembly.  We need to move
-	// this into a class in "System.Private" eventually.
-	private static Assembly i18nAssembly;
-	private static bool i18nDisabled;
-#endif
-
 	// Invoke a specific method on the "I18N" manager object.
 	// Returns NULL if the method failed.
 	internal static Object InvokeI18N(String name, params Object[] args)
 			{
 			#if CONFIG_REFLECTION
-				lock(typeof(Encoding))
+				// Bail out if the static constructor detected that there
+				// is insufficent engine support for I18N handling.
+				if(manager == null)
 				{
-					// Bail out if we previously detected that there
-					// is insufficent engine support for I18N handling.
-					if(i18nDisabled)
-					{
-						return null;
-					}
+					return null;
+				}
 
-					// Find or load the "I18N" assembly.
-					if(i18nAssembly == null)
-					{
-						try
-						{
-							try
-							{
-								i18nAssembly = Assembly.Load("I18N");
-							}
-							catch(NotImplementedException)
-							{
-								// Assembly loading unsupported by the engine.
-								i18nDisabled = true;
-								return null;
-							}
-							catch(FileNotFoundException)
-							{
-								// Could not locate the I18N assembly.
-								i18nDisabled = true;
-								return null;
-							}
-							catch(BadImageFormatException)
-							{
-								// Something was wrong with the I18N assembly.
-								i18nDisabled = true;
-								return null;
-							}
-							catch(SecurityException)
-							{
-								// The engine refused to load I18N.
-								i18nDisabled = true;
-								return null;
-							}
-							if(i18nAssembly == null)
-							{
-								return null;
-							}
-						}
-						catch(SystemException)
-						{
-							return null;
-						}
-					}
-
-					// Find the "I18N.Common.Manager" class.
-					Type managerClass;
-					try
-					{
-						managerClass =
-							i18nAssembly.GetType("I18N.Common.Manager");
-					}
-					catch(NotImplementedException)
-					{
-						// "GetType" is not supported by the engine.
-						i18nDisabled = true;
-						return null;
-					}
-					if(managerClass == null)
-					{
-						return null;
-					}
-
-					// Get the value of the "PrimaryManager" property.
-					Object manager;
-					try
-					{
-						manager = managerClass.InvokeMember
-								("PrimaryManager",
-								 BindingFlags.GetProperty |
-								 	BindingFlags.Static |
-									BindingFlags.Public,
-								 null, null, null, null, null, null);
-						if(manager == null)
-						{
-							return null;
-						}
-					}
-					catch(MissingMethodException)
-					{
-						return null;
-					}
-					catch(SecurityException)
-					{
-						return null;
-					}
-					catch(NotImplementedException)
-					{
-						// "InvokeMember" is not supported by the engine.
-						i18nDisabled = true;
-						return null;
-					}
-
-					// Invoke the requested method on the manager.
-					try
-					{
-						return managerClass.InvokeMember
-								(name,
-								 BindingFlags.InvokeMethod |
-								 	BindingFlags.Instance |
-									BindingFlags.Public,
-								 null, manager, args, null, null, null);
-					}
-					catch(MissingMethodException)
-					{
-						return null;
-					}
-					catch(SecurityException)
-					{
-						return null;
-					}
+				// Invoke the requested method on the manager.
+				try
+				{
+					return managerClass.InvokeMember
+							(name,
+							 BindingFlags.InvokeMethod |
+							 	BindingFlags.Instance |
+								BindingFlags.Public,
+							 null, manager, args, null, null, null);
+				}
+				catch(MissingMethodException)
+				{
+					return null;
+				}
+				catch(SecurityException)
+				{
+					return null;
 				}
 			#else
 				return null;
@@ -729,30 +715,12 @@ public abstract class Encoding
 
 #endif // !ECMA_COMPAT
 
-	// Storage for standard encoding objects.
-	private static Encoding asciiEncoding = null;
-	private static Encoding bigEndianEncoding = null;
-	private static Encoding defaultEncoding = null;
-	private static Encoding utf7Encoding = null;
-	private static Encoding utf8Encoding = null;
-	private static Encoding unicodeEncoding = null;
-	private static Encoding isoLatin1Encoding = null;
-	private static Encoding utf32Encoding = null;
-	private static Encoding bigEndianUtf32Encoding = null;
-
 	// Get the standard ASCII encoding object.
 	public static Encoding ASCII
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(asciiEncoding == null)
-						{
-							asciiEncoding = new ASCIIEncoding();
-						}
-						return asciiEncoding;
-					}
+					return PrivateAsciiEncoding.encoding;
 				}
 			}
 
@@ -761,14 +729,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(bigEndianEncoding == null)
-						{
-							bigEndianEncoding = new UnicodeEncoding(true, true);
-						}
-						return bigEndianEncoding;
-					}
+					return PrivateBigEndianUnicodeEncoding.encoding;
 				}
 			}
 
@@ -777,31 +738,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(defaultEncoding == null)
-						{
-							// See if the underlying system knows what
-							// code page handler we should be using.
-							int codePage = DefaultEncoding.InternalCodePage();
-							if(codePage != 0)
-							{
-								try
-								{
-									defaultEncoding = GetEncoding(codePage);
-								}
-								catch(NotSupportedException)
-								{
-									defaultEncoding = new DefaultEncoding();
-								}
-							}
-							else
-							{
-								defaultEncoding = new DefaultEncoding();
-							}
-						}
-						return defaultEncoding;
-					}
+					return PrivateDefaultEncoding.encoding;
 				}
 			}
 
@@ -810,14 +747,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(isoLatin1Encoding == null)
-						{
-							isoLatin1Encoding = new Latin1Encoding();
-						}
-						return isoLatin1Encoding;
-					}
+					return PrivateISOLatin1Encoding.encoding;
 				}
 			}
 
@@ -831,14 +761,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(utf7Encoding == null)
-						{
-							utf7Encoding = new UTF7Encoding();
-						}
-						return utf7Encoding;
-					}
+					return PrivateUTF7Encoding.encoding;
 				}
 			}
 
@@ -847,14 +770,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(utf8Encoding == null)
-						{
-							utf8Encoding = new UTF8Encoding(true);
-						}
-						return utf8Encoding;
-					}
+					return PrivateUTF8Encoding.encoding;
 				}
 			}
 
@@ -863,19 +779,12 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(unicodeEncoding == null)
-						{
-							unicodeEncoding = new UnicodeEncoding();
-						}
-						return unicodeEncoding;
-					}
+					return PrivateUnicodeEncoding.encoding;
 				}
 			}
 
 	// Get the standard UTF-32 encoding object.
-#if !ECMA_COMPAT && CONFIG_FRAMEWORK_1_2
+#if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0
 	public
 #else
 	internal
@@ -884,14 +793,7 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(utf32Encoding == null)
-						{
-							utf32Encoding = new UTF32Encoding();
-						}
-						return utf32Encoding;
-					}
+					return PrivateUTF32Encoding.encoding;
 				}
 			}
 
@@ -900,17 +802,120 @@ public abstract class Encoding
 			{
 				get
 				{
-					lock(typeof(Encoding))
-					{
-						if(bigEndianUtf32Encoding == null)
-						{
-							bigEndianUtf32Encoding = new UTF32Encoding
-								(true, true);
-						}
-						return bigEndianUtf32Encoding;
-					}
+					return PrivateBigEndianUTF32Encoding.encoding;
 				}
 			}
+
+	// Helper classes for initializing the static encoding instances on
+	// demand without having to lock something because static constructors
+	// are handled by the engine.
+	private sealed class PrivateAsciiEncoding
+	{
+		public static Encoding encoding;
+
+		static PrivateAsciiEncoding()
+				{
+					encoding = new ASCIIEncoding();
+				}
+	}
+
+	private sealed class PrivateBigEndianUnicodeEncoding
+	{
+		public static Encoding encoding;
+
+		static PrivateBigEndianUnicodeEncoding()
+				{
+					encoding = new UnicodeEncoding(true, true);
+				}
+	}
+
+	private sealed class PrivateDefaultEncoding
+	{
+		public static Encoding encoding;
+
+		static PrivateDefaultEncoding()
+				{
+					// See if the underlying system knows what
+					// code page handler we should be using.
+					int codePage = DefaultEncoding.InternalCodePage();
+
+					if(codePage != 0)
+					{
+						try
+						{
+							encoding = GetEncoding(codePage);
+						}
+						catch(NotSupportedException)
+						{
+							encoding = new DefaultEncoding();
+						}
+					}
+					else
+					{
+						encoding = new DefaultEncoding();
+					}
+				}
+	}
+
+	private sealed class PrivateISOLatin1Encoding
+	{
+		public static Encoding encoding;
+
+		static PrivateISOLatin1Encoding()
+				{
+					encoding = new Latin1Encoding();
+				}
+	}
+
+	private sealed class PrivateUTF7Encoding
+	{
+		public static Encoding encoding;
+
+		static PrivateUTF7Encoding()
+				{
+					encoding = new UTF7Encoding();
+				}
+	}
+
+	private sealed class PrivateUTF8Encoding
+	{
+		public static Encoding encoding;
+
+		static PrivateUTF8Encoding()
+				{
+					encoding = new UTF8Encoding(true);
+				}
+	}
+
+	private sealed class PrivateUnicodeEncoding
+	{
+		public static Encoding encoding;
+
+		static PrivateUnicodeEncoding()
+				{
+					encoding = new UnicodeEncoding();
+				}
+	}
+
+	private sealed class PrivateUTF32Encoding
+	{
+		public static Encoding encoding;
+
+		static PrivateUTF32Encoding()
+				{
+					encoding = new UTF32Encoding();
+				}
+	}
+
+	private sealed class PrivateBigEndianUTF32Encoding
+	{
+		public static Encoding encoding;
+
+		static PrivateBigEndianUTF32Encoding()
+				{
+					encoding = new UTF32Encoding(true, true);
+				}
+	}
 
 	// Forwarding decoder implementation.
 	private sealed class ForwardingDecoder : Decoder

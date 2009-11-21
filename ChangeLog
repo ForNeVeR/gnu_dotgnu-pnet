@@ -1,3 +1,16 @@
+2009-11-21  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/Text/Encoding.cs (InvokeI18N): Move the static invariant
+	stuff to a new static constructor and remove the class lock.
+	Add new private nested classes for the different encoding properties and
+	create the corresponding encoding in the static constructor ot the new
+	class with the code of the encoding property.
+	Return the static encoding member of the new corresponding nested class
+	in the encoding properties.
+
+	* I18N/Common/Manager.cs: Create the singleton manager in a static
+	constructor now instead of the PrimaryManager property.
+
 2009-06-08  Heiko Weiss  <heiko.weiss@de.trumpf-laser.com>
 
 	* runtime/System/Private/NumberFormat/CustomFormatter.cs: fixed exception 

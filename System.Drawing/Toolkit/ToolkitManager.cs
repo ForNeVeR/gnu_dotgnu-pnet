@@ -30,9 +30,16 @@ using DotGNU.Images;
 [NonStandardExtra]
 public sealed class ToolkitManager
 {
-	// Global state.
-	private static IToolkit toolkit;
-	private static IToolkitPrintingSystem printingSystem;
+	// Helper values to allow a user override prior to initialization
+	// with the Toolkit and PrintingSystem property setters.
+	// The initialization happens on first call to the getters of these
+	// properties,
+	// After that point no overriding is possible.
+	// NOTE: Due to possible inlining Setting the value to override with
+	// and accessing the getter in the same function might not give the
+	// desired result.
+	internal static IToolkit toolkitOverride;
+	internal static IToolkitPrintingSystem printingSystemOverride;
 
 	public ToolkitManager() {}
 
@@ -41,21 +48,11 @@ public sealed class ToolkitManager
 			{
 				get
 				{
-					lock(typeof(ToolkitManager))
-					{
-						if(toolkit == null)
-						{
-							toolkit = CreateDefaultToolkit();
-						}
-						return toolkit;
-					}
+					return ToolkitHandler.toolkit;
 				}
 				set
 				{
-					lock(typeof(ToolkitManager))
-					{
-						toolkit = value;
-					}
+					toolkitOverride = value;
 				}
 			}
 
@@ -64,28 +61,14 @@ public sealed class ToolkitManager
 			{
 				get
 				{
-					lock(typeof(ToolkitManager))
+					try
 					{
-						return (toolkit != null);
+						return (ToolkitHandler.toolkit != null);
 					}
-				}
-			}
-
-	// Determine if this platform appears to be Unix-ish.
-	private static bool IsUnix()
-			{
-			#if !ECMA_COMPAT
-				if(Environment.OSVersion.Platform != PlatformID.Unix)
-			#else
-				if(Path.DirectorySeparatorChar == '\\' ||
-				   Path.AltDirectorySeparatorChar == '\\')
-			#endif
-				{
-					return false;
-				}
-				else
-				{
-					return true;
+					catch (TypeInitializationException e)
+					{
+						return false;
+					}
 				}
 			}
 
@@ -94,29 +77,11 @@ public sealed class ToolkitManager
 			{
 				get
 				{
-					lock(typeof(ToolkitManager))
-					{
-						if(printingSystem == null)
-						{
-							if(IsUnix())
-							{
-								printingSystem = new UnixPrintingSystem();
-							}
-							else
-							{
-								// TODO: Win32 printing system.
-								printingSystem = new NullPrintingSystem();
-							}
-						}
-						return printingSystem;
-					}
+					return PrintingSystemHandler.printingSystem;
 				}
 				set
 				{
-					lock(typeof(ToolkitManager))
-					{
-						printingSystem = value;
-					}
+					printingSystemOverride = value;
 				}
 			}
 
@@ -221,89 +186,172 @@ public sealed class ToolkitManager
 				return new XorBrush(brush);
 			}
 
-	// Get the override toolkit name.
-	private static String GetToolkitOverride()
-			{
-				String name;
+	//
+	// This is a helper class for the active toolkit.
+	// It will be initialized on the first access to the
+	// ToolkitManager.Toolkit property getter.
+	//
+	private sealed class ToolkitHandler
+	{
+		public static IToolkit toolkit;
 
-				// Search for "--toolkit" in the command-line options.
-				String[] args = Environment.GetCommandLineArgs();
-				int index;
-				name = null;
-				for(index = 1; index < args.Length; ++index)
+		static ToolkitHandler()
 				{
-					if(args[index] == "--toolkit")
+					if(ToolkitManager.toolkitOverride != null)
 					{
-						if((index + 1) < args.Length)
-						{
-							name = args[index + 1];
-							break;
-						}
-					}
-					else if(args[index].StartsWith("--toolkit="))
-					{
-						name = args[index].Substring(10);
-						break;
-					}
-				}
-
-				// Check the environment next.
-				if(name == null)
-				{
-					name = Environment.GetEnvironmentVariable
-						("PNET_WINFORMS_TOOLKIT");
-				}
-
-				// Bail out if no toolkit name specified.
-				if(name == null || name.Length == 0)
-				{
-					return null;
-				}
-
-				// Prepend "System.Drawing." if necessary.
-				if(name.IndexOf('.') == -1)
-				{
-					name = "System.Drawing." + name;
-				}
-				return name;
-			}
-
-	// Create the default toolkit.
-	private static IToolkit CreateDefaultToolkit()
-			{
-			#if CONFIG_REFLECTION
-				// Determine the name of the toolkit we wish to use.
-				String name = GetToolkitOverride();
-				if(name == null)
-				{
-					if(IsUnix())
-					{
-						name = "System.Drawing.Xsharp";
+						toolkit = ToolkitManager.toolkitOverride;
 					}
 					else
 					{
-						name = "System.Drawing.Win32";
+						toolkit = CreateDefaultToolkit();
 					}
 				}
 
-				// Load the toolkit's assembly.
-				Assembly assembly = Assembly.Load(name);
-
-				// Find the "System.Drawing.Toolkit.DrawingToolkit" class.
-				Type type = assembly.GetType
-					("System.Drawing.Toolkit.DrawingToolkit");
-				if(type == null)
+		// Determine if this platform appears to be Unix-ish.
+		private static bool IsUnix()
 				{
-					throw new NotSupportedException();
+				#if !ECMA_COMPAT || CONFIG_FRAMEWORK_2_0
+					return (Environment.OSVersion.Platform == PlatformID.Unix);
+				#else
+					if(Path.DirectorySeparatorChar == '\\' ||
+					   Path.AltDirectorySeparatorChar == '\\')
+					{
+						return false;
+					}
+					else
+					{
+						return true;
+					}
+				#endif
 				}
 
-				// Instantiate "DrawingToolkit" and return it.
-				ConstructorInfo ctor = type.GetConstructor(new Type [0]);
-				return (IToolkit)(ctor.Invoke(new Object [0]));
-			#else
-				return new NullToolkit();
-			#endif
+		// Get the override toolkit name.
+		private static String GetToolkitOverride()
+				{
+					String name;
+
+					// Search for "--toolkit" in the command-line options.
+					String[] args = Environment.GetCommandLineArgs();
+					int index;
+					name = null;
+					for(index = 1; index < args.Length; ++index)
+					{
+						if(args[index] == "--toolkit")
+						{
+							if((index + 1) < args.Length)
+							{
+								name = args[index + 1];
+								break;
+							}
+						}
+						else if(args[index].StartsWith("--toolkit="))
+						{
+							name = args[index].Substring(10);
+							break;
+						}
+					}
+
+					// Check the environment next.
+					if(name == null)
+					{
+						name = Environment.GetEnvironmentVariable
+							("PNET_WINFORMS_TOOLKIT");
+					}
+
+					// Bail out if no toolkit name specified.
+					if(name == null || name.Length == 0)
+					{
+						return null;
+					}
+
+					// Prepend "System.Drawing." if necessary.
+					if(name.IndexOf('.') == -1)
+					{
+						name = "System.Drawing." + name;
+					}
+					return name;
+				}
+
+		// Create the default toolkit.
+		private static IToolkit CreateDefaultToolkit()
+				{
+				#if CONFIG_REFLECTION
+					// Determine the name of the toolkit we wish to use.
+					String name = GetToolkitOverride();
+					if(name == null)
+					{
+						if(IsUnix())
+						{
+							name = "System.Drawing.Xsharp";
+						}
+						else
+						{
+							name = "System.Drawing.Win32";
+						}
+					}
+
+					// Load the toolkit's assembly.
+					Assembly assembly = Assembly.Load(name);
+
+					// Find the "System.Drawing.Toolkit.DrawingToolkit" class.
+					Type type = assembly.GetType
+						("System.Drawing.Toolkit.DrawingToolkit");
+					if(type == null)
+					{
+						throw new NotSupportedException();
+					}
+
+					// Instantiate "DrawingToolkit" and return it.
+					ConstructorInfo ctor = type.GetConstructor(new Type [0]);
+					return (IToolkit)(ctor.Invoke(new Object [0]));
+				#else
+					return new NullToolkit();
+				#endif
 			}
+	}
+
+	private sealed class PrintingSystemHandler
+	{
+		public static IToolkitPrintingSystem printingSystem;
+
+		static PrintingSystemHandler()
+				{
+					if(ToolkitManager.printingSystemOverride != null)
+					{
+						printingSystem = ToolkitManager.printingSystemOverride;
+					}
+					else
+					{
+						if(IsUnix())
+						{
+							printingSystem = new UnixPrintingSystem();
+						}
+						else
+						{
+							// TODO: Win32 printing system.
+							printingSystem = new NullPrintingSystem();
+						}
+					}
+				}
+
+		// Determine if this platform appears to be Unix-ish.
+		private static bool IsUnix()
+				{
+				#if !ECMA_COMPAT || CONFIG_FRAMEWORK_2_0
+					return (Environment.OSVersion.Platform == PlatformID.Unix);
+				#else
+					if(Path.DirectorySeparatorChar == '\\' ||
+					   Path.AltDirectorySeparatorChar == '\\')
+					{
+						return false;
+					}
+					else
+					{
+						return true;
+					}
+				#endif
+				}
+	}
 
 }; // class ToolkitManager
 

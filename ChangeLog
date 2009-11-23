@@ -14,6 +14,11 @@
 	* runtime/System/IO/TextWriter.cs: Lock the underlying writer instead of
 	this in the synchronized text writer.
 
+	* System.Drawing/Toolkit/ToolkitManager.cs: Move the static members
+	toolkit and printingSystem to seperate classes to allow initialization
+	on demand and optimize away the locks around accesses to them in the
+	properties.
+
 2009-11-21  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Text/Encoding.cs (InvokeI18N): Move the static invariant

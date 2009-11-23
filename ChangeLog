@@ -1,5 +1,8 @@
 2009-11-23  Klaus Treichel  <ktreichel@web.de>
 
+	* runtime/System/Type.cs (DefaultBinder): Create a new DefaultBinder if
+	the cached version is null instead of not null.
+
 	* runtime/System/IO/TextReader.cs: Lock the underlying reader instead of
 	this in the synchronized text reader.
 

@@ -1406,7 +1406,7 @@ public abstract class Type
 					{
 						lock(typeof(Type))
 						{
-							if(defaultBinder != null)
+							if(defaultBinder == null)
 							{
 								defaultBinder = new DefaultBinder();
 							}

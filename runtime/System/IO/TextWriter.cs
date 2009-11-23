@@ -368,7 +368,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Close this text writer.
 		public override void Close()
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Close();
 					}
@@ -377,7 +377,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Dispose this text writer.
 		protected override void Dispose(bool disposing)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Dispose(disposing);
 					}
@@ -386,7 +386,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Flush the contents of the text writer.
 		public override void Flush()
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Flush();
 					}
@@ -395,14 +395,14 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Write a formatted string to this text writer.
 		public override void Write(String format, Object arg0)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(format, arg0);
 					}
 				}
 		public override void Write(String format, Object arg0, Object arg1)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(format, arg0, arg1);
 					}
@@ -410,14 +410,14 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		public override void Write(String format, Object arg0, Object arg1,
 								  Object arg2)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(format, arg0, arg1, arg2);
 					}
 				}
 		public override void Write(String format, params Object[] args)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(format, args);
 					}
@@ -426,28 +426,28 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Write primitive values to this text writer.
 		public override void Write(bool value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(char value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(char[] value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(char[] value, int index, int count)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value, index, count);
 					}
@@ -455,21 +455,21 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 #if CONFIG_EXTENDED_NUMERICS
 		public override void Write(double value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(Decimal value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(float value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
@@ -477,42 +477,42 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 #endif
 		public override void Write(int value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(uint value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(long value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(ulong value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(Object value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
 				}
 		public override void Write(String value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.Write(value);
 					}
@@ -521,7 +521,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Write a newline to this text writer.
 		public override void WriteLine()
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine();
 					}
@@ -530,14 +530,14 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Write a formatted string to this text writer followed by a newline.
 		public override void WriteLine(String format, Object arg0)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(format, arg0);
 					}
 				}
 		public override void WriteLine(String format, Object arg0, Object arg1)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(format, arg0, arg1);
 					}
@@ -545,14 +545,14 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		public override void WriteLine(String format, Object arg0, Object arg1,
 								     Object arg2)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(format, arg0, arg1, arg2);
 					}
 				}
 		public override void WriteLine(String format, params Object[] args)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(format, args);
 					}
@@ -561,28 +561,28 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 		// Write primitive values to this text writer followed by a newline.
 		public override void WriteLine(bool value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(char value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(char[] value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(char[] value, int index, int count)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value, index, count);
 					}
@@ -590,21 +590,21 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 #if CONFIG_EXTENDED_NUMERICS
 		public override void WriteLine(double value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(Decimal value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(float value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
@@ -612,42 +612,42 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 #endif
 		public override void WriteLine(int value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(uint value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(long value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(ulong value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(Object value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
 				}
 		public override void WriteLine(String value)
 				{
-					lock(this)
+					lock(writer)
 					{
 						writer.WriteLine(value);
 					}
@@ -659,7 +659,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 					get
 					{
 						System.Text.Encoding enc;
-						lock(this)
+						lock(writer)
 						{
 							enc = writer.Encoding;
 						}
@@ -673,7 +673,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 					get
 					{
 						String nl;
-						lock(this)
+						lock(writer)
 						{
 							nl = writer.NewLine;
 						}
@@ -681,7 +681,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 					}
 					set
 					{
-						lock(this)
+						lock(writer)
 						{
 							writer.NewLine = value;
 						}
@@ -694,7 +694,7 @@ public abstract class TextWriter : MarshalByRefObject, IDisposable
 					get
 					{
 						IFormatProvider prov;
-						lock(this)
+						lock(writer)
 						{
 							prov = writer.FormatProvider;
 						}

@@ -1,3 +1,11 @@
+2009-11-23  Klaus Treichel  <ktreichel@web.de>
+
+	* runtime/System/IO/TextReader.cs: Lock the underlying reader instead of
+	this in the synchronized text reader.
+
+	* runtime/System/IO/TextWriter.cs: Lock the underlying writer instead of
+	this in the synchronized text writer.
+
 2009-11-21  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Text/Encoding.cs (InvokeI18N): Move the static invariant

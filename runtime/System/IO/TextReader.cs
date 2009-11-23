@@ -227,7 +227,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Close this text reader.
 		public override void Close()
 				{
-					lock(this)
+					lock(reader)
 					{
 						reader.Close();
 					}
@@ -236,7 +236,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Dispose this text reader.
 		protected override void Dispose(bool disposing)
 				{
-					lock(this)
+					lock(reader)
 					{
 						reader.Dispose(disposing);
 					}
@@ -245,7 +245,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Peek at the next character.
 		public override int Peek()
 				{
-					lock(this)
+					lock(reader)
 					{
 						return reader.Peek();
 					}
@@ -254,7 +254,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Read the next character.
 		public override int Read()
 				{
-					lock(this)
+					lock(reader)
 					{
 						return reader.Read();
 					}
@@ -263,7 +263,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Read a buffer of characters.
 		public override int Read(char[] buffer, int index, int count)
 				{
-					lock(this)
+					lock(reader)
 					{
 						return reader.Read(buffer, index, count);
 					}
@@ -272,7 +272,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Read a buffer of characters, and fill the entire block.
 		public override int ReadBlock(char[] buffer, int index, int count)
 				{
-					lock(this)
+					lock(reader)
 					{
 						return reader.ReadBlock(buffer, index, count);
 					}
@@ -281,7 +281,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Read the next line from this reader.
 		public override String ReadLine()
 				{
-					lock(this)
+					lock(reader)
 					{
 						return reader.ReadLine();
 					}
@@ -290,7 +290,7 @@ public abstract class TextReader : MarshalByRefObject, IDisposable
 		// Read until the end of the stream.
 		public override String ReadToEnd()
 				{
-					lock(this)
+					lock(reader)
 					{
 						return reader.ReadToEnd();
 					}

@@ -1,5 +1,10 @@
 2009-11-23  Klaus Treichel  <ktreichel@web.de>
 
+	* runtime/System/Console.cs: Replace the static stdin, stdout and stderr
+	members by private singleton classes to initialize them in static
+	constructors and avoid the lock on accessing the corresponding
+	properties.
+
 	* runtime/System/Type.cs (DefaultBinder): Create a new DefaultBinder if
 	the cached version is null instead of not null.
 

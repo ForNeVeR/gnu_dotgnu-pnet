@@ -31,10 +31,59 @@ public sealed class Console
 
 #if !CONFIG_SMALL_CONSOLE
 
-	// Cached copies of the stdin, stdout, and stderr streams.
-	private static TextReader stdin  = null;
-	private static TextWriter stdout = null;
-	private static TextWriter stderr = null;
+	/*
+	 * Helper classes to initialize the streams only on first access.
+	 */
+	private class StdIn
+	{
+		public static TextReader stream;
+
+		static StdIn()
+				{
+					stream = new StdReader(0);
+				}
+		
+	}
+
+	private class StdOut
+	{
+		public static TextWriter stream;
+
+		static StdOut()
+				{
+					Encoding encoding = Encoding.Default;
+					StreamWriter writer;
+
+					if(encoding is UTF8Encoding)
+					{
+						// Disable the preamble if UTF-8.
+						encoding = new UTF8Encoding();
+					}
+					writer = new StreamWriter(new StdStream(1), encoding);
+					writer.AutoFlush = true;
+					stream = TextWriter.Synchronized(writer);
+				}
+	}
+
+	private class StdErr
+	{
+		public static TextWriter stream;
+
+		static StdErr()
+				{
+					Encoding encoding = Encoding.Default;
+					StreamWriter writer;
+
+					if(encoding is UTF8Encoding)
+					{
+						// Disable the preamble if UTF-8.
+						encoding = new UTF8Encoding();
+					}
+					writer = new StreamWriter(new StdStream(2), encoding);
+					writer.AutoFlush = true;
+					stream = TextWriter.Synchronized(writer);
+				}
+	}
 
 	// This class cannot be instantiated.
 	private Console() {}
@@ -74,18 +123,7 @@ public sealed class Console
 			{
 				get
 				{
-					lock(typeof(Console))
-					{
-						if(stdin != null)
-						{
-							return stdin;
-						}
-						else
-						{
-							stdin = new StdReader(0);
-							return stdin;
-						}
-					}
+					return StdIn.stream;
 				}
 			}
 
@@ -94,27 +132,7 @@ public sealed class Console
 			{
 				get
 				{
-					lock(typeof(Console))
-					{
-						if(stdout != null)
-						{
-							return stdout;
-						}
-						else
-						{
-							Encoding encoding = Encoding.Default;
-							if(encoding is UTF8Encoding)
-							{
-								// Disable the preamble if UTF-8.
-								encoding = new UTF8Encoding();
-							}
-							StreamWriter writer = new StreamWriter
-								(new StdStream(1), encoding);
-							writer.AutoFlush = true;
-							SetOut(writer);
-							return stdout;
-						}
-					}
+					return StdOut.stream;
 				}
 			}
 
@@ -123,27 +141,7 @@ public sealed class Console
 			{
 				get
 				{
-					lock(typeof(Console))
-					{
-						if(stderr != null)
-						{
-							return stderr;
-						}
-						else
-						{
-							Encoding encoding = Encoding.Default;
-							if(encoding is UTF8Encoding)
-							{
-								// Disable the preamble if UTF-8.
-								encoding = new UTF8Encoding();
-							}
-							StreamWriter writer = new StreamWriter
-								(new StdStream(2), encoding);
-							writer.AutoFlush = true;
-							SetError(writer);
-							return stderr;
-						}
-					}
+					return StdErr.stream;
 				}
 			}
 
@@ -188,7 +186,7 @@ public sealed class Console
 				{
 					throw new ArgumentNullException("newIn");
 				}
-				stdin = TextReader.Synchronized(newIn);
+				StdIn.stream = TextReader.Synchronized(newIn);
 			}
 
 	// Set the standard output stream.
@@ -198,7 +196,7 @@ public sealed class Console
 				{
 					throw new ArgumentNullException("newOut");
 				}
-				stdout = TextWriter.Synchronized(newOut);
+				StdOut.stream = TextWriter.Synchronized(newOut);
 			}
 
 	// Set the standard error stream.
@@ -208,7 +206,7 @@ public sealed class Console
 				{
 					throw new ArgumentNullException("newError");
 				}
-				stderr = TextWriter.Synchronized(newError);
+				StdErr.stream = TextWriter.Synchronized(newError);
 			}
 
 	// Read a character from the standard input stream.

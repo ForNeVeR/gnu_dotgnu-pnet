@@ -1,3 +1,10 @@
+2009-11-24  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/verify_call.c (TryInlineLoad): Remove the extra check for value
+	types.
+	Fix the case in inlining a constant load where the first argument to the
+	method to be inlined is not an object but a reference to a value type.
+
 2009-11-15  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add checks for the gcc options

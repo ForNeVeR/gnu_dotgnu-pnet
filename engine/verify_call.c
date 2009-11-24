@@ -90,10 +90,6 @@ static int TryInlineLoad(ILExecProcess *process, ILMethod *method, int numParams
 			return 0;
 		}
 	}
-	else if(ILClassIsValueType(ILMethod_Owner(method)))
-	{
-		return 0;
-	}
 	else
 	{
 		if (numParams != 1)
@@ -177,7 +173,7 @@ static int TryInlineLoad(ILExecProcess *process, ILMethod *method, int numParams
 	}
 	
 	*inlinePc = pc;
-	*inlineOpcode = opcode;	
+	*inlineOpcode = opcode;
 	
 	ADVANCE();
 	GET_NEXT_INSTRUCTION();
@@ -1832,16 +1828,24 @@ callNonvirtualFromVirtual:
 #endif
 						if (tryInlineType == V_INLINE_CONST_LOAD)
 						{
-							if(numParams > 0 && !ILMethod_IsStatic(methodInfo) &&
-								stack[stackSize - numParams].engineType	== ILEngineType_O)
+							if(numParams > 0 && !ILMethod_IsStatic(methodInfo))
 							{
-								/* Check the first parameter against "null" */
-								ILCoderCheckCallNull(coder, &callInfo);
-								/* Now pop the this parameter as this a constant load */
-								ILCoderPop(coder, ILEngineType_O, 
-									stack[stackSize - numParams].typeInfo);
+								if(stack[stackSize - numParams].engineType == ILEngineType_O)
+								{
+									/* Check the first parameter against "null" */
+									ILCoderCheckCallNull(coder, &callInfo);
+									/* Now pop the this parameter as this a constant load */
+									ILCoderPop(coder, ILEngineType_O, 
+										stack[stackSize - numParams].typeInfo);
+								}
+								else
+								{
+									/* Pop the reference to the value type as this a constant load */
+									ILCoderPop(coder, ILEngineType_M,
+										stack[stackSize - numParams].typeInfo);
+								}
 							}
-
+							
 							switch (tryInlineOpcode)
 							{
 							case IL_OP_LDNULL:
@@ -1975,7 +1979,7 @@ callNonvirtualFromVirtual:
 									if(IsSubClass(stack[stackSize - 2].typeInfo,
 												ILField_Owner(fieldInfo)) &&
 									AssignCompatible(methodInfo, &(stack[stackSize - 1]),
-			   											classType, unsafeAllowed))
+														classType, unsafeAllowed))
 									{
 										if(!ILField_IsStatic(fieldInfo))
 										{

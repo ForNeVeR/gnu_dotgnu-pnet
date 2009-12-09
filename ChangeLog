@@ -1,3 +1,8 @@
+2009-12-19  Heiko Weiss  <heiko.weiss@de.trumpf.com>
+
+	*System.Windows.Forms/TabControl.cs: fixed tab items height and drawing 
+	scrolling buttons.
+
 2009-11-23  Klaus Treichel  <ktreichel@web.de>
 
 	* runtime/System/Console.cs: Replace the static stdin, stdout and stderr

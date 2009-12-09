@@ -591,7 +591,7 @@ namespace System.Windows.Forms
 			{
 				moveButtonLeftBounds = moveButtonRightBounds = new Rectangle( Width - moveButtonSize.Width *2, 1, moveButtonSize.Width, moveButtonSize.Height);
 				moveButtonRightBounds.Offset( moveButtonLeftBounds.Width, 0);
-				using (SolidBrush b = new SolidBrush( foreColor) )
+				using (SolidBrush b = new SolidBrush( Color.Black ) )
 				{
 					ControlPaint.DrawButton(g, moveButtonLeftBounds, moveButtonLeftState);
 					// Left Arrow
@@ -1291,7 +1291,7 @@ namespace System.Windows.Forms
 		{
 			get
 			{
-				return  ItemSize.Height - 3;
+				return  ItemSize.Height;
 			}
 		}
 

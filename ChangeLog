@@ -1,3 +1,11 @@
+2009-12-09  Klaus Treichel  <ktreichel@web,de>
+
+	* engine/jitc_branch.c (JITCoder_Label): Don't add the label for offset
+	0 here because that was already done during setup.
+
+	* engine/jitc_locals.c (_ILJitLocalsInit): Create new blocks for the
+	start and end label to make sure that they are on different blocks.
+
 2009-11-24  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/verify_call.c (TryInlineLoad): Remove the extra check for value

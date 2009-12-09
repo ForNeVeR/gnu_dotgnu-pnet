@@ -461,6 +461,15 @@ static int _ILJitLocalsInit(ILJITCoder *coder)
 		jit_label_t startLabel = jit_label_undefined;
 		jit_label_t endLabel = jit_label_undefined;
 
+		/* 
+		 * Create a new block to make sure that the start label will be
+		 * placed on a new block alone with the code generated.
+		 */
+		if(!jit_insn_new_block(coder->jitFunction))
+		{
+			return 0;
+		}
+
 		if(!jit_insn_label(coder->jitFunction, &startLabel))
 		{
 			return 0;
@@ -471,22 +480,26 @@ static int _ILJitLocalsInit(ILJITCoder *coder)
 			return 0;
 		}
 
+		/*
+		 * Create a new block for the end label. This should be done
+		 * by jit_insn_label anyways but it doesn't hurt.
+		 * The case where this seems to be needed is if all locals are
+		 * structs which are not initialized by now.
+		 */
+		if(!jit_insn_new_block(coder->jitFunction))
+		{
+			return 0;
+		}
+
 		if(!jit_insn_label(coder->jitFunction, &endLabel))
 		{
 			return 0;
 		}
-		/*
-		 * TODO: This additional check for inequal blocks can be removed
-		 * later when label merging is fixed in libjit.
-		 */
-		if(jit_block_from_label(coder->jitFunction, startLabel) !=
-		   jit_block_from_label(coder->jitFunction, endLabel))
+
+		if(!jit_insn_move_blocks_to_start(coder->jitFunction, startLabel,
+															  endLabel))
 		{
-			if(!jit_insn_move_blocks_to_start(coder->jitFunction, startLabel,
-																  endLabel))
-			{
-				return 0;
-			}
+			return 0;
 		}
 	}
 	return 1;

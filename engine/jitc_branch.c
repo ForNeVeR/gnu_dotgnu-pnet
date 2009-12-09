@@ -58,7 +58,13 @@ static void JITCoder_Label(ILCoder *coder, ILUInt32 offset)
 			}
 		#endif
 			_ILJitLabelRestoreStack(jitCoder, label);
-			jit_insn_label(jitCoder->jitFunction, &(label->label));
+			/*
+			 * The label for the 0 offset is already inserted during setup.
+			 */
+			if(offset != 0)
+			{
+				jit_insn_label(jitCoder->jitFunction, &(label->label));
+			}
 		}
 	}
 }

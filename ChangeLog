@@ -1,3 +1,17 @@
+2009-12-12  Klaus Treichel  <ktreichel@web,de>
+
+	* engine/jitc_branch.c (JITCoder_Label): Revert the change from the
+	previous commit.
+
+	* engine/jitc_setup.c (JITCoder_Setup): Don't add the label for the
+	0 offset anymore.
+
+	* engine/verify.c: Some reformatting.
+
+	* engine/verify_except.c (OutputExceptionTable): Invoke the coder
+	TryHandlerStart, Throw and TryHandlerEnd functions only if there is at
+	least one handler or a finally or fault clause for the region present.
+
 2009-12-09  Klaus Treichel  <ktreichel@web,de>
 
 	* engine/jitc_branch.c (JITCoder_Label): Don't add the label for offset

@@ -43,6 +43,10 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 	offset = 0;
 	for(;;)
 	{
+		int handlerStarted;
+
+		handlerStarted = 0;
+
 		/* Find the end of the region that starts at "offset" */
 		end = IL_MAX_UINT32;
 		exception = exceptions;
@@ -72,9 +76,6 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 			break;
 		}
 
-		/* Output the region information to the table */
-		ILCoderTryHandlerStart(coder, offset, end);
-
 		/* Output exception matching code for this region */
 		exception = exceptions;
 		while(exception != 0)
@@ -86,10 +87,22 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 										IL_META_EXCEPTION_FAULT)) != 0)
 				{
 					/* Call a "finally" or "fault" clause */
+					if(!handlerStarted)
+					{
+						/* Output the region information to the table */
+						ILCoderTryHandlerStart(coder, offset, end);
+						handlerStarted = 1;
+					}
 					ILCoderFinally(coder, exception, exception->handlerOffset);					
 				}
 				else if((exception->flags & IL_META_EXCEPTION_FILTER) == 0)
 				{
+					if(!handlerStarted)
+					{
+						/* Output the region information to the table */
+						ILCoderTryHandlerStart(coder, offset, end);
+						handlerStarted = 1;
+					}
 					/* Match against a "catch" clause */
 					classInfo = ILProgramItemToClass
 						((ILProgramItem *)ILImageTokenInfo
@@ -105,12 +118,15 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 			exception = exception->next;
 		}
 
-		/* If execution falls off the end of the matching code,
-		   then throw the exception to the calling method */
-		ILCoderThrow(coder, 0);
+		if(handlerStarted)
+		{
+			/* If execution falls off the end of the matching code,
+			   then throw the exception to the calling method */
+			ILCoderThrow(coder, 0);
 
-		/* Mark the end of the handler */
-		ILCoderTryHandlerEnd(coder);
+			/* Mark the end of the handler */
+			ILCoderTryHandlerEnd(coder);
+		}
 
 		/* Advance to the next region within the code */
 		offset = end;

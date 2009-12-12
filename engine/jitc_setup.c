@@ -27,7 +27,6 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 						  ILMethod *method, ILMethodCode *code)
 {
 	ILJITCoder *coder = ((ILJITCoder *)_coder);
-	ILJITLabel *label0;
 #ifdef IL_DEBUGGER
 	ILDebugger *debugger;
 #endif
@@ -116,10 +115,6 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 
 	/* Reset the isInCatcher flag. */
 	coder->isInCatcher = 0;
-
-	/* Set the label for the start of the function. */
-	label0 = _ILJitLabelGet(coder, 0, _IL_JIT_LABEL_NORMAL);
-	jit_insn_label(coder->jitFunction, &(label0->label));
 
 	return 1;
 }

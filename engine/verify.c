@@ -974,7 +974,7 @@ restart:
 		/* Mark the start and end of the try region */
 		if(exception->tryOffset >= code->codeLen ||
 		   (exception->tryOffset + exception->tryLength) <
-		   		exception->tryOffset || /* Wrap-around check */
+				exception->tryOffset || /* Wrap-around check */
 		   (exception->tryOffset + exception->tryLength) > code->codeLen)
 		{
 			VERIFY_BRANCH_ERROR();

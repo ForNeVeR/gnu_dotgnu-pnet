@@ -1,3 +1,19 @@
+2009-12-20  Klaus Treichel  <ktreichel@web.de>
+
+	* support/thread.c (ILThreadIsAborting): Don't acquire the thread's lock
+	for reading it's state.
+	(ILThreadIsAbortRequested): likewise
+	(ILThreadGetState): likewise
+	(ILThreadCreate): Replace the locking and unlocking of the threading
+	subsystem by a memory barrier.
+
+	* support/thread.c: Use interlocked functions for loading and storing
+	the thread's state.
+
+	* support/wait.c: likewise
+
+	* support/wait_mutex.h: likewise
+
 2009-12-12  Klaus Treichel  <ktreichel@web,de>
 
 	* engine/jitc_branch.c (JITCoder_Label): Revert the change from the

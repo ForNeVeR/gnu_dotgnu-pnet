@@ -27,6 +27,7 @@ You normally won't need to modify or replace this file when porting.
 */
 
 #include "thr_defs.h"
+#include "interlocked.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -53,7 +54,7 @@ int _ILEnterWait(ILThread *thread)
 
 	_ILMutexLock(&(thread->lock));
 
-	threadState = thread->state;
+	threadState = ILInterlockedLoadU2(&(thread->state));
 	if((threadState & (IL_TS_ABORT_REQUESTED)) != 0)
 	{
 		result = IL_WAIT_ABORTED;
@@ -65,7 +66,7 @@ int _ILEnterWait(ILThread *thread)
 	{
 		threadState |= IL_TS_WAIT_SLEEP_JOIN;
 	}
-	thread->state = threadState;
+	ILInterlockedStoreU2(&(thread->state), threadState);
 
 	_ILMutexUnlock(&(thread->lock));
 
@@ -87,7 +88,7 @@ int _ILLeaveWait(ILThread *thread, int result)
 	   if enter/leavewait are called recursively */
 
 	/* Abort has more priority over interrupt */
-	threadState = thread->state;
+	threadState = ILInterlockedLoadU2(&(thread->state));
 	if((threadState & (IL_TS_ABORT_REQUESTED)) != 0
 		|| result == IL_WAIT_ABORTED)
 	{
@@ -109,7 +110,7 @@ int _ILLeaveWait(ILThread *thread, int result)
 
 		threadState &= ~(IL_TS_INTERRUPTED);
 
-		thread->state = threadState;
+		ILInterlockedStoreU2(&(thread->state), threadState);
 
 		/* Unlock the thread object prior to suspending */
 		_ILMutexUnlock(&(thread->lock));
@@ -120,11 +121,11 @@ int _ILLeaveWait(ILThread *thread, int result)
 		/* And relock for changing the state */
 		_ILMutexLock(&(thread->lock));
 
-		threadState = thread->state;
+		threadState = ILInterlockedLoadU2(&(thread->state));
 	}
 	threadState &= ~(IL_TS_WAIT_SLEEP_JOIN | IL_TS_INTERRUPTED);
 
-	thread->state = threadState;
+	ILInterlockedStoreU2(&(thread->state), threadState);
 
 	_ILMutexUnlock(&(thread->lock));
 
@@ -475,7 +476,7 @@ int ILWaitAll(ILWaitHandle **handles, ILUInt32 numHandles, ILUInt32 timeout)
  * return with either IL_WAIT_TIMEOUT, IL_WAIT_ABORTED or IL_WAIT_INTERRUPTED.
  */
 int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout)
-{	
+{
 	ILThread *thread = _ILThreadGetSelf();
 	int result, retval = 0;
 	ILUInt16 threadstate = 0;
@@ -494,7 +495,7 @@ int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout)
 			
 			_ILMutexLock(&thread->lock);
 
-			newThreadstate = thread->state;
+			newThreadstate = ILInterlockedLoadU2(&(thread->state));
 			threadstate |= newThreadstate;
 			
 			if (result == IL_WAIT_INTERRUPTED)
@@ -510,7 +511,7 @@ int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout)
 				retval = result;
 			}
 
-			thread->state = newThreadstate;
+			ILInterlockedStoreU2(&(thread->state), newThreadstate);
 
 			_ILMutexUnlock(&thread->lock);
 			
@@ -519,13 +520,15 @@ int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout)
 		else
 		{	
 			if (threadstate != 0)
-			{					
+			{
 				_ILMutexLock(&thread->lock);
 
 				/* Set the thread state to the thread state that was stored 
 					and clear the interrupted flag */
-				thread->state |= (threadstate & ~IL_TS_INTERRUPTED);
-
+				newThreadstate = ILInterlockedLoadU2(&(thread->state));
+				newThreadstate |= (threadstate & ~IL_TS_INTERRUPTED);
+				ILInterlockedStoreU2(&(thread->state), newThreadstate);
+				
 				_ILMutexUnlock(&thread->lock);
 			}	
 			else

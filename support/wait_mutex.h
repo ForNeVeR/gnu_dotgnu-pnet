@@ -63,7 +63,7 @@ static IL_INLINE int ILWaitMutexFastEnter(ILThread *thread, ILWaitHandle *handle
 
 		_ILMutexLock(&thread->lock);
 
-		threadState = thread->state;
+		threadState = ILInterlockedLoadU2(&(thread->state));
 		if ((threadState & (IL_TS_ABORT_REQUESTED)) != 0)
 		{
 			result = IL_WAIT_ABORTED;
@@ -75,7 +75,7 @@ static IL_INLINE int ILWaitMutexFastEnter(ILThread *thread, ILWaitHandle *handle
 		
 		_ILWakeupCancelInterrupt(&(thread->wakeup));
 		threadState &= ~(IL_TS_INTERRUPTED);
-		thread->state = threadState;
+		ILInterlockedStoreU2(&(thread->state), threadState);
 
 		_ILMutexUnlock(&thread->lock);
 	}

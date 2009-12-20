@@ -922,7 +922,7 @@ int ILThreadGetBackground(ILThread *thread)
 {
 	ILUInt16 threadState;
 
-	threadState = ILInterlockedLoadU2(&(threadState));
+	threadState = ILInterlockedLoadU2(&(thread->state));
 	/* Determine if this is a background thread */
 	return ((threadState & IL_TS_BACKGROUND) != 0);
 }

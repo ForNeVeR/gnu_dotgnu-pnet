@@ -1,3 +1,7 @@
+2009-12-22  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/Makefile.am: Fix make distcheck build.
+
 2009-12-20  Klaus Treichel  <ktreichel@web.de>
 
 	* support/thread.c (ILThreadIsAborting): Don't acquire the thread's lock

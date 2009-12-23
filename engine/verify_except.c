@@ -93,7 +93,7 @@ static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
 						ILCoderTryHandlerStart(coder, offset, end);
 						handlerStarted = 1;
 					}
-					ILCoderFinally(coder, exception, exception->handlerOffset);					
+					ILCoderFinally(coder, exception, exception->handlerOffset);
 				}
 				else if((exception->flags & IL_META_EXCEPTION_FILTER) == 0)
 				{

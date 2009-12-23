@@ -1,3 +1,10 @@
+2009-12-23  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/verify_except.c (OutputExceptiopnTable): Fix some whitespace
+	formatting.
+
+	* support/wakeup.c (_ILWakeupDestroy): likewise
+
 2009-12-22  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/Makefile.am: Fix make distcheck build.

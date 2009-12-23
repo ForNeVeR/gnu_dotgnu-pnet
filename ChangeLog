@@ -5,6 +5,10 @@
 
 	* support/wakeup.c (_ILWakeupDestroy): likewise
 
+	* support/thr_defs.h: likewise
+
+	* support/thread.c: likewise
+
 2009-12-22  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/Makefile.am: Fix make distcheck build.

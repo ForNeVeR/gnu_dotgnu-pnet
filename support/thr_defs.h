@@ -58,10 +58,10 @@ typedef int (*ILMonitorPredicate)(void *);
 #define IL_THREAD_OK						0x00000000
 #define IL_THREAD_ERR_ABANDONED				0x00000080
 #define IL_THREAD_BUSY						0x00000102
-#define IL_THREAD_ERR_INTERRUPT				0x80131519
 #define IL_THREAD_ERR_INVALID_TIMEOUT		0x80131502
 #define IL_THREAD_ERR_SYNCLOCK				0x80131518
-#define IL_THREAD_ERR_ABORTED				0xFFFFFFFC
+#define IL_THREAD_ERR_INTERRUPT				0x80131519
+#define IL_THREAD_ERR_ABORTED				0x80131530
 #define IL_THREAD_ERR_INVALID_RELEASECOUNT	0xFFFFFFFD
 #define IL_THREAD_ERR_OUTOFMEMORY			0xFFFFFFFE
 #define IL_THREAD_ERR_UNKNOWN				0xFFFFFFFF
@@ -98,7 +98,7 @@ typedef struct __tagILWaitMutex ILWaitMutex;
 typedef struct _tagILWakeup
 {
 	_ILCondMutex			lock;
-	_ILCondVar				condition;	
+	_ILCondVar				condition;
 	ILUInt32	volatile	count;
 	ILUInt32	volatile	limit;
 	int			volatile	interrupted;
@@ -151,14 +151,14 @@ struct _tagILThread
 	_ILMutex						lock;
 	_ILThreadHandle		volatile	handle;
 	_ILThreadIdentifier	volatile	identifier;
-	ILUInt16	    	volatile	state;
-	unsigned char     	volatile	resumeRequested;
-	unsigned char     	volatile	suspendRequested;
-	unsigned int	  	volatile  	numLocksHeld;
+	ILUInt16			volatile	state;
+	unsigned char		volatile	resumeRequested;
+	unsigned char		volatile	suspendRequested;
+	unsigned int		volatile  	numLocksHeld;
 	_ILSemaphore					resumeAck;
 	_ILSemaphore					suspendAck;
 	ILThreadStartFunc 	volatile	startFunc;
-	void *            	volatile	startArg;
+	void *				volatile	startArg;
 	void *				volatile	userObject;
 	_ILWakeup						wakeup;
 	_ILWakeupQueue					joinQueue;
@@ -301,7 +301,7 @@ typedef struct
 {
 	ILWaitMutex			parent;
 	_ILWakeupQueue  	signalQueue;
-	int				waiters;
+	int					waiters;
 } ILWaitMonitor;
 
 /*

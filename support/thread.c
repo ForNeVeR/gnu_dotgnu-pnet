@@ -337,7 +337,7 @@ void _ILThreadRun(ILThread *thread)
 		/* Mark the thread as stopped */
 		threadState |= IL_TS_STOPPED;
 		ILInterlockedStoreU2(&(thread->state), threadState);
-		/* Change the thread count */		
+		/* Change the thread count */
 		_ILThreadAdjustCount(-1, ((threadState & IL_TS_BACKGROUND) != 0) ? -1 : 0);
 	}
 	_ILMutexUnlock(&(thread->lock));
@@ -728,7 +728,7 @@ int ILThreadIsAborting(void)
 {
 	ILThread *thread = _ILThreadGetSelf();
 	ILUInt16 threadState;
-	
+
 	threadState = ILInterlockedLoadU2(&(thread->state));
 	/* Determine if an abort is in progress on this thread */
 	return ((threadState & (IL_TS_ABORTED)) != 0);
@@ -738,7 +738,7 @@ int ILThreadIsAbortRequested(void)
 {
 	ILThread *thread = _ILThreadGetSelf();
 	ILUInt16 threadState;
-	
+
 	threadState = ILInterlockedLoadU2(&(thread->state));
 	/* Determine if an abort is in progress on this thread */
 	return ((threadState & (IL_TS_ABORT_REQUESTED)) != 0);

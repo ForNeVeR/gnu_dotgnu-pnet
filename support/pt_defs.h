@@ -24,6 +24,9 @@
 #include <errno.h>
 #include <semaphore.h>
 #include <signal.h>
+#ifdef HAVE_SETJMP_H
+#include <setjmp.h>
+#endif
 #ifdef HAVE_LIBGC
 #include <private/gc_priv.h>	/* For SIG_SUSPEND */
 #if defined(SIG_SUSPEND) && defined(GC_DARWIN_THREADS)
@@ -52,19 +55,26 @@ extern	"C" {
  * them of various conditions.  Finding a free signal is a bit
  * of a pain as most of the obvious candidates are already in
  * use by pthreads or libgc.  Unix needs more signals!
+ * NOTE: libgc is using either SIGUSR1 and SIGUSR2 or
+ * SIGRTMIN + 5 and SIGRTMIN + 6 for SIG_INTERRUPT or SIG_THR_RESTART.
+ * Linux NTPL is using the first two and LinuxThreads the first three
+ * real time signals.
  */
 #if defined(__sun)
 #define	IL_SIG_SUSPEND		(__SIGRTMIN+0)
 #define	IL_SIG_RESUME		(__SIGRTMIN+1)
 #define	IL_SIG_ABORT		(__SIGRTMIN+2)
+#define	IL_SIG_INTERRUPT	(__SIGRTMIN+3)
 #elif !defined(__SIGRTMIN) || (__SIGRTMAX - __SIGRTMIN < 14)
 #define	IL_SIG_SUSPEND		SIGALRM
 #define	IL_SIG_RESUME		SIGVTALRM
 #define	IL_SIG_ABORT		SIGFPE
+#define	IL_SIG_INTERRUPT	SIGUSR1
 #else
 #define	IL_SIG_SUSPEND		(__SIGRTMIN+10)
 #define	IL_SIG_RESUME		(__SIGRTMIN+11)
 #define	IL_SIG_ABORT		(__SIGRTMIN+12)
+#define	IL_SIG_INTERRUPT	(__SIGRTMIN+13)
 #endif
 
 /*
@@ -100,6 +110,7 @@ extern	"C" {
 /*
  * Types that are needed elsewhere.
  */
+typedef pthread_mutex_t		_ILCriticalSection;
 typedef pthread_mutex_t		_ILMutex;
 typedef pthread_mutex_t		_ILCondMutex;
 typedef pthread_cond_t		_ILCondVar;
@@ -113,19 +124,62 @@ typedef pthread_mutex_t		_ILRWLock;
 #endif
 
 /*
+ * sigsetjmp and siglongjmp are not recognized by configure in all cases
+ * because they might be implemented by a macro (like on Linux)
+ * So we check for macros here if HAVE_SIGSETJMP or HAVE_SIGLONGJMP are
+ * not defined.
+ */
+#ifndef HAVE_SIGSETJMP
+#if defined(sigsetjmp) || defined(HAVE___SIGSETJMP)
+#define HAVE_SIGSETJMP 1
+#endif
+#endif
+
+#ifndef HAVE_SIGLONGJMP
+#ifdef siglongjmp
+#define HAVE_SIGLONGJMP 1
+#endif
+#endif
+
+/*
+ * Check if we can implement thread interrupts using sigsetjmp and siglongjmp
+ */
+#if defined(HAVE_SIGSETJMP) && defined(HAVE_SIGLONGJMP)
+#define _IL_PT_INTERRUPT_JMP
+#endif
+
+/*
+ * pthread specific extensions for an ILThread
+ */
+#ifdef _IL_PT_INTERRUPT_JMP
+#define _IL_THREAD_EXT \
+	sigjmp_buf			interruptJmpBuf;
+
+#endif
+/*
  * Semaphore which allows to release multiple or all waiters.
+ * The semantic for posix and windows semaphores is the same and the
+ * implementation follows this semantics.
+ * This means:
+ * The value is decremented each time a thread tries to wait on the
+ * semaphore. If the count is positive at the time the thread calls
+ * one of the wait functions the thread is not blocked.
+ * The value is incremented by one or the number given if the one of the
+ * Signal functions is called.
+ * This means that if the member _value is negative the absolute value of
+ * _value indicates the number of blocked threads.
  */
 typedef struct
 {
-	_ILMutex			_lock;
 	_ILSemaphore		_sem;
-	ILInt32 volatile	_waiting;
+	ILInt32 volatile	_value;
 } _ILCountSemaphore;
 
 typedef struct
 {
-	_ILCondMutex	_mutex;
-	_ILCondVar		_cond;
+	ILInt32			_waitValue;
+	_ILSemaphore	_waitSem;
+	_ILSemaphore	_enterSem;
 } _ILMonitor;
 
 /*
@@ -181,10 +235,41 @@ void _ILThreadSuspendUntilResumed(ILThread *thread);
 #define	_ILThreadDestroy(thread)	do { ; } while (0)
 
 /*
+ * Interrupt a thread in the wait/sleep/join state or when it enters the
+ * wait/sleep/join state the next time.
+ */
+void _ILThreadInterrupt(ILThread *thread);
+
+/*
+ * Put the current thread to sleep for a number of milliseconds.
+ * The sleep may be interrupted by a call to _ILThreadInterrupt.
+ */
+int _ILThreadSleep(ILUInt32 ms);
+
+/*
+ * The default mutex attribute for critical sections and mutexes.
+ * The attribute defaults to a fast mutex that doesn't do error checking
+ * and doesn't allow recursive locking.
+ */
+extern pthread_mutexattr_t _ILMutexAttr;
+
+/*
+ * Primitive critical section operations.
+ * NOTE: The "EnterUnsafe" and "LeaveUnsafe" operations are not "suspend-safe"
+ */
+#define _ILCriticalSectionCreate(critsect)	\
+			(pthread_mutex_init((critsect), &_ILMutexAttr))
+#define _ILCriticalSectionDestroy(critsect)	\
+			(pthread_mutex_destroy((critsect)))
+#define _ILCriticalSectionEnterUnsafe(critsect)	\
+			(pthread_mutex_lock((critsect)))
+#define _ILCriticalSectionLeaveUnsafe(critsect)	\
+			(pthread_mutex_unlock((critsect)))
+
+/*
  * Primitive mutex operations.  Note: the "Lock" and "Unlock"
  * operations are not "suspend-safe".
  */
-extern pthread_mutexattr_t _ILMutexAttr;
 #define	_ILMutexCreate(mutex)	\
 			(pthread_mutex_init((mutex), &_ILMutexAttr))
 #define	_ILMutexDestroy(mutex)	\
@@ -289,34 +374,32 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms);
  */
 #define	_ILMonitorCreate(mon)	\
 		({ \
-			int __result = _ILCondMutexCreate(&((mon)->_mutex)); \
+			int __result; \
+			(mon)->_waitValue = 0; \
+			__result = sem_init(&((mon)->_waitSem), 0, 0); \
 			if(!__result) \
 			{ \
-				__result = _ILCondVarCreate(&((mon)->_cond)); \
+				__result = sem_init(&((mon)->_enterSem), 0, 1); \
 			} \
 			__result == 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
 		})
 #define	_ILMonitorDestroy(mon)	\
 		({ \
-			int __result = _ILCondVarDestroy(&((mon)->_cond)); \
+			int __result = _ILSemaphoreDestroy(&((mon)->_waitSem)); \
 			if(!__result) \
 			{ \
-				__result = _ILCondMutexDestroy(&((mon)->_mutex)); \
+				__result = _ILSemaphoreDestroy(&((mon)->_enterSem)); \
 			} \
 			__result == 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
 		})
-#define	_ILMonitorPulse(mon)	\
-			_ILCondVarSignal(&((mon)->_cond))
-#define	_ILMonitorPulseAll(mon)	\
-			(pthread_cond_broadcast(&((mon)->_cond)))
+int _ILMonitorPulse(_ILMonitor *mon);
+int _ILMonitorPulseAll(_ILMonitor *mon);
 int	_ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
 #define _ILMonitorTryEnter(mon) _ILMonitorTimedTryEnter((mon), 0)
 #define _ILMonitorEnter(mon) _ILMonitorTimedTryEnter((mon), IL_MAX_UINT32)
-int	_ILMonitorExit(_ILMonitor *mon);
-int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
-						ILMonitorPredicate predicate, void *arg);
-#define _ILMonitorWait(mon, pred, arg) \
-			_ILMonitorTimedWait((mon), IL_MAX_UINT32, (pred), (arg))
+int _ILMonitorExit(_ILMonitor *mon);
+int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms);
+#define _ILMonitorWait(mon) _ILMonitorTimedWait((mon), IL_MAX_UINT32)
 
 /*
  * Get or set the thread object that is associated with "self".

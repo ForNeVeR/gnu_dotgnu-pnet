@@ -23,34 +23,14 @@
 #define	_THR_DEFS_H
 
 /*
- * NOTE: For modifying a thread's state
- * If the thread's state is going to be modified do it the following way:
- * 1. lock the thread
- * 2. load the thread's state to a local variable
- * 3. do what you want to do with the thread's state with the local variable
- * 4. store the local variable to the thread's state
- * 5. unlock the thread
- *
- * This is done this way to be able to query the current thread's state
- * without having to lock the thread.
- * The reader will read the consistent state before the thread was locked
- * until all changes are done.
- * Additionally the compiler is able to hold the thread's state in a
- * register instead of having to read and write the volatile state multiple
- * times.
+ * Define IL_THREAD_ASSERTIONS for enabling threading assertions.
  */
+/* #define IL_THREAD_ASSERTIONS */
 
 /*
  * Define IL_THREAD_DEBUG for enabling threading debug features.
  */
-/* #define IL_TRHEAD_DEBUG */
-
-/*
- * Predicate function for the _ILMonitorWait functions.
- * The function has to return 0 if the predicate is not true so that the
- * wait has to be called again and != 0 otherwise.
- */
-typedef int (*ILMonitorPredicate)(void *);
+/* #define IL_THREAD_DEBUG */
 
 /*
  * Threading error codes.
@@ -72,7 +52,22 @@ typedef int (*ILMonitorPredicate)(void *);
 #include "thr_choose.h"
 #include "il_utils.h"
 #include "interrupt.h"
+#ifdef IL_THREAD_ASSERTIONS
+#include <stdio.h>
+#include <stdlib.h>
+#endif
 
+#ifdef IL_THREAD_ASSERTIONS
+#define IL_THREAD_ASSERT(expr) \
+	if(!(expr)) \
+	{ \
+		fprintf(stderr, "Threading assertion failure at %s:%ld\n", \
+				__FILE__, (unsigned long)__LINE__); \
+		abort(); \
+	}
+#else
+#define IL_THREAD_ASSERT(expr)
+#endif
 /*
  * Include the package-specific definitions.
  */
@@ -90,6 +85,12 @@ typedef int (*ILMonitorPredicate)(void *);
 extern	"C" {
 #endif
 
+/*
+ * Monitor support with the whole .NET monitor semantics.
+ */
+typedef struct _tagILMonitor ILMonitor;
+
+
 typedef struct __tagILWaitMutex ILWaitMutex;
 
 /*
@@ -98,11 +99,11 @@ typedef struct __tagILWaitMutex ILWaitMutex;
 typedef struct _tagILWakeup
 {
 	_ILCondMutex			lock;
-	_ILCondVar				condition;
+	_ILCondVar				condition;	
 	ILUInt32	volatile	count;
 	ILUInt32	volatile	limit;
 	int			volatile	interrupted;
-	void *      volatile    object;
+	void *		volatile    object;
 	int						ownedMutexesCount;
 	int						ownedMutexesCapacity;
 	ILWaitMutex				**ownedMutexes;
@@ -115,8 +116,8 @@ typedef struct _tagILWakeupItem _ILWakeupItem;
 struct _tagILWakeupItem
 {
 	_ILWakeupItem * volatile next;
-	_ILWakeup     * volatile wakeup;
-	void          * volatile object;
+	_ILWakeup	  * volatile wakeup;
+	void		  * volatile object;
 
 };
 
@@ -127,8 +128,8 @@ typedef struct _tagILWakeupQueue
 {
 	_ILWakeupItem * volatile first;
 	_ILWakeupItem * volatile last;
-	_ILWakeupItem   		 space;
-	int			    volatile spaceUsed;
+	_ILWakeupItem			 space;
+	int				volatile spaceUsed;
 
 } _ILWakeupQueue;
 
@@ -144,17 +145,76 @@ struct _tagILThreadCleanupEntry
 };
 
 /*
+ * NOTE: For modifying the thread's state public modifiable state:
+ * 1. lock the thread
+ * 2. load the thread's state to a local variable
+ * 3. do what you want to do with the thread's state with the local variable
+ * 4. store the local variable to the thread's state
+ * 5. unlock the thread
+ *
+ * This is done this way to be able to query the current thread's state
+ * without having to lock the thread.
+ * The reader will read the consistent state before the thread was locked
+ * until all changes are done.
+ * Additionally the compiler is able to hold the thread's state in a
+ * register instead of having to read and write the volatile state multiple
+ * times.
+ */
+
+/*
+ * Helper structure for the thread's state.
+ * The idea behind this is to divide the state into two parts where
+ * the priv part is modified only by the thread the ILThread is belonging to.
+ * The pub part may be modified by any other thread.
+ * So the priv part can be modified without having to lock the thread.
+ * The pub part must be changed only with the thread's lock held (see NOTE).
+ *
+ * Flags in the priv member:
+ * IL_TS_RUNNING
+ * IL_TS_STOPPED
+ * IL_TS_WAIT_SLEEP_JOIN
+ * IL_TS_ABORTED
+ *
+ * Flags in the pub member:
+ * IL_TS_STOP_REQUESTED
+ * IL_TS_SUSPEND_REQUESTED
+ * IL_TS_BACKGROUND
+ * IL_TS_UNSTARTED
+ * IL_TS_SUSPENDED
+ * IL_TS_ABORT_REQUESTED
+ * internal flags
+ * IL_TS_SUSPENDED_SELF
+ *
+ * Special:
+ * The IL_TS_INTERRUPTED flag might be present in both parts
+ * for now until the waithandle stuff is redone.
+ */
+struct _tagILThreadSplitState
+{
+	ILUInt16	priv;
+	ILUInt16	pub;
+};
+
+typedef union _tagILThreadState _ILThreadState;
+union _tagILThreadState
+{
+	ILUInt32						comb;
+	struct _tagILThreadSplitState	split;
+};
+
+/*
  * Internal structure of a thread descriptor.
  */
 struct _tagILThread
 {
-	_ILMutex						lock;
+	_ILCriticalSection				lock;
 	_ILThreadHandle		volatile	handle;
 	_ILThreadIdentifier	volatile	identifier;
-	ILUInt16			volatile	state;
+	_ILThreadState					state;
+	ILInt32							useCount;
 	unsigned char		volatile	resumeRequested;
 	unsigned char		volatile	suspendRequested;
-	unsigned int		volatile  	numLocksHeld;
+	unsigned int		volatile	numLocksHeld;
 	_ILSemaphore					resumeAck;
 	_ILSemaphore					suspendAck;
 	ILThreadStartFunc 	volatile	startFunc;
@@ -164,11 +224,14 @@ struct _tagILThread
 	_ILWakeupQueue					joinQueue;
 	ILThreadCleanupEntry			*firstCleanupEntry;
 	ILThreadCleanupEntry			*lastCleanupEntry;
-	int								destroyOnExit;
 	ILWaitHandle					*monitor;
 	/* 1 if the gc knows the thread and is allowed to execute managed code */
 #if defined(IL_INTERRUPT_SUPPORTS)
 	ILInterruptHandler				interruptHandler;
+#endif
+	/* Add the implementation specific thread members */
+#ifdef _IL_THREAD_EXT
+	_IL_THREAD_EXT
 #endif
 };
 
@@ -241,7 +304,7 @@ struct _tagILWaitHandleVtable
 struct _tagILWaitHandle
 {
 	const _ILWaitHandleVtable  *vtable;
-	_ILMutex					lock;
+	_ILCriticalSection			lock;
 };
 
 /*
@@ -301,25 +364,31 @@ typedef struct
 {
 	ILWaitMutex			parent;
 	_ILWakeupQueue  	signalQueue;
-	int					waiters;
+	int				waiters;
 } ILWaitMonitor;
 
 /*
- * Monitor support with the whole .NET monitor semantics.
+ * Safe critical section enter and leave operations that will prevent the
+ * thread from being suspended while it holds a lock.
  */
-typedef struct _tagILMonitor ILMonitor;
-
-/*
- * Pool used by the monitor.
- */
-typedef struct _tagILMonitorPool ILMonitorPool;
-struct _tagILMonitorPool
-{
-	_ILMutex	    lock;		/* Mutex to synchronize the access to the pool */
-	ILMonitor	   *freeList;	/* List of unused monitors */
-	ILMonitor	   *usedList;	/* List of monitors in use */
-	ILMemPool		pool;		/* Pool to allocate the monitors from */
-};
+#define	_ILCriticalSectionEnter(critsect)	\
+			do { \
+				ILThread *__self = _ILThreadGetSelf(); \
+				++(__self->numLocksHeld); \
+				_ILCriticalSectionEnterUnsafe((critsect)); \
+			} while (0)
+#define	_ILCriticalSectionLeave(critsect)	\
+			do { \
+				ILThread *__self = _ILThreadGetSelf(); \
+				_ILCriticalSectionLeaveUnsafe((critsect)); \
+				if(--(__self->numLocksHeld) == 0) \
+				{ \
+					if(__self->suspendRequested) \
+					{ \
+						_ILThreadSuspendRequest(__self); \
+					} \
+				} \
+			} while (0)
 
 /*
  * Safe mutex lock and unlock operations that will prevent the
@@ -459,6 +528,12 @@ void _ILThreadInitHandleSelf(ILThread *thread);
 int _ILThreadCreateSystem(ILThread *thread);
 
 /*
+ * Interrupt a thread in the wait/sleep/join state or when it enters the
+ * wait/sleep/join state the next time.
+ */
+void _ThreadInterrupt(ILThread *thread);
+
+/*
  * Process a request to suspend the current thread.
  */
 void _ILThreadSuspendRequest(ILThread *thread);
@@ -472,6 +547,23 @@ void _ILThreadSetPriority(ILThread *thread, int priority);
  *	Gets the thread priority.
  */
 int _ILThreadGetPriority(ILThread *thread);
+
+/*
+ * Get the number of running threads.
+ * Running threads here is: started but not yet finished.
+ * The function is used to check if we are still in single threaded mode.
+ */
+long _ILThreadGetNumThreads();
+
+/*
+ * Enter the "wait/sleep/join" state on the current thread.
+ */
+int _ILThreadEnterWaitState(ILThread *thread);
+
+/*
+ * Leave the "wait/sleep/join" state on the current thread.
+ */
+int _ILThreadLeaveWaitState(ILThread *thread, int result);
 
 /*
  * Create a thread wakeup object.
@@ -576,34 +668,45 @@ int _ILWaitOneBackupInterruptsAndAborts(ILWaitHandle *handle, int timeout);
 	(((ILWaitMutex *)handle)->owner == &(t->wakeup))
 
 /*
- * Initialize a monitor pool for the monitor subsystem.
+ * Initialize the monitor subsystem
  */
-void ILMonitorPoolInit(ILMonitorPool *pool);
+void _ILMonitorSystemInit();
 
 /*
- * Destroy a monitor pool.
- * There must be no used monitors in this pool when calling this function.
+ * Destroy the monitor subsystem.
+ * There must be no used monitors left when calling this function.
  */
-void ILMonitorPoolDestroy(ILMonitorPool *pool);
+void _ILMonitorSystemDeinit();
 
 /*
  * Enter a monitor 
  * This function returns IL_THREAD_OK on success, IL_THREAD_BUSY on timeout
  * or any other of the threading return codes on error.
+ * NOTE: The monitor is only entered if IL_THREAD_OK is returned.
+ * On every ohter return value the lock is not obtained.
+ * This is because the code used with monitors usually looks like:
+ * Monitor.Enter(obj);
+ * try
+ * {
+ *    do_something
+ * }
+ * finally
+ * {
+ *    Monitor.Exit(obj);
+ * }
+ * So the exception is thrown outside the try/finally handlier that ensures
+ * propper monitor release.
  */
-int ILMonitorTimedTryEnter(ILMonitorPool *pool, void **monitorLocation,
-						   ILUInt32 ms);
-#define ILMonitorEnter(pool, loc) \
-				ILMonitorTimedTryEnter((pool), (loc), IL_MAX_UINT32)
-#define ILMonitorTryEnter(pool, loc) \
-				ILMonitorTimedTryEnter((pool), (loc), 0)
+int ILMonitorTimedTryEnter(void **monitorLocation, ILUInt32 ms);
+#define ILMonitorEnter(loc)		ILMonitorTimedTryEnter((loc), IL_MAX_UINT32)
+#define ILMonitorTryEnter(loc)	ILMonitorTimedTryEnter((loc), 0)
 
 /*
  * Leave the monitor stored at monitorLocation.
  * This function returns IL_THREAD_OK on success, IL_THREAD_BUSY on timeout
  * or any other of the threading return codes on error.
  */
-int ILMonitorExit(ILMonitorPool *pool, void **monitorLocation);
+int ILMonitorExit(void **monitorLocation);
 
 /*
  * Enter the wait state on an owned monitor.
@@ -622,6 +725,15 @@ int ILMonitorPulse(void **monitorLocation);
  * stored at monitorLocation.
  */
 int ILMonitorPulseAll(void **monitorLocation);
+
+/*
+ * Reclaim the monitor stored at monitorLocation.
+ * This function is used for example if a monitor is attached to an object
+ * that is going to be reclaimed by a garbage collector.
+ * The monitor will not be needed anymore but it's state is undefined.
+ * Reclaiming a monitor is caused by a bug in the using application.
+ */
+void ILMonitorReclaim(void **monitorLocation);
 
 #ifdef	__cplusplus
 };

@@ -28,6 +28,7 @@ extern	"C" {
 /*
  * Types that are needed elsewhere.
  */
+typedef int	_ILCriticalSection;
 typedef int	_ILMutex;
 typedef int	_ILCondMutex;
 typedef int	_ILCondVar;
@@ -65,6 +66,26 @@ typedef int _ILMonitor;
  * Destroy a thread handle that is no longer required.
  */
 #define	_ILThreadDestroy(thread)		do { ; } while (0)
+
+/*
+ * Interrupt a thread in the wait/sleep/join state or when it enters the
+ * wait/sleep/join state the next time.
+ */
+void _ILThreadInterrupt(ILThread *thread);
+
+/*
+ * Put the current thread to sleep for a number of milliseconds.
+ * The sleep may be interrupted by a call to _ILThreadInterrupt.
+ */
+int _ILThreadSleep(ILUInt32 ms);
+
+/*
+ * Primitive critival section operations.
+ */
+#define	_ILCriticalSectionCreate(critsect)			do { *(critsect) = 0; } while (0)
+#define	_ILCriticalSectionDestroy(critsect)			do { ; } while (0)
+#define	_ILCriticalSectionEnterUnsafe(critsect)		do { ; } while (0)
+#define	_ILCriticalSectionLeaveUnsafe(critsect)		do { ; } while (0)
 
 /*
  * Primitive mutex operations.
@@ -121,10 +142,8 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 #define _ILMonitorTryEnter(mon) 			IL_THREAD_OK
 #define _ILMonitorEnter(mon)				IL_THREAD_OK
 #define	_ILMonitorExit(mon)					IL_THREAD_OK
-int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
-						ILMonitorPredicate predicate, void *arg);
-#define _ILMonitorWait(mon, pred, arg) \
-			_ILMonitorTimedWait((mon), IL_MAX_UINT32, (pred), (arg))
+#define _ILMonitorTimedWait(mon, ms)		IL_THREAD_OK
+#define _ILMonitorWait(mon)					IL_THREAD_OK
 
 /*
  * Get or set the thread object that is associated with "self".

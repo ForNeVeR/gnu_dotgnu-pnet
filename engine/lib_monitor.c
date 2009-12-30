@@ -107,47 +107,6 @@ extern	"C" {
  */
 
 /*
- * Spins until the object is unmarked and the current thread can mark it.
- */
-static IL_INLINE ILLockWord _ILObjectLockWord_WaitAndMark(ILExecThread *thread, ILObject *obj)
-{
-	ILLockWord lockword;
-
-	for (;;)
-	{
-		lockword = GetObjectLockWord(thread, obj);
-
-		if ((CompareAndExchangeObjectLockWord(thread, obj, IL_LW_MARK(lockword),
-			IL_LW_UNMARK(lockword)) == IL_LW_UNMARK(lockword)))
-		{
-			return IL_LW_MARK(lockword);
-		}
-
-		ILThreadYield();
-	}
-}
-
-/*
- * Sets an object's lockword to 0.
- */
-#define _ILObjectLockWord_Unmark(thread, obj) \
-	SetObjectLockWord(thread, obj, IL_LW_UNMARK(GetObjectLockWord(thread, obj)));
-
-/*
- * Adds a monitor to the end of the thread's free monitor list.
- * If the free list grows too large, the monitor is abandoned
- * and left for the garbage collector.
- */
-#define _ILExecMonitorAppendToFreeList(thread, monitor) \
-	if (thread->freeMonitorCount < 32) \
-	{	\
-		monitor->waiters = 0; \
-		monitor->next = thread->freeMonitor;	\
-		thread->freeMonitor = monitor;	\
-		thread->freeMonitorCount++;	\
-	}
-
-/*
  * public static void Enter(Object obj);
  */
 void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)
@@ -165,15 +124,12 @@ void _IL_Monitor_Enter(ILExecThread *thread, ILObject *obj)
 ILBool _IL_Monitor_InternalTryEnter(ILExecThread *thread,
 									ILObject *obj, ILInt32 timeout)
 {
-	int result;	
-	ILLockWord lockword;
-	ILExecMonitor *monitor, *next;
+	int result;
 	
 	/* Make sure the object isn't null */
-	if (obj == 0)
+	if(obj == 0)
 	{
 		ILExecThreadThrowArgNull(thread, "obj");
-
 		return 0;
 	}
 
@@ -181,131 +137,18 @@ ILBool _IL_Monitor_InternalTryEnter(ILExecThread *thread,
 	if (timeout < -1)
 	{
 		ILExecThreadThrowArgRange(thread, "timeout", (const char *)0);
-
 		return 0;
 	}
 
-retry:
+	result = ILMonitorTimedTryEnter((void **)GetObjectLockWordPtr(thread, obj),
+									timeout);
 
-	/* Get the lockword lock word */		
-	lockword = GetObjectLockWord(thread, obj);
-
-	if (lockword == 0)
+	if((result != IL_THREAD_OK) && (result != IL_THREAD_BUSY))
 	{
-		/* There is no monitor installed for this object */
-
-		monitor = thread->freeMonitor;
-
-		if (monitor == NULL)
-		{
-			monitor = _ILExecMonitorCreate();
-		}
-
-		next = monitor->next;
-
-		/* Try to install the new monitor. */
-		if (CompareAndExchangeObjectLockWord
-			(
-				thread,
-				obj,
-				IL_LW_MARK(monitor),
-				lockword
-			) == lockword)
-		{
-			result = ILWaitMutexFastEnter(thread->supportThread, monitor->waitMutex);
-
-			if (result != 0)
-			{
-				/* Dissociate the monitor from the object */
-				
-				SetObjectLockWord(thread, obj, 0);
-
-				/* If the monitor is new, add it to the free list */
-				if (monitor != thread->freeMonitor)
-				{
-					_ILExecMonitorAppendToFreeList(thread, monitor);
-				}
-
-				_ILExecThreadHandleWaitResult(thread, result);
-
-				return 0;
-			}
-
-			/* If the monitor is from the free list, remove it from the free list */
-			if (monitor == thread->freeMonitor)
-			{
-				thread->freeMonitorCount--;
-				thread->freeMonitor = next;
-			}
-
-			/* Finally allow other threads to enter the monitor */
-			_ILObjectLockWord_Unmark(thread, obj);
-
-			return 1;
-		}
-		else
-		{
-			/* Another thread managed to install a monitor first */
-
-			/* If the monitor is new, add it to the free list */
-			if (monitor != thread->freeMonitor)
-			{
-				_ILExecMonitorAppendToFreeList(thread, monitor);
-			}
-
-			goto retry;
-		}
+		_ILExecThreadHandleError(thread, result);
 	}
-
-	/* Lock the object's lockword */
-	lockword = _ILObjectLockWord_WaitAndMark(thread, obj);
-
-	monitor = IL_LW_UNMARK(lockword);
-
-	/* We assume that _ILObjectLockWord_WaitAndMark flushed the CPU's cache
-	   so that we can see the monitor */
-
-	if (monitor == 0)
-	{
-		/* Some other thread owned the monitor but has released it
-		   since we last called GetObjectLockWord */
-
-		_ILObjectLockWord_Unmark(thread, obj);
-
-		goto retry;
-	}
-
-	/* Incrementing waiters prevents other threads from disassociating 
-	   the monitor with the object or using FastLeave */
-
-	monitor->waiters++;
 	
-	_ILObjectLockWord_Unmark(thread, obj);
-	
-	/* Here we try entering the monitor.  If we know that we own the
-	   monitor then we can call ILWaitMutexFastEnter. */
-	
-	if (ILWaitMutexThreadOwns(thread->supportThread, monitor->waitMutex))
-	{
-		result = ILWaitMutexFastEnter(thread->supportThread, monitor->waitMutex);
-	}
-	else
-	{		
-		result = ILWaitMonitorTryEnter(monitor->waitMutex, timeout);
-	}
-
-	_ILObjectLockWord_WaitAndMark(thread, obj);
-	--monitor->waiters;
-	_ILObjectLockWord_Unmark(thread, obj);
-
-	/* Failed or timed out somehow */
-	if (result != 0)
-	{
-		/* Handle ThreadAbort etc */		
-		_ILExecThreadHandleWaitResult(thread, result);
-	}
-
-	return result == 0;
+	return (result == IL_THREAD_OK);
 }
 
 /*
@@ -314,8 +157,6 @@ retry:
 void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
 {
 	int result;
-	ILLockWord lockword;
-	ILExecMonitor *monitor;
 
 	/* Make sure obj isn't null */
 	if(obj == 0)
@@ -325,72 +166,11 @@ void _IL_Monitor_Exit(ILExecThread *thread, ILObject *obj)
 		return;
 	}
 
-	/* Make sure noone is allowed to change the object's monitor */
-	lockword = _ILObjectLockWord_WaitAndMark(thread, obj);
+	result = ILMonitorExit((void **)GetObjectLockWordPtr(thread, obj));
 
-	/* We assume that _ILObjectLockWord_WaitAndMark flushed the CPU's cache
-	   so that we can see the monitor */
-	monitor = IL_LW_UNMARK(lockword);
-
-	/* Make sure the monitor is valid */
-	if (monitor == 0 || (monitor != 0 
-		&& !ILWaitMutexThreadOwns(thread->supportThread, monitor->waitMutex)))
+	if(result != IL_THREAD_OK)
 	{
-		/* Hmm.  Can't call Monitor.Exit before Monitor.Enter */
-
-		_ILObjectLockWord_Unmark(thread, obj);
-
-		ILExecThreadThrowSystem
-		(
-			thread,
-			"System.Threading.SynchronizationLockException",	
-			"Exception_ThreadNeedsLock"
-		);
-
-		return;
-	}
-
-	/*
-	 * If there are no waiters then we have exclusive access to the monitor.  This
-	 * allows us to do a "FastRelease" and possibly return the monitor to the freelist.
-	 */
-	if (monitor->waiters == 0)
-	{
-		result = ILWaitMutexFastRelease(thread->supportThread, monitor->waitMutex);
-		
-		if (result == IL_WAITMUTEX_RELEASE_STILL_OWNS)
-		{
-			_ILObjectLockWord_Unmark(thread, obj);
-		}
-		else
-		{
-			/* Monitor no longer owned.  Return it to the free list to
-			   make the next call to Monitor.Enter on this object fast */
-			_ILExecMonitorAppendToFreeList(thread, monitor);
-
-			SetObjectLockWord(thread, obj, 0);
-		}
-		
-		return;		
-	}
-	
-	_ILObjectLockWord_Unmark(thread, obj);
-
-	/*
-	 * Another thread is waiting so try leaving the old fashioned way.
-	 */
-	result = ILWaitMonitorLeave(monitor->waitMutex);
-
-	if (result < 0)
-	{
-		/* We *should* own the monitor.  This must be a bug in the engine. */
-		
-		ILExecThreadThrowSystem
-		(
-			thread,					
-			"System.ExecutionEngineException",
-			"Exception_UnexpectedEngineState"
-		);
+		_ILExecThreadHandleError(thread, result);
 	}
 }
 
@@ -401,92 +181,22 @@ ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
 								ILObject *obj, ILInt32 timeout)
 {
 	int result;
-	ILLockWord lockword;
-	ILExecMonitor *monitor;
 
 	/* Make sure obj isn't null */
 	if (obj == 0)
-	{		
+	{
 		ILExecThreadThrowArgNull(thread, "obj");
-
 		return 0;
 	}
 
-	lockword = _ILObjectLockWord_WaitAndMark(thread, obj);
-	
-	monitor = IL_LW_UNMARK(lockword);
+	result = ILMonitorTimedWait((void **)GetObjectLockWordPtr(thread, obj), timeout);
 
-	if (monitor == 0 || (monitor != 0 
-		&& !ILWaitMutexThreadOwns(thread->supportThread, monitor->waitMutex)))
+	if((result != IL_THREAD_OK) && (result != IL_THREAD_BUSY))
 	{
-		_ILObjectLockWord_Unmark(thread, obj);
-
-		/* Object needs to own monitor */
-
-		ILExecThreadThrowSystem
-		(
-			thread,
-			"System.Threading.SynchronizationLockException",
-			"Exception_ThreadNeedsLock"
-		);
-
-		return 0;
+		_ILExecThreadHandleError(thread, result);
 	}
 
-	++monitor->waiters;
-	
-	_ILObjectLockWord_Unmark(thread, obj);
-
-	/* If we get here then we know that no other thread can dissociate
-	   the monitor from the object because we own the monitor! */
-
-	result = ILWaitMonitorWait(monitor->waitMutex, timeout);
-
-	_ILObjectLockWord_WaitAndMark(thread, obj);	
-	--monitor->waiters;	
-	_ILObjectLockWord_Unmark(thread, obj);
-
-	switch (result)
-	{
-	case 0:
-
-		/* We *should* own the monitor.  This must be a bug in the engine. */
-
-		ILExecThreadThrowSystem
-		(
-			thread,
-			"System.ExecutionEngineException",
-			"Exception_UnexpectedEngineState"
-		);
-
-		return 0;
-
-	case IL_WAIT_FAILED:
-	case 1:
-
-		/* Success or wait failed */
-
-		/* Returning 1 because the lock is always regained */
-
-		return 1;
-
-	case IL_WAIT_TIMEOUT:
-
-		/* Return 0 to indicate that the thread competed and reacquired 
-		   the lock after it was woken and that it was woken because it 
-		   timed out waiting for a pulse rather than because it received 
-		   a pulse. */
-
-		return 0;
-
-	default:
-
-		/* Handle ThreadAbort etc */
-
-		_ILExecThreadHandleWaitResult(thread, result);
-
-		return 1;
-	}
+	return (result == IL_THREAD_OK);
 }
 
 /*
@@ -495,68 +205,18 @@ ILBool _IL_Monitor_InternalWait(ILExecThread *thread,
 void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
 {
 	int result;
-	ILExecMonitor * monitor;
 
 	if(obj == 0)
 	{
 		ILExecThreadThrowArgNull(thread, "obj");
-
 		return;
 	}
 
-	_ILObjectLockWord_WaitAndMark(thread, obj);
-
-	monitor = GetObjectMonitor(thread, obj);
-
-	if (monitor == 0 || (monitor != 0 
-		&& !ILWaitMutexThreadOwns(thread->supportThread, monitor->waitMutex)))
+	result = ILMonitorPulse((void **)GetObjectLockWordPtr(thread, obj));
+	
+	if(result != IL_THREAD_OK)
 	{
-		/* Object needs to own monitor */
-
-		_ILObjectLockWord_Unmark(thread, obj);
-
-		ILExecThreadThrowSystem
-		(
-			thread,
-			"System.Threading.SynchronizationLockException",
-			"Exception_ThreadNeedsLock"
-		);
-
-		return;
-	}
-
-	_ILObjectLockWord_Unmark(thread, obj);
-
-	result = ILWaitMonitorPulse(monitor->waitMutex);
-
-	switch (result)
-	{
-	case 0:
-
-		/* We *should* own the monitor.  This must be a bug in the engine. */
-
-		ILExecThreadThrowSystem
-		(
-			thread,
-			"System.ExecutionEngineException",
-			"Exception_UnexpectedEngineState"
-		);
-
-		return;
-
-	case 1:
-
-		/* Successfully pulsed */
-
-		return;
-
-	default:
-
-		/* Handle ThreadAbort etc */
-
-		_ILExecThreadHandleWaitResult(thread, result);
-
-		return;
+		_ILExecThreadHandleError(thread, result);
 	}
 }
 
@@ -565,69 +225,19 @@ void _IL_Monitor_Pulse(ILExecThread *thread, ILObject *obj)
  */
 void _IL_Monitor_PulseAll(ILExecThread *thread, ILObject *obj)
 {
-	int result;	
-	ILExecMonitor * monitor;
+	int result;
 
 	if(obj == 0)
 	{
 		ILExecThreadThrowArgNull(thread, "obj");
-
 		return;
 	}
 
-	_ILObjectLockWord_WaitAndMark(thread, obj);
+	result = ILMonitorPulseAll((void **)GetObjectLockWordPtr(thread, obj));
 
-	monitor = GetObjectMonitor(thread, obj);
-
-	if (monitor == 0 || (monitor != 0 
-		&& !ILWaitMutexThreadOwns(thread->supportThread, monitor->waitMutex)))
+	if(result != IL_THREAD_OK)
 	{
-		/* Object needs to own monitor */
-
-		_ILObjectLockWord_Unmark(thread, obj);
-
-		ILExecThreadThrowSystem
-		(
-			thread,
-			"System.Threading.SynchronizationLockException",
-			"Exception_ThreadNeedsLock"
-		);
-
-		return;
-	}
-
-	_ILObjectLockWord_Unmark(thread, obj);
-
-	result = ILWaitMonitorPulseAll(monitor->waitMutex);
-
-	switch (result)
-	{ 
-	case 0:
-
-		/* We *should* own the monitor.  This must be a bug in the engine. */
-
-		ILExecThreadThrowSystem
-		(
-			thread,
-			"System.ExecutionEngineException",
-			"Exception_UnexpectedEngineState"
-		);
-
-		return;
-
-	case 1:
-
-		/* Successfully pulsed */
-
-		return;
-
-	default:
-
-		/* Handle ThreadAbort etc */
-
-		_ILExecThreadHandleWaitResult(thread, result);
-
-		return;
+		_ILExecThreadHandleError(thread, result);
 	}
 }
 

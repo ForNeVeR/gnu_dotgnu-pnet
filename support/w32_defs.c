@@ -19,6 +19,7 @@
  */
 
 #include "thr_defs.h"
+#include "interlocked.h"
 
 #ifdef IL_USE_WIN32_THREADS
 
@@ -29,10 +30,18 @@
 extern	"C" {
 #endif
 
+#if defined(USE_COMPILER_TLS)
+/*
+ * Define the thread local variable to hold the ILThread value for the
+ * current thread.
+ */
+_THREAD_ ILThread *_myThread;
+#else
 /*
  * Thread-specific key that is used to store and retrieve the thread object.
  */
 DWORD _ILThreadObjectKey;
+#endif
 
 /*
  *	Sets the thread priority.
@@ -107,8 +116,10 @@ void _ILThreadInitHandleSelf(ILThread *thread)
 
 void _ILThreadInitSystem(ILThread *mainThread)
 {
+#if !defined(USE_COMPILER_TLS)
 	/* Allocate a TLS key for storing thread objects */
 	_ILThreadObjectKey = TlsAlloc();
+#endif
 
 	/* Initialize the "main" thread's handle and identifier.  We have
 	   to duplicate the thread handle because "GetCurrentThread()" returns
@@ -126,8 +137,13 @@ static DWORD WINAPI ThreadStart(LPVOID arg)
 {
 	ILThread *thread = (ILThread *)arg;
 
+#if defined(USE_COMPILER_TLS)
+	/* Store the thread at the thread local storage */
+	_myThread = thread;
+#else
 	/* Attach the thread object to the thread */
 	TlsSetValue(_ILThreadObjectKey, thread);
+#endif
 
 	/* Run the thread */
 	_ILThreadRun(thread);
@@ -141,6 +157,52 @@ int _ILThreadCreateSystem(ILThread *thread)
 	thread->handle = CreateThread(NULL, 0, ThreadStart,
 								  thread, 0, (DWORD *)&(thread->identifier));
 	return (thread->handle != NULL);
+}
+
+/*
+ * APC procedure for interrupting a thread
+ */
+static VOID CALLBACK _InterruptThread(ULONG_PTR args)
+{
+	/* Nothing to do here */
+}
+
+/*
+ * Send an interrupt request to a thread.
+ */
+void _ILThreadInterrupt(ILThread *thread)
+{
+	QueueUserAPC(_InterruptThread, thread->handle, 0);
+}
+
+/*
+ * Put the current thread to sleep for a number of milliseconds.
+ * The sleep may be interrupted by a call to _ILThreadInterrupt.
+ */
+int _ILThreadSleep(ILUInt32 ms)
+{
+	if((ms <= IL_MAX_INT32) || (ms == IL_MAX_UINT32))
+	{
+		int result;
+
+		result = SleepEx(ms, TRUE);
+		if(result == 0)
+		{
+			return IL_THREAD_OK;
+		}
+		else if(result == WAIT_IO_COMPLETION)
+		{
+			return IL_THREAD_ERR_INTERRUPT;
+		}
+		else
+		{
+			return IL_THREAD_ERR_UNKNOWN;
+		}
+	}
+	else
+	{
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
 }
 
 /*
@@ -192,6 +254,60 @@ int	_ILWaitHandleTimedWait(HANDLE handle, ILUInt32 ms)
 }
 
 /*
+ * This function is the same as _ILWaitHandleTimedWait except that this
+ * version is interruptible by other threads calling _ILThreadInterrupt().
+ */
+int	_ILWaitHandleTimedWaitInterruptible(HANDLE handle, ILUInt32 ms)
+{
+	if((ms == IL_MAX_UINT32) || (ms <= IL_MAX_INT32))
+	{
+		DWORD result;
+
+		if(ms == IL_MAX_UINT32)
+		{
+			result = WaitForSingleObjectEx(handle, INFINITE, TRUE);
+		}
+		else
+		{
+			result = WaitForSingleObjectEx(handle, (DWORD)ms, TRUE);
+		}
+
+		if(result == WAIT_OBJECT_0)
+		{
+			return IL_THREAD_OK;
+		}
+		else
+		{
+			switch(result)
+			{
+				case WAIT_ABANDONED:
+				{
+					return IL_THREAD_ERR_ABANDONED;
+				}
+				break;
+
+				case WAIT_IO_COMPLETION:
+				{
+					return IL_THREAD_ERR_INTERRUPT;
+				}
+				break;
+
+				case WAIT_TIMEOUT:
+				{
+					return IL_THREAD_BUSY;
+				}
+				break;
+			}
+		}
+		return IL_THREAD_ERR_UNKNOWN;
+	}
+	else
+	{
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
+}
+
+/*
  * Note: this implementation is not fully atomic.  There is a
  * window of opportunity between when the current thread notices
  * that the condition is signalled and when the mutex is regained.
@@ -219,16 +335,10 @@ int _ILCountSemaphoreSignalCount(_ILCountSemaphore *sem, ILUInt32 count)
 {
 	int result = IL_THREAD_OK;
 
-	/* Lock the count semaphore object. */
-	_ILMutexLock(&(sem->_lock));
-
-	sem->_waiting -= count;
+	ILInterlockedSubI4_Acquire(&(sem->_waiting), count);
 
 	result = (ReleaseSemaphore(sem->_sem, (LONG)count, 0) != 0) ? 
 						IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN;
-
-	/* Unlock the count semaphore object. */
-	_ILMutexUnlock(&(sem->_lock));
 
 	return result;
 }
@@ -243,7 +353,7 @@ int _ILCountSemaphoreSignalAll(_ILCountSemaphore *sem)
 	if(sem->_waiting > 0)
 	{
 		/* Lock the count semaphore object. */
-		_ILMutexLock(&(sem->_lock));
+		_ILCriticalSectionEnter(&(sem->_lock));
 
 		/* We have to recheck because of possible race conditions. */
 		if(sem->_waiting > 0)
@@ -255,7 +365,7 @@ int _ILCountSemaphoreSignalAll(_ILCountSemaphore *sem)
 		}
 
 		/* Unlock the count semaphore object. */
-		_ILMutexUnlock(&(sem->_lock));
+		_ILCriticalSectionLeave(&(sem->_lock));
 	}
 	return result;
 }
@@ -270,24 +380,24 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms)
 		int result = IL_THREAD_OK;
 
 		/* Lock the count semaphore object. */
-		_ILMutexLock(&(sem->_lock));
+		_ILCriticalSectionEnter(&(sem->_lock));
 
 		sem->_waiting += 1;
 
 		/* Unlock the count semaphore object. */
-		_ILMutexUnlock(&(sem->_lock));
+		_ILCriticalSectionLeave(&(sem->_lock));
 
 		if((result = _ILWaitHandleTimedWait(sem->_sem, ms)) != IL_THREAD_OK)
 		{
 			/* We have to decrement the counter again because the call failed. */
 
 			/* Lock the count semaphore object. */
-			_ILMutexLock(&(sem->_lock));
+			_ILCriticalSectionEnter(&(sem->_lock));
 
 			sem->_waiting -= 1;
 
 			/* Unlock the count semaphore object. */
-			_ILMutexUnlock(&(sem->_lock));
+			_ILCriticalSectionLeave(&(sem->_lock));
 		}
 		return result;
 	}
@@ -303,7 +413,7 @@ int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms)
 
 	if((ms == IL_MAX_UINT32) || (ms <= IL_MAX_INT32))
 	{
-		result = _ILWaitHandleTimedWait(mon->_mutex, ms);
+		result = _ILWaitHandleTimedWaitInterruptible(mon->_mutex, ms);
 	}
 	else
 	{
@@ -312,84 +422,54 @@ int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms)
 	return result;
 }
 
-int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
-						ILMonitorPredicate predicate, void *arg)
+int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms)
 {
-	DWORD result;
-
 	if((ms == IL_MAX_UINT32) || (ms <= IL_MAX_INT32))
 	{
-		/* Increment the number of waiters. */
-		/* Lock the count semaphore object. */
-		_ILMutexLock(&(mon->_sem._lock));
+		DWORD result;
+		DWORD mutexResult;
 
-		mon->_sem._waiting += 1;
-
-		/* Unlock the count semaphore object. */
-		_ILMutexUnlock(&(mon->_sem._lock));
+		/* Decrement the wait count. */
+		ILInterlockedDecrementI4_Acquire(&(mon->_waitValue));
 
 		/* Unlock the mutex and wait on the semaphore. */
-		result = SignalObjectAndWait(mon->_mutex, mon->_sem._sem,
-									 (DWORD)ms, FALSE);
+		result = SignalObjectAndWait(mon->_mutex, mon->_sem,
+									 (DWORD)ms, TRUE);
 
-		if(result == WAIT_OBJECT_0)
+		if(result != WAIT_OBJECT_0)
 		{
-			/* Now wait until the mutex can be acquired. */
-			result = _ILWaitHandleWait(mon->_mutex);
-			if(result == IL_THREAD_OK)
+			/* Remove us from the waiters. */
+			ILInterlockedIncrementI4_Acquire(&(mon->_waitValue));
+
+			if(result == WAIT_IO_COMPLETION)
 			{
-				/*
-				 * Call the predicate function which should return != 0 on
-				 * windows platforms in all cases.
-				 */
-				if(!predicate(arg))
-				{
-					return IL_THREAD_ERR_UNKNOWN;
-				}
+				/* We got interrupted */
+				result = IL_THREAD_ERR_INTERRUPT;
 			}
-			return result;
-		}
-		else
-		{
-			/* Lock the count semaphore object. */
-			_ILMutexLock(&(mon->_sem._lock));
-
-			if(mon->_sem._waiting > 0)
+			else if(result == WAIT_TIMEOUT)
 			{
-				/* Decrement the number of waiters because we didn't get */
-				/* signaled and we didn't miss the signal.*/
-				mon->_sem._waiting -= 1;
-			}
-
-			/* Unlock the count semaphore object. */
-			_ILMutexUnlock(&(mon->_sem._lock));
-
-			if(result == WAIT_TIMEOUT)
-			{
-				/* The timeout expired on waiting to get pulsed. */
-				result = _ILWaitHandleWait(mon->_mutex);
-
-				if(result == IL_THREAD_OK)
-				{
-					/*
-					 * Call the predicate function which should return != 0 on
-					 * windows platforms in all cases.
-					 */
-					if(!predicate(arg))
-					{
-						return IL_THREAD_ERR_UNKNOWN;
-					}
-					/* Returm that we timed out. */
-					return IL_THREAD_BUSY;
-				}
-				/* In cas of an other error simpy return the error. */
-				return result;
+				/* Timeout expired before we got signaled */
+				result = IL_THREAD_BUSY;
 			}
 			else
 			{
+				/* An unexpected error occured */
 				return IL_THREAD_ERR_UNKNOWN;
 			}
 		}
+		else
+		{
+			result = IL_THREAD_OK;
+		}
+
+		/* Now wait until the mutex can be acquired. */
+		mutexResult = WaitForSingleObject(mon->_mutex, INFINITE);
+
+		if(mutexResult == WAIT_OBJECT_0)
+		{
+			return result;
+		}
+		return IL_THREAD_ERR_UNKNOWN;
 	}
 	else
 	{
@@ -397,6 +477,53 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
 	}
 }
 
+int _ILMonitorPulse(_ILMonitor *mon)
+{
+	if(mon)
+	{
+		ILInt32 waitValue;
+
+		waitValue = ILInterlockedLoadI4(&(mon->_waitValue));
+		if(waitValue < 0)
+		{
+			waitValue = ILInterlockedIncrementI4_Acquire(&(mon->_waitValue));
+			if(waitValue <= 0)
+			{
+				ReleaseSemaphore(mon->_sem, 1, NULL);
+			}
+			else
+			{
+				ILInterlockedDecrementI4_Acquire(&(mon->_waitValue));
+			}
+		}
+		return IL_THREAD_OK;
+	}
+	return IL_THREAD_ERR_UNKNOWN;
+}
+
+int _ILMonitorPulseAll(_ILMonitor *mon)
+{
+	if(mon)
+	{
+		ILInt32 waitValue;
+
+		waitValue = ILInterlockedLoadI4(&(mon->_waitValue));
+		if(waitValue < 0)
+		{
+			waitValue = ILInterlockedExchangeI4_Acquire(&(mon->_waitValue), 0);
+			if(waitValue < 0)
+			{
+				ReleaseSemaphore(mon->_sem, -waitValue, NULL);
+			}
+			else if(waitValue > 0)
+			{
+				ILInterlockedAddI4_Acquire(&(mon->_waitValue), waitValue);
+			}
+		}
+		return IL_THREAD_OK;
+	}
+	return IL_THREAD_ERR_UNKNOWN;
+}
 
 #ifdef	__cplusplus
 };

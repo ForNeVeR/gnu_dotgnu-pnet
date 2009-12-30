@@ -28,6 +28,7 @@ extern	"C" {
 /*
  * Types that are needed elsewhere.
  */
+typedef CRITICAL_SECTION	_ILCriticalSection;
 typedef CRITICAL_SECTION	_ILMutex;
 typedef HANDLE				_ILCondMutex;
 typedef HANDLE				_ILCondVar;
@@ -41,9 +42,9 @@ typedef CRITICAL_SECTION	_ILRWLock;
  */
 typedef struct
 {
-	_ILMutex		_lock;
-	_ILSemaphore	_sem;
-	LONG volatile	_waiting;
+	_ILCriticalSection	_lock;
+	_ILSemaphore		_sem;
+	ILInt32 volatile	_waiting;
 } _ILCountSemaphore;
 
 /*
@@ -51,9 +52,21 @@ typedef struct
  */
 typedef struct
 {
-	_ILCountSemaphore	_sem;
+	ILInt32				_waitValue;
+	_ILSemaphore		_sem;
 	_ILCondMutex		_mutex;
 } _ILMonitor;
+
+/*
+ * Determine if we are using compiler thread local storage
+ */
+#if defined(USE_COMPILER_TLS)
+#if !defined(__GNUC__)
+#undef USE_COMPILER_TLS
+#else
+#define _THREAD_ __thread
+#endif
+#endif
 
 /*
  * This is a real thread package.
@@ -65,6 +78,11 @@ typedef struct
  */
 #define	_ILThreadIsSelf(thread)	\
 			((thread)->identifier == GetCurrentThreadId())
+
+/*
+ * Send an interrupt request to a thread.
+ */
+void _ILThreadInterrupt(ILThread *thread);
 
 /*
  * Some helper macros for wait handles.
@@ -118,6 +136,33 @@ int	_ILWaitHandleTimedWait(HANDLE handle, ILUInt32 ms);
  * Destroy a thread handle that is no longer required.
  */
 #define	_ILThreadDestroy(thread)	_ILWaitHandleClose((thread)->handle)
+
+/*
+ * Put the current thread to sleep for a number of milliseconds.
+ * The sleep may be interrupted by a call to _ILThreadInterrupt.
+ */
+int _ILThreadSleep(ILUInt32 ms);
+
+/*
+ * Primitive critical section operations.
+ * NOTE:: the "EnterUnsafe" and "LeaveUnsafe" operations are not "suspend-safe"
+ */
+#define	_ILCriticalSectionCreate(critsect)	\
+			do { \
+				InitializeCriticalSection((critsect)); \
+			} while (0)
+#define	_ILCriticalSectionDestroy(critsect)	\
+			do { \
+				DeleteCriticalSection((critsect)); \
+			} while (0)
+#define	_ILCriticalSectionEnterUnsafe(critsect)	\
+			do { \
+				EnterCriticalSection((critsect)); \
+			} while (0)
+#define	_ILCriticalSectionLeaveUnsafe(critsect)	\
+			do { \
+				LeaveCriticalSection((critsect)); \
+			} while (0)
 
 /*
  * Primitive mutex operations.  Note: the "Lock" and "Unlock"
@@ -203,12 +248,12 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 #define _ILCountSemaphoreCreate(sem)	\
 		({ \
 			(sem)->_waiting = 0; \
-			_ILMutexCreate(&((sem)->_lock)); \
+			_ILCriticalSectionCreate(&((sem)->_lock)); \
 			_ILSemaphoreCreate(&(sem)->_sem);	\
 		})
 #define _ILCountSemaphoreDestroy(sem)	\
 		({ \
-			_ILMutexDestroy(&((sem)->_lock)); \
+			_ILCriticalSectionDestroy(&((sem)->_lock)); \
 			_ILSemaphoreDestroy(&((sem)->_sem)); \
 		})
 
@@ -238,16 +283,17 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms);
 #define	_ILMonitorCreate(mon)	\
 		({ \
 			int _result = 0; \
+			(mon)->_waitValue = 0; \
 			if((_result = _ILCondMutexCreate(&((mon)->_mutex))) == IL_THREAD_OK) \
 			{ \
-				_result = _ILCountSemaphoreCreate(&((mon)->_sem)); \
+				_result = _ILSemaphoreCreate(&((mon)->_sem)); \
 			} \
 			_result == IL_THREAD_OK ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
 		})
 #define	_ILMonitorDestroy(mon)	\
 		({ \
 			int _result = IL_THREAD_OK; \
-			if(_ILCountSemaphoreDestroy(&((mon)->_sem)) != IL_THREAD_OK) \
+			if(_ILSemaphoreDestroy(&((mon)->_sem)) != IL_THREAD_OK) \
 			{ \
 				_result = IL_THREAD_ERR_UNKNOWN; \
 			} \
@@ -257,37 +303,38 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms);
 			} \
 			_result; \
 		})
-#define	_ILMonitorEnter(mon)	\
-			_ILCondMutexLockUnsafe(&((mon)->_mutex))
-#define	_ILMonitorExit(mon)	\
-			_ILCondMutexUnlockUnsafe(&((mon)->_mutex))
 
 /*
  * Release one waiter from the waiting queue.
  */
-#define _ILMonitorPulse(mon)	_ILCountSemaphoreSignal(&((mon)->_sem))
+int _ILMonitorPulse(_ILMonitor *mon);
 
 /*
  * Release all waiters from the waiting queue.
  */
-#define	_ILMonitorPulseAll(mon)	_ILCountSemaphoreSignalAll(&((mon)->_sem))
+int	_ILMonitorPulseAll(_ILMonitor *mon);
 
 int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
 #define _ILMonitorTryEnter(mon)	_ILMonitorTimedTryEnter(mon, 0)
-
-int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
-						ILMonitorPredicate predicate, void *arg);
-#define _ILMonitorWait(mon, pred, arg) \
-			_ILMonitorTimedWait((mon), IL_MAX_UINT32, (pred), (arg))
+#define _ILMonitorEnter(mon)	_ILMonitorTimedTryEnter(mon, IL_MAX_UINT32)
+#define	_ILMonitorExit(mon)		_ILCondMutexUnlockUnsafe(&((mon)->_mutex))
+int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms);
+#define _ILMonitorWait(mon)	_ILMonitorTimedWait((mon), IL_MAX_UINT32)
 
 /*
  * Get or set the thread object that is associated with "self".
  */
+#if defined(USE_COMPILER_TLS)
+extern _THREAD_ ILThread *_myThread;
+#define	_ILThreadGetSelf()			(_myThread)
+#define	_ILThreadSetSelf(object)	(_myThread = (object))
+#else
 extern DWORD _ILThreadObjectKey;
 #define	_ILThreadGetSelf()	\
 			((ILThread *)(TlsGetValue(_ILThreadObjectKey)))
 #define	_ILThreadSetSelf(object)	\
 			(TlsSetValue(_ILThreadObjectKey, (object)))
+#endif
 
 /*
  * Call a function "once".

@@ -1,3 +1,68 @@
+2009-12-30  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add checks for the nanosleep and clock_nanosleep
+	functions.
+
+	* engine/engine.h: Add prototype for the _ILExecThreadHandleError
+	function.
+
+	* engine/lib_monitor.c: Use the new monitor implementation now.
+
+	* engine/lib_thread.c (_IL_Thread_InternalSleep): Use the new function
+	_ILExecThreadHandleError instead of _ILExecThreadHandleWaitResult for
+	handling errors.
+
+	* engine/thread.c (_ILExecThreadHandleError): Add new function.
+
+	* support/monitor.c: Rework the monitor implementation.
+
+	* support/no_defs.h, support/pt_defs.h, support/w32_defs.h: Add
+	definitions for the new _ILCriticalSection type.
+	(_ILThreadInterrupt, _ILThreadSleep): Add prototypes
+	(_ILMonitorTimedWait, _ILMonitorWait): Change prototypes
+
+	* support/pt_defs.h: Change the monitor to using two semaphores instead
+	of a condition variable and a mutex to be able to interrupt the waits via
+	calls to _ILThreadInterrupt.
+
+	* support/no_defs.c (_ILThreadInterrupt, _ILThreadSleep): Added
+
+	* support/pt_defs.c: Add support for interrupting waits.
+	(_ILThreadInterrupt, _ILThreadSleep): Added
+	Rework the primitive monitor with using semaphores.
+
+	* support/w32_defs.c: Add support for using compiler tls for the current
+	thread.
+	(_ILThreadInterrupt, _ILThreadSleep): Added
+	(_ILWaitHandleWaitInterruptible): Added to do an allertible wait on a
+	 handle.
+	Rework the primitive monitor implementation.
+
+	* support/thr_defs.h: Replace _ILMutexes by _ILCriticalSections.
+	Split the threadstate in a private and public part.
+	Add the macros for critical sections.
+	(_ILThreadEnterWaitState, _ILThreadLeaveWaitState): Add prototypes.
+	Rework the ILMonitor definition.
+
+	* support/thread.c: Replace _ILMutexes by _ILCriticalSections.
+	Control destruction of the ILThread structure by a reference count.
+	(_ILThreadEnterWaitState, _ILThreadLeaveWaitState): Add
+	(ILThreadSpleep): Change to use the native _ILThreadSleep
+	implementations.
+	(ILThreadDestroy): Destroying a thread doesn't abort the thread to
+	destroy anymore.
+
+	* support/wait.c (_ILEnterWait, _ILLeaveWait): Redo
+
+	* support/wait_event.c, support/wait_mutex.c, support/wait_mutex.h:
+	Adjust to use critilal sections instead of mutexes and the splited
+	thread state.
+
+	* tests/test_thread.c: Adjust monitor tests to the new monitor
+	implementation.
+	Add tests for interrupting and aborting a thread while entering or
+	waiting on a monitor.
+
 2009-12-23  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/verify_except.c (OutputExceptiopnTable): Fix some whitespace

@@ -263,7 +263,7 @@ void _IL_Thread_FinalizeThread(ILExecThread *thread, ILObject *_this)
 	{
 		clrThread->privateData = 0;
 
-		ILThreadDestroy(supportThread);		
+		ILThreadDestroy(supportThread);
 	}
 }
 
@@ -314,7 +314,7 @@ void _IL_Thread_SpinWait(ILExecThread *_thread, ILInt32 iterations)
 	 */
 
 	if(iterations > 0)
-	{		
+	{
 		/*
 		 * Can't use ILThreadSleep because it will catch interrupts
 		 * and we don't want it to do that.
@@ -427,13 +427,16 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
  */
 void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
 {
+	int result;
+	
 	if (timeout < -1)
 	{
 		ILExecThreadThrowSystem(thread,
 			"System.ArgumentOutOfRangeException", (const char *)0);
 	}
 	
-	_ILExecThreadHandleWaitResult(thread, ILThreadSleep((ILUInt32)timeout));
+	result = ILThreadSleep((ILUInt32)timeout);
+	_ILExecThreadHandleError(thread, result);
 }
 
 /*

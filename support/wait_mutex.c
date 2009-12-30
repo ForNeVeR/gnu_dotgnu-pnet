@@ -51,7 +51,7 @@ struct _tagILMutexName
 
 };
 static ILMutexName *nameList;
-static _ILMutex nameListLock;
+static _ILCriticalSection nameListLock;
 
 /*
  * Close a regular mutex.
@@ -59,16 +59,16 @@ static _ILMutex nameListLock;
 static int MutexClose(ILWaitMutex *mutex)
 {
 	/* Lock down the mutex and determine if it is currently owned */
-	_ILMutexLock(&(mutex->parent.lock));
+	_ILCriticalSectionEnter(&(mutex->parent.lock));
 
 	if(mutex->owner != 0 || !_ILWakeupQueueIsEmpty(&(mutex->queue)))
 	{
-		_ILMutexUnlock(&(mutex->parent.lock));
+		_ILCriticalSectionLeave(&(mutex->parent.lock));
 		return IL_WAITCLOSE_OWNED;
 	}
 
 	/* Clean up the mutex */
-	_ILMutexUnlock(&(mutex->parent.lock));
+	_ILCriticalSectionLeave(&(mutex->parent.lock));
 	_ILWakeupQueueDestroy(&(mutex->queue));
 	_ILMutexDestroy(&(mutex->parent.lock));
 	
@@ -83,28 +83,28 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 	ILMutexName *temp, *prev;
 
 	/* We need the name list lock */
-	_ILMutexLock(&nameListLock);
+	_ILCriticalSectionEnter(&nameListLock);
 
 	/* Lock down the mutex and determine if it is currently owned */
-	_ILMutexLock(&(mutex->parent.parent.lock));
+	_ILCriticalSectionEnter(&(mutex->parent.parent.lock));
 	if(mutex->parent.owner != 0 ||
 	   !_ILWakeupQueueIsEmpty(&(mutex->parent.queue)))
 	{
-		_ILMutexUnlock(&(mutex->parent.parent.lock));
-		_ILMutexUnlock(&nameListLock);
+		_ILCriticalSectionLeave(&(mutex->parent.parent.lock));
+		_ILCriticalSectionLeave(&nameListLock);
 		return IL_WAITCLOSE_OWNED;
 	}
 
 	/* Decrease the number of users and bail out if still non-zero */
 	if(--(mutex->numUsers) != 0)
 	{
-		_ILMutexUnlock(&(mutex->parent.parent.lock));
-		_ILMutexUnlock(&nameListLock);
+		_ILCriticalSectionLeave(&(mutex->parent.parent.lock));
+		_ILCriticalSectionLeave(&nameListLock);
 		return IL_WAITCLOSE_DONT_FREE;
 	}
 
 	/* Clean up the mutex */
-	_ILMutexUnlock(&(mutex->parent.parent.lock));
+	_ILCriticalSectionLeave(&(mutex->parent.parent.lock));
 	_ILWakeupQueueDestroy(&(mutex->parent.queue));
 	_ILMutexDestroy(&(mutex->parent.parent.lock));
 
@@ -128,7 +128,7 @@ static int MutexCloseNamed(ILWaitMutexNamed *mutex)
 		}
 		ILFree(temp);
 	}
-	_ILMutexUnlock(&nameListLock);
+	_ILCriticalSectionLeave(&nameListLock);
 
 	/* The wait handle object is now completely free */
 	return IL_WAITCLOSE_FREE;
@@ -317,7 +317,7 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
 	int result;
 
 	/* Lock down the mutex */
-	_ILMutexLock(&(mutex->parent.lock));
+	_ILCriticalSectionEnter(&(mutex->parent.lock));
 
 	/* Determine what to do based on the mutex's current state */
 	if(mutex->owner == 0)
@@ -356,7 +356,7 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
 	}
 
 	/* Unlock the mutex and return */
-	_ILMutexUnlock(&(mutex->parent.lock));
+	_ILCriticalSectionLeave(&(mutex->parent.lock));
 	return result;
 }
 
@@ -366,7 +366,7 @@ static int MutexRegister(ILWaitMutex *mutex, _ILWakeup *wakeup)
 static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 {
 	/* Lock down the mutex */
-	_ILMutexLock(&(mutex->parent.lock));
+	_ILCriticalSectionEnter(&(mutex->parent.lock));
 
 	/* Remove ourselves from the wait queue if we are currently on it */
 	_ILWakeupQueueRemove(&(mutex->queue), wakeup);
@@ -401,7 +401,7 @@ static void MutexUnregister(ILWaitMutex *mutex, _ILWakeup *wakeup, int release)
 	}
 
 	/* Unlock the mutex and return */
-	_ILMutexUnlock(&(mutex->parent.lock));
+	_ILCriticalSectionLeave(&(mutex->parent.lock));
 }
 
 static int MutexSignal(ILWaitHandle *waitHandle)
@@ -469,7 +469,7 @@ ILWaitHandle *ILWaitMutexCreate(int initiallyOwned)
  */
 static void MutexNameListInit(void)
 {
-	_ILMutexCreate(&nameListLock);
+	_ILCriticalSectionCreate(&nameListLock);
 	nameList = 0;
 }
 
@@ -494,7 +494,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 
 	/* Search for a mutex with the same name */
 	_ILCallOnce(MutexNameListInit);
-	_ILMutexLock(&nameListLock);
+	_ILCriticalSectionEnter(&nameListLock);
 	temp = nameList;
 	while(temp != 0)
 	{
@@ -502,12 +502,12 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 		{
 			/* Increase the usage count on the mutex */
 			mutex = (ILWaitMutexNamed *)(temp->handle);
-			_ILMutexLock(&(mutex->parent.parent.lock));
+			_ILCriticalSectionEnter(&(mutex->parent.parent.lock));
 			++(mutex->numUsers);
-			_ILMutexUnlock(&(mutex->parent.parent.lock));
+			_ILCriticalSectionLeave(&(mutex->parent.parent.lock));
 
 			/* Unlock the name list */
-			_ILMutexUnlock(&nameListLock);
+			_ILCriticalSectionLeave(&nameListLock);
 
 			/* Attempt to acquire ownership of the mutex if requested */
 			if(initiallyOwned)
@@ -533,7 +533,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	/* Allocate memory for the mutex */
 	if((mutex = (ILWaitMutexNamed *)ILMalloc(sizeof(ILWaitMutexNamed))) == 0)
 	{
-		_ILMutexUnlock(&nameListLock);
+		_ILCriticalSectionLeave(&nameListLock);
 		return 0;
 	}
 
@@ -541,7 +541,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	temp = (ILMutexName *)ILMalloc(sizeof(ILMutexName) + strlen(name));
 	if(!temp)
 	{
-		_ILMutexUnlock(&nameListLock);
+		_ILCriticalSectionLeave(&nameListLock);
 		ILFree(mutex);
 		return 0;
 	}
@@ -572,7 +572,7 @@ ILWaitHandle *ILWaitMutexNamedCreate(const char *name, int initiallyOwned,
 	temp->handle = &(mutex->parent.parent);
 	strcpy(temp->name, name);
 	nameList = temp;
-	_ILMutexUnlock(&nameListLock);
+	_ILCriticalSectionLeave(&nameListLock);
 
 	/* Ready to go */
 	return &(mutex->parent.parent);
@@ -585,7 +585,7 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 	int result;
 
 	/* Lock down the mutex */
-	_ILMutexLock(&(mutex->parent.lock));
+	_ILCriticalSectionEnter(&(mutex->parent.lock));
 
 	wakeup = &_ILThreadGetSelf()->wakeup;
 
@@ -625,7 +625,7 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 	}
 
 	/* Unlock the mutex and return */
-	_ILMutexUnlock(&(mutex->parent.lock));
+	_ILCriticalSectionLeave(&(mutex->parent.lock));
 	return result;
 }
 
@@ -635,19 +635,19 @@ int ILWaitMutexRelease(ILWaitHandle *handle)
 static int MonitorClose(ILWaitMonitor *monitor)
 {
 	/* Lock down the monitor and determine if it is currently owned */
-	_ILMutexLock(&(monitor->parent.parent.lock));
+	_ILCriticalSectionEnter(&(monitor->parent.parent.lock));
 	
 	/* We we allow monitors to be closed even if they have
 	   an owner.  It is valid for a program to lock an
 	   object and never release it before it gets GC-ed.  */
 	if(monitor->waiters > 0 || !_ILWakeupQueueIsEmpty(&(monitor->parent.queue)))
 	{
-		_ILMutexUnlock(&(monitor->parent.parent.lock));
+		_ILCriticalSectionLeave(&(monitor->parent.parent.lock));
 		return IL_WAITCLOSE_OWNED;
 	}
 
 	/* Clean up the monitor */
-	_ILMutexUnlock(&(monitor->parent.parent.lock));
+	_ILCriticalSectionLeave(&(monitor->parent.parent.lock));
 	_ILWakeupQueueDestroy(&(monitor->parent.queue));
 	_ILWakeupQueueDestroy(&(monitor->signalQueue));
 	_ILMutexDestroy(&(monitor->parent.parent.lock));
@@ -721,7 +721,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 	}
 		
 	/* Lock down the monitor */
-	_ILMutexLock(&(monitor->parent.parent.lock));
+	_ILCriticalSectionEnter(&(monitor->parent.parent.lock));
 
 	++monitor->waiters;
 
@@ -762,7 +762,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 			}
 
 			/* Unlock the monitor */
-			_ILMutexUnlock(&(monitor->parent.parent.lock));
+			_ILCriticalSectionLeave(&(monitor->parent.parent.lock));
 
 			/* Wait until we are signalled */			
 			result = _ILWakeupWait(wakeup, timeout, 0);
@@ -779,7 +779,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 		else
 		{
 			/* Unlock the monitor */
-			_ILMutexUnlock(&(monitor->parent.parent.lock));
+			_ILCriticalSectionLeave(&(monitor->parent.parent.lock));
 
 			result = IL_WAIT_INTERRUPTED;
 		}
@@ -793,7 +793,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 		}
 
 		/* Lock down the monitor and set the count back to the right value */
-		_ILMutexLock(&(monitor->parent.parent.lock));
+		_ILCriticalSectionEnter(&(monitor->parent.parent.lock));
 
 		if(monitor->parent.owner == 0)
 		{
@@ -809,7 +809,7 @@ int ILWaitMonitorWait(ILWaitHandle *handle, ILUInt32 timeout)
 	--monitor->waiters;
 	
 	/* Unlock the monitor and return */
-	_ILMutexUnlock(&(monitor->parent.parent.lock));
+	_ILCriticalSectionLeave(&(monitor->parent.parent.lock));
 
 	return _ILLeaveWait(thread, result);
 }
@@ -821,7 +821,7 @@ static IL_INLINE int PrivateWaitMonitorPulse(ILWaitHandle *handle, int all)
 	int result;
 
 	/* Lock down the monitor */
-	_ILMutexLock(&(monitor->parent.parent.lock));
+	_ILCriticalSectionEnter(&(monitor->parent.parent.lock));
 
 	/* Determine what to do based on the monitor's state */
 	if(_ILWaitHandle_kind(&(monitor->parent.parent)) != IL_WAIT_MONITOR)
@@ -840,7 +840,7 @@ static IL_INLINE int PrivateWaitMonitorPulse(ILWaitHandle *handle, int all)
 		/* GCC should optimise out this if statement */
 		
 		if (all)
-		{			
+		{
 			_ILWakeupQueueWakeAll(&(monitor->signalQueue));
 		}
 		else
@@ -851,7 +851,7 @@ static IL_INLINE int PrivateWaitMonitorPulse(ILWaitHandle *handle, int all)
 		result = 1;
 	}
 	/* Unlock the monitor and return */
-	_ILMutexUnlock(&(monitor->parent.parent.lock));
+	_ILCriticalSectionLeave(&(monitor->parent.parent.lock));
 	return result;
 }
 

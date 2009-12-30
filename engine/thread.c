@@ -22,6 +22,7 @@
 
 #include "engine_private.h"
 #include "lib_defs.h"
+#include "thr_defs.h"
 #include "interrupt.h"
 #include "interlocked.h"
 
@@ -68,7 +69,7 @@ ILObject *ILExecThreadCurrentClrThread()
 	
 		/* Get the CLR thread class */
 
-		classInfo = ILExecThreadLookupClass(thread, "System.Threading.Thread");		
+		classInfo = ILExecThreadLookupClass(thread, "System.Threading.Thread");
 
 		/* Allocate a new CLR thread object */
 
@@ -534,7 +535,7 @@ int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result)
 		break;
 	case IL_WAIT_ABORTED:
 		{
-			_ILExecThreadSelfAborting(thread);			
+			_ILExecThreadSelfAborting(thread);
 		}
 		break;
 	case IL_WAIT_FAILED:
@@ -549,6 +550,51 @@ int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result)
 	}
 
 	return result;
+}
+
+/*
+ * Throw the exception for the thread error code.
+ */
+void _ILExecThreadHandleError(ILExecThread *thread, int error)
+{
+	switch(error)
+	{
+		case IL_THREAD_ERR_SYNCLOCK:
+		{
+			ILExecThreadThrowSystem(thread,
+									"System.Threading.SynchronizationLockException",
+									(const char *)0);
+		}
+		break;
+
+		case IL_THREAD_ERR_INTERRUPT:
+		{
+			ILExecThreadThrowSystem(thread,
+									"System.Threading.ThreadInterruptedException",
+									(const char *)0);
+		}
+		break;
+
+		case IL_THREAD_ERR_ABORTED:
+		{
+			_ILExecThreadSelfAborting(thread);
+		}
+		break;
+
+		case IL_THREAD_ERR_OUTOFMEMORY:
+		{
+			
+		}
+		break;
+		
+		case IL_THREAD_ERR_UNKNOWN:
+		{
+			ILExecThreadThrowSystem(thread,
+									"System.SystemException",
+									(const char *)0);
+		}
+		break;
+	}
 }
 
 /*
@@ -617,12 +663,12 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	thread->freeMonitorCount = 0;
 	thread->isFinalizerThread = 0;
 	thread->method = 0;
-	thread->thrownException = 0;	
+	thread->thrownException = 0;
 	thread->threadStaticSlots = 0;
 	thread->threadStaticSlotsUsed = 0;
 	thread->currentException = 0;
 	thread->managedSafePointFlags = 0;
-	thread->runningManagedCode = 0;	
+	thread->runningManagedCode = 0;
 	thread->threadAbortException = 0;
 	thread->process = 0;
 

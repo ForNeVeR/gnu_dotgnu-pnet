@@ -1209,6 +1209,11 @@ int _ILExecThreadSelfAborting(ILExecThread *thread);
 int _ILExecThreadHandleWaitResult(ILExecThread *thread, int result);
 
 /*
+ * Throw the exception for the thread error code.
+ */
+void _ILExecThreadHandleError(ILExecThread *thread, int error);
+
+/*
  * Gets the state of the thread.
  */
 ILInt32 _ILExecThreadGetState(ILExecThread *thread, ILThread* supportThread);

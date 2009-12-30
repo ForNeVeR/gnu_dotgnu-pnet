@@ -59,6 +59,51 @@ int _ILThreadGetPriority(ILThread *thread)
 	return IL_TP_NORMAL;
 }
 
+void _ILThreadInterrupt(ILThread *thread)
+{
+	/* Nothing to on a system without threads */
+}
+
+int _ILThreadSleep(ILUInt32 ms)
+{
+#ifdef HAVE_USLEEP
+	if(ms == 0)
+	{
+		ILThreadYield();
+	}
+	else if(ms <= IL_MAX_INT32)
+	{
+		/* Sleep for the specified timeout */
+		while(ms >= 100000)
+		{
+			usleep(100000000);
+			ms -= 100000;
+		}
+		if(ms > 0)
+		{
+			usleep(ms * 1000);
+		}
+	}
+	else if(ms == IL_MAX_UINT32)
+	{
+		/* Sleep forever */
+		for(;;)
+		{
+			usleep(100000000);
+		}
+	}
+	else
+	{
+		/* Invalid timeout specified */
+		return IL_THREAD_ERR_INVALID_TIMEOUT;
+	}
+	return IL_THREAD_OK;
+#else
+	/* We don't know how to sleep on this platform, so report "interrupted" */
+	return ILTHREAD_ERR_INTERRUPT;
+#endif
+}
+
 int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 {
 	/* On a system without threads, we wait for the timeout
@@ -87,21 +132,11 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 			usleep(100000000);
 		}
 	}
-	return 0;
+	return IL_THREAD_OK;
 #else
 	/* We don't know how to sleep on this platform, so report "interrupted" */
-	return -1;
+	return ILTHREAD_ERR_INTERRUPT;
 #endif
-}
-
-int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms,
-						ILMonitorPredicate predicate, void *arg)
-{
-	if(!predicate(arg))
-	{
-		return IL_THREAD_ERR_UNKNOWN;
-	}
-	return IL_THREAD_OK;
 }
 
 #ifdef	__cplusplus

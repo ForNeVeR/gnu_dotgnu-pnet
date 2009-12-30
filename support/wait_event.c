@@ -47,7 +47,7 @@ static int EventRegister(ILWaitEvent *event, _ILWakeup *wakeup)
 	int result;
 
 	/* Lock down the event */
-	_ILMutexLock(&(event->parent.lock));
+	_ILCriticalSectionEnter(&(event->parent.lock));
 
 	/* Determine what to do based on the event's current state */
 	if((event->data & EVENT_SET_MASK))
@@ -78,7 +78,7 @@ static int EventRegister(ILWaitEvent *event, _ILWakeup *wakeup)
 	}
 
 	/* Unlock the event and return */
-	_ILMutexUnlock(&(event->parent.lock));
+	_ILCriticalSectionLeave(&(event->parent.lock));
 
 	return result;
 }
@@ -89,13 +89,13 @@ static int EventRegister(ILWaitEvent *event, _ILWakeup *wakeup)
 static void EventUnregister(ILWaitEvent *event, _ILWakeup *wakeup, int release)
 {
 	/* Lock down the event */
-	_ILMutexLock(&(event->parent.lock));
+	_ILCriticalSectionEnter(&(event->parent.lock));
 
 	/* Remove ourselves from the wait queue if we are currently on it */
 	_ILWakeupQueueRemove(&(event->queue), wakeup);
 	
 	/* Unlock the event and return */
-	_ILMutexUnlock(&(event->parent.lock));
+	_ILCriticalSectionLeave(&(event->parent.lock));
 }
 
 static int EventSignal(ILWaitHandle *waitHandle)
@@ -164,7 +164,7 @@ int ILWaitEventSet(ILWaitHandle *handle)
 	}
 	
 	/* Lock down the event */
-	_ILMutexLock(&(event->parent.lock));
+	_ILCriticalSectionEnter(&(event->parent.lock));
 
 	if (!(event->data & (EVENT_SET_MASK)))
 	{		
@@ -194,7 +194,7 @@ int ILWaitEventSet(ILWaitHandle *handle)
 	}
 	
 	/* Unlock the event and return */
-	_ILMutexUnlock(&(event->parent.lock));
+	_ILCriticalSectionLeave(&(event->parent.lock));
 
 	return 1;
 }
@@ -215,7 +215,7 @@ int ILWaitEventPulse(ILWaitHandle *handle)
 	}
 	
 	/* Lock down the event */
-	_ILMutexLock(&(event->parent.lock));
+	_ILCriticalSectionEnter(&(event->parent.lock));
 
 	if (!(event->data & (EVENT_SET_MASK)))
 	{		
@@ -233,14 +233,14 @@ int ILWaitEventPulse(ILWaitHandle *handle)
 				_ILWakeupQueueWakeAll(&event->queue);
 			}
 			else
-			{				
+			{
 				_ILWakeupQueueWake(&event->queue);
 			}
 		}
 	}
 
 	/* Unlock the event and return */
-	_ILMutexUnlock(&(event->parent.lock));
+	_ILCriticalSectionLeave(&(event->parent.lock));
 
 	return 1;
 }
@@ -261,13 +261,13 @@ int ILWaitEventReset(ILWaitHandle *handle)
 	}
 	
 	/* Lock down the event */
-	_ILMutexLock(&(event->parent.lock));
+	_ILCriticalSectionEnter(&(event->parent.lock));
 
 	/* Reset the event */
 	event->data &= ~(EVENT_SET_MASK);
 	
 	/* Unlock the event and return */
-	_ILMutexUnlock(&(event->parent.lock));
+	_ILCriticalSectionLeave(&(event->parent.lock));
 
 	return 1;
 }

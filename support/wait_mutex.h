@@ -36,6 +36,7 @@ static IL_INLINE int ILWaitMutexFastEnter(ILThread *thread, ILWaitHandle *handle
 {
 	int result = 0;
 	ILWaitMutex *mutex = (ILWaitMutex *)handle;
+	_ILThreadState threadState;
 	
 	/*
 	 * MS.NET behaviour is weird.  If a thread is interrupted and
@@ -57,25 +58,24 @@ static IL_INLINE int ILWaitMutexFastEnter(ILThread *thread, ILWaitHandle *handle
 	 * entered (not just *any* monitor like with MS.NET) is
 	 * locked.  Currently, PNET uses the first option.
 	 */
-	if ((thread->state & (IL_TS_INTERRUPTED_OR_ABORT_REQUESTED)) != 0)
+	threadState.comb = ILInterlockedLoadU4(&(thread->state.comb));
+	if ((threadState.split.pub & (IL_TS_INTERRUPTED_OR_ABORT_REQUESTED)) != 0)
 	{
-		ILUInt16 threadState;
-
 		_ILMutexLock(&thread->lock);
 
-		threadState = ILInterlockedLoadU2(&(thread->state));
-		if ((threadState & (IL_TS_ABORT_REQUESTED)) != 0)
+		threadState.comb = ILInterlockedLoadU4(&(thread->state.comb));
+		if ((threadState.split.pub & (IL_TS_ABORT_REQUESTED)) != 0)
 		{
 			result = IL_WAIT_ABORTED;
 		}
-		else if ((threadState & (IL_TS_INTERRUPTED)) != 0)
+		else if ((threadState.split.pub & (IL_TS_INTERRUPTED)) != 0)
 		{
 			result = IL_WAIT_INTERRUPTED;
 		}
 		
 		_ILWakeupCancelInterrupt(&(thread->wakeup));
-		threadState &= ~(IL_TS_INTERRUPTED);
-		ILInterlockedStoreU2(&(thread->state), threadState);
+		threadState.split.pub &= ~(IL_TS_INTERRUPTED);
+		ILInterlockedStoreU2(&(thread->state.split.pub), threadState.split.pub);
 
 		_ILMutexUnlock(&thread->lock);
 	}

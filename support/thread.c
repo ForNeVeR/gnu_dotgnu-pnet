@@ -1202,7 +1202,6 @@ int ILThreadSleep(ILUInt32 ms)
 
 	if((result = _ILThreadEnterWaitState(thread)) != IL_THREAD_OK)
 	{
-		fprintf(stderr, "ILThreadSleep(%i) enterwaitstate failed with result = %i\n", ms, result);
 		return result;
 	}
 

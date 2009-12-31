@@ -2,7 +2,7 @@
 /*
  * thr_defs.h - Common thread definitions.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,26 +33,12 @@
 /* #define IL_THREAD_DEBUG */
 
 /*
- * Threading error codes.
- */
-#define IL_THREAD_OK						0x00000000
-#define IL_THREAD_ERR_ABANDONED				0x00000080
-#define IL_THREAD_BUSY						0x00000102
-#define IL_THREAD_ERR_INVALID_TIMEOUT		0x80131502
-#define IL_THREAD_ERR_SYNCLOCK				0x80131518
-#define IL_THREAD_ERR_INTERRUPT				0x80131519
-#define IL_THREAD_ERR_ABORTED				0x80131530
-#define IL_THREAD_ERR_INVALID_RELEASECOUNT	0xFFFFFFFD
-#define IL_THREAD_ERR_OUTOFMEMORY			0xFFFFFFFE
-#define IL_THREAD_ERR_UNKNOWN				0xFFFFFFFF
-
-/*
  * Choose which thread package we will be using.
  */
 #include "thr_choose.h"
 #include "il_utils.h"
 #include "interrupt.h"
-#ifdef IL_THREAD_ASSERTIONS
+#if defined(IL_THREAD_ASSERTIONS) || defined(IL_THREAD_DEBUG)
 #include <stdio.h>
 #include <stdlib.h>
 #endif
@@ -677,63 +663,6 @@ void _ILMonitorSystemInit();
  * There must be no used monitors left when calling this function.
  */
 void _ILMonitorSystemDeinit();
-
-/*
- * Enter a monitor 
- * This function returns IL_THREAD_OK on success, IL_THREAD_BUSY on timeout
- * or any other of the threading return codes on error.
- * NOTE: The monitor is only entered if IL_THREAD_OK is returned.
- * On every ohter return value the lock is not obtained.
- * This is because the code used with monitors usually looks like:
- * Monitor.Enter(obj);
- * try
- * {
- *    do_something
- * }
- * finally
- * {
- *    Monitor.Exit(obj);
- * }
- * So the exception is thrown outside the try/finally handlier that ensures
- * propper monitor release.
- */
-int ILMonitorTimedTryEnter(void **monitorLocation, ILUInt32 ms);
-#define ILMonitorEnter(loc)		ILMonitorTimedTryEnter((loc), IL_MAX_UINT32)
-#define ILMonitorTryEnter(loc)	ILMonitorTimedTryEnter((loc), 0)
-
-/*
- * Leave the monitor stored at monitorLocation.
- * This function returns IL_THREAD_OK on success, IL_THREAD_BUSY on timeout
- * or any other of the threading return codes on error.
- */
-int ILMonitorExit(void **monitorLocation);
-
-/*
- * Enter the wait state on an owned monitor.
- */
-int ILMonitorTimedWait(void **monitorLocation, ILUInt32 ms);
-#define ILMonitorWait(loc)	ILMonitorTimedWait((loc), IL_MAX_UINT32)
-
-/*
- * Move one thread in the waiting queue to the ready queue in the monitor
- * stored at monitorLocation.
- */
-int ILMonitorPulse(void **monitorLocation);
-
-/*
- * Move all threads in the waiting queue to the ready queue in the monitor
- * stored at monitorLocation.
- */
-int ILMonitorPulseAll(void **monitorLocation);
-
-/*
- * Reclaim the monitor stored at monitorLocation.
- * This function is used for example if a monitor is attached to an object
- * that is going to be reclaimed by a garbage collector.
- * The monitor will not be needed anymore but it's state is undefined.
- * Reclaiming a monitor is caused by a bug in the using application.
- */
-void ILMonitorReclaim(void **monitorLocation);
 
 #ifdef	__cplusplus
 };

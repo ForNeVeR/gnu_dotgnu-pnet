@@ -1,3 +1,16 @@
+2009-12-31  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/heap.c (_ILFinalizeObject): Reclaim the monitor still attached
+	to a finalized object.
+
+	* include/il_thread.h: Move the threading error code definitions and
+	monitor prototypes from thr_defs.h to here.
+
+	* support/thr_defs.h: Move the threading error code definitions and
+	monitor prototypes to il_thread.h.
+
+	* support/thread.c: Add more debugging support.
+
 2009-12-30  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add checks for the nanosleep and clock_nanosleep

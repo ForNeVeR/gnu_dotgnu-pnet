@@ -1,7 +1,7 @@
 /*
  * heap.c - Heap routines for the runtime engine.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@ void _ILFinalizeObject(void *block, void *data)
 	ILMethod *method;
 	ILThread *thread;
 	ILExecProcess *process;
-	ILExecThread *execThread;	
+	ILExecThread *execThread;
 	ILFinalizationContext *finalizationContext;
 	ILThreadExecContext newContext, saveContext;
 	
@@ -119,6 +119,13 @@ void _ILFinalizeObject(void *block, void *data)
 	if (process == 0)
 	{
 		/* Our owner process died.  We're orphaned and can't finalize */
+#ifndef IL_CONFIG_USE_THIN_LOCKS
+		/*
+		 * We'll look for a monitor that's still attached to the object
+		 * anyways and reclaim it if needed.
+		 */
+		ILMonitorReclaim((void **)GetObjectLockWordPtr(execThread, object));
+#endif
 		return;
 	}
 
@@ -162,6 +169,14 @@ void _ILFinalizeObject(void *block, void *data)
 		}
 	}
 	
+#ifndef IL_CONFIG_USE_THIN_LOCKS
+	/*
+	 * We'll look for a monitor that's still attached to the object
+	 * anyways and reclaim it if needed.
+	 */
+	ILMonitorReclaim((void **)GetObjectLockWordPtr(execThread, object));
+#endif
+
 	/* On multi-threaded systems, the finalizer ILExecThread and main
 	   ILExecThreads are distinct *but* it is possible for the main
 	   ILThread to execute finalizers (when synchronous finalization

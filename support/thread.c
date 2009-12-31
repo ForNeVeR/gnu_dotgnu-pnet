@@ -263,6 +263,9 @@ static void _ILPrivateThreadDestroy(ILThread *thread)
 	_ILSemaphoreDestroy(&(thread->suspendAck));
 	_ILSemaphoreDestroy(&(thread->resumeAck));
 	_ILWakeupQueueDestroy(&(thread->joinQueue));
+#ifdef IL_THREAD_DEBUG
+	fprintf(stderr, "ILThread destroyed: [%p]\n", thread);
+#endif /* IL_THREAD_DEBUG */
 	ILFree(thread);
 }
 
@@ -420,6 +423,10 @@ ILThread *ILThreadCreate(ILThreadStartFunc startFunc, void *startArg)
 
 	/* Make sure everything setup is seen by all threads. */
 	ILInterlockedMemoryBarrier();
+
+#ifdef IL_THREAD_DEBUG
+	fprintf(stderr, "ILThread created: [%p]\n", thread);
+#endif /* IL_THREAD_DEBUG */
 
 	return thread;
 }

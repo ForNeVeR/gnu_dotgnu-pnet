@@ -615,6 +615,9 @@ void ILExecEngineDestroy(ILExecEngine *engine);
  */
 ILExecEngine *ILExecEngineCreate(void);
 
+/* Clear the thread data needed only during execution */
+void _ILExecThreadClearExecutionState(ILExecThread *thread);
+
 #ifdef IL_CONFIG_APPDOMAINS
 /*
  * Let the thread return from an other ILExecProcess and restore the saved

@@ -186,7 +186,7 @@ void _ILThreadRestoreExecContext(ILThread *thread, ILThreadExecContext *context)
 	if (context->execThread)
 	{
 		context->execThread->supportThread = thread;
-	
+
 		#if defined(IL_USE_INTERRUPT_BASED_X)
 			ILThreadRegisterInterruptHandler(thread, _ILInterruptHandler);
 		#endif
@@ -229,7 +229,7 @@ static void ILExecThreadCleanup(ILThread *thread)
  * Registers a thread for managed execution
  */
 ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThread *thread)
-{	
+{
 	ILExecThread *execThread;
 	ILThreadExecContext context;
 
@@ -386,7 +386,7 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 	int result;
 	ILWaitHandle *monitor;
 	ILExecThread *execThread;
-	
+
 	monitor = ILThreadGetMonitor(supportThread);
 
 	/* If the thread being suspended is the current thread then suspend now */
@@ -394,7 +394,7 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 	{
 		/* Suspend the current thread */
 		result = ILThreadSuspend(supportThread);
-	
+
 		if (result == 0)
 		{
 			ILExecThreadThrowSystem
@@ -409,7 +409,7 @@ void _ILExecThreadSuspendThread(ILExecThread *thread, ILThread *supportThread)
 		else if (result < 0)
 		{
 			if (_ILExecThreadHandleWaitResult(thread, result) != 0)
-			{				
+			{
 				return;
 			}
 		}
@@ -742,7 +742,7 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 }
 
 void _ILExecThreadDestroy(ILExecThread *thread)
-{	
+{
 	ILExecProcess *process = _ILExecThreadProcess(thread);
 
 	if(process)
@@ -766,7 +766,7 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 	/* Remove associations between ILExecThread and ILThread if they
 	   haven't already been removed */
 	if (thread->supportThread)
-	{		
+	{
 		_ILThreadClearExecContext(thread->supportThread);
 	}
 
@@ -794,6 +794,37 @@ void _ILExecThreadDestroy(ILExecThread *thread)
 
 	/* Destroy the thread block */
 	ILGCFreePersistent(thread);
+}
+
+/* Clear the thread data needed only during execution */
+void _ILExecThreadClearExecutionState(ILExecThread *thread)
+{
+	/*
+	 * Clear the clrThread so that it can be collected if it's no longer
+	 * referenced from managed code.
+	 */
+	thread->clrThread = 0;
+	
+#ifdef IL_USE_CVM
+	/*
+	 * Clear the members in the thread that are no longer needed after
+	 * execution finished.
+	 */
+	/* Destroy the operand stack */
+	if(thread->stackBase)
+	{
+		ILGCFreePersistent(thread->stackBase);
+		thread->stackBase = 0;
+	}
+	/* Destroy the call frame stack */
+	if(thread->frameStack)
+	{
+		ILGCFreePersistent(thread->frameStack);
+		thread->frameStack = 0;
+	}
+	thread->frame = 0;
+	thread->stackTop = 0;
+#endif
 }
 
 ILExecProcess *ILExecThreadGetProcess(ILExecThread *thread)
@@ -865,7 +896,7 @@ ILLocalWatch *_ILAllocLocalWatch(ILExecThread *thread)
 	if((watches = (ILLocalWatch *)ILGCAllocPersistent
 				(sizeof(ILLocalWatch) * newsize)) == 0)
 	{
-	    thread->thrownException = thread->process->outOfMemoryObject;
+		thread->thrownException = thread->process->outOfMemoryObject;
 		return 0;
 	}
 

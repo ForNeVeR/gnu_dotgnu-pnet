@@ -200,6 +200,9 @@ static void __PrivateThreadStart(void *objectArg)
 	}
 
 	ILThreadClearStack(4096);
+
+	/* Clear the thread data needed only during execution */
+	_ILExecThreadClearExecutionState(thread);
 }
 
 /*
@@ -444,29 +447,37 @@ void _IL_Thread_InternalSleep(ILExecThread *thread, ILInt32 timeout)
  */
 void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 {
-	ILWaitHandle *monitor;
 	ILThread *supportThread;
 	ILExecThread *execThread;
-
+	int result;
+	
 	/* Get the support thread stored inside the first field of the 
 	CLR thread by _IL_Thread_InitializeThread */
 
 	supportThread = ((System_Thread *)_this)->privateData;
 
-	monitor = ILThreadGetMonitor(supportThread);
+	result = ILMonitorEnter((void **)GetObjectLockWordPtr(thread, _this));
+	if(result != IL_THREAD_OK)
+	{
+		_ILExecThreadHandleError(thread, result);
+		return;
+	}
 
-	ILWaitMonitorEnter(monitor);
-	
 	if (supportThread == 0
 		|| (ILThreadGetState(supportThread) & IL_TS_UNSTARTED) == 0)
 	{
 		/* Thread has already been started or has ended. */
 
-		ILWaitMonitorLeave(monitor);
+		result = ILMonitorExit((void **)GetObjectLockWordPtr(thread, _this));
+		if(result != IL_THREAD_OK)
+		{
+			_ILExecThreadHandleError(thread, result);
+			return;
+		}
 
 		ILExecThreadThrowSystem(thread, "System.Threading.ThreadStateException", 
 			"Exception_ThreadAlreadyStarted");
-		
+
 		return;
 	}
 
@@ -474,16 +485,21 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 
 	if ((execThread = ILThreadRegisterForManagedExecution(thread->process, supportThread)) == 0)
 	{
-		ILWaitMonitorLeave(monitor);
+		result = ILMonitorExit((void **)GetObjectLockWordPtr(thread, _this));
+		if(result != IL_THREAD_OK)
+		{
+			_ILExecThreadHandleError(thread, result);
+			return;
+		}
 
 		if ((thread->process->state & (_IL_PROCESS_STATE_UNLOADED | _IL_PROCESS_STATE_UNLOADING)) == 0)
 		{
 			ILExecThreadThrowOutOfMemory(thread);
 		}
-		
+
 		return;
 	}
-	
+
 	/* Associate the CLR thread with the engine thread */
 
 	execThread->clrThread = _this;
@@ -497,21 +513,24 @@ void _IL_Thread_Start(ILExecThread *thread, ILObject *_this)
 		ILGCCollect();
 		/* Wait a resonable amount of time (1 sec) for finalizers to run */
 		ILGCInvokeFinalizers(1000);
-	
+
 		if (ILThreadStart(supportThread) == 0)
 		{
 			/* Start unsuccessful.  Destroy the engine thread */
 			/* The support thread will linger as long as the CLR thread does */
-
 			ILThreadUnregisterForManagedExecution(supportThread);
-			
-			/* Throw an OutOfMemoryException */
 
+			/* Throw an OutOfMemoryException */
 			ILExecThreadThrowOutOfMemory(thread);
 		}
 	}
-	
-	ILWaitMonitorLeave(monitor);
+
+	result = ILMonitorExit((void **)GetObjectLockWordPtr(thread, _this));
+	if(result != IL_THREAD_OK)
+	{
+		_ILExecThreadHandleError(thread, result);
+		return;
+	}
 }
 
 /*

@@ -1,7 +1,18 @@
 2009-12-31  Klaus Treichel  <ktreichel@web.de>
 
+	* engine/engine.h (_ILExecThreadClearExecutionState): Add prototype.
+
 	* engine/heap.c (_ILFinalizeObject): Reclaim the monitor still attached
 	to a finalized object.
+
+	* engine/thread.c (_ILExecThreadClearExecutionState): Add function to
+	clear the data not needed anymore after execution of the thread finished.
+
+	* engine/lib_thread.c (__PrivateStreadStart): Clear the execution state
+	of the thread after it finished execution to allow collection of the
+	clr thread by the gc.
+	(_IL_Thread_Start): Use the new monitor implementation instead of the
+	ILWaitMonitor to lock the thread.
 
 	* include/il_thread.h: Move the threading error code definitions and
 	monitor prototypes from thr_defs.h to here.
@@ -10,6 +21,8 @@
 	monitor prototypes to il_thread.h.
 
 	* support/thread.c: Add more debugging support.
+	Move running the thread's cleanup functions from _ILThreadRun to
+	_ILPrivateThraedDestroy.
 
 2009-12-30  Klaus Treichel  <ktreichel@web.de>
 

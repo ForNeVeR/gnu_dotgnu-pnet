@@ -238,7 +238,8 @@ static void _ILPrivateThreadDestroy(ILThread *thread)
 	
 	/* Get the complete threadstate */
 	threadState.comb = ILInterlockedLoadU4(&(thread->state.comb));
-	
+
+
 	/* Don't destroy the thread if it's started and not yet stopped */
 	if(((threadState.split.priv & IL_TS_STOPPED) == 0) &&
 	   ((threadState.split.pub & IL_TS_UNSTARTED) == 0))
@@ -251,6 +252,9 @@ static void _ILPrivateThreadDestroy(ILThread *thread)
 		/* Unlock the thread object and free it */
 		_ILCriticalSectionLeave(&(thread->lock));
 	}
+
+	/* Run and free the cleanup handlers */
+	_ILThreadRunAndFreeCleanups(thread);
 
 	/* Only destroy the system thread if one was created */
 	if((threadState.split.pub & IL_TS_UNSTARTED) == 0)
@@ -360,9 +364,6 @@ void _ILThreadRun(ILThread *thread)
 	}
 
 	thread->startArg = 0;
-	
-	/* Run and free the cleanup handlers */
-	_ILThreadRunAndFreeCleanups(thread);
 	
 	/* Mark the thread as stopped */
 	threadState.comb = ILInterlockedLoadU4(&(thread->state.comb));

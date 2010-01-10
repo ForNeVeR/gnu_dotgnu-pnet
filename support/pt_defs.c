@@ -304,6 +304,98 @@ static void AbortSignal(int sig)
 }
 
 /*
+ * Define some functions from the Timeouts options that need not be provided
+ * in all implementations.
+ */
+
+#ifndef HAVE_PTHREAD_MUTEX_TIMEDLOCK
+int pthread_mutex_timedlock (pthread_mutex_t *mutex,
+			    const struct timespec *abs_timeout)
+{
+	int retcode;
+#ifdef HAVE_NANOSLEEP
+	struct timespec ts;
+	
+	/* To avoid a completely busy wait we sleep for 10 ms between two tries. */
+	/* As a consequence the resolution is at most 10 ms instead of 1 ms. */
+	ts.tv_sec = 0;
+	ts.tv_nsec = 10000000;	/* 10ms */
+#endif /* HAVE_NANOSLEEP */
+	
+	while((retcode = pthread_mutex_trylock(mutex)) == EBUSY)
+	{
+		struct timeval tv;
+
+		gettimeofday(&tv, NULL);
+		
+		if((tv.tv_sec > abs_timeout->tv_sec) ||
+		   (tv.tv_sec == abs_timeout->tv_sec &&
+		    (tv.tv_usec * 1000) >= abs_timeout->tv_nsec))
+		{
+			return ETIMEDOUT;
+		}
+#ifdef HAVE_NANOSLEEP
+		nanosleep(&ts, NULL);
+#else /* !HAVE_NANOSLEEP */
+#ifdef HAVE_USLEEP
+			usleep(10000);	/* 10 ms */
+#else /* !HAVE_USLEEP */
+#error "neither nanosleep nor usleep are available on this system"
+#endif /* !HAVE_USLEEP */
+#endif /* !HAVE_NANOSLEEP */
+	}
+	return retcode;
+}
+#endif /* !HAVE_PTHREAD_MUTEX_TIMEDLOCK */
+
+#ifndef HAVE_SEM_TIMEDWAIT
+int sem_timedwait(sem_t *sem,
+				  const struct timespec *abs_timeout)
+{
+#ifdef HAVE_NANOSLEEP
+	struct timespec ts;
+	
+	/* To avoid a completely busy wait we sleep for 10 ms between two tries. */
+	/* As a consequence the resolution is at most 10 ms instead of 1 ms. */
+	ts.tv_sec = 0;
+	ts.tv_nsec = 10000000;	/* 10ms */
+#endif /* HAVE_NANOSLEEP */
+
+	while(sem_trywait(sem) == -1)
+	{
+		if(errno == EAGAIN)
+		{
+			struct timeval tv;
+
+			gettimeofday(&tv, NULL);
+		
+			if((tv.tv_sec > abs_timeout->tv_sec) ||
+			   (tv.tv_sec == abs_timeout->tv_sec &&
+			    (tv.tv_usec * 1000) >= abs_timeout->tv_nsec))
+			{
+				errno = ETIMEDOUT;
+				return -1;
+			}
+#ifdef HAVE_NANOSLEEP
+			if(nanosleep(&ts, NULL) != 0)
+			{
+				/* Looks like we got interrupted */
+				return -1;
+			}
+#else /* !HAVE_NANOSLEEP */
+#error "nanosleep is needed for implementing an interruptible sleep"
+#endif /* !HAVE_NANOSLEEP */
+		}
+		else
+		{
+			return -1;
+		}
+	}
+	return 0;
+}
+#endif	/* !HAVE_SEM_TIMEDWAIT */
+
+/*
  * Interruptible wait on a semaphore.
  */
 static int SemWaitInterruptible(sem_t *sem)
@@ -322,7 +414,7 @@ static int SemWaitInterruptible(sem_t *sem)
 		{
 #ifndef _IL_PT_INTERRUPT_JMP
 			__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
-			if((threadState & IL_TS_INTERRUPTED) != 0)
+			if((__threadState & IL_TS_INTERRUPTED) != 0)
 			{
 				break;
 			}
@@ -371,8 +463,8 @@ static int SemTimedWaitInterruptible(sem_t *sem, ILUInt32 ms)
 		else if(errno == EINTR)
 		{
 #ifndef _IL_PT_INTERRUPT_JMP
-			__threadState = ILInterlockedLoadU2(&(thread->state.split.priv));
-			if((threadState & IL_TS_INTERRUPTED) != 0)
+			__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
+			if((__threadState & IL_TS_INTERRUPTED) != 0)
 			{
 				break;
 			}
@@ -614,7 +706,7 @@ int _ILThreadSleep(ILUInt32 ms)
 				{
 #ifndef _IL_PT_INTERRUPT_JMP
 					/* Check and clear the interrupted flag */
-					__threadState = ILInterlockedLoadU2(&(thread->state.split.priv));
+					__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
 					if((__threadState | IL_TS_INTERRUPTED) != 0)
 					{
 						result = IL_THREAD_ERR_INTERRUPT;
@@ -688,98 +780,6 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms)
 		return 1;
 	}
 }
-
-/*
- * Define some functions from the Timeouts options that need not be provided
- * in all implementations.
- */
-
-#ifndef HAVE_PTHREAD_MUTEX_TIMEDLOCK
-int pthread_mutex_timedlock (pthread_mutex_t *mutex,
-			    const struct timespec *abs_timeout)
-{
-	int retcode;
-#ifdef HAVE_NANOSLEEP
-	struct timespec ts;
-	
-	/* To avoid a completely busy wait we sleep for 10 ms between two tries. */
-	/* As a consequence the resolution is at most 10 ms instead of 1 ms. */
-	ts.tv_sec = 0;
-	ts.tv_nsec = 10000000;	/* 10ms */
-#endif /* HAVE_NANOSLEEP */
-	
-	while((retcode = pthread_mutex_trylock(mutex)) == EBUSY)
-	{
-		struct timeval tv;
-
-		gettimeofday(&tv, NULL);
-		
-		if((tv.tv_sec > abs_timeout->tv_sec) ||
-		   (tv.tv_sec == abs_timeout->tv_sec &&
-		    (tv.tv_usec * 1000) >= abs_timeout->tv_nsec))
-		{
-			return ETIMEDOUT;
-		}
-#ifdef HAVE_NANOSLEEP
-		nanosleep(&ts, NULL);
-#else /* !HAVE_NANOSLEEP */
-#ifdef HAVE_USLEEP
-			usleep(10000);	/* 10 ms */
-#else /* !HAVE_USLEEP */
-#error "neither nanosleep nor usleep are available on this system"
-#endif /* !HAVE_USLEEP */
-#endif /* !HAVE_NANOSLEEP */
-	}
-	return retcode;
-}
-#endif /* !HAVE_PTHREAD_MUTEX_TIMEDLOCK */
-
-#ifndef HAVE_SEM_TIMEDWAIT
-int sem_timedwait(sem_t *sem,
-				  const struct timespec *abs_timeout)
-{
-#ifdef HAVE_NANOSLEEP
-	struct timespec ts;
-	
-	/* To avoid a completely busy wait we sleep for 10 ms between two tries. */
-	/* As a consequence the resolution is at most 10 ms instead of 1 ms. */
-	ts.tv_sec = 0;
-	ts.tv_nsec = 10000000;	/* 10ms */
-#endif /* HAVE_NANOSLEEP */
-
-	while(sem_trywait(sem) == -1)
-	{
-		if(errno == EAGAIN)
-		{
-			struct timeval tv;
-
-			gettimeofday(&tv, NULL);
-		
-			if((tv.tv_sec > abs_timeout->tv_sec) ||
-			   (tv.tv_sec == abs_timeout->tv_sec &&
-			    (tv.tv_usec * 1000) >= abs_timeout->tv_nsec))
-			{
-				errno = ETIMEDOUT;
-				return -1;
-			}
-#ifdef HAVE_NANOSLEEP
-			if(nanosleep(&ts, NULL) != 0)
-			{
-				/* Looks like we got interrupted */
-				return -1;
-			}
-#else /* !HAVE_NANOSLEEP */
-#error "nanosleep is needed for implementing an interruptible sleep"
-#endif /* !HAVE_NANOSLEEP */
-		}
-		else
-		{
-			return -1;
-		}
-	}
-	return 0;
-}
-#endif	/* !HAVE_SEM_TIMEDWAIT */
 
 int _ILCondMutexTimedLockUnsafe(_ILCondMutex *mutex, ILUInt32 ms)
 {

@@ -1,3 +1,10 @@
+2010-01-10  Klaus Treichel  <ktreichel@web.de>
+
+	* support/pt_defs.h: Disable longjmp out of signal handler for NetBSD.
+
+	* support/pt_defs.c: Fix build if longjmp out of signal handler is not
+	supported.
+
 2009-12-31  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h (_ILExecThreadClearExecutionState): Add prototype.

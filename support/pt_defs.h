@@ -144,7 +144,8 @@ typedef pthread_mutex_t		_ILRWLock;
 /*
  * Check if we can implement thread interrupts using sigsetjmp and siglongjmp
  */
-#if defined(HAVE_SIGSETJMP) && defined(HAVE_SIGLONGJMP)
+#if defined(HAVE_SIGSETJMP) && defined(HAVE_SIGLONGJMP) && \
+	!defined(__NetBSD__)
 #define _IL_PT_INTERRUPT_JMP
 #endif
 

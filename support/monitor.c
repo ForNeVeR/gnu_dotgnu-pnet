@@ -1,7 +1,7 @@
 /*
  * monitor.c - Syncronization Monitor routines.
  *
- * Copyright (C) 2009  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2009, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,22 +64,27 @@ struct _tagILMonitorPool
  */
 static _ILMonitorPool _MonitorPool;
 
-static void ILMonitorInit(ILMonitor *monitor)
+static int ILMonitorInit(ILMonitor *monitor, ILThread *thread)
 {
+	int result;
+
 	monitor->next = 0;
-	monitor->owner = 0;
-	monitor->enterCount = 0;
-	monitor->users = 0;
-	_ILMonitorCreate(&(monitor->monitor));
+	monitor->owner = thread;
+	monitor->enterCount = 1;
+	monitor->users = 1;
+	_ILMonitorCreate(&(monitor->monitor), result);
+	return result;
 }
 
 static void ILMonitorDestroy(ILMonitor *monitor)
 {
+	int result;
+
 	monitor->next = 0;
 	monitor->owner = 0;
 	monitor->enterCount = 0;
 	monitor->users = 0;
-	_ILMonitorDestroy(&(monitor->monitor));
+	_ILMonitorDestroy(&(monitor->monitor), result);
 }
 
 static void DestroyMonitorList(ILMonitor *monitor)
@@ -151,33 +156,64 @@ static void _ILMonitorPoolDestroy(void)
 
 /*
  * Get a new monitor from the monitor pool.
+ * The thread parameter *MUST* be the current thread. 
+ * The monitor is owned by the current if the function returns success.
  * This function must be called with the monitorpool lock held.
  */
-static ILMonitor *_ILMonitorPoolAllocMonitor(void)
+static int _ILMonitorPoolAllocMonitor(ILThread *thread, void **monitorLocation)
 {
 	ILMonitor *monitor;
+	int result;
 
 	if(_MonitorPool.freeList)
 	{
 		/* We have a monitor on the freelist so reuse this one */
 		monitor = _MonitorPool.freeList;
 		_MonitorPool.freeList = monitor->next;
-		/* And add the monitor to the used list */
-		monitor->next = _MonitorPool.usedList;
-		_MonitorPool.usedList = monitor;
+		if((result = _ILMonitorTryEnter(&(monitor->monitor))) == IL_THREAD_OK)
+		{
+			/* Initialize the monitor state */
+			monitor->owner = thread;
+			monitor->enterCount = 1;
+			monitor->users = 1;
+			/* Add the monitor to the used list */
+			monitor->next = _MonitorPool.usedList;
+			_MonitorPool.usedList = monitor;
+			/* Store the monitor at the monitor location given */
+			ILInterlockedStoreP(monitorLocation, monitor);
+		}
+		else
+		{
+			/* Move this monitor back to the freelist */
+			monitor->next = _MonitorPool.freeList;
+			_MonitorPool.freeList = monitor;
+		}
+		return result;
 	}
 	else
 	{
 		monitor = ILMemPoolAllocItem(&(_MonitorPool.pool));
 		if(monitor)
 		{
-			ILMonitorInit(monitor);
-			/* And add the monitor to the used list */
-			monitor->next = _MonitorPool.usedList;
-			_MonitorPool.usedList = monitor;
+			if((result = ILMonitorInit(monitor, thread)) == IL_THREAD_OK)
+			{
+				/* Add the monitor to the used list */
+				monitor->next = _MonitorPool.usedList;
+				_MonitorPool.usedList = monitor;
+				/* Store the monitor at the monitor location given */
+				ILInterlockedStoreP(monitorLocation, monitor);
+			}
+			else
+			{
+				/* Move this monitor to the freelist */
+				monitor->next = _MonitorPool.freeList;
+				_MonitorPool.freeList = monitor;
+			}
+			return result;
 		}
+		return IL_THREAD_ERR_OUTOFMEMORY;
 	}
-	return monitor;
+	return IL_THREAD_ERR_UNKNOWN;
 }
 
 /*
@@ -298,41 +334,10 @@ int ILMonitorTimedTryEnter(void **monitorLocation, ILUInt32 ms)
 		if(monitor == 0)
 		{
 			/* We have to allocate a new monitor */
-			monitor = _ILMonitorPoolAllocMonitor();
-			if(!monitor)
-			{
-				/* Unlock the monitor system */
-				_ILCriticalSectionLeave(&(_MonitorPool.lock));
-				return IL_THREAD_ERR_OUTOFMEMORY;
-			}
-
-			/* Set me as monitor user */
-			monitor->users = 1;
-
-			/*
-			 * We can acquire the monitor in the lock here because we are
-			 * sure that it's not owned by someone else.
-			 */
-			result = _ILMonitorTryEnter(&(monitor->monitor));
-
-			if(result == IL_THREAD_OK)
-			{
-				/* Set me as owner of the monitor */
-				monitor->owner = thread;
-				/* And initialize my enter count to 1 */
-				monitor->enterCount = 1;
-
-				/* Store the monitor at the location given */
-				ILInterlockedStoreP(monitorLocation, monitor);
-			}
-			else
-			{
-				_ILMonitorPoolMoveToFreeList(&_MonitorPool, monitor);
-				result = IL_THREAD_ERR_UNKNOWN;
-			}
+			result = _ILMonitorPoolAllocMonitor(thread, monitorLocation);
 			/* Unlock the monitor system */
 			_ILCriticalSectionLeave(&(_MonitorPool.lock));
-			
+
 			return result;
 		}
 		if(monitor->owner == 0)

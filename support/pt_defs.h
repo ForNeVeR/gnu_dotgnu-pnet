@@ -1,7 +1,7 @@
 /*
  * pt_defs.h - Thread definitions for using pthreads.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -39,6 +39,20 @@
 #ifdef	__cplusplus
 extern	"C" {
 #endif
+
+/*
+ * This is a real thread package.
+ */
+#define	_ILThreadIsReal		1
+
+/*
+ * Define IL_USE_COND_LOCK if condition variable based locks should be used.
+ * They are used by default if sem_timedwait is not available.
+ * This has to be done if the semaphore implementation on the OS doesn't
+ * return with errno set to EINTR if the waiting thread was interrupted by
+ * a signal (like on various BSD implementations).
+ */
+/* #define IL_USE_COND_LOCK 1 */
 
 /*
  * Determine the minimum and maximum real-time signal numbers.
@@ -108,6 +122,21 @@ extern	"C" {
 #endif
 
 /*
+ * Get or set the thread object that is associated with "self".
+ */
+#if defined(USE_COMPILER_TLS)
+extern _THREAD_ ILThread *_myThread;
+#define	_ILThreadGetSelf()			(_myThread)
+#define	_ILThreadSetSelf(object)	(_myThread = (object))
+#else
+extern pthread_key_t _ILThreadObjectKey;
+#define	_ILThreadGetSelf()	\
+			((ILThread *)(pthread_getspecific(_ILThreadObjectKey)))
+#define	_ILThreadSetSelf(object)	\
+			(pthread_setspecific(_ILThreadObjectKey, (object)))
+#endif
+
+/*
  * Types that are needed elsewhere.
  */
 typedef pthread_mutex_t		_ILCriticalSection;
@@ -150,13 +179,62 @@ typedef pthread_mutex_t		_ILRWLock;
 #endif
 
 /*
+ * Check which type of lock to use on this architecture
+ */
+#if !defined(IL_USE_COND_LOCK) && defined(HAVE_SEM_TIMEDWAIT) && defined(_IL_PT_INTERRUPT_JMP)
+#define _IL_PT_LOCK_SEM 1
+#else
+#ifdef _IL_PT_INTERRUPT_JMP
+#undef _IL_PT_INTERRUPT_JMP
+#endif
+#define _IL_PT_LOCK_COND 1
+/*
+ * An additional flag in the private thread state part to indicate that the
+ * thread was woken up because of an interruption of an other thread waiting
+ * on the same lock.
+ * NOTE: We extend the modifiability of the private thread state part by
+ * foreign threads here if the following conditions are met:
+ * 1. The thread whose private thread state shall be modified must be waiting
+ *    on a lock. (-> the member lockWaitingOn is != 0).
+ * 2. The thread wanting to modify the private state of the other thread
+ *    *MUST* hold the lockWaitingOn lock.
+ */
+#define IL_TS_NOTINTERRUPTED	0x0800
+#endif
+
+/*
+ * Define the type of lock to use.
+ */
+#if defined(_IL_PT_LOCK_SEM)
+typedef struct
+{
+	_ILSemaphore		_sem;
+} _ILLock;
+#elif defined(_IL_PT_LOCK_COND)
+typedef struct
+{
+	_ILCondVar			_cond;
+	_ILCondMutex		_mutex;
+	ILThread		   *_waiters;
+	ILInt32				_value;
+	ILInt32				_interrupted;
+} _ILLock;
+#else
+#error "No lock type defined for this architecture"
+#endif
+
+/*
  * pthread specific extensions for an ILThread
  */
-#ifdef _IL_PT_INTERRUPT_JMP
+#if defined(_IL_PT_INTERRUPT_JMP)
 #define _IL_THREAD_EXT \
 	sigjmp_buf			interruptJmpBuf;
-
+#elif defined(_IL_PT_LOCK_COND)
+#define _IL_THREAD_EXT \
+	_ILLock			   *lockWaitingOn; \
+	ILThread		   *nextWaiter;
 #endif
+
 /*
  * Semaphore which allows to release multiple or all waiters.
  * The semantic for posix and windows semaphores is the same and the
@@ -179,14 +257,9 @@ typedef struct
 typedef struct
 {
 	ILInt32			_waitValue;
-	_ILSemaphore	_waitSem;
-	_ILSemaphore	_enterSem;
+	_ILLock			_waitLock;
+	_ILLock			_enterLock;
 } _ILMonitor;
-
-/*
- * This is a real thread package.
- */
-#define	_ILThreadIsReal		1
 
 /*
  * Determine if a thread corresponds to "self".
@@ -348,6 +421,8 @@ int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count);
 			(pthread_cond_destroy((cond)))
 #define	_ILCondVarSignal(cond)		\
 			(pthread_cond_signal((cond)))
+#define	_ILCondVarSignalAll(cond)		\
+			(pthread_cond_broadcast((cond)))
 int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 
 /*
@@ -370,29 +445,77 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms);
 #define _ILCountSemaphoreWait(sem)	_ILCountSemaphoreTimedWait((sem), IL_MAX_UINT32)
 #define _ILCountSemaphoreTryWait(sem)	_ILCountSemaphoreTimedWait((sem), 0)
 
+#if defined(_IL_PT_LOCK_SEM)
+#define _ILLockCreate(lock, result) \
+	do { \
+		(result) = (sem_init(&((lock)->_sem), 0, 0) == 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN); \
+	} while(0)
+#define _ILLockDestroy(lock, result) \
+	do { \
+		(result) = (sem_destroy(&((lock)->_sem)) == 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN); \
+	} while(0)
+#elif defined(_IL_PT_LOCK_COND)
+#define _ILLockCreate(lock, result) \
+	do { \
+		(lock)->_waiters = 0; \
+		(lock)->_value = 0; \
+		(lock)->_interrupted = 0; \
+		if(!_ILCondMutexCreate(&((lock)->_mutex))) \
+		{ \
+			if(!_ILCondVarCreate((&((lock)->_cond)))) \
+			{ \
+				(result) = IL_THREAD_OK; \
+			} \
+			else \
+			{ \
+				(result) = IL_THREAD_ERR_UNKNOWN; \
+			} \
+		} \
+		else \
+		{ \
+			(result) = IL_THREAD_ERR_UNKNOWN; \
+		} \
+	} while(0)
+#define _ILLockDestroy(lock, result) \
+	do { \
+		if(!_ILCondMutexDestroy(&((lock)->_mutex))) \
+		{ \
+			if(!_ILCondVarDestroy((&((lock)->_cond)))) \
+			{ \
+				(result) = IL_THREAD_OK; \
+			} \
+			else \
+			{ \
+				(result) = IL_THREAD_ERR_UNKNOWN; \
+			} \
+		} \
+		else \
+		{ \
+			(result) = IL_THREAD_ERR_UNKNOWN; \
+		} \
+	} while(0)
+#endif /* _IL_PT_LOCK_COND) */
+
 /*
  * Primitive monitor operations.
  */
-#define	_ILMonitorCreate(mon)	\
-		({ \
-			int __result; \
+#define	_ILMonitorCreate(mon, result) \
+		do { \
 			(mon)->_waitValue = 0; \
-			__result = sem_init(&((mon)->_waitSem), 0, 0); \
-			if(!__result) \
+			_ILLockCreate(&((mon)->_waitLock), (result)); \
+			if(!(result)) \
 			{ \
-				__result = sem_init(&((mon)->_enterSem), 0, 1); \
+				_ILLockCreate(&((mon)->_enterLock), (result)); \
 			} \
-			__result == 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
-		})
-#define	_ILMonitorDestroy(mon)	\
-		({ \
-			int __result = _ILSemaphoreDestroy(&((mon)->_waitSem)); \
-			if(!__result) \
+		} while(0)
+#define	_ILMonitorDestroy(mon, result) \
+		do { \
+			_ILLockDestroy(&((mon)->_waitLock),(result)); \
+			if(!(result)) \
 			{ \
-				__result = _ILSemaphoreDestroy(&((mon)->_enterSem)); \
+				_ILLockDestroy(&((mon)->_enterLock), (result)); \
 			} \
-			__result == 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
-		})
+		} while(0)
 int _ILMonitorPulse(_ILMonitor *mon);
 int _ILMonitorPulseAll(_ILMonitor *mon);
 int	_ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
@@ -401,21 +524,6 @@ int	_ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
 int _ILMonitorExit(_ILMonitor *mon);
 int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms);
 #define _ILMonitorWait(mon) _ILMonitorTimedWait((mon), IL_MAX_UINT32)
-
-/*
- * Get or set the thread object that is associated with "self".
- */
-#if defined(USE_COMPILER_TLS)
-extern _THREAD_ ILThread *_myThread;
-#define	_ILThreadGetSelf()			(_myThread)
-#define	_ILThreadSetSelf(object)	(_myThread = (object))
-#else
-extern pthread_key_t _ILThreadObjectKey;
-#define	_ILThreadGetSelf()	\
-			((ILThread *)(pthread_getspecific(_ILThreadObjectKey)))
-#define	_ILThreadSetSelf(object)	\
-			(pthread_setspecific(_ILThreadObjectKey, (object)))
-#endif
 
 /*
  * Call a function "once".

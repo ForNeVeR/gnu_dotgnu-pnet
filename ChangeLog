@@ -1,3 +1,49 @@
+2010-01-30  Klaus Treichel  <ktreichel@web.de>
+
+	* support/monitor.c (_ILMonitorInit): Initialize a monitor so that it's
+	initially owned by the calling thread.
+	(ILMonitorDestroy): Adjust the call to _ILMonitorDestroy to the new
+	macro definitions.
+	(_ILMonitorPoolAllocMonitor): Install the new monitor (now owned by the
+	current thread) at the given monitor location now.
+	(ILMonitorTimedTryEnter): Handle the case when there is no monitor
+	attached to the given location completely in _ILMonitorPoolAllocMonitor
+	now.
+	
+	* support/no_defs.h (_ILMonitorCreate, _ILMonitorDestroy): Change macros
+	so that the return value is an additional argument.
+
+	* support/pt_defs.h (_ILMonitorCreate, _ILMonitorDestroy): Change macros
+	so that the return value is an additional argument.
+	Add checks if semaphore or condition variable based locks should be used.
+	Add definitions for condition variable based interruptible locks.
+
+	* support/pt_defs.c: (SemWaitInterruptible, SemTimedWaitInterruptible,
+	SemWaitUninterruptible): Rename to LockWaitInterruptible,
+	LockTimedWaitInterruptible and LockWaitUninterruptible.
+	(LockSignal, LockSignalCount, LockTrywait): Add functions for semaphore
+	based interruptible locks.
+	(LockSignal, LockSignalCount, LockTrywait, LockWaitInterruptible,
+	LockTimedWaitInterruptible, LockWaitUninterruptible): Add implementations
+	for condition variable based interruptible locks.
+	(_ILThreadInterrupt): Add thread interrupt for condition variable based
+	interruptible locks.
+	(_ILMonitorExit): Call LockSignal now.
+	(_ILMonitorTimedTryEnter): Call LockTryWait now if timeout is 0.
+	Pass a timespec now to LockTimedWaitInterruptible instead of the number
+	of milliseconds.
+	(_ILMonitorPulse): Call LockSignal now.
+	(_ILMonitorPulseAll): Call LockSignalCount now.
+
+	* support/w32_defs.h (_ILCondMutexCreateOwned): Add macro.
+	(_ILMonitorCreate, _ILMonitorDestroy): Change macros so that the return
+	value is an additional argument.
+	(_ILMonitorCreate): Change so that the monitor is initially owned by the
+	calling thread.
+
+	* tests/test_thread.c: Adjust the primitive monitor tests to the changed
+	semantics of a new created monitor.
+
 2010-01-10  Klaus Treichel  <ktreichel@web.de>
 
 	* support/pt_defs.h: Disable longjmp out of signal handler for NetBSD.

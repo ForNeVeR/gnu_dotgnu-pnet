@@ -1,7 +1,7 @@
 /*
  * no_defs.h - Thread definitions for systems without thread support.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -134,8 +134,8 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 /*
  * Primitive monitor operations.
  */
-#define	_ILMonitorCreate(mon)				IL_THREAD_OK
-#define	_ILMonitorDestroy(mon)				IL_THREAD_OK
+#define	_ILMonitorCreate(mon, result)		do { (result) = IL_THREAD_OK; } while(0)
+#define	_ILMonitorDestroy(mon, result)		do { (result) = IL_THREAD_OK; } while(0)
 #define	_ILMonitorPulse(mon)				IL_THREAD_OK
 #define	_ILMonitorPulseAll(mon)				IL_THREAD_OK
 #define	_ILMonitorTimedTryEnter(mon, ms)	IL_THREAD_OK

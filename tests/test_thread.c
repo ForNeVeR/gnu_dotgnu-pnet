@@ -1,7 +1,7 @@
 /*
  * test_thread.c - Test the thread routines in "support".
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1775,43 +1775,45 @@ static void wait_monitor_suspend(void *arg)
 }
 
 /*
- * Test monitor creation.
+ * Test monitor create primitive.
  */
 static void primitive_monitor_create(void *arg)
 {
 	/* We are using the primitive versions for now. */
 	_ILMonitor mon;
-	if(_ILMonitorCreate(&mon))
+	int result;
+	
+	_ILMonitorCreate(&mon, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
 	}
-	_ILMonitorDestroy(&mon);
+	if(_ILMonitorExit(&mon))
+	{
+		ILUnitFailed("could not exit a monitor");
+	}
+	_ILMonitorDestroy(&mon, result);
 }
 
 /*
- * Test monitor enter.
+ * Test monitor enter primitive.
  */
 static void primitive_monitor_enter(void *arg)
 {
 	int result = 0;
-
-	/* We are using the primitive versions for now. */
 	_ILMonitor mon;
-	if(_ILMonitorCreate(&mon))
+
+	_ILMonitorCreate(&mon, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
 	}
-	if((result = _ILMonitorEnter(&mon)))
-	{
-		_ILMonitorDestroy(&mon);
-		ILUnitFailed("could not enter a monitor");
-	}
 	if((result = _ILMonitorExit(&mon)))
 	{
-		_ILMonitorDestroy(&mon);
+		_ILMonitorDestroy(&mon, result);
 		ILUnitFailed("could not exit a monitor");
 	}
-	_ILMonitorDestroy(&mon);
+	_ILMonitorDestroy(&mon, result);
 }
 
 static volatile int _result;
@@ -1833,7 +1835,8 @@ static void primitive_monitor_exit_unowned(void *arg)
 	int result = 0;
 	ILThread *thread;
 
-	if(_ILMonitorCreate(&_mon1))
+	_ILMonitorCreate(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
 	}
@@ -1842,14 +1845,8 @@ static void primitive_monitor_exit_unowned(void *arg)
 	thread = ILThreadCreate(_primitive_monitor_exit_unowned, &_mon1);
 	if(!thread)
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitOutOfMemory();
-	}
-
-	if((result = _ILMonitorEnter(&_mon1)))
-	{
-		_ILMonitorDestroy(&_mon1);
-		ILUnitFailed("could not enter a monitor");
 	}
 
 	/* Set the result to an invalid value. */
@@ -1867,7 +1864,7 @@ static void primitive_monitor_exit_unowned(void *arg)
 	if(_result != IL_THREAD_ERR_SYNCLOCK)
 	{
 		_ILMonitorExit(&_mon1);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitFailMessage("exiting an unowned monitor returned the wrong result");
 		ILUnitFailMessage("the Wrong result is %i", _result);
 		if(_result == IL_THREAD_OK)
@@ -1879,10 +1876,10 @@ static void primitive_monitor_exit_unowned(void *arg)
 
 	if((result = _ILMonitorExit(&_mon1)))
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitFailed("could not exit a monitor");
 	}
-	_ILMonitorDestroy(&_mon1);
+	_ILMonitorDestroy(&_mon1, result);
 }
 #endif /* !IL_USE_PTHREADS */
 
@@ -1914,15 +1911,10 @@ static void primitive_monitor_enter1(void *arg)
 	int result2 = 0;
 
 	/* We are using the primitive versions for now. */
-	if(_ILMonitorCreate(&_mon1))
+	_ILMonitorCreate(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
-	}
-
-	if((result = _ILMonitorEnter(&_mon1)))
-	{
-		_ILMonitorDestroy(&_mon1);
-		ILUnitFailed("could not enter a monitor");
 	}
 
 	/* Create the thread */
@@ -1930,7 +1922,7 @@ static void primitive_monitor_enter1(void *arg)
 	if(!thread)
 	{
 		_ILMonitorExit(&_mon1);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitOutOfMemory();
 	}
 
@@ -1947,7 +1939,7 @@ static void primitive_monitor_enter1(void *arg)
 
 	if((result = _ILMonitorExit(&_mon1)))
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILThreadDestroy(thread);
 		ILUnitFailed("could not exit a monitor");
 	}
@@ -1963,11 +1955,12 @@ static void primitive_monitor_enter1(void *arg)
 
 	if(result1 != 1 || result2 != 2)
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitFailed("lock on monitor enter doesn't work");
 	}
 
-	if((result = _ILMonitorDestroy(&_mon1)))
+	_ILMonitorDestroy(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not destroy a monitor");
 	}
@@ -2010,15 +2003,10 @@ static void primitive_monitor_tryenter1(void *arg)
 	int result1 = 0;
 
 	/* We are using the primitive versions for now. */
-	if(_ILMonitorCreate(&_mon1))
+	_ILMonitorCreate(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
-	}
-
-	if((result = _ILMonitorEnter(&_mon1)))
-	{
-		_ILMonitorDestroy(&_mon1);
-		ILUnitFailed("could not enter a monitor");
 	}
 
 	/* Create the thread */
@@ -2026,7 +2014,7 @@ static void primitive_monitor_tryenter1(void *arg)
 	if(!thread)
 	{
 		_ILMonitorExit(&_mon1);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitOutOfMemory();
 	}
 
@@ -2043,7 +2031,7 @@ static void primitive_monitor_tryenter1(void *arg)
 
 	if((result = _ILMonitorExit(&_mon1)))
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILThreadDestroy(thread);
 		ILUnitFailed("could not exit a monitor");
 	}
@@ -2053,12 +2041,13 @@ static void primitive_monitor_tryenter1(void *arg)
 
 	if(result1 != 1)
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		printf("Wrong result is %i\n", result1);
 		ILUnitFailed("tryenter on a locked monitor doesn't work");
 	}
 
-	if((result = _ILMonitorDestroy(&_mon1)))
+	_ILMonitorDestroy(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not destroy a monitor");
 	}
@@ -2071,7 +2060,8 @@ static void primitive_monitor_tryenter2(void *arg)
 	int result1 = 0;
 
 	/* We are using the primitive versions for now. */
-	if(_ILMonitorCreate(&_mon1))
+	_ILMonitorCreate(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
 	}
@@ -2081,8 +2071,15 @@ static void primitive_monitor_tryenter2(void *arg)
 	if(!thread)
 	{
 		_ILMonitorExit(&_mon1);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitOutOfMemory();
+	}
+
+	if((result = _ILMonitorExit(&_mon1)))
+	{
+		_ILMonitorDestroy(&_mon1, result);
+		ILThreadDestroy(thread);
+		ILUnitFailed("could not exit a monitor");
 	}
 
 	_result = -1;
@@ -2100,12 +2097,13 @@ static void primitive_monitor_tryenter2(void *arg)
 
 	if(result1 != 0)
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		printf("Wrong result is %i\n", result1);
 		ILUnitFailed("tryenter on a unlocked monitor doesn't work");
 	}
 
-	if((result = _ILMonitorDestroy(&_mon1)))
+	_ILMonitorDestroy(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not destroy a monitor");
 	}
@@ -2148,15 +2146,10 @@ static void primitive_monitor_timed_tryenter1(void *arg)
 	int result1 = 0;
 
 	/* We are using the primitive versions for now. */
-	if(_ILMonitorCreate(&_mon1))
+	_ILMonitorCreate(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
-	}
-
-	if((result = _ILMonitorEnter(&_mon1)))
-	{
-		_ILMonitorDestroy(&_mon1);
-		ILUnitFailed("could not enter a monitor");
 	}
 
 	/* Create the thread */
@@ -2164,7 +2157,7 @@ static void primitive_monitor_timed_tryenter1(void *arg)
 	if(!thread)
 	{
 		_ILMonitorExit(&_mon1);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitOutOfMemory();
 	}
 
@@ -2183,19 +2176,20 @@ static void primitive_monitor_timed_tryenter1(void *arg)
 
 	if((result = _ILMonitorExit(&_mon1)))
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILThreadDestroy(thread);
 		ILUnitFailed("could not exit a monitor");
 	}
 
 	if(result1 != 1)
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		printf("Wrong result is %i\n", result1);
 		ILUnitFailed("timed tryenter on a locked monitor with timeout doesn't work");
 	}
 
-	if((result = _ILMonitorDestroy(&_mon1)))
+	_ILMonitorDestroy(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not destroy a monitor");
 	}
@@ -2243,15 +2237,10 @@ static void primitive_monitor_wait1(void *arg)
 	int result2 = 0;
 
 	/* We are using the primitive versions for now. */
-	if(_ILMonitorCreate(&_mon1))
+	_ILMonitorCreate(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
-	}
-
-	if(_ILMonitorEnter(&_mon1))
-	{
-		_ILMonitorDestroy(&_mon1);
-		ILUnitFailed("could not enter a monitor");
 	}
 
 	/* Create the thread */
@@ -2259,7 +2248,7 @@ static void primitive_monitor_wait1(void *arg)
 	if(!thread)
 	{
 		_ILMonitorExit(&_mon1);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitOutOfMemory();
 	}
 
@@ -2278,7 +2267,7 @@ static void primitive_monitor_wait1(void *arg)
 	{
 		/* Clean up the thread object. */
 		ILThreadDestroy(thread);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitFailed("wait on a monitor doesn't work");
 	}
 
@@ -2293,18 +2282,19 @@ static void primitive_monitor_wait1(void *arg)
 
 	if(result1 != 0)
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		printf("Wrong result is %i\n", result1);
 		ILUnitFailed("tryenter on a locked monitor doesn't work");
 	}
 
 	if((result = _ILMonitorExit(&_mon1)))
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitFailed("could not exit a monitor");
 	}
 
-	if((result = _ILMonitorDestroy(&_mon1)))
+	_ILMonitorDestroy(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not destroy a monitor");
 	}
@@ -2379,15 +2369,10 @@ static void primitive_monitor_timed_wait1(void *arg)
 	int result2 = 0;
 
 	/* We are using the primitive versions for now. */
-	if(_ILMonitorCreate(&_mon1))
+	_ILMonitorCreate(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not create a monitor");
-	}
-
-	if(_ILMonitorEnter(&_mon1))
-	{
-		_ILMonitorDestroy(&_mon1);
-		ILUnitFailed("could not enter a monitor");
 	}
 
 	/* Create the thread */
@@ -2395,7 +2380,7 @@ static void primitive_monitor_timed_wait1(void *arg)
 	if(!thread)
 	{
 		_ILMonitorExit(&_mon1);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitOutOfMemory();
 	}
 
@@ -2415,7 +2400,7 @@ static void primitive_monitor_timed_wait1(void *arg)
 	{
 		/* Clean up the thread object. */
 		ILThreadDestroy(thread);
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result1);
 		printf("Wrong result is %i\n", result);
 		ILUnitFailed("timed wait on a monitor doesn't work");
 	}
@@ -2431,18 +2416,19 @@ static void primitive_monitor_timed_wait1(void *arg)
 
 	if(result1 != 0 || result2 != 3)
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		printf("Wrong result is %i\n", result1);
 		ILUnitFailed("tryenter on a locked monitor doesn't work");
 	}
 
 	if((result = _ILMonitorExit(&_mon1)))
 	{
-		_ILMonitorDestroy(&_mon1);
+		_ILMonitorDestroy(&_mon1, result);
 		ILUnitFailed("could not exit a monitor");
 	}
 
-	if((result = _ILMonitorDestroy(&_mon1)))
+	_ILMonitorDestroy(&_mon1, result);
+	if(result)
 	{
 		ILUnitFailed("could not destroy a monitor");
 	}

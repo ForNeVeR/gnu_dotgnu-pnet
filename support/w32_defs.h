@@ -1,7 +1,7 @@
 /*
  * w32_defs.h - Thread definitions for using Win32 threads.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -195,6 +195,11 @@ int _ILThreadSleep(ILUInt32 ms);
 				*(mutex) = CreateMutex(NULL, FALSE, NULL); \
 				*(mutex) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
 			})
+#define	_ILCondMutexCreateOwned(mutex)	\
+			({ \
+				*(mutex) = CreateMutex(NULL, TRUE, NULL); \
+				*(mutex) != 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
+			})
 #define	_ILCondMutexDestroy(mutex)	_ILWaitHandleClose(*(mutex))
 #define	_ILCondMutexLockUnsafe(mutex)	_ILWaitHandleWait(*(mutex))
 #define	_ILCondMutexTryLockUnsafe(mutex)	_ILWaitHandleTimedWait(*(mutex), 0)
@@ -280,29 +285,29 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms);
 /*
  * Primitive monitor operations.
  */
-#define	_ILMonitorCreate(mon)	\
-		({ \
-			int _result = 0; \
+#define	_ILMonitorCreate(mon, result)	\
+		do { \
 			(mon)->_waitValue = 0; \
-			if((_result = _ILCondMutexCreate(&((mon)->_mutex))) == IL_THREAD_OK) \
+			if(((result) = _ILCondMutexCreateOwned(&((mon)->_mutex))) == IL_THREAD_OK) \
 			{ \
-				_result = _ILSemaphoreCreate(&((mon)->_sem)); \
+				(result) = _ILSemaphoreCreate(&((mon)->_sem)); \
 			} \
-			_result == IL_THREAD_OK ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN; \
-		})
-#define	_ILMonitorDestroy(mon)	\
-		({ \
-			int _result = IL_THREAD_OK; \
-			if(_ILSemaphoreDestroy(&((mon)->_sem)) != IL_THREAD_OK) \
+			if((result) != IL_THREAD_OK) \
 			{ \
-				_result = IL_THREAD_ERR_UNKNOWN; \
+				(result) = IL_THREAD_ERR_UNKNOWN; \
 			} \
-			if(_ILCondMutexDestroy(&((mon)->_mutex)) != IL_THREAD_OK) \
+		} while(0)
+#define	_ILMonitorDestroy(mon, result)	\
+		do { \
+			if(((result) = _ILSemaphoreDestroy(&((mon)->_sem))) == IL_THREAD_OK) \
 			{ \
-				_result = IL_THREAD_ERR_UNKNOWN; \
+				(result) = _ILCondMutexDestroy(&((mon)->_mutex)); \
 			} \
-			_result; \
-		})
+			if((result) != IL_THREAD_OK) \
+			{ \
+				(result) = IL_THREAD_ERR_UNKNOWN; \
+			} \
+		} while(0)
 
 /*
  * Release one waiter from the waiting queue.

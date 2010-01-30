@@ -1,7 +1,7 @@
 /*
  * pt_defs.c - Thread definitions for using pthreads.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -57,12 +57,6 @@ extern	"C" {
  */
 
 /*
- * Special flag in the private threadstate to indicate that the interrupt
- * should be noticed but no interrupt should occure.
- */
-#define IL_TS_UNINTERRUPTIBLE 0x1000
-
-/*
  * This macro checks if an interrupt orrured after enabling the
  * IL_SIG_INTERRUPT signal and sets __result in this case without
  * entering the code that has to be executed.
@@ -74,6 +68,12 @@ extern	"C" {
  * flag too.
  */
 #ifdef _IL_PT_INTERRUPT_JMP
+/*
+ * Special flag in the private threadstate to indicate that the interrupt
+ * should be noticed in the signal handler but the longjmp should not be taken.
+ */
+#define IL_TS_UNINTERRUPTIBLE 0x1000
+
 #define IL_START_INTERRUPTIBLE(__result) \
 		{ \
 			ILThread *__myThread; \
@@ -182,10 +182,10 @@ extern	"C" {
 			__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv)); \
 			if((__threadState & IL_TS_INTERRUPTED) != 0) \
 			{ \
+				__threadState &= ~IL_TS_INTERRUPTED; \
+				ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState); \
 				__result = IL_THREAD_ERR_INTERRUPT; \
 			} \
-			__threadState &= ~(IL_TS_UNINTERRUPTIBLE | IL_TS_INTERRUPTED); \
-			ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState); \
 		}
 
 #endif /* !_IL_PT_INTERRUPT_JMP */
@@ -395,17 +395,49 @@ int sem_timedwait(sem_t *sem,
 }
 #endif	/* !HAVE_SEM_TIMEDWAIT */
 
+#ifdef _IL_PT_LOCK_SEM
+static int LockSignal(_ILLock *lock)
+{
+	return (sem_post(&(lock)->_sem) == 0 ? IL_THREAD_OK : IL_THREAD_ERR_UNKNOWN);
+}
+
+static int LockSignalCount(_ILLock *lock, int count)
+{
+	while(count > 0)
+	{
+		sem_post(&(lock)->_sem);
+		--count;
+	}
+	return IL_THREAD_OK;
+}
+
+static int LockTryWait(_ILLock *lock)
+{
+	int result;
+
+	result = sem_trywait(&(lock->_sem));
+	if(result == -1)
+	{
+		if(errno == EAGAIN)
+		{
+			return IL_THREAD_BUSY;
+		}
+		return IL_THREAD_ERR_UNKNOWN;
+	}
+	return IL_THREAD_OK;
+}
+
 /*
  * Interruptible wait on a semaphore.
  */
-static int SemWaitInterruptible(sem_t *sem)
+static int LockWaitInterruptible(_ILLock *lock)
 {
 	int result;
 
 	IL_START_INTERRUPTIBLE(result)
 	do
 	{
-		result = sem_wait(sem);
+		result = sem_wait(&(lock->_sem));
 		if(result == 0)
 		{
 			break;
@@ -433,24 +465,14 @@ static int SemWaitInterruptible(sem_t *sem)
 /*
  * Interruptible timed wait on a semaphore.
  */
-static int SemTimedWaitInterruptible(sem_t *sem, ILUInt32 ms)
+static int LockTimedWaitInterruptible(_ILLock *lock, const struct timespec *ts)
 {
-	struct timeval tv;
-	struct timespec ts;
 	int result;
 
-	gettimeofday(&tv, 0);
-	ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
-	ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
-	if(ts.tv_nsec >= 1000000000L)
-	{
-		++(ts.tv_sec);
-		ts.tv_nsec -= 1000000000L;
-	}
 	IL_START_INTERRUPTIBLE(result)
 	do
 	{
-		result = sem_timedwait(sem, &ts);
+		result = sem_timedwait(&(lock->_sem), ts);
 		if(result == 0)
 		{
 			break;
@@ -480,14 +502,14 @@ static int SemTimedWaitInterruptible(sem_t *sem, ILUInt32 ms)
 	return result;
 }
 
-static int SemWaitUninterruptible(sem_t *sem)
+static int LockWaitUninterruptible(_ILLock *lock)
 {
 	int result = IL_THREAD_OK;
 
 	IL_START_UNINTERRUPTIBLE()
 	do
 	{
-		if(sem_wait(sem) == 0)
+		if(sem_wait(&(lock->_sem)) == 0)
 		{
 			break;
 		}
@@ -505,6 +527,408 @@ static int SemWaitUninterruptible(sem_t *sem)
 	IL_END_UNINTERRUPTIBLE(result)
 	return result;
 }
+#elif defined(_IL_PT_LOCK_COND)
+static int LockSignal(_ILLock *lock)
+{
+	_ILCondMutexLock(&(lock->_mutex));
+	lock->_value += 1;
+	if(lock->_value <= 0)
+	{
+		/* We have to release a waiter */
+		if(lock->_interrupted)
+		{
+			/*
+			 * See if there is a thread woken up by an interrupt of an other
+			 * thread waiting on this lock
+			 */
+			ILThread *thread;
+
+			thread = lock->_waiters;
+			while(thread)
+			{
+				ILUInt16 threadState;
+
+				threadState = ILInterlockedLoadU2(&(thread->state.split.priv));
+				if((threadState & IL_TS_NOTINTERRUPTED) != 0)
+				{
+					/*
+					 * Clear the not interrupted flag so that the thread
+					 * will not continue waiting
+					 */
+					threadState &= ~IL_TS_NOTINTERRUPTED;
+					ILInterlockedStoreU2(&(thread->state.split.priv), threadState);
+					break;
+				}
+				thread = thread->nextWaiter;
+			}
+			if(!thread)
+			{
+				/*
+				 * There was no thread waiting with the IL_TS_NOTINTERRUPTED
+				 * flag set so clear the interropted flag of the lock.
+				 */
+				lock->_interrupted = 0;
+				/* And signal a thread to wake up */
+				_ILCondVarSignal(&(lock->_cond));
+			}
+		}
+		else
+		{
+			_ILCondVarSignal(&(lock->_cond));
+		}
+	}
+	_ILCondMutexUnlock(&(lock->_mutex));
+
+	return IL_THREAD_OK;
+}
+
+static int LockSignalCount(_ILLock *lock, int count)
+{
+	_ILCondMutexLock(&(lock->_mutex));
+	lock->_value += count;
+	if(lock->_value > 0)
+	{
+		count -= lock->_value;
+	}
+	if(lock->_interrupted)
+	{
+		/*
+		 * Process the threads woken up by interrupting an other thread
+		 * and not being able to process the not interrupted first.
+		 */
+		ILThread *thread;
+
+		thread = lock->_waiters;
+		while(thread && (count > 0))
+		{
+			ILUInt16 threadState;
+
+			threadState = ILInterlockedLoadU2(&(thread->state.split.priv));
+			if((threadState & IL_TS_NOTINTERRUPTED) != 0)
+			{
+				/*
+				 * Clear the not interrupted flag so that the thread
+				 * will not continue waiting
+				 */
+				threadState &= ~IL_TS_NOTINTERRUPTED;
+				ILInterlockedStoreU2(&(thread->state.split.priv), threadState);
+				/* and decrement the number of waiters that should be awakened */
+				--count;
+				if(count <= 0)
+				{
+					break;
+				}
+			}
+			thread = thread->nextWaiter;
+		}
+		if(!thread)
+		{
+			/*
+			 * There are no more threads waiting with the IL_TS_NOTINTERRUPTED
+			 * flag set so clear the interropted flag of the lock.
+			 */
+			lock->_interrupted = 0;
+		}
+	}
+	if(lock->_value == 0)
+	{
+		/* Release all waiters */
+		_ILCondVarSignalAll(&(lock->_cond));
+	}
+	else
+	{
+		/* Release the number of waiters */
+		while(count > 0)
+		{
+			_ILCondVarSignal(&(lock->_cond));
+			--count;
+		}
+	}
+	_ILCondMutexUnlock(&(lock->_mutex));
+
+	return IL_THREAD_OK;
+}
+
+static int LockTryWait(_ILLock *lock)
+{
+	int result;
+
+	_ILCondMutexLock(&(lock->_mutex));
+	if(lock->_value > 0)
+	{
+		lock->_value -= 1;
+		result = IL_THREAD_OK;
+	}
+	else
+	{
+		result = IL_THREAD_BUSY;
+	}
+	_ILCondMutexUnlock(&(lock->_mutex));
+
+	return result;
+}
+
+/*
+ * Interruptible wait on a lock.
+ */
+static int LockWaitInterruptible(_ILLock *lock)
+{
+	int result = IL_THREAD_OK;
+
+	IL_START_INTERRUPTIBLE(result)
+	_ILCondMutexLock(&(lock->_mutex));
+	lock->_value -= 1;
+	if(lock->_value < 0)
+	{
+		/*
+		 * Record this lock in the ILThread structure and add the thread to
+		 * the waiters on this lock.
+		 */
+		__myThread->lockWaitingOn = lock;
+		__myThread->nextWaiter = lock->_waiters;
+		lock->_waiters = __myThread;
+		do
+		{
+			result = pthread_cond_wait(&(lock->_cond), &(lock->_mutex));
+			if(result == 0)
+			{
+				/* Check if we are interrupted */
+				__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
+				if((__threadState & IL_TS_INTERRUPTED) != 0)
+				{
+					/* Leave the wait loop  */
+					break;
+				}
+				else if((__threadState & IL_TS_NOTINTERRUPTED) != 0)
+				{
+					/* Clear the not interrupted flag */
+					__threadState &= ~IL_TS_NOTINTERRUPTED;
+					ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState);
+					/* And continue waiting */
+					continue;
+				}
+				result = IL_THREAD_OK;
+				break;
+			}
+			else
+			{
+				/* Remove me from the number of waiters */
+				lock->_value += 1;
+				result = IL_THREAD_ERR_UNKNOWN;
+				break;
+			}
+		} while(1);
+		/*
+		 * Clear the  lock in the ILThread structure and remove the thread from
+		 * the waiters on this lock.
+		 */
+		__myThread->lockWaitingOn = 0;
+		if(lock->_waiters == __myThread)
+		{
+			lock->_waiters = __myThread->nextWaiter;
+			__myThread->nextWaiter = 0;
+		}
+		else
+		{
+			ILThread *nextThread;
+			
+			nextThread = lock->_waiters;
+			while(nextThread)
+			{
+				if(nextThread->nextWaiter == __myThread)
+				{
+					nextThread->nextWaiter = __myThread->nextWaiter;
+					__myThread->nextWaiter = 0;
+					break;
+				}
+				nextThread = nextThread->nextWaiter;
+			}
+		}
+	}
+	_ILCondMutexUnlock(&(lock->_mutex));
+	IL_END_INTERRUPTIBLE(result)
+	return result;
+}
+
+/*
+ * Interruptible timed wait on a lock.
+ */
+static int LockTimedWaitInterruptible(_ILLock *lock, const struct timespec *ts)
+{
+	int result = IL_THREAD_OK;
+
+	IL_START_INTERRUPTIBLE(result)
+	_ILCondMutexLock(&(lock->_mutex));
+	lock->_value -= 1;
+	if(lock->_value < 0)
+	{
+		/*
+		 * Record this lock in the ILThread structure and add the thread to
+		 * the waiters on this lock.
+		 */
+		__myThread->lockWaitingOn = lock;
+		__myThread->nextWaiter = lock->_waiters;
+		lock->_waiters = __myThread;
+		do
+		{
+			result = pthread_cond_timedwait(&(lock->_cond), &(lock->_mutex), ts);
+			if(result == 0)
+			{
+				/* Check if we are interrupted */
+				__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
+				if((__threadState & IL_TS_INTERRUPTED) != 0)
+				{
+					/* Leave the wait loop  */
+					break;
+				}
+				else if((__threadState & IL_TS_NOTINTERRUPTED) != 0)
+				{
+					/* Clear the not interrupted flag */
+					__threadState &= ~IL_TS_NOTINTERRUPTED;
+					ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState);
+					/* And continue waiting */
+					continue;
+				}
+				result = IL_THREAD_OK;
+				break;
+			}
+			else if(result == ETIMEDOUT)
+			{
+				/* Clear the not interrupted flag if present */
+				__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
+				if((__threadState & IL_TS_NOTINTERRUPTED) != 0)
+				{
+					__threadState &= ~IL_TS_NOTINTERRUPTED;
+					ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState);
+				}
+				lock->_value += 1;
+				result = IL_THREAD_BUSY;
+				break;
+			}
+			else
+			{
+				lock->_value += 1;
+				result = IL_THREAD_ERR_UNKNOWN;
+				break;
+			}
+		} while(1);
+		/*
+		 * Clear the  lock in the ILThread structure and remove the thread from
+		 * the waiters on this lock.
+		 */
+		__myThread->lockWaitingOn = 0;
+		if(lock->_waiters == __myThread)
+		{
+			lock->_waiters = __myThread->nextWaiter;
+			__myThread->nextWaiter = 0;
+		}
+		else
+		{
+			ILThread *nextThread;
+			
+			nextThread = lock->_waiters;
+			while(nextThread)
+			{
+				if(nextThread->nextWaiter == __myThread)
+				{
+					nextThread->nextWaiter = __myThread->nextWaiter;
+					__myThread->nextWaiter = 0;
+					break;
+				}
+				nextThread = nextThread->nextWaiter;
+			}
+		}
+	}
+	_ILCondMutexUnlock(&(lock->_mutex));
+	IL_END_INTERRUPTIBLE(result)
+	return result;
+}
+
+static int LockWaitUninterruptible(_ILLock *lock)
+{
+	int result = IL_THREAD_OK;
+
+	IL_START_UNINTERRUPTIBLE()
+	_ILCondMutexLock(&(lock->_mutex));
+	lock->_value -= 1;
+	if(lock->_value < 0)
+	{
+		/*
+		 * Record this lock in the ILThread structure and add the thread to
+		 * the waiters on this lock.
+		 */
+		__myThread->lockWaitingOn = lock;
+		__myThread->nextWaiter = lock->_waiters;
+		lock->_waiters = __myThread;
+		do
+		{
+			if(pthread_cond_wait(&(lock->_cond), &(lock->_mutex)) == 0)
+			{
+				/* Check if we are interrupted */
+				__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
+				if((__threadState & IL_TS_INTERRUPTED) != 0)
+				{
+					/* Clear the interrupted flag */
+					__threadState &= ~IL_TS_INTERRUPTED;
+					ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState);
+					/* Readd me to the number of waiters. */
+					lock->_value -= 1;
+					/* Set the result to interrupted */
+					result = IL_THREAD_ERR_INTERRUPT;
+					/* and continue waiting */
+					continue;
+				}
+				else if((__threadState & IL_TS_NOTINTERRUPTED) != 0)
+				{
+					/* Clear the not interrupted flag */
+					__threadState &= ~IL_TS_NOTINTERRUPTED;
+					ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState);
+					/* And continue waiting */
+					continue;
+				}
+				result = IL_THREAD_OK;
+				break;
+			}
+			else
+			{
+				/* An unexpected error occured so bail out */
+				lock->_value += 1;
+				result = IL_THREAD_ERR_UNKNOWN;
+				break;
+			}
+		} while(1);
+		/*
+		 * Clear the  lock in the ILThread structure and remove the thread from
+		 * the waiters on this lock.
+		 */
+		__myThread->lockWaitingOn = 0;
+		if(lock->_waiters == __myThread)
+		{
+			lock->_waiters = __myThread->nextWaiter;
+			__myThread->nextWaiter = 0;
+		}
+		else
+		{
+			ILThread *nextThread;
+			
+			nextThread = lock->_waiters;
+			while(nextThread)
+			{
+				if(nextThread->nextWaiter == __myThread)
+				{
+					nextThread->nextWaiter = __myThread->nextWaiter;
+					__myThread->nextWaiter = 0;
+					break;
+				}
+				nextThread = nextThread->nextWaiter;
+			}
+		}
+	}
+	_ILCondMutexUnlock(&(lock->_mutex));
+	IL_END_UNINTERRUPTIBLE(result)
+	return result;
+}
+#endif /* _IL_PT_LOCK_COND */
 
 /*
  * This function is only used for initializing an ILThread
@@ -666,10 +1090,98 @@ void _ILThreadInterrupt(ILThread *thread)
 {
 	if(thread)
 	{
+#ifdef _IL_PT_LOCK_COND
+		_ILLock *lock;
+		ILUInt16 threadState;
+
+		threadState = ILInterlockedLoadU2(&(thread->state.split.priv));
+		lock = (_ILLock *)ILInterlockedLoadP((void **)&(thread->lockWaitingOn));
+#endif /* _IL_PT_LOCK_COND */
 		/*
 		 * Send the interrupt request to the thread.
 		 */
 		pthread_kill(thread->handle, IL_SIG_INTERRUPT);
+#ifdef _IL_PT_LOCK_COND
+		if(lock != 0)
+		{
+			/* Acquire the lock */
+			_ILCondMutexLock(&(lock->_mutex));
+			/* Recheck if the thread is still waiting on the same lock */
+			if(lock == (_ILLock *)ILInterlockedLoadP((void **)&(thread->lockWaitingOn)))
+			{
+				/*
+				 * First check if the thread to be interrupted should be awakened
+				 * because of an other interrupt processing.
+				 */
+				if((threadState & IL_TS_INTERRUPTED) == 0)
+				{
+					/* Remove the thread from the number od waiters */
+					lock->_value += 1;
+
+					threadState |= IL_TS_INTERRUPTED;
+					if((threadState & IL_TS_NOTINTERRUPTED) != 0)
+					{
+						threadState &= ~IL_TS_NOTINTERRUPTED;
+						ILInterlockedStoreU2(&(thread->state.split.priv), threadState);
+					}
+					else
+					{
+						/*
+						 * Mark all other threads waiting on the lock as not
+						 * interrupted so that they will continue waiting at
+						 * their next wakeup.
+						 */
+						ILThread *otherThread;
+						ILInt32 value;
+						int otherWaiter = 0;
+
+						/*
+						 * Set the interrupted flag here so that we don't depend
+						 * on the signal processing timing to set the flag.
+						 */
+						ILInterlockedStoreU2(&(thread->state.split.priv), threadState);
+
+						/*
+						 * Process at most (-lock->_value) waiters.
+						 */
+						value = lock->_value;
+						otherThread = lock->_waiters;
+						while(otherThread && (value < 0))
+						{
+							if(otherThread != thread)
+							{
+								threadState = ILInterlockedLoadU2(&(otherThread->state.split.priv));
+								if((threadState & IL_TS_INTERRUPTED) == 0)
+								{
+									threadState |= IL_TS_NOTINTERRUPTED;
+									ILInterlockedStoreU2(&(otherThread->state.split.priv), threadState);
+									/*
+									 * Set the flag that there is an other thread waiting
+									 * on the lock
+									 */
+									otherWaiter = 1;
+								}
+								++value;
+							}
+							otherThread = otherThread->nextWaiter;
+						}
+						if(otherWaiter)
+						{
+							/*
+							 * Mark the lock that there is interrupt processing on
+							 * the way
+							 */
+							lock->_interrupted = 1;
+						}
+						/* Wake up all threads waiting on the lock */
+						_ILCondVarSignalAll(&(lock->_cond));
+					}
+				}
+			}
+			/* Release the lock */
+			_ILCondMutexUnlock(&(lock->_mutex));
+		}
+#endif /* _IL_PT_LOCK_COND */
 	}
 }
 
@@ -707,7 +1219,7 @@ int _ILThreadSleep(ILUInt32 ms)
 #ifndef _IL_PT_INTERRUPT_JMP
 					/* Check and clear the interrupted flag */
 					__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv));
-					if((__threadState | IL_TS_INTERRUPTED) != 0)
+					if((__threadState & IL_TS_INTERRUPTED) != 0)
 					{
 						result = IL_THREAD_ERR_INTERRUPT;
 						break;
@@ -1033,32 +1545,33 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms)
 
 int _ILMonitorExit(_ILMonitor *mon)
 {
-	int result;
-
-	if((result = sem_post(&(mon->_enterSem))) == 0)
-	{
-		return IL_THREAD_OK;
-	}
-	return IL_THREAD_ERR_UNKNOWN;
+	return LockSignal(&(mon->_enterLock));
 }
 
 int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms)
 {
 	if(ms == 0)
 	{
-		if(sem_trywait(&(mon->_enterSem)) == 0)
-		{
-			return IL_THREAD_OK;
-		}
-		return errno == EAGAIN ? IL_THREAD_BUSY : IL_THREAD_ERR_UNKNOWN;
+		return LockTryWait(&(mon->_enterLock));
 	}
 	else if(ms == IL_MAX_UINT32)
 	{
-		return SemWaitInterruptible(&(mon->_enterSem));
+		return LockWaitInterruptible(&(mon->_enterLock));
 	}
 	else if(ms <= IL_MAX_INT32)
 	{
-		return SemTimedWaitInterruptible(&(mon->_enterSem), ms);
+		struct timeval tv;
+		struct timespec ts;
+
+		gettimeofday(&tv, 0);
+		ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
+		ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
+		if(ts.tv_nsec >= 1000000000L)
+		{
+			++(ts.tv_sec);
+			ts.tv_nsec -= 1000000000L;
+		}
+		return LockTimedWaitInterruptible(&(mon->_enterLock), &ts);
 	}
 	else
 	{
@@ -1078,9 +1591,10 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms)
 		 * In this case we don't have to enter the waiting queue but simply
 		 * release and reenter the ready state.
 		 */
-		if((result = sem_post(&(mon->_enterSem))) != 0)
+		result = LockSignal(&(mon->_enterLock));
+		if(result != IL_THREAD_OK)
 		{
-			return IL_THREAD_ERR_UNKNOWN;
+			return result;
 		}
 	}
 	else if((ms == IL_MAX_UINT32) || (ms <= IL_MAX_INT32))
@@ -1093,7 +1607,8 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms)
 		/*
 		 * Release the ownership of the monitor.
 		 */
-		if(sem_post(&(mon->_enterSem)) != 0)
+		result = LockSignal(&(mon->_enterLock));
+		if(result != IL_THREAD_OK)
 		{
 			/*
 			 * Leave the wait queue and return with error
@@ -1104,7 +1619,7 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms)
 
 		if(ms == IL_MAX_UINT32)
 		{
-			result = SemWaitInterruptible(&(mon->_waitSem));
+			result = LockWaitInterruptible(&(mon->_waitLock));
 			if(result)
 			{
 				/*
@@ -1116,7 +1631,18 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms)
 		}
 		else
 		{
-			result = SemTimedWaitInterruptible(&(mon->_waitSem), ms);
+			struct timeval tv;
+			struct timespec ts;
+
+			gettimeofday(&tv, 0);
+			ts.tv_sec = tv.tv_sec + (long)(ms / 1000);
+			ts.tv_nsec = (tv.tv_usec + (long)((ms % 1000) * 1000)) * 1000L;
+			if(ts.tv_nsec >= 1000000000L)
+			{
+				++(ts.tv_sec);
+				ts.tv_nsec -= 1000000000L;
+			}
+			result = LockTimedWaitInterruptible(&(mon->_waitLock), &ts);
 			if(result)
 			{
 				/*
@@ -1135,7 +1661,7 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms)
 	/*
 	 * Now we have to regain the ownership of the monitor
 	 */
-	enterResult = SemWaitUninterruptible(&(mon->_enterSem));
+	enterResult = LockWaitUninterruptible(&(mon->_enterLock));
 	if(result == IL_THREAD_OK)
 	{
 		result = enterResult;
@@ -1145,17 +1671,21 @@ int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms)
 
 int _ILMonitorPulse(_ILMonitor *mon)
 {
+	int result;
+
+	result = IL_THREAD_OK;
 	if(mon)
 	{
 		ILInt32 waitValue;
-		
+
+		result = IL_THREAD_OK;
 		waitValue = ILInterlockedLoadI4(&(mon->_waitValue));
 		if(waitValue < 0)
 		{
 			waitValue = ILInterlockedIncrementI4_Acquire(&(mon->_waitValue));
 			if(waitValue <= 0)
 			{
-				sem_post(&(mon->_waitSem));
+				result = LockSignal(&(mon->_waitLock));
 			}
 			else
 			{
@@ -1163,7 +1693,7 @@ int _ILMonitorPulse(_ILMonitor *mon)
 			}
 		}
 	}
-	return IL_THREAD_OK;
+	return result;
 }
 
 int _ILMonitorPulseAll(_ILMonitor *mon)
@@ -1180,11 +1710,7 @@ int _ILMonitorPulseAll(_ILMonitor *mon)
 			if(waitValue < 0)
 			{
 				/* Release the waiters */
-				while(waitValue < 0)
-				{
-					sem_post(&(mon->_waitSem));
-					++waitValue;
-				}
+				LockSignalCount(&(mon->_waitLock), -waitValue);
 			}
 			else if(waitValue > 0)
 			{

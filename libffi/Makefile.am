@@ -1,14 +1,14 @@
 ## Process this with automake to create Makefile.in
 
 AUTOMAKE_OPTIONS = foreign subdir-objects
-ACLOCAL_AMFLAGS = -I .. 
+ACLOCAL_AMFLAGS = -I ..
 
 SUBDIRS = include
 
 EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
-	libtool-version src/dlmalloc.c \
 	src/alpha/ffi.c src/alpha/osf.S src/alpha/ffitarget.h \
 	src/arm/ffi.c src/arm/sysv.S src/arm/ffitarget.h \
+	src/avr32/ffi.c src/avr32/sysv.S src/avr32/ffitarget.h \
 	src/cris/ffi.c src/cris/sysv.S src/cris/ffitarget.h \
 	src/ia64/ffi.c src/ia64/ffitarget.h src/ia64/ia64_flags.h \
 	src/ia64/unix.S \
@@ -26,11 +26,11 @@ EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 	src/sh/ffi.c src/sh/sysv.S src/sh/ffitarget.h \
 	src/sh64/ffi.c src/sh64/sysv.S src/sh64/ffitarget.h \
 	src/sparc/v8.S src/sparc/v9.S src/sparc/ffitarget.h \
-	src/sparc/ffi.c \
+	src/sparc/ffi.c src/x86/darwin64.S \
 	src/x86/ffi.c src/x86/sysv.S src/x86/win32.S src/x86/darwin.S \
 	src/x86/ffi64.c src/x86/unix64.S src/x86/ffitarget.h \
 	src/pa/ffitarget.h src/pa/ffi.c src/pa/linux.S src/pa/hpux32.S \
-	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h
+	src/frv/ffi.c src/frv/eabi.S src/frv/ffitarget.h src/dlmalloc.c
 
 ## ################################################################
 
@@ -42,38 +42,38 @@ EXTRA_DIST = LICENSE ChangeLog.v1 ChangeLog.libgcj configure.host \
 # values defined in terms of make variables, as is the case for CC and
 # friends when we are called from the top level Makefile.
 # AM_MAKEFLAGS = \
-#	"AR_FLAGS=$(AR_FLAGS)" \
-#	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
-#	"CFLAGS=$(CFLAGS)" \
-#	"CXXFLAGS=$(CXXFLAGS)" \
-#	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
-#	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
-#	"INSTALL=$(INSTALL)" \
-#	"INSTALL_DATA=$(INSTALL_DATA)" \
-#	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
-#	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
-#	"JC1FLAGS=$(JC1FLAGS)" \
-#	"LDFLAGS=$(LDFLAGS)" \
-#	"LIBCFLAGS=$(LIBCFLAGS)" \
+# 	"AR_FLAGS=$(AR_FLAGS)" \
+# 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
+# 	"CFLAGS=$(CFLAGS)" \
+# 	"CXXFLAGS=$(CXXFLAGS)" \
+# 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
+# 	"CFLAGS_FOR_TARGET=$(CFLAGS_FOR_TARGET)" \
+# 	"INSTALL=$(INSTALL)" \
+# 	"INSTALL_DATA=$(INSTALL_DATA)" \
+# 	"INSTALL_PROGRAM=$(INSTALL_PROGRAM)" \
+# 	"INSTALL_SCRIPT=$(INSTALL_SCRIPT)" \
+# 	"JC1FLAGS=$(JC1FLAGS)" \
+# 	"LDFLAGS=$(LDFLAGS)" \
+# 	"LIBCFLAGS=$(LIBCFLAGS)" \
 # 	"LIBCFLAGS_FOR_TARGET=$(LIBCFLAGS_FOR_TARGET)" \
-#	"MAKE=$(MAKE)" \
-#	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
-#	"PICFLAG=$(PICFLAG)" \
-#	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
-#	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
-#	"SHELL=$(SHELL)" \
-#	"exec_prefix=$(exec_prefix)" \
-#	"infodir=$(infodir)" \
-#	"libdir=$(libdir)" \
-#	"prefix=$(prefix)" \
-#	"AR=$(AR)" \
-#	"AS=$(AS)" \
-#	"CC=$(CC)" \
-#	"CXX=$(CXX)" \
-#	"LD=$(LD)" \
-#	"NM=$(NM)" \
-#	"RANLIB=$(RANLIB)" \
-#	"DESTDIR=$(DESTDIR)"
+# 	"MAKE=$(MAKE)" \
+# 	"MAKEINFO=$(MAKEINFO) $(MAKEINFOFLAGS)" \
+# 	"PICFLAG=$(PICFLAG)" \
+# 	"PICFLAG_FOR_TARGET=$(PICFLAG_FOR_TARGET)" \
+# 	"RUNTESTFLAGS=$(RUNTESTFLAGS)" \
+# 	"SHELL=$(SHELL)" \
+# 	"exec_prefix=$(exec_prefix)" \
+# 	"infodir=$(infodir)" \
+# 	"libdir=$(libdir)" \
+# 	"prefix=$(prefix)" \
+# 	"AR=$(AR)" \
+# 	"AS=$(AS)" \
+# 	"CC=$(CC)" \
+# 	"CXX=$(CXX)" \
+# 	"LD=$(LD)" \
+# 	"NM=$(NM)" \
+# 	"RANLIB=$(RANLIB)" \
+# 	"DESTDIR=$(DESTDIR)"
 
 MAKEOVERRIDES=
 
@@ -91,8 +91,14 @@ endif
 if X86
 nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/sysv.S
 endif
+if X86_FREEBSD
+nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/freebsd.S
+endif
 if X86_WIN32
 nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/win32.S
+endif
+if X86_WIN64
+nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/win64.S
 endif
 if X86_DARWIN
 nodist_libffi_la_SOURCES += src/x86/ffi.c src/x86/darwin.S src/x86/ffi64.c src/x86/darwin64.S
@@ -127,6 +133,9 @@ endif
 if ARM
 nodist_libffi_la_SOURCES += src/arm/sysv.S src/arm/ffi.c
 endif
+if AVR32
+nodist_libffi_la_SOURCES += src/avr32/sysv.S src/avr32/ffi.c
+endif
 if LIBFFI_CRIS
 nodist_libffi_la_SOURCES += src/cris/sysv.S src/cris/ffi.c
 endif
@@ -157,15 +166,12 @@ nodist_libffi_convenience_la_SOURCES = $(nodist_libffi_la_SOURCES)
 
 AM_CFLAGS = -Wall -g -fexceptions
 
-libffi_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version`
+LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
+
+libffi_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(LTLDFLAGS) $(AM_LTLDFLAGS)
 
 AM_CPPFLAGS = -I. -I$(top_srcdir)/include -Iinclude -I$(top_srcdir)/src
 AM_CCASFLAGS = $(AM_CPPFLAGS)
-
-# No install-html or install-pdf support in automake yet
-.PHONY: install-html install-pdf
-install-html:
-install-pdf:
 
 # Multilib support.  Automake should provide these on its own.
 # all-recursive: all-multi

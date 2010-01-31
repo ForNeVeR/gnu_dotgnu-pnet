@@ -1,3 +1,49 @@
+2010-01-31  Klaus Treichel  <ktreichel@web.de>
+
+	* libffi/ChangeLog, libffi/Makefile.am: update to version 3.0.9
+	* libffi/README, libffi/configure.ac, libffi/libtool-version: likewise
+	* libffi/include/ffi.h.in, libffi/include/ffi_common.h: likewise
+	* libffi/src/closures.c, libffi/src/debug.c: likewise
+	* libffi/src/dlmalloc.c, libffi/src/java_raw_api.c: likewise
+	* libffi/src/prep_cif.c, libffi/src/raw_api.c: likewise
+	* libffi/src/types.c: likewise
+	* libffi/src/alpha/ffi.c, libffi/src/alpha/ffitarget.h: likewise
+	* libffi/src/alpha/osf.S: likewise
+	* libffi/src/arm/ffi.c, libffi/src/arm/ffitarget.h: likewise
+	* libffi/src/arm/sysv.S: likewise
+	* libffi/src/cris/ffitarget.h: likewise
+	* libffi/src/frv/eabi.S, libffi/src/frv/ffi.c: likewise
+	* libffi/src/frv/ffitarget.h: likewise
+	* libffi/src/ia64/ffi.c, libffi/src/ia64/ffitarget.h: likewise
+	* libffi/src/ia64/ia64_flags.h, libffi/src/ia64/unix.S: likewise
+	* libffi/src/m32r/ffi.c, libffi/src/m32r/ffitarget.h: likewise
+	* libffi/src/m32r/sysv.S: likewise
+	* libffi/src/m68k/ffitarget.h, libffi/src/m68k/sysv.S: likewise
+	* libffi/src/mips/ffi.c, libffi/src/mips/ffitarget.h: likewise
+	* libffi/src/mips/n32.S, libffi/src/mips/o32.S: likewise
+	* libffi/src/pa/ffi.c, libffi/src/pa/ffitarget.h: likewise
+	* libffi/src/pa/hpux32.S, libffi/src/pa/linux.S: likewise
+	* libffi/src/powerpc/aix.S, libffi/src/powerpc/aix_closure.S: likewise
+	* libffi/src/powerpc/ffi.c, libffi/src/powerpc/ffi_darwin.c: likewise
+	* libffi/src/powerpc/ffitarget.h, libffi/src/powerpc/linux64.S: likewise
+	* libffi/src/powerpc/linux64_closure.S: likewise
+	* libffi/src/powerpc/ppc_closure.S, libffi/src/powerpc/sysv.S: likewise
+	* libffi/src/s390/ffi.c, libffi/src/s390/ffitarget.h: likewise
+	* libffi/src/s390/sysv.S: likewise
+	* libffi/src/sh/ffi.c, libffi/src/sh/ffitarget.h: likewise
+	* libffi/src/sh/sysv.S: likewise
+	* libffi/src/sh64/ffi.c, libffi/src/sh64/ffitarget.h: likewise
+	* libffi/src/sh64/sysv.S: likewise
+	* libffi/src/sparc/ffi.c, libffi/src/sparc/ffitarget.h: likewise
+	* libffi/src/sparc/v8.S, libffi/src/sparc/v9.S: likewise
+	* libffi/src/x86/darwin.S, libffi/src/x86/darwin64.S: likewise
+	* libffi/src/x86/ffi.c, libffi/src/x86/ffi64.c: likewise
+	* libffi/src/x86/ffitarget.h, libffi/src/x86/sysv.S: likewise
+	* libffi/src/x86/unix64.S, libffi/src/x86/win32.S: likewise
+	* libffi/src/x86/freebsd.S, libffi/src/x86/win64.S: added
+	* libffi/src/avr32/ffi.c, libffi/src/avr32/ffitarget.h: added
+	* libffi/src/avr32/sysv.S: added
+
 2010-01-30  Klaus Treichel  <ktreichel@web.de>
 
 	* support/monitor.c (_ILMonitorInit): Initialize a monitor so that it's

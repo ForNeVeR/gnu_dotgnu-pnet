@@ -1,5 +1,5 @@
 /* -----------------------------------------------------------------------
-   n32.S - Copyright (c) 1996, 1998, 2005  Red Hat, Inc.
+   n32.S - Copyright (c) 1996, 1998, 2005, 2007, 2009, 2010  Red Hat, Inc.
    
    MIPS Foreign Function Interface 
 
@@ -14,13 +14,14 @@
    The above copyright notice and this permission notice shall be included
    in all copies or substantial portions of the Software.
 
-   THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND, EXPRESS
-   OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-   IN NO EVENT SHALL CYGNUS SOLUTIONS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-   OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-   OTHER DEALINGS IN THE SOFTWARE.
+   THE SOFTWARE IS PROVIDED ``AS IS'', WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+   MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+   NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+   HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+   WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
    ----------------------------------------------------------------------- */
 
 #define LIBFFI_ASM	
@@ -39,7 +40,9 @@
 
 #define SIZEOF_FRAME	( 8 * FFI_SIZEOF_ARG )
 
+#ifdef __GNUC__
 	.abicalls
+#endif
 	.text
 	.align	2
 	.globl	ffi_call_N32
@@ -78,14 +81,12 @@ sixteen:
 	SUBU	$sp, $sp, v0	# move the stack pointer to reflect the
 				# arg space
 
-	ADDU	a0, $sp, 0      # 4 * FFI_SIZEOF_ARG
+	move	a0, $sp         # 4 * FFI_SIZEOF_ARG
 	ADDU	a3, $fp, 3 * FFI_SIZEOF_ARG
 
 	# Call ffi_prep_args
 	jal	t9
 	
-	#	ADDU	$sp, $sp, 4 * FFI_SIZEOF_ARG	# adjust $sp to new args
-
 	# Copy the stack pointer to t9
 	move	t9, $sp
 	
@@ -96,18 +97,16 @@ sixteen:
 	REG_L	t6, 2*FFI_SIZEOF_ARG($fp)
 
 	# Is it bigger than 8 * FFI_SIZEOF_ARG?
-	dadd	t7, $0, 8 * FFI_SIZEOF_ARG
-	dsub	t8, t6, t7
+	daddiu	t8, t6, -(8 * FFI_SIZEOF_ARG)
 	bltz	t8, loadregs
 
-	add	t9, t9, t8
+	ADDU	t9, t9, t8
 	
 loadregs:	
 
-	REG_L	t4, 3*FFI_SIZEOF_ARG($fp)  # load the flags word
-	add	t6, t4, 0			      # and copy it into t6
+	REG_L	t6, 3*FFI_SIZEOF_ARG($fp)  # load the flags word into t6.
 
-	and	t4, ((1<<FFI_FLAG_BITS)-1)
+	and	t4, t6, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg1_floatp
 	REG_L	a0, 0*FFI_SIZEOF_ARG(t9)
 	b	arg1_next
@@ -119,8 +118,7 @@ arg1_doublep:
 	l.d	$f12, 0*FFI_SIZEOF_ARG(t9)
 arg1_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 1*FFI_FLAG_BITS
+	SRL	t4, t6, 1*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg2_floatp
 	REG_L	a1, 1*FFI_SIZEOF_ARG(t9)
@@ -133,8 +131,7 @@ arg2_doublep:
 	l.d	$f13, 1*FFI_SIZEOF_ARG(t9)	
 arg2_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 2*FFI_FLAG_BITS
+	SRL	t4, t6, 2*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg3_floatp
 	REG_L	a2, 2*FFI_SIZEOF_ARG(t9)
@@ -147,8 +144,7 @@ arg3_doublep:
 	l.d	$f14, 2*FFI_SIZEOF_ARG(t9)	
 arg3_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 3*FFI_FLAG_BITS
+	SRL	t4, t6, 3*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg4_floatp
 	REG_L	a3, 3*FFI_SIZEOF_ARG(t9)
@@ -161,8 +157,7 @@ arg4_doublep:
 	l.d	$f15, 3*FFI_SIZEOF_ARG(t9)	
 arg4_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 4*FFI_FLAG_BITS
+	SRL	t4, t6, 4*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg5_floatp
 	REG_L	a4, 4*FFI_SIZEOF_ARG(t9)
@@ -175,8 +170,7 @@ arg5_doublep:
 	l.d	$f16, 4*FFI_SIZEOF_ARG(t9)	
 arg5_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 5*FFI_FLAG_BITS
+	SRL	t4, t6, 5*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg6_floatp
 	REG_L	a5, 5*FFI_SIZEOF_ARG(t9)
@@ -189,8 +183,7 @@ arg6_doublep:
 	l.d	$f17, 5*FFI_SIZEOF_ARG(t9)	
 arg6_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 6*FFI_FLAG_BITS
+	SRL	t4, t6, 6*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg7_floatp
 	REG_L	a6, 6*FFI_SIZEOF_ARG(t9)
@@ -203,8 +196,7 @@ arg7_doublep:
 	l.d	$f18, 6*FFI_SIZEOF_ARG(t9)	
 arg7_next:	
 	
-	add	t4, t6, 0
-	SRL	t4, 7*FFI_FLAG_BITS
+	SRL	t4, t6, 7*FFI_FLAG_BITS
 	and	t4, ((1<<FFI_FLAG_BITS)-1)
 	bnez	t4, arg8_floatp
 	REG_L	a7, 7*FFI_SIZEOF_ARG(t9)
@@ -227,8 +219,10 @@ callit:
 
 	# Shift the return type flag over
 	SRL	t6, 8*FFI_FLAG_BITS
-	
+
+	beq	t6, FFI_TYPE_SINT32, retint	
 	bne     t6, FFI_TYPE_INT, retfloat
+retint:
 	jal	t9
 	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
 	REG_S	v0, 0(t4)
@@ -287,11 +281,57 @@ retstruct_d_f:
 	b	epilogue
 	
 retstruct_f_d:	
-	bne	t6, FFI_TYPE_STRUCT_FD, retstruct_small
+	bne	t6, FFI_TYPE_STRUCT_FD, retstruct_d_soft
 	jal	t9
 	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
 	s.s	$f0, 0(t4)
 	s.d	$f2, 8(t4)
+	b	epilogue
+
+retstruct_d_soft:
+	bne	t6, FFI_TYPE_STRUCT_D_SOFT, retstruct_f_soft
+	jal	t9
+	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
+	sd	v0, 0(t4)
+	b	epilogue
+	
+retstruct_f_soft:	
+	bne	t6, FFI_TYPE_STRUCT_F_SOFT, retstruct_d_d_soft
+	jal	t9
+	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
+	sw	v0, 0(t4)
+	b	epilogue
+	
+retstruct_d_d_soft:	
+	bne	t6, FFI_TYPE_STRUCT_DD_SOFT, retstruct_f_f_soft
+	jal	t9
+	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
+	sd	v0, 0(t4)
+	sd	v1, 8(t4)
+	b	epilogue
+	
+retstruct_f_f_soft:	
+	bne	t6, FFI_TYPE_STRUCT_FF_SOFT, retstruct_d_f_soft
+	jal	t9
+	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
+	sw	v0, 0(t4)
+	sw	v1, 4(t4)
+	b	epilogue
+	
+retstruct_d_f_soft:	
+	bne	t6, FFI_TYPE_STRUCT_DF_SOFT, retstruct_f_d_soft
+	jal	t9
+	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
+	sd	v0, 0(t4)
+	sw	v1, 8(t4)
+	b	epilogue
+	
+retstruct_f_d_soft:	
+	bne	t6, FFI_TYPE_STRUCT_FD_SOFT, retstruct_small
+	jal	t9
+	REG_L	t4, 4*FFI_SIZEOF_ARG($fp)
+	sw	v0, 0(t4)
+	sd	v1, 8(t4)
 	b	epilogue
 	
 retstruct_small:	
@@ -417,12 +457,17 @@ ffi_closure_N32:
 	# Call ffi_closure_mips_inner_N32 to do the real work.
 	LA	t9, ffi_closure_mips_inner_N32
 	move	a0, $12	 # Pointer to the ffi_closure
-	addu	a1, $sp, V0_OFF2
-	addu	a2, $sp, A0_OFF2
-	addu	a3, $sp, F12_OFF2
+	ADDU	a1, $sp, V0_OFF2
+	ADDU	a2, $sp, A0_OFF2
+	ADDU	a3, $sp, F12_OFF2
 	jalr	t9
 
 	# Return flags are in v0
+	bne     v0, FFI_TYPE_SINT32, cls_retint
+	lw	v0, V0_OFF2($sp)
+	b	cls_epilogue
+
+cls_retint:
 	bne     v0, FFI_TYPE_INT, cls_retfloat
 	REG_L	v0, V0_OFF2($sp)
 	b	cls_epilogue
@@ -484,6 +529,7 @@ cls_epilogue:
 .LFE2:	
 	.end	ffi_closure_N32
 
+#ifdef __GNUC__
         .section        .eh_frame,"aw",@progbits
 .Lframe1:
         .4byte  .LECIE1-.LSCIE1		# length
@@ -540,5 +586,6 @@ cls_epilogue:
 	.uleb128 (SIZEOF_FRAME2 - RA_OFF2)/4
 	.align	EH_FRAME_ALIGN
 .LEFDE3:
+#endif /* __GNUC__ */	
 	
 #endif

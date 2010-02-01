@@ -44,79 +44,86 @@ public abstract class Encoding
 	// static constructor
 	static Encoding()
 			{
-				Assembly i18nAssembly;
-
-				// Find or load the "I18N" assembly.
-				try
+				try 
 				{
+					Assembly i18nAssembly;
+	
+					// Find or load the "I18N" assembly.
 					try
 					{
-						i18nAssembly = Assembly.Load("I18N");
+						try
+						{
+							i18nAssembly = Assembly.Load("I18N");
+						}
+						catch(NotImplementedException)
+						{
+							// Assembly loading unsupported by the engine.
+							return;
+						}
+						catch(FileNotFoundException)
+						{
+							// Could not locate the I18N assembly.
+							return;
+						}
+						catch(BadImageFormatException)
+						{
+							// Something was wrong with the I18N assembly.
+							return;
+						}
+						catch(SecurityException)
+						{
+							// The engine refused to load I18N.
+							return;
+						}
+					}
+					catch(SystemException)
+					{
+						return;
+					}
+	
+					// Find the "I18N.Common.Manager" class.
+					try
+					{
+						managerClass = i18nAssembly.GetType("I18N.Common.Manager");
 					}
 					catch(NotImplementedException)
 					{
-						// Assembly loading unsupported by the engine.
+						// "GetType" is not supported by the engine.
+						managerClass = null;
 						return;
 					}
-					catch(FileNotFoundException)
+					if(managerClass == null)
 					{
-						// Could not locate the I18N assembly.
 						return;
 					}
-					catch(BadImageFormatException)
+	
+					// Get the value of the "PrimaryManager" property.
+					try
 					{
-						// Something was wrong with the I18N assembly.
+						manager = managerClass.InvokeMember
+									("PrimaryManager",
+									BindingFlags.GetProperty |
+										BindingFlags.Static |
+										BindingFlags.Public,
+									null, null, null, null, null, null);
+					}
+					catch(MissingMethodException)
+					{
 						return;
 					}
 					catch(SecurityException)
 					{
-						// The engine refused to load I18N.
+						return;
+					}
+					catch(NotImplementedException)
+					{
+						// "InvokeMember" is not supported by the engine.
 						return;
 					}
 				}
-				catch(SystemException)
+				catch 
 				{
-					return;
-				}
-
-				// Find the "I18N.Common.Manager" class.
-				try
-				{
-					managerClass = i18nAssembly.GetType("I18N.Common.Manager");
-				}
-				catch(NotImplementedException)
-				{
-					// "GetType" is not supported by the engine.
-					managerClass = null;
-					return;
-				}
-				if(managerClass == null)
-				{
-					return;
-				}
-
-				// Get the value of the "PrimaryManager" property.
-				try
-				{
-					manager = managerClass.InvokeMember
-								("PrimaryManager",
-								 BindingFlags.GetProperty |
-								 	BindingFlags.Static |
-									BindingFlags.Public,
-								 null, null, null, null, null, null);
-				}
-				catch(MissingMethodException)
-				{
-					return;
-				}
-				catch(SecurityException)
-				{
-					return;
-				}
-				catch(NotImplementedException)
-				{
-					// "InvokeMember" is not supported by the engine.
-					return;
+					// avoid cctor to fail !
 				}
 			}
 #endif

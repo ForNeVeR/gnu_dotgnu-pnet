@@ -1,3 +1,7 @@
+2010-02-01  Heiko Weiss  <heiko.weiss@de.trumpf.com>
+
+	* runtime/System/Text/Encoding.cs (InvokeI18N): avoid cctor to fail.
+
 2009-12-19  Heiko Weiss  <heiko.weiss@de.trumpf.com>
 
 	*System.Windows.Forms/TabControl.cs: fixed tab items height and drawing 

@@ -76,6 +76,9 @@ static void _ILThreadInit(void)
 {
 	/* Initialize the main thread to all 0s */
 	ILMemZero(&mainThread, sizeof(ILThread));
+
+	/* Initialize the atomic operations */
+	ILInterlockedInit();
 	
 	/* Perform system-specific initialization */
 	_ILThreadInitSystem(&mainThread);

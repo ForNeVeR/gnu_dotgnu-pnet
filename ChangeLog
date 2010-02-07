@@ -1,3 +1,19 @@
+2010-02-07  Klaus Treichel  <ktreichel@web.de>
+
+	* support/interlocked.c: Move the previously inlined backup functions
+	from support/interlocked_any.h to this new file.
+
+	* support/interlocked.h: Add prototypes for the backup functions.
+
+	* support/interlocked_any.h: Move the backup functions to
+	support/interlocked.c and replace then with prototypes if they are needed
+	only conditionally (like 64bit versions on 32bit archs).
+
+	* support/Makefile.am: Add interlocked.c to the sources.
+
+	* support/thread.c (_ILThreadInit): Add initialization of the interlocked
+	operations.
+
 2010-01-31  Klaus Treichel  <ktreichel@web.de>
 
 	* libffi/ChangeLog, libffi/Makefile.am: update to version 3.0.9

@@ -36,14 +36,7 @@ typedef union
 } ILInterlockedConv8;
 
 #if !defined(IL_HAVE_INTERLOCKED_MEMORYBARRIER)
-/*
- * Flush cache and set a memory barrier.
- */
-static IL_INLINE void ILInterlockedMemoryBarrier()
-{
-	ILThreadAtomicStart();
-	ILThreadAtomicEnd();
-}
+#define ILInterlockedMemoryBarrier() _ILInterlockedMemoryBarrier()
 #endif /* !defined(IL_HAVE_INTERLOCKED_MEMORYBARRIER) */
 
 /*
@@ -721,15 +714,18 @@ static IL_INLINE ILDouble _ILInterlockedLoadR8_Full(const volatile ILDouble *des
 /*
  * Load a signed 64 bit value from a location.
  */
-static IL_INLINE ILInt64 _ILInterlockedLoadI8_Full(const volatile ILInt64 *dest)
-{
-	ILInt64 result;
+ILInt64 _ILInterlockedLoadI8_Full(const volatile ILInt64 *dest);
 
-	ILThreadAtomicStart();
-	result = *dest;
-	ILThreadAtomicEnd();
-	return result;
-}
+/*
+ * Load an unsigned 64 bit value from a location.
+ */
+ILUInt64 _ILInterlockedLoadU8_Full(const volatile ILUInt64 *dest);
+
+/*
+ * Load a double precision floatingpoint value from a location.
+ */
+ILDouble _ILInterlockedLoadR8_Full(const volatile ILDouble *dest);
+
 #if !defined(IL_HAVE_INTERLOCKED_LOADI8)
 #define ILInterlockedLoadI8(dest)	_ILInterlockedLoadI8_Full((dest))
 #endif /* !defined(IL_HAVE_INTERLOCKED_LOADI8) */
@@ -743,18 +739,6 @@ static IL_INLINE ILInt64 _ILInterlockedLoadI8_Full(const volatile ILInt64 *dest)
 #define ILInterlockedLoadI8_Full(dest)	_ILInterlockedLoadI8_Full((dest))
 #endif /* !defined(IL_HAVE_INTERLOCKED_LOADI8_FULL) */
 
-/*
- * Load an unsigned 64 bit value from a location.
- */
-static IL_INLINE ILUInt64 _ILInterlockedLoadU8_Full(const volatile ILUInt64 *dest)
-{
-	ILUInt64 result;
-
-	ILThreadAtomicStart();
-	result = *dest;
-	ILThreadAtomicEnd();
-	return result;
-}
 #if !defined(IL_HAVE_INTERLOCKED_LOADU8)
 #define ILInterlockedLoadU8(dest)	_ILInterlockedLoadU8_Full((dest))
 #endif /* !defined(IL_HAVE_INTERLOCKED_LOADU8) */
@@ -768,18 +752,6 @@ static IL_INLINE ILUInt64 _ILInterlockedLoadU8_Full(const volatile ILUInt64 *des
 #define ILInterlockedLoadU8_Full(dest)	_ILInterlockedLoadU8_Full((dest))
 #endif /* !defined(IL_HAVE_INTERLOCKED_LOADU8_FULL) */
 
-/*
- * Load a double precision floatingpoint value from a location.
- */
-static IL_INLINE ILDouble _ILInterlockedLoadR8_Full(const volatile ILDouble *dest)
-{
-	ILDouble result;
-
-	ILThreadAtomicStart();
-	result = *dest;
-	ILThreadAtomicEnd();
-	return result;
-}
 #if !defined(IL_HAVE_INTERLOCKED_LOADR8)
 #define ILInterlockedLoadR8(dest)	_ILInterlockedLoadR8_Full((dest))
 #endif /* !defined(IL_HAVE_INTERLOCKED_LOADR8) */
@@ -1480,13 +1452,18 @@ static IL_INLINE void _ILInterlockedStoreR8_Full(volatile ILDouble *dest,
 /*
  * Store a signed 64 bit value to a location.
  */
-static IL_INLINE void _ILInterlockedStoreI8_Full(volatile ILInt64 *dest,
-												 ILInt64 value)
-{
-	ILThreadAtomicStart();
-	*dest = value;
-	ILThreadAtomicEnd();
-}
+void _ILInterlockedStoreI8_Full(volatile ILInt64 *dest, ILInt64 value);
+
+/*
+ * Store an unsigned 64 bit value to a location.
+ */
+void _ILInterlockedStoreU8_Full(volatile ILUInt64 *dest, ILUInt64 value);
+
+/*
+ * Store a double precision floatingpoint value to a location.
+ */
+void _ILInterlockedStoreR8_Full(volatile ILDouble *dest, ILDouble value);
+
 #if !defined(IL_HAVE_INTERLOCKED_STOREI8)
 #define ILInterlockedStoreI8(dest, value) \
 		_ILInterlockedStoreI8_Full((dest), (value))
@@ -1504,16 +1481,6 @@ static IL_INLINE void _ILInterlockedStoreI8_Full(volatile ILInt64 *dest,
 		_ILInterlockedStoreI8_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_STOREI8_FULL) */
 
-/*
- * Store an unsigned 64 bit value to a location.
- */
-static IL_INLINE void _ILInterlockedStoreU8_Full(volatile ILUInt64 *dest,
-												 ILUInt64 value)
-{
-	ILThreadAtomicStart();
-	*dest = value;
-	ILThreadAtomicEnd();
-}
 #if !defined(IL_HAVE_INTERLOCKED_STOREU8)
 #define ILInterlockedStoreU8(dest, value) \
 		_ILInterlockedStoreU8_Full((dest), (value))
@@ -1531,16 +1498,6 @@ static IL_INLINE void _ILInterlockedStoreU8_Full(volatile ILUInt64 *dest,
 		_ILInterlockedStoreU8_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_STOREU8_FULL) */
 
-/*
- * Store a double precision floatingpoint value to a location.
- */
-static IL_INLINE void _ILInterlockedStoreR8_Full(volatile ILDouble *dest,
-												 ILDouble value)
-{
-	ILThreadAtomicStart();
-	*dest = value;
-	ILThreadAtomicEnd();
-}
 #if !defined(IL_HAVE_INTERLOCKED_STORER8)
 #define ILInterlockedStoreR8(dest, value) \
 		_ILInterlockedStoreR8_Full((dest), (value))
@@ -2265,20 +2222,6 @@ static IL_INLINE void *ILInterlockedExchangeP_Full(void * volatile *dest,
 /*
  * Exchange pointers.
  */
-static IL_INLINE void *_ILInterlockedExchangeP_Full(void * volatile *dest,
-													void *value)
-{
-	void *retval;
-		
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	*dest = value;
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_EXCHANGEP)
 #define ILInterlockedExchangeP(dest, value) \
 		_ILInterlockedExchangeP_Full((dest), (value))
@@ -4107,20 +4050,6 @@ static IL_INLINE void ILInterlockedOrU8_Full(volatile ILUInt64 *dest,
 /*
  * Backup declarations if no native implementation is available
  */
-static IL_INLINE ILInt32 _ILInterlockedExchangeI4_Full(volatile ILInt32 *dest,
-													   ILInt32 value)
-{
-	ILInt32 retval;
-
-	ILThreadAtomicStart();
-
-	retval = *dest;
-	*dest = value;
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_EXCHANGEI4)
 #define ILInterlockedExchangeI4(dest, value) \
 		_ILInterlockedExchangeI4_Full((dest), (value))
@@ -4138,20 +4067,6 @@ static IL_INLINE ILInt32 _ILInterlockedExchangeI4_Full(volatile ILInt32 *dest,
 		_ILInterlockedExchangeI4_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGEI4_FULL) */
 
-static IL_INLINE ILUInt32 _ILInterlockedExchangeU4_Full(volatile ILUInt32 *dest,
-														ILUInt32 value)
-{
-	ILUInt32 retval;
-
-	ILThreadAtomicStart();
-
-	retval = *dest;
-	*dest = value;
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_EXCHANGEU4)
 #define ILInterlockedExchangeU4(dest, value) \
 		_ILInterlockedExchangeU4_Full((dest), (value))
@@ -4169,20 +4084,6 @@ static IL_INLINE ILUInt32 _ILInterlockedExchangeU4_Full(volatile ILUInt32 *dest,
 		_ILInterlockedExchangeU4_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGEU4_FULL) */
 
-static IL_INLINE ILFloat _ILInterlockedExchangeR4_Full(volatile ILFloat *dest,
-													   ILFloat value)
-{
-	ILFloat retval;
-		
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	*dest = value;
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_EXCHANGER4)
 #define ILInterlockedExchangeR4(dest, value) \
 		_ILInterlockedExchangeR4_Full((dest), (value))
@@ -4200,20 +4101,6 @@ static IL_INLINE ILFloat _ILInterlockedExchangeR4_Full(volatile ILFloat *dest,
 		_ILInterlockedExchangeR4_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGER4_FULL) */
 
-static IL_INLINE ILInt64 _ILInterlockedExchangeI8_Full(volatile ILInt64 *dest,
-													   ILInt64 value)
-{
-	ILInt64 retval;
-
-	ILThreadAtomicStart();
-
-	retval = *dest;
-	*dest = value;
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_EXCHANGEI8)
 #define ILInterlockedExchangeI8(dest, value) \
 		_ILInterlockedExchangeI8_Full((dest), (value))
@@ -4231,20 +4118,6 @@ static IL_INLINE ILInt64 _ILInterlockedExchangeI8_Full(volatile ILInt64 *dest,
 		_ILInterlockedExchangeI8_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGEI8_FULL) */
 
-static IL_INLINE ILUInt64 _ILInterlockedExchangeU8_Full(volatile ILUInt64 *dest,
-														ILUInt64 value)
-{
-	ILUInt64 retval;
-
-	ILThreadAtomicStart();
-
-	retval = *dest;
-	*dest = value;
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_EXCHANGEU8)
 #define ILInterlockedExchangeU8(dest, value) \
 		_ILInterlockedExchangeU8_Full((dest), (value))
@@ -4262,20 +4135,6 @@ static IL_INLINE ILUInt64 _ILInterlockedExchangeU8_Full(volatile ILUInt64 *dest,
 		_ILInterlockedExchangeU8_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGEU8_FULL) */
 
-static IL_INLINE ILDouble _ILInterlockedExchangeR8_Full(volatile ILDouble *dest,
-														ILDouble value)
-{
-	ILDouble retval;
-		
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	*dest = value;
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_EXCHANGER8)
 #define ILInterlockedExchangeR8(dest, value) \
 		_ILInterlockedExchangeR8_Full((dest), (value))
@@ -4293,25 +4152,6 @@ static IL_INLINE ILDouble _ILInterlockedExchangeR8_Full(volatile ILDouble *dest,
 		_ILInterlockedExchangeR8_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_EXCHANGER8_FULL) */
 
-static IL_INLINE ILInt32 _ILInterlockedCompareAndExchangeI4_Full(volatile ILInt32 *dest,
-																 ILInt32 value,
-																 ILInt32 comparand)
-{
-	ILInt32 retval;
-	
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	
-	if (retval == comparand)
-	{
-		*dest = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4)
 #define ILInterlockedCompareAndExchangeI4(dest, value, comparand) \
 		_ILInterlockedCompareAndExchangeI4_Full((dest), (value), (comparand))
@@ -4329,25 +4169,6 @@ static IL_INLINE ILInt32 _ILInterlockedCompareAndExchangeI4_Full(volatile ILInt3
 		_ILInterlockedCompareAndExchangeI4_Full((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI4_FULL) */
 
-static IL_INLINE ILUInt32 _ILInterlockedCompareAndExchangeU4_Full(volatile ILUInt32 *dest,
-																  ILUInt32 value,
-																  ILUInt32 comparand)
-{
-	ILUInt32 retval;
-	
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	
-	if(retval == comparand)
-	{
-		*dest = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEU4)
 #define ILInterlockedCompareAndExchangeU4(dest, value, comparand) \
 		_ILInterlockedCompareAndExchangeU4_Full((dest), (value), (comparand))
@@ -4365,25 +4186,6 @@ static IL_INLINE ILUInt32 _ILInterlockedCompareAndExchangeU4_Full(volatile ILUIn
 		_ILInterlockedCompareAndExchangeU4_Full((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEU4_FULL) */
 
-static IL_INLINE ILFloat _ILInterlockedCompareAndExchangeR4_Full(volatile ILFloat *dest,
-																 ILFloat value,
-																 ILFloat comparand)
-{
-	ILFloat retval;
-	
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	
-	if(retval == comparand)
-	{
-		*dest = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGER4)
 #define ILInterlockedCompareAndExchangeR4(dest, value, comparand) \
 		_ILInterlockedCompareAndExchangeR4_Full((dest), (value), (comparand))
@@ -4401,25 +4203,6 @@ static IL_INLINE ILFloat _ILInterlockedCompareAndExchangeR4_Full(volatile ILFloa
 		_ILInterlockedCompareAndExchangeR4_Full((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGER4_FULL) */
 
-static IL_INLINE ILInt32 _ILInterlockedCompareAndExchangeI8_Full(volatile ILInt64 *dest,
-																 ILInt64 value,
-																 ILInt64 comparand)
-{
-	ILInt64 retval;
-	
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	
-	if (retval == comparand)
-	{
-		*dest = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI8)
 #define ILInterlockedCompareAndExchangeI8(dest, value, comparand) \
 		_ILInterlockedCompareAndExchangeI8_Full((dest), (value), (comparand))
@@ -4437,25 +4220,6 @@ static IL_INLINE ILInt32 _ILInterlockedCompareAndExchangeI8_Full(volatile ILInt6
 		_ILInterlockedCompareAndExchangeI8_Full((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEI8_FULL) */
 
-static IL_INLINE ILUInt64 _ILInterlockedCompareAndExchangeU8_Full(volatile ILUInt64 *dest,
-																  ILUInt64 value,
-																  ILUInt64 comparand)
-{
-	ILUInt64 retval;
-	
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	
-	if(retval == comparand)
-	{
-		*dest = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEU8)
 #define ILInterlockedCompareAndExchangeU8(dest, value, comparand) \
 		_ILInterlockedCompareAndExchangeU8_Full((dest), (value), (comparand))
@@ -4473,25 +4237,6 @@ static IL_INLINE ILUInt64 _ILInterlockedCompareAndExchangeU8_Full(volatile ILUIn
 		_ILInterlockedCompareAndExchangeU8_Full((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEU8_FULL) */
 
-static IL_INLINE ILDouble _ILInterlockedCompareAndExchangeR8_Full(volatile ILDouble *dest,
-																  ILDouble value,
-																  ILDouble comparand)
-{
-	ILDouble retval;
-	
-	ILThreadAtomicStart();
-	
-	retval = *dest;
-	
-	if(retval == comparand)
-	{
-		*dest = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGER8)
 #define ILInterlockedCompareAndExchangeR8(dest, value, comparand) \
 		_ILInterlockedCompareAndExchangeR8_Full((dest), (value), (comparand))
@@ -4509,25 +4254,6 @@ static IL_INLINE ILDouble _ILInterlockedCompareAndExchangeR8_Full(volatile ILDou
 		_ILInterlockedCompareAndExchangeR8_Full((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGER8_FULL) */
 
-static IL_INLINE void *_ILInterlockedCompareAndExchangeP_Full(void * volatile *dest,
-															  void *value,
-															  void *comparand)
-{
-	void *retval;
-		
-	ILThreadAtomicStart();
-	
-	retval = (void *)*dest;
-	
-	if(retval == comparand)
-	{
-		*dest = value;
-	}
-	
-	ILThreadAtomicEnd();
-	
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP)
 #define ILInterlockedCompareAndExchangeP(dest, value, comparand) \
 		_ILInterlockedCompareAndExchangeP_Full((dest), (value), (comparand))
@@ -4545,20 +4271,6 @@ static IL_INLINE void *_ILInterlockedCompareAndExchangeP_Full(void * volatile *d
 		_ILInterlockedCompareAndExchangeP_Full((dest), (value), (comparand))
 #endif /* !defined(IL_HAVE_INTERLOCKED_COMPAREANDEXCHANGEP_FULL) */
 
-static IL_INLINE ILInt32 _ILInterlockedAddI4_Full(volatile ILInt32 *dest,
-												  ILInt32 value)
-{
-	ILInt32 retval;
-
-	ILThreadAtomicStart();
-
-	retval = *dest + value;
-	*dest = retval;
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_ADDI4)
 #define ILInterlockedAddI4(dest, value) \
 		_ILInterlockedAddI4_Full((dest), (value))
@@ -4576,20 +4288,6 @@ static IL_INLINE ILInt32 _ILInterlockedAddI4_Full(volatile ILInt32 *dest,
 		_ILInterlockedAddI4_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_ADDI4_FULL) */
 
-static IL_INLINE ILInt64 _ILInterlockedAddI8_Full(volatile ILInt64 *dest,
-												  ILInt64 value)
-{
-	ILInt64 retval;
-
-	ILThreadAtomicStart();
-
-	retval = *dest + value;
-	*dest = retval;
-
-	ILThreadAtomicEnd();
-
-	return retval;
-}
 #if !defined(IL_HAVE_INTERLOCKED_ADDI8)
 #define ILInterlockedAddI8(dest, value) \
 		_ILInterlockedAddI8_Full((dest), (value))
@@ -4709,15 +4407,6 @@ static IL_INLINE ILInt64 _ILInterlockedAddI8_Full(volatile ILInt64 *dest,
 		_ILInterlockedAddI8_Full((dest), -1)
 #endif /* !defined(IL_HAVE_INTERLOCKED_DECREMENTI8_FULL) */
 
-static IL_INLINE void _ILInterlockedAndU4_Full(volatile ILUInt32 *dest,
-											   ILUInt32 value)
-{
-	ILThreadAtomicStart();
-
-	*dest &= value;
-
-	ILThreadAtomicEnd();
-}
 #if !defined(IL_HAVE_INTERLOCKED_ANDU4)
 #define ILInterlockedAndU4(dest, value) \
 		_ILInterlockedAndU4_Full((dest), (value))
@@ -4735,15 +4424,6 @@ static IL_INLINE void _ILInterlockedAndU4_Full(volatile ILUInt32 *dest,
 		_ILInterlockedAndU4_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_ANDU4_FULL) */
 
-static IL_INLINE void _ILInterlockedAndU8_Full(volatile ILUInt64 *dest,
-											   ILUInt64 value)
-{
-	ILThreadAtomicStart();
-
-	*dest &= value;
-
-	ILThreadAtomicEnd();
-}
 #if !defined(IL_HAVE_INTERLOCKED_ANDU8)
 #define ILInterlockedAndU8(dest, value) \
 		_ILInterlockedAndU8_Full((dest), (value))
@@ -4761,15 +4441,6 @@ static IL_INLINE void _ILInterlockedAndU8_Full(volatile ILUInt64 *dest,
 		_ILInterlockedAndU8_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_ANDU8_FULL) */
 
-static IL_INLINE void _ILInterlockedOrU4_Full(volatile ILUInt32 *dest,
-											  ILUInt32 value)
-{
-	ILThreadAtomicStart();
-
-	*dest |= value;
-
-	ILThreadAtomicEnd();
-}
 #if !defined(IL_HAVE_INTERLOCKED_ORU4)
 #define ILInterlockedOrU4(dest, value) \
 		_ILInterlockedOrU4_Full((dest), (value))
@@ -4787,15 +4458,6 @@ static IL_INLINE void _ILInterlockedOrU4_Full(volatile ILUInt32 *dest,
 		_ILInterlockedOrU4_Full((dest), (value))
 #endif /* !defined(IL_HAVE_INTERLOCKED_ORU4_FULL) */
 
-static IL_INLINE void _ILInterlockedOrU8_Full(volatile ILUInt64 *dest,
-											  ILUInt64 value)
-{
-	ILThreadAtomicStart();
-
-	*dest |= value;
-
-	ILThreadAtomicEnd();
-}
 #if !defined(IL_HAVE_INTERLOCKED_ORU8)
 #define ILInterlockedOrU8(dest, value) \
 		_ILInterlockedOrU8_Full((dest), (value))

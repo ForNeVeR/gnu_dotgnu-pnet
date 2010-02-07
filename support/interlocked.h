@@ -1,7 +1,7 @@
 /*
  * interlocked.h - Implementation of interlocked functions.
  *
- * Copyright (C) 2002, 2009  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2009, 2010  Southern Storm Software, Pty Ltd.
  *
  * Authors: Thong Nguyen (tum@veridicus.com)
  *
@@ -209,6 +209,134 @@
 #else
 #define ILInterlockedCompilerBarrier
 #endif
+
+/*
+ * Initialize the interlocked system.
+ */
+void ILInterlockedInit(void);
+
+/*
+ * Backup functions if the operation is not supported by the processor.
+ */
+
+/*
+ * Flush cache and set a memory barrier.
+ */
+void _ILInterlockedMemoryBarrier();
+
+/*
+ * Exchange signed 32 bit integers.
+ */
+ILInt32 _ILInterlockedExchangeI4_Full(volatile ILInt32 *dest, ILInt32 value);
+
+/*
+ * Exchange unsigned 32 bit integers.
+ */
+ILUInt32 _ILInterlockedExchangeU4_Full(volatile ILUInt32 *dest, ILUInt32 value);
+
+/*
+ * Exchange signed 64 bit integers.
+ */
+ILInt64 _ILInterlockedExchangeI8_Full(volatile ILInt64 *dest, ILInt64 value);
+
+/*
+ * Exchange unsigned 64 bit integers.
+ */
+ILUInt64 _ILInterlockedExchangeU8_Full(volatile ILUInt64 *dest, ILUInt64 value);
+
+/*
+ * Exchange pointers.
+ */
+void *_ILInterlockedExchangeP_Full(void * volatile *dest, void *value);
+
+/*
+ * Exchange 32 bit foatingpoint values.
+ */
+ILFloat _ILInterlockedExchangeR4_Full(volatile ILFloat *dest, ILFloat value);
+
+/*
+ * Exchange 64 bit foatingpoint values.
+ */
+ILDouble _ILInterlockedExchangeR8_Full(volatile ILDouble *dest, ILDouble value);
+
+/*
+ * Compare and exchange signed 32 bit integers.
+ */
+ILInt32 _ILInterlockedCompareAndExchangeI4_Full(volatile ILInt32 *dest,
+												ILInt32 value,
+												ILInt32 comparand);
+
+/*
+ * Compare and exchange unsigned 32 bit integers.
+ */
+ILUInt32 _ILInterlockedCompareAndExchangeU4_Full(volatile ILUInt32 *dest,
+												 ILUInt32 value,
+												 ILUInt32 comparand);
+
+/*
+ * Compare and exchange signed 64 bit integers.
+ */
+ILInt64 _ILInterlockedCompareAndExchangeI8_Full(volatile ILInt64 *dest,
+												ILInt64 value,
+												ILInt64 comparand);
+
+/*
+ * Compare and exchange unsigned 64 bit integers.
+ */
+ILUInt64 _ILInterlockedCompareAndExchangeU8_Full(volatile ILUInt64 *dest,
+												 ILUInt64 value,
+												 ILUInt64 comparand);
+
+/*
+ * Compare and exchange pointers.
+ */
+void *_ILInterlockedCompareAndExchangeP_Full(void * volatile *dest,
+											 void *value,
+											 void *comparand);
+
+/*
+ * Compare and exchange 32 bit floatingpoint values.
+ */
+ILFloat _ILInterlockedCompareAndExchangeR4_Full(volatile ILFloat *dest,
+												ILFloat value,
+												ILFloat comparand);
+
+/*
+ * Compare and exchange 64 bit floatingpoint values.
+ */
+ILDouble _ILInterlockedCompareAndExchangeR8_Full(volatile ILDouble *dest,
+												 ILDouble value,
+												 ILDouble comparand);
+
+/*
+ * Add two signed 32 bit integers.
+ */
+ILInt32 _ILInterlockedAddI4_Full(volatile ILInt32 *dest, ILInt32 value);
+
+/*
+ * Add two signed 64 bit integers.
+ */
+ILInt64 _ILInterlockedAddI8_Full(volatile ILInt64 *dest, ILInt64 value);
+
+/*
+ * Bitwise and two unsigned 32 bit integers.
+ */
+void _ILInterlockedAndU4_Full(volatile ILUInt32 *dest, ILUInt32 value);
+
+/*
+ * Bitwise and two unsigned 64 bit integers.
+ */
+void _ILInterlockedAndU8_Full(volatile ILUInt64 *dest, ILUInt64 value);
+
+/*
+ * Bitwise or two unsigned 32 bit integers.
+ */
+void _ILInterlockedOrU4_Full(volatile ILUInt32 *dest, ILUInt32 value);
+
+/*
+ * Bitwise or two unsigned 64 bit integers.
+ */
+void _ILInterlockedOrU8_Full(volatile ILUInt64 *dest, ILUInt64 value);
 
 /* TODO: implement native interlocked functions for other processors */
 

@@ -31,6 +31,7 @@ libILSupport_a_SOURCES = aes.c \
 						 hash.c \
 						 hashtab.c \
 						 hb_gc.c \
+						 interlocked.c \
 						 interlocked.h \
 						 interlocked_any.h \
 						 interlocked_arm.h \

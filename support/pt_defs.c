@@ -43,6 +43,12 @@ extern	"C" {
 #endif
 
 /*
+ * Signal mask that has to be unblocked if thread interrupts have to be
+ * enabled.
+ */
+static sigset_t		_interruptSet;
+
+/*
  * Choose the version to use for modifying the counter in a count semaphore
  */
 #define _SemAdd(dest, value)		ILInterlockedAddI4_Acquire((dest), (value))
@@ -84,11 +90,8 @@ extern	"C" {
 			} \
 			else \
 			{ \
-				sigset_t __newset; \
 				sigset_t __oldset; \
-				sigemptyset(&__newset); \
-				sigaddset(&__newset, IL_SIG_INTERRUPT); \
-				pthread_sigmask(SIG_UNBLOCK, &__newset, &__oldset); \
+				pthread_sigmask(SIG_UNBLOCK, &_interruptSet, &__oldset); \
 				{
 
 #define IL_END_INTERRUPTIBLE(__result) \
@@ -105,15 +108,12 @@ extern	"C" {
 		{ \
 			ILThread *__myThread; \
 			ILUInt16 __threadState; \
-			sigset_t __newset; \
 			sigset_t __oldset; \
 			__myThread = _ILThreadSelf(); \
 			__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv)); \
 			__threadState |= IL_TS_UNINTERRUPTIBLE; \
 			ILInterlockedStoreU2(&(__myThread->state.split.priv), __threadState); \
-			sigemptyset(&__newset); \
-			sigaddset(&__newset, IL_SIG_INTERRUPT); \
-			pthread_sigmask(SIG_UNBLOCK, &__newset, &__oldset); \
+			pthread_sigmask(SIG_UNBLOCK, &_interruptSet, &__oldset); \
 			{ 
 
 #define IL_END_UNINTERRUPTIBLE(__result) \
@@ -132,14 +132,11 @@ extern	"C" {
 
 #define IL_START_INTERRUPTIBLE(__result) \
 		{ \
-			sigset_t __newset; \
 			sigset_t __oldset; \
 			ILThread *__myThread; \
 			ILUInt16 __threadState; \
 			__myThread = _ILThreadSelf(); \
-			sigemptyset(&__newset); \
-			sigaddset(&__newset, IL_SIG_INTERRUPT); \
-			pthread_sigmask(SIG_UNBLOCK, &__newset, &__oldset); \
+			pthread_sigmask(SIG_UNBLOCK, &_interruptSet, &__oldset); \
 			__threadState = ILInterlockedLoadU2(&(__myThread->state.split.priv)); \
 			if((__threadState & IL_TS_INTERRUPTED) != 0) \
 			{ \
@@ -166,14 +163,11 @@ extern	"C" {
  */
 #define IL_START_UNINTERRUPTIBLE() \
 		{ \
-			sigset_t __newset; \
 			sigset_t __oldset; \
 			ILThread *__myThread; \
 			ILUInt16 __threadState; \
 			__myThread = _ILThreadSelf(); \
-			sigemptyset(&__newset); \
-			sigaddset(&__newset, IL_SIG_INTERRUPT); \
-			pthread_sigmask(SIG_UNBLOCK, &__newset, &__oldset); \
+			pthread_sigmask(SIG_UNBLOCK, &_interruptSet, &__oldset); \
 			{ 
 
 #define IL_END_UNINTERRUPTIBLE(__result) \
@@ -978,6 +972,12 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	sigaction(IL_SIG_SUSPEND, &action, (struct sigaction *)0);
 	action.sa_handler = ResumeSignal;
 	sigaction(IL_SIG_RESUME, &action, (struct sigaction *)0);
+
+	/*
+	 * Initialize the signal mask for interrupting waits.
+	 */
+	sigemptyset(&_interruptSet);
+	sigaddset(&_interruptSet, IL_SIG_INTERRUPT);
 
 #if !defined(USE_COMPILER_TLS)
 	/* We need a thread-specific key for storing thread objects */

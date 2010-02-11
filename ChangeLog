@@ -1,3 +1,9 @@
+2010-02-11  Klaus Treichel  <ktreichel@web.de>
+
+	* support/pt_defs.c (_ILThreadInitSystem): Initialize a static signal
+	mask for interrupting waiting threads.
+	Use the static signal mask in the *INTERRUPTIBLE macros.
+
 2010-02-07  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked.c: Move the previously inlined backup functions

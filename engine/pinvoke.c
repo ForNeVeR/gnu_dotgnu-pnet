@@ -1174,7 +1174,7 @@ void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate, ILMe
 	/* Prepare the closure using the call parameters */
 	if(delegate)
 	{
-		if(ffi_prep_closure(closure, cif, DelegateInvoke, (void *)delegate)
+		if(ffi_prep_closure_loc(closure, cif, DelegateInvoke, (void *)delegate, closure_code)
 				!= FFI_OK)
 		{
 			fprintf(stderr, "Cannot create a closure for %s::%s\n",
@@ -1184,7 +1184,7 @@ void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate, ILMe
 	}
 	else
 	{
-		if(ffi_prep_closure(closure, cif, MethodInvoke, (void *)method)
+		if(ffi_prep_closure_loc(closure, cif, MethodInvoke, (void *)method, closure_code)
 				!= FFI_OK)
 		{
 			fprintf(stderr, "Cannot create a closure for %s::%s\n",

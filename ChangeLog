@@ -9,6 +9,8 @@
 
 	* engine/pinvoke.c (_ILMakeClosureForDelegate): Use ffi_closure_alloc now
 	for allocating the memory for the closure.
+	Replace calls to the deprecated function ffi_prep_closure with calls to
+	the new function ffi_prep_closure_loc.
 
 2010-02-11  Klaus Treichel  <ktreichel@web.de>
 

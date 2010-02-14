@@ -1,3 +1,15 @@
+2010-02-14  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Extend the  --with-libffi switch so that it's possible
+	now to choose between the system supplied libffi version (system), the
+	one that comes with pnet (internal) or no libffi.
+
+	* engine/Makefile.am: Handle the libgc and libffi dependend switches at
+	one place now.
+
+	* engine/pinvoke.c (_ILMakeClosureForDelegate): Use ffi_closure_alloc now
+	for allocating the memory for the closure.
+
 2010-02-11  Klaus Treichel  <ktreichel@web.de>
 
 	* support/pt_defs.c (_ILThreadInitSystem): Initialize a static signal

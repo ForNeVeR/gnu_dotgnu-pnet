@@ -1119,6 +1119,7 @@ void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate, ILMe
 	ILUInt32 arg;
 	ILUInt32 param;
 	ffi_closure *closure;
+	void *closure_code = 0;
 
 	/* Determine the number of argument blocks that we need */
 	numArgs = ILTypeNumParams(signature);
@@ -1156,10 +1157,15 @@ void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate, ILMe
 		return 0;
 	}
 
-	/* Allocate space for the closure.  We use persistent GC memory
-	   because it will contain a pointer to the delegate object, and we
-	   don't want the delegate to be collected while the closure exists */
-	closure = (ffi_closure *)ILGCAllocPersistent(sizeof(ffi_closure));
+	/*
+	 * Allocate space for the closure.
+	 * TODO: free the closure if all references to the delegate vanished.
+	 * NOTE: It's the responsibility of the application to hold a reference to
+	 * the delegate as long as the closure is used by the native method.
+	 * Not doing this means that delegates and the objects the delegates work
+	 * on will never get collected.
+	 */
+	closure = (ffi_closure *)ffi_closure_alloc(sizeof(ffi_closure), &closure_code);
 	if(!closure)
 	{
 		return 0;
@@ -1188,7 +1194,7 @@ void *_ILMakeClosureForDelegate(ILExecProcess *process, ILObject *delegate, ILMe
 	}
 
 	/* The closure is ready to go */
-	return (void *)closure;
+	return closure_code ? closure_code : (void *)closure;
 #else	/* !FFI_CLOSURES */
 	/* libffi does not support closures */
 	fprintf(stderr, "libffi does not support closures on this arch.\n");

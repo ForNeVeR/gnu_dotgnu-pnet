@@ -117,20 +117,6 @@ dnl Check for file extensions.
 AC_EXEEXT
 AC_OBJEXT
 
-dnl The --without-libffi option can be used to disable libffi.
-AC_ARG_WITH(libffi,
-[  --without-libffi        disable libffi support],
-[
-	withffi=no
-],
-[
-	case "$host" in
-    	*-*-hpux*)		withffi=no ;;
-    	hppa*-*-*)		withffi=no ;;
-		        *)		withffi=yes ;;
-	esac
-])
-
 dnl The --without-libgc option can be used to disable libgc.
 AC_ARG_WITH(libgc,
 [  --without-libgc         disable libgc support],
@@ -143,8 +129,7 @@ AC_ARG_WITH(libgc,
 
 dnl check which type of engine should be built
 
-AC_ARG_WITH(cvm,
-[  --with-cvm             Use the CVM interpreter],
+AC_ARG_WITH(cvm, AC_HELP_STRING([--with-cvm], [Use the CVM interpreter]),
 [
 	AC_DEFINE([IL_USE_CVM], 1, [Use the CVM interpreter])
 	withcvm=yes
@@ -186,14 +171,12 @@ AC_ARG_WITH(jit,
 		search_libjit=true
 		AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
 		withjit=yes
-		withffi=no
 	elif test x$withval != xyes ; then
 		JIT_LIBS="$LIBS -L$withval/lib -ljit"
 		JIT_INCLUDE="-I$withval/include"
 		search_libjit=false
 		AC_DEFINE([IL_USE_JIT], 1, [Use the just in time compiler])
 		withjit=yes
-		withffi=no
 	fi
 ],
 [
@@ -739,15 +722,65 @@ if test x$GCC = xyes ; then
 fi
 AC_SUBST(libdir)
 
-dnl Set up libffi-related variables.
 AC_SUBST(FFILIBS)
-if test x$withffi = xyes ; then
-	FFILIBS='$(top_builddir)/libffi/.libs/libffi.a'
-	AC_DEFINE(HAVE_LIBFFI, 1, [Define if you are using libffi])
+dnl Check which libffi version to use.
+dnl internal == the version in the libffi subdir
+dnl system   == the version that comes with the distro.
+dnl             The ffi development package needs to be installed.
+dnl choose   == default Checks if the ffi.h header file is available and uses
+dnl             the the version that comes with the system in this case.
+dnl             If ffi.h is not found the internal version is used.
+dnl no       == don't use libffi
+AC_ARG_WITH(libffi,
+			AC_HELP_STRING([--with-libffi], [choose which libffi version to use. no = disable libffi support]),
+[
+	withffi=$withval
+],
+[
+	case "$host" in
+    	*-*-hpux*)		withffi=no ;;
+    	hppa*-*-*)		withffi=no ;;
+		        *)		withffi=choose ;;
+	esac
+])
+
+if test x$withcvm = xyes ; then
+	case "$withffi" in
+		no)
+			FFILIBS=""
+			;;
+		internal)
+			FFILIBS='$(top_builddir)/libffi/.libs/libffi.a'
+			AC_DEFINE(HAVE_LIBFFI, 1, [Define if you are using libffi])
+			;;
+		system)
+			AC_CHECK_HEADER([ffi.h],
+				[AC_DEFINE(HAVE_LIBFFI, 1, [Define if you are using libffi])],
+				[AC_MSG_ERROR([Couldn't find the system ffi.h header])])
+			AC_CHECK_LIB(ffi, ffi_prep_cif,
+				[FFILIBS='-lffi'],
+				[AC_MSG_ERROR([Couldn't find the system ffi shared library])])
+			;;
+		choose)
+			AC_CHECK_HEADER([ffi.h],
+				[AC_DEFINE(HAVE_LIBFFI, 1, [Define if you are using libffi])
+				 AC_CHECK_LIB(ffi, ffi_prep_cif, [FFILIBS='-lffi'],
+				 [AC_MSG_ERROR([Couldn't find the system ffi shared library])])
+				 withffi=system
+				],
+				[FFILIBS='$(top_builddir)/libffi/.libs/libffi.a'
+				 withffi=internal
+				 AC_DEFINE(HAVE_LIBFFI, 1, [Define if you are using libffi])
+				])
+			;;
+		*)	AC_MSG_ERROR([Invalid argument passed to --with-libffi])
+			;;
+	esac
 else
+	withffi=no
 	FFILIBS=""
 fi
-AM_CONDITIONAL(USING_LIBFFI, test x$withffi = xyes)
+AM_CONDITIONAL(USING_LIBFFI, test x$withffi = xinternal)
 
 dnl Set up libgc-related variables.
 AC_SUBST(GCLIBS)
@@ -762,8 +795,7 @@ else
 fi
 AM_CONDITIONAL(USING_LIBGC, test x$withgc = xyes)
 
-if test x$withffi = xyes; then
-
+if test x$withffi = xinternal; then
 	AC_CONFIG_SUBDIRS(libffi)
 fi
 

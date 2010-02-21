@@ -122,6 +122,7 @@ static void _ILThreadInit(void)
 static void _ILThreadDeinit(void)
 {
 	/* Cleanup the monitor subsystem */
+	_ILMonitorDestroyThread(&mainThread);
 	_ILMonitorSystemDeinit();
 
 	_ILInterruptDeinit();
@@ -321,6 +322,7 @@ void *ILThreadRunSelf(void *(* thread_func)(void *), void *arg)
 	_ILThreadRunAndFreeCleanups(thread_self);
 
 	/* and now destroy the ILThread instance. */
+	_ILMonitorDestroyThread(thread_self);
 	ILWaitHandleClose(thread_self->monitor);
 	_ILSemaphoreDestroy(&(thread_self->suspendAck));
 	_ILSemaphoreDestroy(&(thread_self->resumeAck));
@@ -367,7 +369,7 @@ void _ILThreadRun(ILThread *thread)
 	}
 
 	thread->startArg = 0;
-	
+
 	/* Mark the thread as stopped */
 	threadState.comb = ILInterlockedLoadU4(&(thread->state.comb));
 	threadState.split.priv |= IL_TS_STOPPED;
@@ -375,6 +377,9 @@ void _ILThreadRun(ILThread *thread)
 
 	/* Change the thread count */
 	_ILThreadAdjustCount(-1, ((threadState.split.pub & IL_TS_BACKGROUND) != 0) ? -1 : 0);
+
+	/* Clean up the monitors used */
+	_ILMonitorDestroyThread(thread);
 
 	_ILCriticalSectionEnter(&(thread->lock));
 	{
@@ -1303,9 +1308,6 @@ int ILThreadUnregisterCleanup(ILThread *thread, ILThreadCleanupFunc func)
 {
 	ILThreadCleanupEntry *entry, *prev;
 	_ILThreadState threadState;
-
-	IL_THREAD_ASSERT((thread->state.split.pub & IL_TS_UNSTARTED) ||
-					 (thread == _ILThreadGetSelf()));
 
 	/* Lock down the thread */
 	_ILCriticalSectionEnter(&(thread->lock));

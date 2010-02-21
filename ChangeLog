@@ -1,3 +1,38 @@
+2010-02-21  Klaus Treichel  <ktreichel@web.de>
+
+	* support/monitor.c: Replace the single list of monitors by one with
+	all monitors and one global free list.
+	(_ILMonitorInit, _ILMonitorDestroy): Adjust for the two lists.
+	(DestroyMonitorList): Rename to DestroyMonitorUsedList.
+	(ListCount): Replace by the new functions FreeListCount and
+	UsedListCount.
+	(ILMonitorPrintStats): Relplace calls to ListCount by calls to the
+	replacements.
+	(_ILMonitorPoolDestoy): Destroy only the monitors on the used list
+	because all monitors are on this list now..
+	(_ILMonitorPoolAllocMonitor): Adjust for the two monitor lists and
+	use _ILMonitorAcquire to get the ownership of a monitor on the global
+	free list.
+	(_ILMonitorPoolReclaimMonitor): Adjust for the two monitor lists.
+	(_ILMonitorPoolMoveToFreeList): Rename to _ILMonitorPoolAddToFreeList.
+	(_ILMonitorPoolAddListToFreeList): Add function for adding a monitor
+	list to the fglobal free list.
+	(_ILMonitorDestroyThread): Add function for cleaning up thread local
+	monitor free lists.
+	(ILMonitorTimedTryEnter): Add handling for thread local monitor free
+	lists.
+	(ILMonitorExit): likewise
+
+	* support/no_defs.h, support/pt_defs.h, support/w32_defs.h: Add
+	definitions for _ILMonitorAcquire and _ILMonitorRelease.
+
+	* support/thr_defs.h: Add members for the thread local monitor free
+	list to the ILThread declaration.
+	(_ILMonitorDestroyThread): Add prototype.
+
+	* support/thread.c (_ILThreadDeinit, ILThreadRunSelf, _ILThreadRun):
+	Add calls to the new monitor cleanup function.
+
 2010-02-14  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Extend the  --with-libffi switch so that it's possible

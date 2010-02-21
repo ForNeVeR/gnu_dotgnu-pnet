@@ -518,12 +518,19 @@ int _ILCountSemaphoreTimedWait(_ILCountSemaphore *sem, ILUInt32 ms);
 		} while(0)
 int _ILMonitorPulse(_ILMonitor *mon);
 int _ILMonitorPulseAll(_ILMonitor *mon);
-int	_ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
+int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
 #define _ILMonitorTryEnter(mon) _ILMonitorTimedTryEnter((mon), 0)
 #define _ILMonitorEnter(mon) _ILMonitorTimedTryEnter((mon), IL_MAX_UINT32)
 int _ILMonitorExit(_ILMonitor *mon);
 int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms);
 #define _ILMonitorWait(mon) _ILMonitorTimedWait((mon), IL_MAX_UINT32)
+/*
+ * Operations for acquiring and releasing a monitor where it is guaranteed
+ * that no other thread is trying to enter or waiting on the monitor.
+ * They are used for managing thread local freelists.
+ */
+#define _ILMonitorAcquire(mon)	IL_THREAD_OK
+#define _ILMonitorRelease(mon)	IL_THREAD_OK
 
 /*
  * Call a function "once".

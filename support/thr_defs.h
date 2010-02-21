@@ -211,6 +211,8 @@ struct _tagILThread
 	ILThreadCleanupEntry			*firstCleanupEntry;
 	ILThreadCleanupEntry			*lastCleanupEntry;
 	ILWaitHandle					*monitor;
+	ILMonitor						*monitorFreeList;
+	ILUInt32						monitorFreeCount;
 	/* 1 if the gc knows the thread and is allowed to execute managed code */
 #if defined(IL_INTERRUPT_SUPPORTS)
 	ILInterruptHandler				interruptHandler;
@@ -663,6 +665,11 @@ void _ILMonitorSystemInit();
  * There must be no used monitors left when calling this function.
  */
 void _ILMonitorSystemDeinit();
+
+/*
+ * Perform cleanup actions when a thread stops execution.
+ */
+void _ILMonitorDestroyThread(ILThread *thread);
 
 #ifdef	__cplusplus
 };

@@ -144,6 +144,13 @@ int _ILCondVarTimedWait(_ILCondVar *cond, _ILCondMutex *mutex, ILUInt32 ms);
 #define	_ILMonitorExit(mon)					IL_THREAD_OK
 #define _ILMonitorTimedWait(mon, ms)		IL_THREAD_OK
 #define _ILMonitorWait(mon)					IL_THREAD_OK
+/*
+ * Operations for acquiring and releasing a monitor where it is guaranteed
+ * that no other thread is trying to enter or waiting on the monitor.
+ * They are used for managing thread local freelists.
+ */
+#define _ILMonitorAcquire(mon)				IL_THREAD_OK
+#define _ILMonitorRelease(mon)				IL_THREAD_OK
 
 /*
  * Get or set the thread object that is associated with "self".

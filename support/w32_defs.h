@@ -325,6 +325,13 @@ int _ILMonitorTimedTryEnter(_ILMonitor *mon, ILUInt32 ms);
 #define	_ILMonitorExit(mon)		_ILCondMutexUnlockUnsafe(&((mon)->_mutex))
 int _ILMonitorTimedWait(_ILMonitor *mon, ILUInt32 ms);
 #define _ILMonitorWait(mon)	_ILMonitorTimedWait((mon), IL_MAX_UINT32)
+/*
+ * Operations for acquiring and releasing a monitor where it is guaranteed
+ * that no other thread is trying to enter or waiting on the monitor.
+ * They are used for managing thread local freelists.
+ */
+#define _ILMonitorAcquire(mon)		_ILMonitorTryEnter(mon)
+#define _ILMonitorRelease(mon)		_ILMonitorExit(mon)
 
 /*
  * Get or set the thread object that is associated with "self".

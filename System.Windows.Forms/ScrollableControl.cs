@@ -258,45 +258,56 @@ public class ScrollableControl : Control
 
 	private void UpdateScrollBars()
 			{
-				this.CheckAutoscrollPosition();
-				Rectangle rect = DisplayRectangle;
-
-				if( null != vScrollBar ) {
-					vScrollBar.SetBounds(rect.Right, 0, vScrollBar.Width, rect.Height);
-					if(DisplayRectangle.Height >= ScrollArea.Height)
-					{
-						vScrollBar.Visible = false;
+				try 
+				{
+					this.CheckAutoscrollPosition();
+					Rectangle rect = DisplayRectangle;
+	
+					if( null != vScrollBar ) {
+						vScrollBar.SetBounds(rect.Right, 0, vScrollBar.Width, rect.Height);
+						if(DisplayRectangle.Height >= ScrollArea.Height)
+						{
+							vScrollBar.Visible = false;
+						}
+						else
+						{
+	//						vScrollBar.CreateControl();
+							
+							// set Maximum before setting the value, or we get an exception
+							vScrollBar.Maximum = ScrollArea.Height - 1;
+							vScrollBar.Value = -(autoScrollPosition.Y);
+							// set Large/SmallChange after setting maximum, or display failure
+							vScrollBar.LargeChange = DisplayRectangle.Height;
+							vScrollBar.SmallChange = (DisplayRectangle.Height + 9 )/ 10;
+							vScrollBar.Visible = vscroll;
+						}	
 					}
-					else
-					{
-//						vScrollBar.CreateControl();
-						
-						// set Maximum before setting the value, or we get an exception
-						vScrollBar.Maximum = ScrollArea.Height - 1;
-						vScrollBar.Value = -(autoScrollPosition.Y);
-						// set Large/SmallChange after setting maximum, or display failure
-						vScrollBar.LargeChange = DisplayRectangle.Height;
-						vScrollBar.SmallChange = (DisplayRectangle.Height + 9 )/ 10;
-						vScrollBar.Visible = vscroll;
-					}	
+	
+					if( null != hScrollBar ) {
+						hScrollBar.SetBounds(0, rect.Bottom, rect.Width, hScrollBar.Height);
+						if(DisplayRectangle.Width >= ScrollArea.Width)
+						{
+							hScrollBar.Visible = false;
+						}
+						else
+						{
+							// set Maximum before setting the value, or we get an exception
+							hScrollBar.Maximum = ScrollArea.Width - 1;
+							hScrollBar.Value = -(autoScrollPosition.X);
+							// set Large/SmallChange after setting maximum, or display failure
+							hScrollBar.LargeChange = DisplayRectangle.Width;			
+							hScrollBar.SmallChange = (DisplayRectangle.Width + 9) / 10;
+							hScrollBar.Visible = hscroll;
+						}
+					}
 				}
-
-				if( null != hScrollBar ) {
-					hScrollBar.SetBounds(0, rect.Bottom, rect.Width, hScrollBar.Height);
-					if(DisplayRectangle.Width >= ScrollArea.Width)
-					{
-						hScrollBar.Visible = false;
-					}
-					else
-					{
-						// set Maximum before setting the value, or we get an exception
-						hScrollBar.Maximum = ScrollArea.Width - 1;
-						hScrollBar.Value = -(autoScrollPosition.X);
-						// set Large/SmallChange after setting maximum, or display failure
-						hScrollBar.LargeChange = DisplayRectangle.Width;			
-						hScrollBar.SmallChange = (DisplayRectangle.Width + 9) / 10;
-						hScrollBar.Visible = hscroll;
-					}
+				catch 
+				{
+					// ignore exception while updating scrollbars.
+					// exceptions might happen while clearing controls while disposing
+					// scrollbar tries to create graphics, but widget might be destroyed
+					// Xsharp.XInvalidOperationException
+					// this is not a fix, but a workaround
 				}
 			}
 

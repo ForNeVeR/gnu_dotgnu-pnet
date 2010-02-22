@@ -1,3 +1,8 @@
+2010-02-22  Heiko Weiss  <heiko.weiss@de.trumpf.com>
+	
+	* System.Windows.Forms/ScrollableControl.cs: workaround for exception 
+	while removing controls.
+
 2010-02-01  Heiko Weiss  <heiko.weiss@de.trumpf.com>
 
 	* runtime/System/Text/Encoding.cs (InvokeI18N): avoid cctor to fail.

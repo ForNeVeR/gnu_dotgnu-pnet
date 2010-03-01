@@ -1,3 +1,8 @@
+2010-03-01  Heiko Weiss  <heiko.weiss@de.trumpf.com>
+	
+	* System.Windows.Forms/ScrollableControl.cs: removed workaround for 
+	exception while removing controls, found the problem, fixed.
+
 2010-02-22  Heiko Weiss  <heiko.weiss@de.trumpf.com>
 	
 	* System.Windows.Forms/ScrollableControl.cs: workaround for exception 

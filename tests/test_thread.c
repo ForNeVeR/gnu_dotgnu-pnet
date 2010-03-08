@@ -21,6 +21,7 @@
 #include "ilunit.h"
 #include "../support/thr_defs.h"
 #include "../support/interlocked.h"
+#include "../support/interlocked_slist.h"
 #include "il_thread.h"
 #include "il_gc.h"
 #if HAVE_UNISTD_H
@@ -1563,6 +1564,141 @@ static void interlocked_thrash_addsub(void *arg)
 	else
 	{
 		ILUnitAssert(testValue == 0);
+	}
+}
+
+static void interlocked_slist_create(void *arg)
+{
+	ILInterlockedSListHead head;
+
+	ILInterlockedSListHead_Init(&head);
+
+	if(!ILInterlockedSList_IsClean(&head))
+	{
+		ILUnitFailed("List is not clean after creation.\n");
+	}
+}
+
+static void interlocked_slist_add_rem_single(void *arg)
+{
+	ILInterlockedSListHead head;
+	ILInterlockedSListElement elem;
+	ILInterlockedSListElement *rem_elem;
+
+	ILInterlockedSListHead_Init(&head);
+
+	ILInterlockedSListAppend(&head, &elem);
+
+	rem_elem = (ILInterlockedSListElement *)ILInterlockedSListGet(&head);
+
+	if(rem_elem != &elem)
+	{
+		ILUnitFailed("The element removed from the list doesn't match the added element.\n");
+	}
+
+	if(!ILInterlockedSList_IsClean(&head))
+	{
+		ILUnitFailed("List is not clean after removing the element.\n");
+	}
+}
+
+#define SLIST_ITERATIONS 1000000
+
+static void _interlocked_slist_append_thrash(void *arg)
+{
+	ILInterlockedSListHead *head = (ILInterlockedSListHead *)arg;
+	int i;
+
+	for(i = 0; i < SLIST_ITERATIONS; ++i)
+	{
+		ILInterlockedSListElement *elem;
+
+		elem = (ILInterlockedSListElement *)malloc(sizeof(ILInterlockedSListElement));
+		if(elem == 0)
+		{
+			ILUnitOutOfMemory();
+		}
+		ILInterlockedSListAppend(head, elem);
+	}
+}
+
+static void _interlocked_slist_get_thrash(void *arg)
+{
+	ILInterlockedSListHead *head = (ILInterlockedSListHead *)arg;
+	int i;
+
+	i = 0;
+	while(i < SLIST_ITERATIONS)
+	{
+		ILInterlockedSListElement *elem;
+
+		elem = (ILInterlockedSListElement *)ILInterlockedSListGet(head);
+		if(elem)
+		{
+			++i;
+			free(elem);
+		}
+	}
+}
+
+static void interlocked_slist_add_rem_thrash(void *arg)
+{
+	ILInterlockedSListHead head;
+	ILThread *thread[8];
+	int joinResults[8];
+	int i;
+	int haveError = 0;
+
+	ILInterlockedSListHead_Init(&head);
+
+	for(i = 0; i < 4; ++i)
+	{
+		thread[i] = ILThreadCreate(_interlocked_slist_append_thrash, &head);
+		if(!thread[i])
+		{
+			ILUnitOutOfMemory();
+		}
+	}
+
+	for(i = 4; i < 8; ++i)
+	{
+		thread[i] = ILThreadCreate(_interlocked_slist_get_thrash, &head);
+		if(!thread[i])
+		{
+			ILUnitOutOfMemory();
+		}
+	}
+
+	/* Start the threads */
+	for(i = 0; i < 4; ++i)
+	{
+		ILThreadStart(thread[i]);
+		ILThreadStart(thread[4 + i]);
+	}
+
+	/* Wait for the threads to finish */
+	for(i = 0; i < 8; ++i)
+	{
+		joinResults[i] = ILThreadJoin(thread[i], 30000);
+	}
+
+	for(i = 0; i < 8; ++i)
+	{
+		if(joinResults[i] != IL_JOIN_OK)
+		{
+			haveError = 1;
+			ILUnitFailMessage("Failed to join thread[%i] with returncode %i", i, joinResults[i]);
+		}
+		/* Destroy the thread object */
+		ILThreadDestroy(thread[i]);
+	}
+	if(haveError)
+	{
+		ILUnitFailEndMessages();
+	}
+	else if(!ILInterlockedSList_IsClean(&head))
+	{
+		ILUnitFailed("List is not clean after running the test.\n");
 	}
 }
 
@@ -3450,6 +3586,15 @@ void ILUnitRegisterTests(void)
 	RegisterSimple(interlocked_thrash_incdec);
 	RegisterSimple(interlocked_thrash_addsub);
 
+	/*
+	 * Test the interlocked single linked list operations.
+	 */
+	ILUnitRegisterSuite("Interlocked single linked list operations");
+	RegisterSimple(interlocked_slist_create);
+	RegisterSimple(interlocked_slist_add_rem_single);
+	RegisterSimple(interlocked_slist_add_rem_thrash);
+
+	
 	/*
 	 * Test wait mutex behaviours.
 	 */

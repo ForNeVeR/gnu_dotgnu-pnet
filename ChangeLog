@@ -1,3 +1,28 @@
+2010-03-14  Klaus Treichel  <ktreichel@web.de>
+
+	* System/Net/Security/AuthenticationLevel.cs,
+	System/Net/Security/LocalCertificateSelectionCallback.cs,
+	System/Net/Security/ProtectionLevel.cs,
+	System/Net/Security/SslPolicyErrors.cs: Add some 2.x enumerations and
+	delegates.
+
+	System/Security/Oid.cs,
+	System/Security/Cryptography/X509Certificates/OpenFlags.cs,
+	System/Security/Cryptography/X509Certificates/StoreLocation.cs,
+	System/Security/Cryptography/X509Certificates/StoreName.cs,
+	System/Security/Cryptography/X509Certificates/X509ChainStatusFlags.cs,
+	System/Security/Cryptography/X509Certificates/X509FindType.cs,
+	System/Security/Cryptography/X509Certificates/X509IncludeOption.cs,
+	System/Security/Cryptography/X509Certificates/X509KeyUsageFlags.cs,
+	System/Security/Cryptography/X509Certificates/X509NameType.cs,
+	System/Security/Cryptography/X509Certificates/X509RevocationFlag.cs,
+	System/Security/Cryptography/X509Certificates/X509RevocationMode.cs,
+	System/Security/Cryptography/X509Certificates/X509SubjectKeyIdentifierHashAlgorithm.cs,
+	System/Security/Cryptography/X509Certificates/X509VerificationFlags.cs:
+	Add some 2.x enumerations and classes.
+
+	* runtime/System/Security/SecureString.cs: Added
+
 2010-03-01  Heiko Weiss  <heiko.weiss@de.trumpf.com>
 	
 	* System.Windows.Forms/ScrollableControl.cs: removed workaround for 

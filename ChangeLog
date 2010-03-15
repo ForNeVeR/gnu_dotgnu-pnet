@@ -1,3 +1,7 @@
+2010-03-15  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Xml/XmlSecureResolver.cs: Added
+
 2010-03-14  Klaus Treichel  <ktreichel@web.de>
 
 	* System/Net/Security/AuthenticationLevel.cs,

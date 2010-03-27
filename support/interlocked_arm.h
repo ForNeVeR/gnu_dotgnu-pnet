@@ -838,6 +838,15 @@ static IL_INLINE void ILInterlockedOrU4_Full(volatile ILUInt32 *dest,
 #else /* __ARM_ARCH__ <= 5 || __ARM_ARCH_6M__ */
 
 /*
+ * Disable the InterlockedExchange functions on ARM V5 and less because they
+ * dont interact correctly with the emulated InterlockedCompareAndExchange
+ * versions.
+ * We may use them later for TestAndSet implemenations which are not
+ * guaranteed to interact correctly with the other functions.
+ */
+#if 0
+
+/*
  * Exchange two 32 bit integers.
  */
 static IL_INLINE ILInt32 ILInterlockedExchangeI4_Full(volatile ILInt32 *dest,
@@ -876,6 +885,8 @@ static IL_INLINE void *ILInterlockedExchangeP_Full(void * volatile *dest,
 	return retval;
 }
 #define IL_HAVE_INTERLOCKED_EXCHANGEP_FULL 1
+
+#endif /* 0 */
 
 #endif /* __ARM_ARCH__ <= 5  || __ARM_ARCH_6M__ */
 

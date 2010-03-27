@@ -35,7 +35,12 @@ void ILInterlockedSListAppend(ILInterlockedSListHead *head,
 	tail = &(head->tail);
 	elem->next = &(head->tail);
 	/* Exchange the current tail with the element to append. */
-	prev_tail = (ILInterlockedSListElement *)ILInterlockedExchangeP_Acquire((void **)&(tail->next), elem);
+	/*
+	 * We have to make sure that the next pointer is visible by other cpus
+	 * at the time the tail is exchanged so we have to use release semantics
+	 * here.
+	 */
+	prev_tail = (ILInterlockedSListElement *)ILInterlockedExchangeP_Release((void **)&(tail->next), elem);
 	/* set the next pointer of the previous tail to the new element */
 	prev_tail->next = elem;
 	/* and make sure this is seen by all other threads */

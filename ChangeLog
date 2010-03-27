@@ -1,3 +1,9 @@
+2010-03-27  Klaus Treichel  <ktreichel@web.de>
+
+	* support/interlocked_slist.c (ILInterlockedSListAppend): Exchange the
+	list's tail with release semantics to make sure all changes done before
+	are visible by other cpus at the time the exchange is done.
+
 2010-03-06  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked_slist.c, support/interlocked_slist.h: Add a

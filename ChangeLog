@@ -1,3 +1,17 @@
+2010-04-02  Klaus Treichel  <ktreichel@web.de>
+
+	* support/interlocked_arm.h (ILInterlockedCompareAndExchangeI4): Use a
+	branch out of the ldrex/strex block if the loaded value doesn't match
+	the comparand because strexeq doesn't set state to successfull if the
+	condition doesn't match on real hardware.
+	(ILInterlockedCompareAndExchangeI4_Acquire): likewise
+	(ILInterlockedCompareAndExchangeI4_Release): likewise
+	(ILInterlockedCompareAndExchangeI4_Full): likewise
+	(ILInterlockedCompareAndExchangeP): likewise
+	(ILInterlockedCompareAndExchangeP_Acquire): likewise
+	(ILInterlockedCompareAndExchangeP_Release): likewise
+	(ILInterlockedCompareAndExchangeP_Full): likewise
+
 2010-03-27  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked_arm.h: Disable the InterlockedExchange functions

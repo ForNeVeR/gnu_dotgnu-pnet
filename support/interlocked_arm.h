@@ -264,9 +264,11 @@ static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4(volatile ILInt32 *des
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)
 		: "cc"
@@ -288,9 +290,11 @@ static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Acquire(volatile ILIn
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		_IL_INTERLOCKED_ARM_MEMORYBARRIER
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)
@@ -314,9 +318,11 @@ static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Release(volatile ILIn
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)
 		: "memory", "cc"
@@ -339,9 +345,11 @@ static IL_INLINE ILInt32 ILInterlockedCompareAndExchangeI4_Full(volatile ILInt32
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		_IL_INTERLOCKED_ARM_MEMORYBARRIER
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)
@@ -367,9 +375,11 @@ static IL_INLINE void *ILInterlockedCompareAndExchangeP(void * volatile *dest,
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)
 		: "cc"
@@ -391,9 +401,11 @@ static IL_INLINE void *ILInterlockedCompareAndExchangeP_Acquire(void * volatile 
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		_IL_INTERLOCKED_ARM_MEMORYBARRIER
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)
@@ -417,9 +429,11 @@ static IL_INLINE void *ILInterlockedCompareAndExchangeP_Release(void * volatile 
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)
 		: "memory", "cc"
@@ -442,9 +456,11 @@ static IL_INLINE void *ILInterlockedCompareAndExchangeP_Full(void * volatile *de
 		"1:"
 		"ldrex			%0, [%3];"
 		"teq			%0, %5;"
-		"strexeq	%1, %4, [%3];"
+		"bne			2f;"
+		"strex		%1, %4, [%3];"
 		"teq			%1, #0;"
 		"bne			1b;"
+		"2:"
 		_IL_INTERLOCKED_ARM_MEMORYBARRIER
 		: "=&r" (retval), "=&r" (state), "+m" (*dest)
 		: "r" (dest), "r" (value), "Jr" (comparand)

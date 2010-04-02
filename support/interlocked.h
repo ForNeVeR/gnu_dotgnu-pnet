@@ -343,6 +343,7 @@ void _ILInterlockedOrU8_Full(volatile ILUInt64 *dest, ILUInt64 value);
 #include "interlocked_x86.h"
 #include "interlocked_arm.h"
 #include "interlocked_ppc.h"
+#include "interlocked_mips.h"
 #include "interlocked_any.h"
 
 #endif /* _INTERLOCKED_H_ */

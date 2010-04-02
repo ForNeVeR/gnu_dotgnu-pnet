@@ -12,6 +12,12 @@
 	(ILInterlockedCompareAndExchangeP_Release): likewise
 	(ILInterlockedCompareAndExchangeP_Full): likewise
 
+	* support/interlocked.h: Include interlocked_mips.h.
+
+	* support/interlocked_mips.h: Add interlocked functions for mips.
+
+	* support/Makefile.am: Add interlocked_mips.h to the sources.
+
 2010-03-27  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked_arm.h: Disable the InterlockedExchange functions

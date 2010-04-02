@@ -35,6 +35,7 @@ libILSupport_a_SOURCES = aes.c \
 						 interlocked.h \
 						 interlocked_any.h \
 						 interlocked_arm.h \
+						 interlocked_mips.h \
 						 interlocked_ppc.h \
 						 interlocked_x86.h \
 						 interlocked_slist.c \

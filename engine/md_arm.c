@@ -1,7 +1,7 @@
 /*
  * md_arm.c - Machine-dependent definitions for ARM.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,6 +167,42 @@ md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg, int cond, int invcond)
 	arm_alu_reg_imm8_cond(inst, ARM_MOV, reg, 0, 0, invcond);
 	return inst;
 }
+
+#ifdef ARM_HAS_FLOAT
+
+md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
+							  int sreg2, int lessop)
+{
+	/* Remove the MD_FP_REG flag from the source registers */
+	sreg1 &= ~MD_FREG_MASK;
+	sreg2 &= ~MD_FREG_MASK;
+	/* perform a nonsignaling compare */
+	arm_cmpn_double_reg_reg(inst, ARM_CC_AL, sreg1, sreg2);
+	/* Initialize result with 0. This handles the equal result */
+	arm_mov_reg_imm8(inst, dreg, 0);
+	/* Move the float condition flags to arm */
+	arm_mov_vfpstatus(inst);
+	if(lessop)
+	{
+		/* Do it just how specified for now */
+		/* Set the result to 1 if C is set and Z is not set */
+		arm_alu_reg_imm8_cond(inst, ARM_MOV, dreg, dreg, 1, ARM_CC_HI);
+		/* Set the result to -1 if either N or V are set */
+		arm_alu_reg_imm8_cond(inst, ARM_MVN, dreg, dreg, 0, ARM_CC_LT);
+	}
+	else
+	{
+		/* Set the result to 1 if C is set and Z is not set */
+		arm_alu_reg_imm8_cond(inst, ARM_MOV, dreg, dreg, 1, ARM_CC_HI);
+		/* Set the result to -1 if N is set */
+		arm_alu_reg_imm8_cond(inst, ARM_MVN, dreg, dreg, 0, ARM_CC_MI);
+		/* Set the result to 1 if V is set */
+		arm_alu_reg_imm8_cond(inst, ARM_MOV, dreg, dreg, 1, ARM_CC_VS);
+	}
+	return inst;
+}
+
+#endif /* ARM_HAS_FLOAT */
 
 #endif /* CVM_ARM */
 

@@ -1,3 +1,15 @@
+2010-04-05  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/arm_codegen.h: Add code generation macros for arm vfp support.
+
+	* engine/md_arm.c (_md_arm_cmp_float): Added.
+
+	* engine/md_arm.h: Add unroller code generation macros for arm float
+	support.
+
+	* engine/unroll_arith.c (COP_PREFIX_ABS_R4, COP_PREFIX_ABS_R8,
+	COP_PREFIX_SQRT): Add unroller support for these cvm opcodes.
+
 2010-04-02  Klaus Treichel  <ktreichel@web.de>
 
 	* support/interlocked_arm.h (ILInterlockedCompareAndExchangeI4): Use a

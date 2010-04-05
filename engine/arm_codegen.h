@@ -1,7 +1,7 @@
 /*
  * arm_codegen.h - Code generation macros for the ARM processor.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,117 @@ typedef enum
 	ARM_SP   = ARM_R13,			/* Stack pointer */
 
 } ARM_REG;
+
+#ifdef __VFP_FP__
+
+#define ARM_HAS_FLOAT 1
+
+/*
+ * Register definitions for the arm vfp coprocessor.
+ *
+ * NOTE: Double precision operations are available only in D variants.
+ * Arm: Variant VFPv1D supports double precision while VFP1xD doesn't.
+ *      By default double precision support is present.
+ */
+
+/*
+ * VFP Coprocessor numbers.
+ */
+#define ARMVFP_CSINGLE		10
+#define ARMVFP_CDOUBLE		11
+
+/*
+ * VFP Register numbers.
+ */
+typedef enum
+{
+	/*
+	 * Single precision registers.
+	 */
+	ARMVFP_S0	= 0,
+	ARMVFP_S1	= 1,
+	ARMVFP_S2	= 2,
+	ARMVFP_S3	= 3,
+	ARMVFP_S4	= 4,
+	ARMVFP_S5	= 5,
+	ARMVFP_S6	= 6,
+	ARMVFP_S7	= 7,
+	ARMVFP_S8	= 8,
+	ARMVFP_S9	= 9,
+	ARMVFP_S10	= 10,
+	ARMVFP_S11	= 11,
+	ARMVFP_S12	= 12,
+	ARMVFP_S13	= 13,
+	ARMVFP_S14	= 14,
+	ARMVFP_S15	= 15,
+	ARMVFP_S16	= 16,
+	ARMVFP_S17	= 17,
+	ARMVFP_S18	= 18,
+	ARMVFP_S19	= 19,
+	ARMVFP_S20	= 20,
+	ARMVFP_S21	= 21,
+	ARMVFP_S22	= 22,
+	ARMVFP_S23	= 23,
+	ARMVFP_S24	= 24,
+	ARMVFP_S25	= 25,
+	ARMVFP_S26	= 26,
+	ARMVFP_S27	= 27,
+	ARMVFP_S28	= 28,
+	ARMVFP_S29	= 29,
+	ARMVFP_S30	= 30,
+	ARMVFP_S31	= 31,
+	/*
+	 * Double precision registers.
+	 * NOTE: The double precision registers overlap with the single
+	 * precision registers.
+	 * For example ARMVFP_D0 overlaps with ARMVFP_S0 and ARMVFP_S1,
+	 * ARMVFP_D1 overlaps with ARMVFP_S2 and ARMVFP_S3, ...
+	 * ARMVFP_Dn overlaps with ARMVFP_S(2n) and ARMVFP_S(2n+1)
+	 */
+	ARMVFP_D0	= 0,
+	ARMVFP_D1	= 1,
+	ARMVFP_D2	= 2,
+	ARMVFP_D3	= 3,
+	ARMVFP_D4	= 4,
+	ARMVFP_D5	= 5,
+	ARMVFP_D6	= 6,
+	ARMVFP_D7	= 7,
+	ARMVFP_D8	= 8,
+	ARMVFP_D9	= 9,
+	ARMVFP_D10	= 10,
+	ARMVFP_D11	= 11,
+	ARMVFP_D12	= 12,
+	ARMVFP_D13	= 13,
+	ARMVFP_D14	= 14,
+	ARMVFP_D15	= 15,
+	/*
+	 * VFP system registers for moving a vfp system register to one
+	 * of the regular arm registers.
+	 */
+	ARMVFP_FPSID	= 0,
+	ARMVFP_FPSCR	= 1,
+	ARMVFP_FPEXC	= 8
+
+} ARMVFP_REG;
+
+#define ARM_D0	ARMVFP_D0
+#define ARM_D1	ARMVFP_D1
+#define ARM_D2	ARMVFP_D2
+#define ARM_D3	ARMVFP_D3
+#define ARM_D4	ARMVFP_D4
+#define ARM_D5	ARMVFP_D5
+#define ARM_D6	ARMVFP_D6
+#define ARM_D7	ARMVFP_D7
+#define ARM_D8	ARMVFP_D8
+#define ARM_D9	ARMVFP_D9
+#define ARM_D10	ARMVFP_D10
+#define ARM_D11	ARMVFP_D11
+#define ARM_D12	ARMVFP_D12
+#define ARM_D13	ARMVFP_D13
+#define ARM_D14	ARMVFP_D14
+#define ARM_D15	ARMVFP_D15
+
+#endif /* __VFP_FP__ */
 
 /*
  * Condition codes.
@@ -714,6 +825,497 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_store_memindex_short((inst), (reg), \
 										 (basereg), (indexreg)); \
 			} while (0)
+
+#ifdef __VFP_FP__
+
+/*
+ * Instructions valid only with VFP support.
+ */
+
+/*
+ * Move a vfp system register to an arm register
+ */
+#define arm_mov_vfpsreg_reg(inst,cond,reg,vfpsreg) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x0ef00a10) | \
+							 ((vfpsreg) << 16) | \
+							 ((reg) << 12)); \
+			} while (0)
+
+/*
+ * Move the vfp status register to the arm's cpsr
+ */
+#define arm_mov_vfpstatus(inst) \
+			do { \
+				arm_mov_vfpsreg_reg(inst, ARM_CC_AL, ARM_R15, ARMVFP_FPSCR); \
+			} while (0)
+
+/*
+ * Load a floatingpoint value from one or two arm registers.
+ */
+#define arm_load_reg_single(inst,cond,vfpreg,reg) \
+			do { \
+				int __load_reg = (int)(vfpreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0e000010) | \
+							((__load_reg) & 0x1e) << 15 | \
+							(reg) << 12 | \
+							((__load_reg) & 1) << 7 | \
+							(ARMVFP_CSINGLE) << 8); \
+			} while (0)
+
+#define arm_load_reg_double(inst,cond,vfpreg,regl,regh) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x0e000010) | \
+							(vfpreg) << 16 | \
+							(regl) << 12 | \
+							(ARMVFP_CDOUBLE) << 8); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0e200010) | \
+							(vfpreg) << 16 | \
+							(regh) << 12 | \
+							(ARMVFP_CDOUBLE) << 8); \
+			} while (0)
+
+/*
+ * Load a floatingpoint value from an address in a register
+ */
+#define arm_load_regbase_single(inst, cond, reg, basereg) \
+			do { \
+				int __load_reg = (reg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0d100000) | \
+							((__load_reg) & 1) << 22 | \
+							(basereg) << 16 | \
+							((__load_reg) & 0x1e) << 11 | \
+							(ARMVFP_CSINGLE) << 8); \
+			} while (0)
+
+#define arm_load_regbase_double(inst, cond, reg, basereg) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x0d100000) | \
+							(basereg) << 16 | \
+							(reg) << 12 | \
+							(ARMVFP_CDOUBLE) << 8 | \
+							0); \
+			} while (0)
+
+/*
+ * Load a floatingpoint value from an absolute address.
+ */
+#define arm_load_mem_single(inst, cond, reg, mem) \
+			do { \
+				arm_mov_reg_imm((inst), ARM_WORK, (mem)); \
+				arm_load_regbase_single((inst), (cond), (reg), ARM_WORK); \
+			} while (0)
+
+#define arm_load_mem_double(inst, cond, reg, mem) \
+			do { \
+				arm_mov_reg_imm((inst), ARM_WORK, (mem)); \
+				arm_load_regbase_double((inst), (cond), (reg), ARM_WORK); \
+			} while (0)
+
+/*
+ * Load a floatingpoint value from an address in a register and an offset.
+ */
+#define arm_load_membase_single(inst, cond, reg, basereg, imm) \
+			do { \
+				int __load_reg = (reg); \
+				int __mb_imm = (int)(imm); \
+				if(((__mb_imm & 3) == 0) && \
+					(__mb_imm < (1 << 10)) && \
+					(__mb_imm > -(1 << 10))) \
+				{ \
+					int __load_u = ((__mb_imm > 0) ? 1 : 0); \
+					if(!__load_u) \
+					{ \
+						__mb_imm = -__mb_imm; \
+					} \
+					__mb_imm >>= 2; \
+					*(inst)++ = (arm_build_prefix((cond), 0x0d100000) | \
+								(__load_u << 23) | \
+								((__load_reg) & 1) << 22 | \
+								(basereg) << 16 | \
+								((__load_reg) & 0x1e) << 11 | \
+								(ARMVFP_CSINGLE) << 8 | \
+								__mb_imm); \
+				} \
+				else \
+				{ \
+					arm_mov_reg_imm((inst), ARM_WORK, __mb_imm); \
+					arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+									(basereg)); \
+					arm_load_regbase_single((inst), (cond), (reg), ARM_WORK); \
+				} \
+			} while (0)
+
+#define arm_load_membase_double(inst, cond, reg, basereg, imm) \
+			do { \
+				int __sm_imm = (int)(imm); \
+				if(((__sm_imm & 3) == 0) && \
+					(__sm_imm < (1 << 10)) && \
+					(__sm_imm > -(1 << 10))) \
+				{ \
+					int __u = ((__sm_imm > 0) ? 1 : 0); \
+					if(!__u) \
+					{ \
+						__sm_imm = -__sm_imm; \
+					} \
+					__sm_imm >>= 2; \
+					*(inst)++ = (arm_build_prefix((cond), 0x0d100000) | \
+								(__u << 23) | \
+								(basereg) << 16 | \
+								(reg) << 12 | \
+								(ARMVFP_CDOUBLE) << 8 | \
+								__sm_imm); \
+				} \
+				else \
+				{ \
+					arm_mov_reg_imm((inst), ARM_WORK, __sm_imm); \
+					arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+									(basereg)); \
+					arm_load_regbase_double((inst), (cond), (reg), ARM_WORK); \
+				} \
+			} while (0)
+
+/*
+ * Load a floatingpoint value from a register and an index.
+ */
+#define arm_load_memindex_single(inst, cond, reg, basereg, indexreg) \
+			do { \
+                arm_shift_reg_imm8((inst), ARM_SHL, ARM_WORK, (indexreg), 2); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+								(basereg)); \
+				arm_load_regbase_single((inst), (cond), (reg), ARM_WORK); \
+			} while (0)
+
+#define arm_load_memindex_double(inst, cond, reg, basereg, indexreg) \
+			do { \
+                arm_shift_reg_imm8((inst), ARM_SHL, ARM_WORK, (indexreg), 3); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+								(basereg)); \
+				arm_load_regbase_double((inst), (cond), (reg), ARM_WORK); \
+			} while (0)
+
+
+/*
+ * Store a floatingpoint register to one or two arm registers.
+ */
+#define arm_store_reg_single(inst, cond, reg, vfpreg) \
+			do { \
+				int __reg = (int)(vfpreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0e100010) | \
+							((__reg) & 0x1e) << 15 | \
+							(reg) << 12 | \
+							(ARMVFP_CSINGLE) << 8 | \
+							((__reg) & 1) << 7); \
+				} while (0)
+
+#define arm_store_reg_double(inst, cond, regl, regh, vfpreg) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x0e100010) | \
+							(vfpreg) << 16 | \
+							(regl) << 12 | \
+							(ARMVFP_CDOUBLE) << 8); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0e300010) | \
+							(vfpreg) << 16 | \
+							(regh) << 12 | \
+							(ARMVFP_CDOUBLE) << 8); \
+				} while (0)
+
+
+/*
+ * Store a floatingpoint value to an address in a register.
+ */
+#define arm_store_regbase_single(inst, cond, reg, basereg) \
+			do { \
+				int __reg = (reg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0d000000) | \
+							((__reg) & 1) << 22 | \
+							(basereg) << 16 | \
+							((__reg) & 0x1e) << 11 | \
+							(ARMVFP_CSINGLE) << 8 | \
+							0); \
+			} while (0)
+
+#define arm_store_regbase_double(inst, cond, reg, basereg) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x0d000000) | \
+							(basereg) << 16 | \
+							(reg) << 12 | \
+							(ARMVFP_CDOUBLE) << 8 | \
+							0); \
+			} while (0)
+
+#define arm_store_membase_single(inst, cond, reg, basereg, imm) \
+			do { \
+				int __reg = (reg); \
+				int __sm_imm = (int)(imm); \
+				if(((__sm_imm & 3) == 0) && \
+					(__sm_imm < (1 << 10)) && \
+					(__sm_imm > -(1 << 10))) \
+				{ \
+					int __u = ((__sm_imm > 0) ? 1 : 0); \
+					if(!__u) \
+					{ \
+						__sm_imm = -__sm_imm; \
+					} \
+					__sm_imm >>= 2; \
+					*(inst)++ = (arm_build_prefix((cond), 0x0d000000) | \
+								(__u << 23) | \
+								((__reg) & 1) << 22 | \
+								(basereg) << 16 | \
+								((__reg) & 0x1e) << 11 | \
+								(ARMVFP_CSINGLE) << 8 | \
+								__sm_imm); \
+				} \
+				else \
+				{ \
+					arm_mov_reg_imm((inst), ARM_WORK, __sm_imm); \
+					arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+									(basereg)); \
+					arm_store_regbase_single((inst), (cond), (reg), ARM_WORK); \
+				} \
+			} while (0)
+
+#define arm_store_membase_double(inst, cond, reg, basereg, imm) \
+			do { \
+				int __sm_imm = (int)(imm); \
+				if(((__sm_imm & 3) == 0) && \
+					(__sm_imm < (1 << 10)) && \
+					(__sm_imm > -(1 << 10))) \
+				{ \
+					int __u = ((__sm_imm > 0) ? 1 : 0); \
+					if(!__u) \
+					{ \
+						__sm_imm = -__sm_imm; \
+					} \
+					__sm_imm >>= 2; \
+					*(inst)++ = (arm_build_prefix((cond), 0x0d000000) | \
+								(__u << 23) | \
+								(basereg) << 16 | \
+								(reg) << 12 | \
+								(ARMVFP_CDOUBLE) << 8 | \
+								__sm_imm); \
+				} \
+				else \
+				{ \
+					arm_mov_reg_imm((inst), ARM_WORK, __sm_imm); \
+					arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+									(basereg)); \
+					arm_store_regbase_double((inst), (cond), (reg), ARM_WORK); \
+				} \
+			} while (0)
+
+#define arm_store_memindex_single(inst, cond, reg, basereg, indexreg) \
+			do { \
+                arm_shift_reg_imm8((inst), ARM_SHL, ARM_WORK, (indexreg), 2); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+								(basereg)); \
+				arm_store_regbase_single((inst), (cond), (reg), ARM_WORK); \
+			} while (0)
+
+#define arm_store_memindex_double(inst, cond, reg, basereg, indexreg) \
+			do { \
+                arm_shift_reg_imm8((inst), ARM_SHL, ARM_WORK, (indexreg), 3); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
+								(basereg)); \
+				arm_store_regbase_double((inst), (cond), (reg), ARM_WORK); \
+			} while (0)
+
+/*
+ * Conversion macros
+ */
+
+/*
+ * Convert from single precision to double precision
+ */
+#define arm_cvt_single_double_reg_reg(inst, cond, dreg, sreg) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb700c0) | \
+							((dreg) << 12) | \
+							((__cvt_sreg & 1) << 5) | \
+							((__cvt_sreg & 0x1e) >> 1) | \
+							((ARMVFP_CSINGLE) << 8)); \
+			} while (0)
+
+/*
+ * Convert from double precision to single precision
+ */
+#define arm_cvt_double_single_reg_reg(inst, cond, sreg, dreg) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb700c0) | \
+							((__cvt_sreg & 1) << 22) | \
+							((__cvt_sreg & 0x1e) << 11) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							(dreg)); \
+			} while (0)
+
+/*
+ * Compare two floatingpoint values (nonsignaling)  FCMPx.
+ */
+#define arm_cmpn_single_reg_reg(inst,cond,sreg1,sreg2) \
+			do { \
+				int __cmpn_sreg1 = (int)(sreg1); \
+				int __cmpn_sreg2 = (int)(sreg2); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb40040) | \
+							((__cmpn_sreg1 & 1) << 22) | \
+							((__cmpn_sreg1 & 0x1e) << 11) | \
+							((ARMVFP_CSINGLE) << 8) | \
+							((__cmpn_sreg2 & 1) << 5) | \
+							((__cmpn_sreg2 & 0x1e) >> 1)); \
+			} while (0)
+
+#define arm_cmpn_double_reg_reg(inst,cond,sreg1,sreg2) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb40040) | \
+							((sreg1) << 12) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							(sreg2)); \
+			} while (0)
+
+/*
+ * Compare two floatingpoint values (signaling)  FCMPEx.
+ */
+#define arm_cmps_single_reg_reg(inst,cond,sreg1,sreg2) \
+			do { \
+				int __cmps_sreg1 = (int)(sreg1); \
+				int __cmps_sreg2 = (int)(sreg2); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb400c0) | \
+							((__cmps_sreg1 & 1) << 22) | \
+							((__cmps_sreg1 & 0x1e) << 11) | \
+							((ARMVFP_CSINGLE) << 8) | \
+							((__cmps_sreg2 & 1) << 5) | \
+							((__cmps_sreg2 & 0x1e) >> 1)); \
+			} while (0)
+
+#define arm_cmps_double_reg_reg(inst,cond,sreg1,sreg2) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb400c0) | \
+							((sreg1) << 12) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							(sreg2)); \
+			} while (0)
+
+/*
+ * Emit an unary operation for single precision floatingpoint values.
+ */
+#define arm_unary_single_reg(inst,cond,dreg,sreg,mask) \
+			do { \
+				int __uns_dreg = (int)(dreg); \
+				int __uns_sreg = (int)(sreg); \
+				*(inst)++ = (arm_build_prefix((cond), (mask)) | \
+							((__uns_dreg & 1) << 22) | \
+							((__uns_dreg & 0x1e) << 11) | \
+							(ARMVFP_CSINGLE) << 8 | \
+							((__uns_sreg & 1) << 5) | \
+							((__uns_sreg & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Emit an unary operation for double precision floatingpoint values.
+ */
+#define arm_unary_double_reg(inst,cond,dreg,sreg,mask) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), (mask)) | \
+							((dreg) << 12) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							(sreg)); \
+			} while (0)
+
+/*
+ * Emit a binary operation for single precision floatingpoint values.
+ */
+#define arm_binary_single_reg_reg(inst,cond,dreg,sreg1,sreg2,mask) \
+			do { \
+				int __bins_dreg = (int)(dreg); \
+				int __bins_sreg1 = (int)(sreg1); \
+				int __bins_sreg2 = (int)(sreg2); \
+				*(inst)++ = (arm_build_prefix((cond), (mask)) | \
+							((__bins_dreg & 1) << 22) | \
+							((__bins_sreg1 & 0x1e) << 15) | \
+							((__bins_dreg & 0x1e) << 11) | \
+							(ARMVFP_CSINGLE) << 8 | \
+							((__bins_sreg1 & 1) << 7) | \
+							((__bins_sreg2 & 1) << 5) | \
+							((__bins_sreg2 & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Emit a binary operation for double precision floatingpoint values.
+ */
+#define arm_binary_double_reg_reg(inst,cond,dreg,sreg1,sreg2,mask) \
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), (mask)) | \
+							((sreg1) << 16) | \
+							((dreg) << 12) | \
+							(ARMVFP_CDOUBLE) << 8 | \
+							(sreg2)); \
+			} while (0)
+
+/*
+ * Add two floatingpoint values.
+ */
+#define arm_add_single_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_single_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e300000)
+
+#define arm_add_double_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_double_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e300000)
+
+/*
+ * Subtract two floatingpoint values.
+ */
+#define arm_sub_single_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_single_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e300040)
+
+#define arm_sub_double_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_double_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e300040)
+
+/*
+ * Multiply two floatingpoint values.
+ */
+#define arm_mul_single_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_single_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e200000)
+
+#define arm_mul_double_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_double_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e200000)
+
+/*
+ * Divide two floatingpoint values.
+ */
+#define arm_div_single_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_single_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e800000)
+
+#define arm_div_double_reg_reg(inst,cond,dreg,sreg1,sreg2) \
+			arm_binary_double_reg_reg((inst), (cond), (dreg), (sreg1), (sreg2), 0x0e800000)
+
+/*
+ * Get the absolute of a floatingpoint value.
+ */
+#define arm_abs_single_reg(inst,cond,dreg,sreg) \
+			arm_unary_single_reg((inst), (cond), (dreg), (sreg), 0x0eb000c0)
+
+#define arm_abs_double_reg(inst,cond,dreg,sreg) \
+			arm_unary_double_reg((inst), (cond), (dreg), (sreg), 0x0eb000c0)
+
+/*
+ * Negate a floatingpoint value.
+ */
+#define arm_neg_single_reg(inst,cond,dreg,sreg) \
+			arm_unary_single_reg((inst), (cond), (dreg), (sreg), 0x0eb10040)
+
+#define arm_neg_double_reg(inst,cond,dreg,sreg) \
+			arm_unary_double_reg((inst), (cond), (dreg), (sreg), 0x0eb10040)
+
+/*
+ * Get the sqare root of a floatingpoint value.
+ */
+#define arm_sqrt_single_reg(inst,cond,dreg,sreg) \
+			arm_unary_single_reg((inst), (cond), (dreg), (sreg), 0x0eb100c0)
+
+#define arm_sqrt_double_reg(inst,cond,dreg,sreg) \
+			arm_unary_double_reg((inst), (cond), (dreg), (sreg), 0x0eb100c0)
+
+#endif /* __VFP_FP__ */
 
 #ifdef __cplusplus
 };

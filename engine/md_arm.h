@@ -1,7 +1,7 @@
 /*
  * md_arm.h - Machine-dependent definitions for ARM.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,6 +58,27 @@ extern	"C" {
  * -1 is the list terminator.  The floating point register numbers
  * must include the MD_FREG_MASK value.
  */
+#ifdef ARM_HAS_FLOAT
+
+#define	MD_FREG_0		(ARM_D0 | MD_FREG_MASK)
+#define	MD_FREG_1		(ARM_D1 | MD_FREG_MASK)
+#define	MD_FREG_2		(ARM_D2 | MD_FREG_MASK)
+#define	MD_FREG_3		(ARM_D3 | MD_FREG_MASK)
+#define	MD_FREG_4		(ARM_D4 | MD_FREG_MASK)
+#define	MD_FREG_5		(ARM_D5 | MD_FREG_MASK)
+#define	MD_FREG_6		(ARM_D6 | MD_FREG_MASK)
+#define	MD_FREG_7		(ARM_D7 | MD_FREG_MASK)
+#define	MD_FREG_8		-1
+#define	MD_FREG_9		-1
+#define	MD_FREG_10		-1
+#define	MD_FREG_11		-1
+#define	MD_FREG_12		-1
+#define	MD_FREG_13		-1
+#define	MD_FREG_14		-1
+#define	MD_FREG_15		-1
+
+#else /* !ARM_HAS_FLOAT */
+
 #define	MD_FREG_0		-1
 #define	MD_FREG_1		-1
 #define	MD_FREG_2		-1
@@ -74,6 +95,8 @@ extern	"C" {
 #define	MD_FREG_13		-1
 #define	MD_FREG_14		-1
 #define	MD_FREG_15		-1
+
+#endif /* !ARM_HAS_FLOAT */
 
 /*
  * Set this to a non-zero value if floating-point registers are organised
@@ -172,14 +195,40 @@ typedef arm_inst_ptr	md_inst_ptr;
  * is at a particular memory location.  If the system does not use
  * floating-point registers, then load onto the top of the stack.
  */
+#ifdef ARM_HAS_FLOAT
+
+#define md_load_const_float_32(inst,reg,mem) \
+			do { \
+				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __sreg = __dreg << 1; \
+				arm_load_mem_single((inst), ARM_CC_AL, __sreg, (mem)); \
+				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __dreg, __sreg); \
+			} while (0)
+
+#else /* !ARM_HAS_FLOAT */
+
 #define	md_load_const_float_32(inst,reg,mem)	do { ; } while (0)
+
+#endif /* !ARM_HAS_FLOAT */
 
 /*
  * Load a 64-bit floating-point constant into a register.  The constant
  * is at a particular memory location.  If the system does not use
  * floating-point registers, then load onto the top of the stack.
  */
+#ifdef ARM_HAS_FLOAT
+
+#define md_load_const_float_64(inst,reg,mem) \
+			do { \
+				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_load_mem_double((inst), ARM_CC_AL, __dreg, (mem)); \
+			} while (0)
+
+#else /* !ARM_HAS_FLOAT */
+
 #define	md_load_const_float_64(inst,reg,mem)	do { ; } while (0)
+
+#endif /* !ARM_HAS_FLOAT */
 
 /*
  * Load the 32-bit constant zero into a register.  This will zero-extend
@@ -247,12 +296,35 @@ typedef arm_inst_ptr	md_inst_ptr;
  * loaded into "reg".  Otherwise it is loaded onto the top of the
  * floating-point stack.
  */
+#ifdef ARM_HAS_FLOAT
+
+#define	md_load_membase_float_32(inst,reg,basereg,offset)	\
+			do { \
+				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __sreg = __dreg << 1; \
+				arm_load_membase_single((inst), ARM_CC_AL, __sreg, (basereg), (offset)); \
+				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __dreg, __sreg); \
+			} while (0)
+
+#define md_load_membase_float_64(inst,reg,basereg,offset)	\
+			do { \
+				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_load_membase_double((inst), ARM_CC_AL, __dreg, (basereg), (offset)); \
+			} while (0)
+
+#define	md_load_membase_float_native(inst,reg,basereg,offset) \
+			md_load_membase_float_64(inst,reg,basereg,offset)
+
+#else /* !ARM_HAS_FLOAT */
+
 #define	md_load_membase_float_32(inst,reg,basereg,offset)	\
 			do { ; } while (0)
 #define	md_load_membase_float_64(inst,reg,basereg,offset)	\
 			do { ; } while (0)
 #define	md_load_membase_float_native(inst,reg,basereg,offset)	\
 			do { ; } while (0)
+
+#endif /* !ARM_HAS_FLOAT */
 
 /*
  * Store a 32-bit word register to an offset from a pointer register.
@@ -306,12 +378,35 @@ typedef arm_inst_ptr	md_inst_ptr;
  * stored from "reg".  Otherwise it is stored from the top of the
  * floating-point stack.
  */
+#ifdef ARM_HAS_FLOAT
+
+#define	md_store_membase_float_32(inst,reg,basereg,offset)	\
+			do { \
+				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __sreg = __dreg << 1; \
+				arm_cvt_double_single_reg_reg((inst), ARM_CC_AL, __sreg, __dreg); \
+				arm_store_membase_single((inst), ARM_CC_AL, __sreg, (basereg), (offset)); \
+			} while (0)
+
+#define md_store_membase_float_64(inst,reg,basereg,offset)	\
+			do { \
+				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_store_membase_double((inst), ARM_CC_AL, __dreg, (basereg), (offset)); \
+			} while (0)
+
+#define	md_store_membase_float_native(inst,reg,basereg,offset) \
+			md_store_membase_float_64(inst,reg,basereg,offset)
+
+#else /* !ARM_HAS_FLOAT */
+
 #define	md_store_membase_float_32(inst,reg,basereg,offset)	\
 			do { ; } while (0)
 #define	md_store_membase_float_64(inst,reg,basereg,offset)	\
 			do { ; } while (0)
 #define	md_store_membase_float_native(inst,reg,basereg,offset)	\
 			do { ; } while (0)
+
+#endif /* !ARM_HAS_FLOAT */
 
 /*
  * Add an immediate value to a register.
@@ -549,6 +644,15 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 								 ARM_CC_LT_UN); \
 			} while (0)
 
+#ifdef ARM_HAS_FLOAT
+
+#define md_cmp_reg_reg_float(inst,dreg,sreg1,sreg2,lessop) \
+			do { \
+				inst = _md_arm_cmp_float((inst), (dreg), (sreg1), (sreg2), \
+										 (lessop)); \
+			} while (0)
+#endif /* ARM_HAS_FLOAT */
+
 /*
  * Set the condition codes based on comparing two values.
  * The "cond" value indicates the type of condition that we
@@ -725,6 +829,64 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
  */
 #define	md_store_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
 			arm_store_memindex_ushort((inst), (reg), (basereg), (indexreg))
+
+#ifdef ARM_HAS_FLOAT
+
+#define md_add_reg_reg_float(inst,reg,reg2) \
+			do { \
+				int __add_reg1 = ((int)(reg) & ~MD_FREG_MASK); \
+				int __add_reg2 = ((int)(reg2) & ~MD_FREG_MASK); \
+				arm_add_double_reg_reg(inst, ARM_CC_AL, __add_reg1, \
+														__add_reg1, \
+														__add_reg2); \
+			} while (0)
+
+#define md_sub_reg_reg_float(inst,reg,reg2) \
+			do { \
+				int __sub_reg1 = ((int)(reg) & ~MD_FREG_MASK); \
+				int __sub_reg2 = ((int)(reg2) & ~MD_FREG_MASK); \
+				arm_sub_double_reg_reg(inst, ARM_CC_AL, __sub_reg1, \
+														__sub_reg1, \
+														__sub_reg2); \
+			} while (0)
+
+#define md_mul_reg_reg_float(inst,reg,reg2) \
+			do { \
+				int __mul_reg1 = ((int)(reg) & ~MD_FREG_MASK); \
+				int __mul_reg2 = ((int)(reg2) & ~MD_FREG_MASK); \
+				arm_mul_double_reg_reg(inst, ARM_CC_AL, __mul_reg1, \
+														__mul_reg1, \
+														__mul_reg2); \
+			} while (0)
+
+#define md_div_reg_reg_float(inst,reg,reg2) \
+			do { \
+				int __div_reg1 = ((int)(reg) & ~MD_FREG_MASK); \
+				int __div_reg2 = ((int)(reg2) & ~MD_FREG_MASK); \
+				arm_div_double_reg_reg(inst, ARM_CC_AL, __div_reg1, \
+														__div_reg1, \
+														__div_reg2); \
+			} while (0)
+
+#define md_neg_reg_float(inst,reg) \
+			do { \
+				int __neg_reg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_neg_double_reg(inst, ARM_CC_AL, __neg_reg, __neg_reg); \
+			} while (0)
+
+#define md_abs_reg_float(inst,reg) \
+			do { \
+				int __abs_reg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_abs_double_reg(inst, ARM_CC_AL, __abs_reg, __abs_reg); \
+			} while (0)
+
+#define md_sqrt_reg_float(inst,reg) \
+			do { \
+				int __sqrt_reg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_sqrt_double_reg(inst, ARM_CC_AL, __sqrt_reg, __sqrt_reg); \
+			} while (0)
+
+#endif /* ARM_HAS_FLOAT */
 
 #ifdef	__cplusplus
 };

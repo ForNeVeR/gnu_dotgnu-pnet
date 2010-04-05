@@ -1,7 +1,7 @@
 /*
  * unroll_arith.c - Arithmetic handling for generic CVM unrolling.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -553,6 +553,8 @@ case COP_FDIV:
 }
 break;
 
+#ifdef md_rem_reg_reg_float
+
 case COP_FREM:
 {
 	/* Remainder floating point */
@@ -563,6 +565,8 @@ case COP_FREM:
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
+
+#endif /* md_rem_reg_reg_float */
 
 case COP_FNEG:
 {
@@ -654,6 +658,8 @@ break;
 
 #ifdef MD_HAS_FP
 
+#ifdef md_cmp_reg_reg_float
+
 case 0x100 + COP_PREFIX_FCMPL:
 {
 	/* Compare floating point values */
@@ -686,7 +692,10 @@ case 0x100 + COP_PREFIX_FCMPG:
 }
 break;
 
+#endif /* md_cmp_reg_reg_float */
+
 #endif /* MD_HAS_FP */
+
 case 0x100 + COP_PREFIX_ICMP:
 {
 	/* Compare integer values with -1, 0, or 1 result */
@@ -780,5 +789,38 @@ case 0x100 + COP_PREFIX_SETGE:
 	MODIFY_UNROLL_PC(CVMP_LEN_NONE);
 }
 break;
+
+#ifdef MD_HAS_FP
+
+#ifdef md_abs_reg_float
+
+case 0x100 + COP_PREFIX_ABS_R4:
+case 0x100 + COP_PREFIX_ABS_R8:
+{
+	/* Absolute value of a floating point */
+	UNROLL_START();
+	reg = GetTopFPRegister(&unroll);
+	md_abs_reg_float(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_abs_reg_float */
+
+#ifdef md_sqrt_reg_float
+
+case 0x100 + COP_PREFIX_SQRT:
+{
+	/* Sqare root of a floating point */
+	UNROLL_START();
+	reg = GetTopFPRegister(&unroll);
+	md_sqrt_reg_float(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_sqrt_reg_float */
+
+#endif /* MD_HAS_FP */
 
 #endif /* IL_UNROLL_CASES */

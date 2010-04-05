@@ -646,6 +646,8 @@ extern md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg,
 
 #ifdef ARM_HAS_FLOAT
 
+md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
+							  int sreg2, int lessop);
 #define md_cmp_reg_reg_float(inst,dreg,sreg1,sreg2,lessop) \
 			do { \
 				inst = _md_arm_cmp_float((inst), (dreg), (sreg1), (sreg2), \

@@ -8,9 +8,11 @@
  *   Dietmar Maurer (dietmar@ximian.com)
  *   Patrik Torstensson
  *   Zalman Stern
+ *   Klaus Treichel
  * 
  * Copyright (C)  2000 Intel Corporation.  All rights reserved.
  * Copyright (C)  2001, 2002 Ximian, Inc.
+ * Copyright (C)  2010  Southern Storm Software, Pty Ltd.
  *
  * This file originated with the Mono project (www.go-mono.com), and may
  * be redistributed under the terms of the Lesser General Public License.
@@ -694,17 +696,17 @@ typedef union {
 #define amd64_enter_size(inst,framesize) do { amd64_emit_rex ((inst),(size),0,0,0); x86_enter((inst),(framesize)); } while (0)
 //#define amd64_leave_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_leave(inst); } while (0)
 #define amd64_sahf_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_sahf(inst); } while (0)
-#define amd64_fsin_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fsin(inst); } while (0)
-#define amd64_fcos_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fcos(inst); } while (0)
-#define amd64_fabs_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fabs(inst); } while (0)
+#define amd64_fsin(inst) do { x86_fsin(inst); } while (0)
+#define amd64_fcos(inst) do { x86_fcos(inst); } while (0)
+#define amd64_fabs(inst) do { x86_fabs(inst); } while (0)
 #define amd64_ftst_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_ftst(inst); } while (0)
 #define amd64_fxam_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fxam(inst); } while (0)
 #define amd64_fpatan_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fpatan(inst); } while (0)
 #define amd64_fprem_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fprem(inst); } while (0)
 #define amd64_fprem1_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fprem1(inst); } while (0)
 #define amd64_frndint_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_frndint(inst); } while (0)
-#define amd64_fsqrt_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fsqrt(inst); } while (0)
-#define amd64_fptan_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_fptan(inst); } while (0)
+#define amd64_fsqrt(inst) do { x86_fsqrt(inst); } while (0)
+#define amd64_fptan(inst) do { x86_fptan(inst); } while (0)
 //#define amd64_padding_size(inst,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_padding((inst),(size)); } while (0)
 #define amd64_prolog_size(inst,frame_size,reg_mask,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_prolog((inst),(frame_size),(reg_mask)); } while (0)
 #define amd64_epilog_size(inst,reg_mask,size) do { amd64_emit_rex ((inst),(size),0,0,0); x86_epilog((inst),(reg_mask)); } while (0)
@@ -887,17 +889,12 @@ typedef union {
 #define amd64_enter(inst,framesize) amd64_enter_size(inst,framesize)
 //#define amd64_leave(inst) amd64_leave_size(inst,8)
 #define amd64_sahf(inst) amd64_sahf_size(inst,8)
-#define amd64_fsin(inst) amd64_fsin_size(inst,8)
-#define amd64_fcos(inst) amd64_fcos_size(inst,8)
-#define amd64_fabs(inst) amd64_fabs_size(inst,8)
 #define amd64_ftst(inst) amd64_ftst_size(inst,8)
 #define amd64_fxam(inst) amd64_fxam_size(inst,8)
 #define amd64_fpatan(inst) amd64_fpatan_size(inst,8)
 #define amd64_fprem(inst) amd64_fprem_size(inst,8)
 #define amd64_fprem1(inst) amd64_fprem1_size(inst,8)
 #define amd64_frndint(inst) amd64_frndint_size(inst,8)
-#define amd64_fsqrt(inst) amd64_fsqrt_size(inst,8)
-#define amd64_fptan(inst) amd64_fptan_size(inst,8)
 #define amd64_padding(inst,size) amd64_padding_size(inst,size)
 #define amd64_prolog(inst,frame,reg_mask) amd64_prolog_size(inst,frame,reg_mask,8)
 #define amd64_epilog(inst,reg_mask) amd64_epilog_size(inst,reg_mask,8)

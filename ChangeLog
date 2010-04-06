@@ -1,3 +1,13 @@
+2010-04-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/amd64_codegen.h: Remove emitting the Rex prefix for some fpu
+	opcodes where it's not needed.
+
+	* engine/md_amd64.h: Add macros for unary float operations.
+
+	* engine/unroll_arith.c (COP_PREFIX_COS, COP_PREFIX_SIN, COP_PREFIX_TAN):
+	Add unroller support for these cvm opcodes.
+
 2010-04-05  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/arm_codegen.h: Add code generation macros for arm vfp support.

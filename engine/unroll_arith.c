@@ -807,6 +807,34 @@ break;
 
 #endif /* md_abs_reg_float */
 
+#ifdef md_cos_reg_float
+
+case 0x100 + COP_PREFIX_COS:
+{
+	/* Sqare root of a floating point */
+	UNROLL_START();
+	reg = GetTopFPRegister(&unroll);
+	md_cos_reg_float(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_cos_reg_float */
+
+#ifdef md_sin_reg_float
+
+case 0x100 + COP_PREFIX_SIN:
+{
+	/* Sqare root of a floating point */
+	UNROLL_START();
+	reg = GetTopFPRegister(&unroll);
+	md_sin_reg_float(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_sin_reg_float */
+
 #ifdef md_sqrt_reg_float
 
 case 0x100 + COP_PREFIX_SQRT:
@@ -820,6 +848,20 @@ case 0x100 + COP_PREFIX_SQRT:
 break;
 
 #endif /* md_sqrt_reg_float */
+
+#ifdef md_tan_reg_float
+
+case 0x100 + COP_PREFIX_TAN:
+{
+	/* Sqare root of a floating point */
+	UNROLL_START();
+	reg = GetTopFPRegister(&unroll);
+	md_tan_reg_float(unroll.out, reg);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_tan_reg_float */
 
 #endif /* MD_HAS_FP */
 

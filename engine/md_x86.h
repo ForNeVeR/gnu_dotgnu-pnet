@@ -1,7 +1,7 @@
 /*
  * md_x86.h - Machine-dependent definitions for x86.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -834,6 +834,46 @@ extern md_inst_ptr _md_x86_mov_memindex_reg_byte
 			do { \
 				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
 									 1, (reg), 2); \
+			} while (0)
+
+/*
+ * Absolute of a floatinpoint value
+ */
+#define md_abs_reg_float(inst,reg) \
+			do { \
+				x86_fabs((inst)); \
+			} while (0)
+
+/*
+ * Square root of a floatingpoint value
+ */
+#define md_sqrt_reg_float(inst,reg) \
+			do { \
+				x86_fsqrt((inst)); \
+			} while (0)
+
+/*
+ * Sine of a floatingpoint value
+ */
+#define md_sin_reg_float(inst,reg) \
+			do { \
+				x86_fsin((inst)); \
+			} while (0)
+
+/*
+ * Cosine of a floatingpoint value
+ */
+#define md_cos_reg_float(inst,reg) \
+			do { \
+				x86_fcos((inst)); \
+			} while (0)
+
+/*
+ * Tangent of a floatingpoint value
+ */
+#define md_tan_reg_float(inst,reg) \
+			do { \
+				x86_fptan((inst)); \
 			} while (0)
 
 #ifdef	__cplusplus

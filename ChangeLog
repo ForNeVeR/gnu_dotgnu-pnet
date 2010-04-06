@@ -5,6 +5,8 @@
 
 	* engine/md_amd64.h: Add macros for unary float operations.
 
+	* engine/md_x86.h: Add macros for unary float operations.
+
 	* engine/unroll_arith.c (COP_PREFIX_COS, COP_PREFIX_SIN, COP_PREFIX_TAN):
 	Add unroller support for these cvm opcodes.
 

@@ -803,7 +803,7 @@ extern md_inst_ptr _md_amd64_mov_memindex_reg_byte
 			} while (0)
 
 /*
- * Sqare root of a floatingpoint value
+ * Square root of a floatingpoint value
  */
 #define md_sqrt_reg_float(inst,reg) \
 			do { \

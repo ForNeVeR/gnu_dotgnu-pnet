@@ -615,8 +615,11 @@ typedef union
 	/* Pad this structure to the best alignment on the underlying platform.
 	   This is usually needed on 64-bit platforms to ensure that stack
 	   words are always aligned on the best boundary.  We don't do this for
-	   i386 because IL_BEST_ALIGNMENT is sometimes 8, and we need it to be 4 */
-#if !defined(__i386) && !defined(__i386__)
+	   i386 because IL_BEST_ALIGNMENT is sometimes 8, and we need it to be 4.
+	   We don't do this for arm eabi too because the size would be 8 there
+	   too. The size *MUST* be the size of an ILInt32 on 32bit archs for the
+	   unroller to work. */
+#if !defined(__i386) && !defined(__i386__) && !defined(__ARM_EABI__)
 	char		padding[IL_BEST_ALIGNMENT];
 #endif
 

@@ -1,6 +1,7 @@
 2010-04-07  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.h: Mark the no longer used opcode COP_CCTOR_ONCE unsused.
+	Omit the padding of the CVMWord for arm eabi too.
 
 	* engine/cvm_call.c: Remove the code for the COP_CCTOR_ONCE opcode.
 
@@ -22,6 +23,9 @@
 
 	* engine/unroll.c (GetTopTwoWordAndFPRegisters): Function added for
 	floatingpoint array stores.
+
+	* engine/unroll_arith.c: Reenable unrolling of operations with longs for
+	arm eabi.
 
 	* engine/unroll_conv.c (COP_I2F, COP_IU2F, COP_L2F, COP_LU2F): Add
 	unroller support for these cvm opcodes.

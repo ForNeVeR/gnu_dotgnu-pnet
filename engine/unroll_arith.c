@@ -350,7 +350,7 @@ case COP_INEG:
 }
 break;
 
-#if !defined(CVM_PPC) && !defined(__ARM_EABI__) /* has 8 byte CVMWords */
+#if !defined(CVM_PPC) /* has 8 byte CVMWords */
 
 case COP_LADD:
 {

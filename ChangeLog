@@ -16,6 +16,10 @@
 	32 bit and signed 64 bit integer values to floats.
 	Add macros for loading and storing floatingpoint values from/to arrays.
 
+	* engine/md_x86.h: Add conversion macros from signed and unsigned
+	32 bit and signed 64 bit integer values to floats.
+	Add macros for loading and storing floatingpoint values from/to arrays.
+
 	* engine/unroll.c (GetTopTwoWordAndFPRegisters): Function added for
 	floatingpoint array stores.
 

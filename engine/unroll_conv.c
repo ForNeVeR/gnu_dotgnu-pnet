@@ -102,20 +102,32 @@ break;
 
 #ifdef md_conv_sword_64_float
 
-/*
- * TODO: Handle 32 bit archs.
- */
 case COP_L2F:
 {
 	/* Read a float32 value from a pointer */
 	UNROLL_START();
 	CheckFPFull(&unroll);
+#ifdef IL_NATIVE_INT32
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_32BIT | MD_REG2_32BIT);
+	reg3 = GetFPRegister(&unroll);
+#if MD_LITTLE_ENDIAN_LONGS
+	md_conv_sword_64_float(unroll.out, reg3, reg, reg2);
+#else
+	md_conv_sword_64_float(unroll.out, reg3, reg2, reg);
+#endif
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1),
+	PushRegister(&unroll, reg3, 0);
+#else
 	reg = GetTopWordRegister(&unroll, MD_REG1_NATIVE);
 	reg2 = GetFPRegister(&unroll);
 	md_conv_sword_64_float(unroll.out, reg2, reg);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	PushRegister(&unroll, reg2, 0);
+#endif
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;
@@ -124,20 +136,32 @@ break;
 
 #ifdef md_conv_uword_64_float
 
-/*
- * TODO: Handle 32 bit archs.
- */
 case COP_LU2F:
 {
 	/* Read a float32 value from a pointer */
 	UNROLL_START();
 	CheckFPFull(&unroll);
+#ifdef IL_NATIVE_INT32
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_32BIT | MD_REG2_32BIT);
+	reg3 = GetFPRegister(&unroll);
+#if MD_LITTLE_ENDIAN_LONGS
+	md_conv_uword_64_float(unroll.out, reg3, reg, reg2);
+#else
+	md_conv_uword_64_float(unroll.out, reg3, reg2, reg);
+#endif
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1),
+	PushRegister(&unroll, reg3, 0);
+#else
 	reg = GetTopWordRegister(&unroll, MD_REG1_NATIVE);
 	reg2 = GetFPRegister(&unroll);
 	md_conv_uword_64_float(unroll.out, reg2, reg);
 	FreeTopRegister(&unroll, -1);
 	FreeTopRegister(&unroll, -1);
 	PushRegister(&unroll, reg2, 0);
+#endif
 	MODIFY_UNROLL_PC(CVM_LEN_NONE);
 }
 break;

@@ -529,7 +529,7 @@ extern md_inst_ptr _md_amd64_widen_byte(md_inst_ptr inst, int reg, int isSigned)
 
 /*
  * Convert a signed 64 bit value in the general register to a native
- * floating-point value an load it into the top fp register.
+ * floating-point value and load it into the top fp register.
  */
 #define	md_conv_sword_64_float(inst,dreg,sreg)	\
 			do { \

@@ -507,6 +507,44 @@ extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
 			} while (0)
 
 /*
+ * Convert a signed 32 bit value in the general register to a native
+ * floating-point value an load it into the top fp register.
+ */
+#define	md_conv_sword_32_float(inst,dreg,sreg)	\
+			do { \
+				x86_alu_reg_imm((inst), X86_SUB, X86_ESP, 4); \
+				x86_mov_membase_reg((inst), X86_ESP, 0, (sreg), 4); \
+				x86_fild_membase((inst), X86_ESP, 0, 0); \
+				x86_alu_reg_imm((inst), X86_ADD, X86_ESP, 4); \
+			} while (0)
+
+/*
+ * Convert an unsigned 32 bit value in the general register to a native
+ * floating-point value an load it into the top fp register.
+ */
+#define	md_conv_uword_32_float(inst,dreg,sreg)	\
+			do { \
+				x86_alu_reg_imm((inst), X86_SUB, X86_ESP, 8); \
+				x86_mov_membase_reg((inst), X86_ESP, 0, (sreg), 4); \
+				x86_mov_membase_imm((inst), X86_ESP, 4, 0, 4); \
+				x86_fild_membase((inst), X86_ESP, 0, 1); \
+				x86_alu_reg_imm((inst), X86_ADD, X86_ESP, 8); \
+			} while (0)
+
+/*
+ * Convert a signed 64 bit value in the general register to a native
+ * floating-point value an load it into the top fp register.
+ */
+#define	md_conv_sword_64_float(inst,dreg,sregl,sregh)	\
+			do { \
+				x86_alu_reg_imm((inst), X86_SUB, X86_ESP, 8); \
+				x86_mov_membase_reg((inst), X86_ESP, 0, (sregl), 4); \
+				x86_mov_membase_reg((inst), X86_ESP, 4, (sregh), 4); \
+				x86_fild_membase((inst), X86_ESP, 0, 1); \
+				x86_alu_reg_imm((inst), X86_ADD, X86_ESP, 8); \
+			} while (0)
+
+/*
  * Swap the top two items on the floating-point stack.
  */
 #define	md_freg_swap(inst)		x86_fxch((inst), 1)
@@ -780,6 +818,22 @@ extern md_inst_ptr _md_x86_compare
 			} while (0)
 
 /*
+ * Load a 32 bit floatingpoint value from an indexed array.
+ */
+#define	md_load_memindex_float_32(inst,reg,basereg,indexreg,disp) \
+			do { \
+				x86_fld_memindex((inst), (basereg), (disp), (indexreg), 0); \
+			} while (0)
+
+/*
+ * Load a 64 bit floatingpoint value from an indexed array.
+ */
+#define	md_load_memindex_float_64(inst,reg,basereg,indexreg,disp) \
+			do { \
+				x86_fld_memindex((inst), (basereg), (disp), (indexreg), 1); \
+			} while (0)
+
+/*
  * Store a 32-bit word value into an indexed array.
  */
 #define	md_store_memindex_word_32(inst,reg,basereg,indexreg,disp)	\
@@ -834,6 +888,22 @@ extern md_inst_ptr _md_x86_mov_memindex_reg_byte
 			do { \
 				x86_mov_memindex_reg((inst), (basereg), (disp), (indexreg), \
 									 1, (reg), 2); \
+			} while (0)
+
+/*
+ * Store a 32 bit floatingpoint value to an indexed array.
+ */
+#define	md_store_memindex_float_32(inst,reg,basereg,indexreg,disp) \
+			do { \
+				x86_fst_memindex((inst), (basereg), (disp), (indexreg), 0, 1); \
+			} while (0)
+
+/*
+ * Store a 64 bit floatingpoint value to an indexed array.
+ */
+#define	md_store_memindex_float_64(inst,reg,basereg,indexreg,disp) \
+			do { \
+				x86_fst_memindex((inst), (basereg), (disp), (indexreg), 1, 1); \
 			} while (0)
 
 /*

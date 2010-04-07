@@ -79,8 +79,8 @@ md_inst_ptr _md_amd64_mov_membase_reg_byte
 }
 
 md_inst_ptr _md_amd64_mov_memindex_reg_byte(md_inst_ptr inst, int basereg,
-							   			  unsigned offset, int indexreg,
-							   			  int srcreg)
+											unsigned offset, int indexreg,
+											int srcreg)
 {
 	if(srcreg == AMD64_RAX || srcreg == AMD64_RBX ||
 	   srcreg == AMD64_RCX || srcreg == AMD64_RDX)

@@ -1130,6 +1130,19 @@ typedef union {
 		x86_membase_emit ((inst), 0, (basereg), (disp));	\
 	} while (0)
 
+#define x86_fld_memindex(inst,basereg,disp,indexreg,is_double)	\
+	do {	\
+		*(inst)++ = (is_double) ? (unsigned char)0xdd : (unsigned char)0xd9;	\
+		if(is_double) \
+		{	\
+			x86_memindex_emit ((inst), 0, (basereg), (disp), (indexreg), 3);	\
+		}	\
+		else	\
+		{	\
+			x86_memindex_emit ((inst), 0, (basereg), (disp), (indexreg), 2);	\
+		}	\
+	} while (0)
+
 #define x86_fld80_mem(inst,mem)	\
 	do {	\
 		*(inst)++ = (unsigned char)0xdb;	\
@@ -1194,6 +1207,13 @@ typedef union {
 		x86_membase_emit ((inst), 2 + ((pop_stack) ? 1 : 0), (basereg), (disp));	\
 	} while (0)
 
+#define x86_fst_memindex(inst,basereg,disp,indexreg,is_double,pop_stack)	\
+	do {	\
+		*(inst)++ = (is_double) ? (unsigned char)0xdd : (unsigned char)0xd9;	\
+		x86_memindex_emit ((inst), 2 + ((pop_stack) ? 1 : 0), (basereg), (disp), \
+						   (indexreg), ((is_double) ? 3 : 2));	\
+	} while (0)
+
 #define x86_fst80_mem(inst,mem)	\
 	do {	\
 		*(inst)++ = (unsigned char)0xdb;	\
@@ -1227,6 +1247,37 @@ typedef union {
 		} else {	\
 			*(inst)++ = (unsigned char)0xdb;	\
 			x86_membase_emit ((inst), 3, (basereg), (disp));	\
+		}	\
+	} while (0)
+
+/**
+ * @x86_fistt_pop (available only with SSE3)
+ * Same as x86_fist_pop except that the round towards zero mode is used.
+ */
+#define x86_fistt_pop(inst,mem,is_long)	\
+	do {	\
+		if ((is_long)) {	\
+			*(inst)++ = (unsigned char)0xdd;	\
+			x86_mem_emit ((inst), 1, (mem));	\
+		} else {	\
+			*(inst)++ = (unsigned char)0xdb;	\
+			x86_mem_emit ((inst), 1, (mem));	\
+		}	\
+	} while (0)
+
+/**
+ * @x86_fistt_pop_membase  (available only with SSE3)
+ * Same as x86_fist_pop_membase except that the round towards zero mode
+ * is used.
+ */
+#define x86_fistt_pop_membase(inst,basereg,disp,is_long)	\
+	do {	\
+		if ((is_long)) {	\
+			*(inst)++ = (unsigned char)0xdd;	\
+			x86_membase_emit ((inst), 1, (basereg), (disp));	\
+		} else {	\
+			*(inst)++ = (unsigned char)0xdb;	\
+			x86_membase_emit ((inst), 1, (basereg), (disp));	\
 		}	\
 	} while (0)
 

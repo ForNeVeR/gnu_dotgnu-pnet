@@ -1197,6 +1197,90 @@ case COP_PREAD_THIS:
 }
 break;
 
+#ifdef MD_HAS_FP
+
+#ifdef md_load_memindex_float_32
+
+case 0x100 + COP_PREFIX_FREAD_ELEM:
+{
+	/* Read a word from an array */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_32BIT);
+	reg3 = GetFPRegister(&unroll);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	md_load_memindex_float_32(unroll.out, reg3, reg, reg2, MD_ARRAY_HEADER);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	PushRegister(&unroll, reg3, 0);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_load_memindex_float_32 */
+
+#ifdef md_load_memindex_float_64
+
+case 0x100 + COP_PREFIX_DREAD_ELEM:
+{
+	/* Read a word from an array */
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_32BIT);
+	reg3 = GetFPRegister(&unroll);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	md_load_memindex_float_64(unroll.out, reg3, reg, reg2, MD_ARRAY_HEADER);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	PushRegister(&unroll, reg3, 0);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_load_memindex_float_64 */
+
+#ifdef md_store_memindex_float_32
+
+case 0x100 + COP_PREFIX_FWRITE_ELEM:
+{
+	/* Read a word from an array */
+	UNROLL_START();
+	GetTopTwoWordAndFPRegisters(&unroll, &reg, &reg2, &reg3,
+								MD_REG1_NATIVE | MD_REG2_32BIT);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	md_store_memindex_float_32(unroll.out, reg3, reg, reg2, MD_ARRAY_HEADER);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_store_memindex_float_32 */
+
+#ifdef md_store_memindex_float_64
+
+case 0x100 + COP_PREFIX_DWRITE_ELEM:
+{
+	/* Read a word from an array */
+	UNROLL_START();
+	GetTopTwoWordAndFPRegisters(&unroll, &reg, &reg2, &reg3,
+								MD_REG1_NATIVE | MD_REG2_32BIT);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	md_store_memindex_float_64(unroll.out, reg3, reg, reg2, MD_ARRAY_HEADER);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_store_memindex_float_64 */
+
+#endif /* MD_HAS_FP */
+
 #ifdef MD_HAS_2D_ARRAYS
 
 case 0x100 + COP_PREFIX_GET2D:

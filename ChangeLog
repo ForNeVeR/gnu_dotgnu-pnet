@@ -4,6 +4,28 @@
 
 	* engine/cvm_call.c: Remove the code for the COP_CCTOR_ONCE opcode.
 
+	* engine/amd64_codegen.h: Add memindex addressing macros for fld and
+	fst opcodes.
+
+	* engine/x86_codegen.h:  Add memindex addressing macros for fld and
+	fst opcodes.
+
+	* engine/md_amd64.c: Some reformatting.
+
+	* engine/md_amd64.h: Add conversion macros from signed and unsigned
+	32 bit and signed 64 bit integer values to floats.
+	Add macros for loading and storing floatingpoint values from/to arrays.
+
+	* engine/unroll.c (GetTopTwoWordAndFPRegisters): Function added for
+	floatingpoint array stores.
+
+	* engine/unroll_conv.c (COP_I2F, COP_IU2F, COP_L2F, COP_LU2F): Add
+	unroller support for these cvm opcodes.
+
+	* engine/unroll_ptr.c (COP_PREFIX_FREAD_ELEM, COP_PREFIX_DREAD_ELEM,
+	COP_PREFIX_FWRITE_ELEM, COP_PREFIX_DWRITE_ELEM): Add unroller support
+	for these cvm opcodes.
+
 2010-04-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/amd64_codegen.h: Remove emitting the Rex prefix for some fpu

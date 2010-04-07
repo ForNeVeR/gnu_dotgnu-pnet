@@ -1248,6 +1248,87 @@ static void GetFPAndWordRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 #endif
 }
 
+/*
+ * Get the three top-most stack values in two word and a FP register.
+ * "reg1" will be the lowest of the three.
+ */
+static void GetTopTwoWordAndFPRegisters(MDUnroll *unroll,
+										int *reg1, int *reg2,
+										int *reg3, int flags)
+{
+	/* Clear the cached local information */
+	unroll->cachedLocal = -1;
+	unroll->cachedReg = -1;
+
+	/* See if we already have two word and one fp register in play */
+	if(unroll->pseudoStackSize > 2)
+	{
+		*reg1 = unroll->pseudoStack[unroll->pseudoStackSize - 3];
+		if(!MD_IS_FREG(*reg1))
+		{
+			*reg2 = unroll->pseudoStack[unroll->pseudoStackSize - 2];
+			if(!MD_IS_FREG(*reg2))
+			{
+				*reg3 = unroll->pseudoStack[unroll->pseudoStackSize - 1];
+				if(MD_IS_FREG(*reg3))
+				{
+					*reg1 &= ~MD_NATIVE_REG_MASK;
+					*reg2 &= ~MD_NATIVE_REG_MASK;
+					return;
+				}
+			}
+		}
+	}
+
+	/* See if we have one FP and one word registers in play */
+	if(unroll->pseudoStackSize == 2)
+	{
+		*reg2 = unroll->pseudoStack[0];
+		*reg3 = unroll->pseudoStack[1];
+		if(!MD_IS_FREG(*reg2) && MD_IS_FREG(*reg3))
+		{
+			*reg1 = RollRegisterStack(unroll, flags & MD_REG1_NATIVE, -1);
+			*reg2 &= ~MD_NATIVE_REG_MASK;
+			return;
+		}
+	}
+
+	/* See if we have one FP register in play */
+	if(unroll->pseudoStackSize == 1)
+	{
+		*reg3 = unroll->pseudoStack[0];
+		if(MD_IS_FREG(*reg3))
+		{
+			*reg2 = RollRegisterStack(unroll, flags & MD_REG2_NATIVE, -1);
+			*reg1 = RollRegisterStack(unroll, flags & MD_REG1_NATIVE, -1);
+			return;
+		}
+	}
+
+	/* Flush the register stack and then reload into MD_REG_0, MD_REG_1 and MD_FREG_0 */
+	FlushRegisterStack(unroll);
+	*reg1 = MD_REG_0;
+	*reg2 = MD_REG_1;
+	*reg3 = MD_FREG_0;
+	unroll->pseudoStack[0] = MD_REG_0 | MD_NATIVE_REG_MASK;
+	unroll->pseudoStack[1] = MD_REG_1 | MD_NATIVE_REG_MASK;
+	unroll->pseudoStack[2] = MD_FREG_0;
+	unroll->pseudoStackSize = 3;
+	unroll->stackHeight -= (CVM_WORDS_PER_NATIVE_FLOAT + 2) * sizeof(CVMWord);
+	md_load_membase_word_native(unroll->out, MD_REG_0, MD_REG_STACK,
+					    		unroll->stackHeight);
+	md_load_membase_word_native(unroll->out, MD_REG_1, MD_REG_STACK,
+					    		unroll->stackHeight + sizeof(CVMWord));
+	md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
+								 unroll->stackHeight + 2 * sizeof(CVMWord));
+	unroll->regsUsed |= ((1 << MD_REG_0) | (1 << MD_REG_1));
+#if MD_FP_STACK_SIZE != 0
+	++(unroll->fpStackSize);
+#else
+	unroll->regsUsed |= (1 << MD_FREG_0);
+#endif
+}
+
 #endif /* MD_HAS_FP */
 
 /*

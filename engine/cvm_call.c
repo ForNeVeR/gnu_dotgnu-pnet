@@ -1122,42 +1122,6 @@ VMCASE(COP_CALL_INTERFACE):
 VMBREAK(COP_CALL_INTERFACE);
 
 /**
- * <opcode name="cctor_once" group="Call management instructions">
- *   <operation>Block the current method from being executed
- *              more than once</operation>
- *
- *   <format>cctor_once</format>
- *   <dformat>{cctor_once}</dformat>
- *
- *   <form name="cctor_once" code="COP_CCTOR_ONCE"/>
- *
- *   <description>The <i>cctor_once</i> instruction is typically
- *   the first instruction in a static constructor.  If this is the
- *   first time that the static constructor has been called, then
- *   the method will continue.  Otherwise, the effect will be the
- *   same as for <i>return</i>.</description>
- *
- *   <notes>This instruction permits CVM bytecode to call static
- *   constructors from anywhere in the system, without having to
- *   worry about whether it has already been called.  This instruction
- *   will also prevent recursive static constructor calls from
- *   looping indefinitely.</notes>
- * </opcode>
- */
-VMCASE(COP_CCTOR_ONCE):
-{
-	/* Execute the rest of this static constructor method once only */
-	if((method->member.owner->attributes & IL_META_TYPEDEF_CCTOR_ONCE) == 0)
-	{
-		/* We haven't executed this method yet, so mark and continue */
-		method->member.owner->attributes |= IL_META_TYPEDEF_CCTOR_ONCE;
-		MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
-		VMBREAK(COP_CCTOR_ONCE);
-	}
-}
-/* Fall through to the next case */
-
-/**
  * <opcode name="return" group="Call management instructions">
  *   <operation>Return from the current method with no return value</operation>
  *

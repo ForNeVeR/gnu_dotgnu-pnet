@@ -1,3 +1,9 @@
+2010-04-07  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.h: Mark the no longer used opcode COP_CCTOR_ONCE unsused.
+
+	* engine/cvm_call.c: Remove the code for the COP_CCTOR_ONCE opcode.
+
 2010-04-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/amd64_codegen.h: Remove emitting the Rex prefix for some fpu

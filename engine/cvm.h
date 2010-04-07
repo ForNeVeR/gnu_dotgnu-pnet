@@ -307,7 +307,9 @@ extern	"C" {
 #define	COP_PUSH_THREAD				0xDC
 #define	COP_PUSH_THREAD_RAW			0xDD
 #define	COP_PUSHDOWN				0xDE
-#define	COP_CCTOR_ONCE				0xDF
+/*
+ * #define	COP_CCTOR_ONCE				0xDF     NOT USED ANYMORE
+ */
 #define	COP_CALLI					0xE0
 #define	COP_JMPI					0xE1
 

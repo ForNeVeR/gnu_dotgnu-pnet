@@ -1151,6 +1151,138 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 			} while (0)
 
 /*
+ * Convert from signed integer in a single precision register to a
+ * single precision floatingpoint value.  FSITOS
+ */
+#define arm_cvt_si_single(inst, cond, dreg, sreg) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				int __cvt_dreg = (int)(dreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb800c0) | \
+							((__cvt_dreg & 1) << 22) | \
+							((__cvt_dreg & 0x1e) << 11) | \
+							((ARMVFP_CSINGLE) << 8) | \
+							((__cvt_sreg & 1) << 5) | \
+							((__cvt_sreg & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Convert from signed integer in a single precision register to a
+ * double precision floatingpoint value.  FSITOD
+ */
+#define arm_cvt_si_double(inst, cond, dreg, sreg) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb800c0) | \
+							((dreg) << 12) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							((__cvt_sreg & 1) << 5) | \
+							((__cvt_sreg & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Convert from unsigned integer in a single precision register to a
+ * single precision floatingpoint value.  FUITOS
+ */
+#define arm_cvt_ui_single(inst, cond, dreg, sreg) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				int __cvt_dreg = (int)(dreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb80040) | \
+							((__cvt_dreg & 1) << 22) | \
+							((__cvt_dreg & 0x1e) << 11) | \
+							((ARMVFP_CSINGLE) << 8) | \
+							((__cvt_sreg & 1) << 5) | \
+							((__cvt_sreg & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Convert from unsigned integer in a single precision register to a
+ * double precision floatingpoint value.  FSITOD
+ */
+#define arm_cvt_ui_double(inst, cond, dreg, sreg) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0eb80040) | \
+							((dreg) << 12) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							((__cvt_sreg & 1) << 5) | \
+							((__cvt_sreg & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Convert from single precision to a signed integer in a single
+ * precision register. Set to_zero != 0 if the truncate rounding mode
+ * has to be used regardless of the settings in the control register.
+ * FTOSI(Z)S
+ */
+#define arm_cvt_single_si(inst, cond, dreg, sreg, to_zero) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				int __cvt_dreg = (int)(dreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0ebd0040) | \
+							((__cvt_dreg & 1) << 22) | \
+							((__cvt_dreg & 0x1e) << 11) | \
+							((ARMVFP_CSINGLE) << 8) | \
+							((((to_zero) != 0) ? 1 : 0) << 7) | \
+							((__cvt_sreg & 1) << 5) | \
+							((__cvt_sreg & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Convert from double precision to a signed integer in a single
+ * precision register. Set to_zero != 0 if the truncate rounding mode
+ * has to be used regardless of the settings in the control register.
+ * FTOSI(Z)D
+ */
+#define arm_cvt_double_si(inst, cond, dreg, sreg, to_zero) \
+			do { \
+				int __cvt_dreg = (int)(dreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0ebd0040) | \
+							((__cvt_dreg & 1) << 22) | \
+							((__cvt_dreg & 0x1e) << 11) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							((((to_zero) != 0) ? 1 : 0) << 7) | \
+							(sreg)); \
+			} while (0)
+
+/*
+ * Convert from single precision to an unsigned integer in a single
+ * precision register. Set to_zero != 0 if the truncate rounding mode
+ * has to be used regardless of the settings in the control register.
+ * FTOUI(Z)S
+ */
+#define arm_cvt_single_ui(inst, cond, dreg, sreg, to_zero) \
+			do { \
+				int __cvt_sreg = (int)(sreg); \
+				int __cvt_dreg = (int)(dreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0ebc0040) | \
+							((__cvt_dreg & 1) << 22) | \
+							((__cvt_dreg & 0x1e) << 11) | \
+							((ARMVFP_CSINGLE) << 8) | \
+							((((to_zero) != 0) ? 1 : 0) << 7) | \
+							((__cvt_sreg & 1) << 5) | \
+							((__cvt_sreg & 0x1e) >> 1)); \
+			} while (0)
+
+/*
+ * Convert from double precision to an unsigned integer in a single
+ * precision register. Set to_zero != 0 if the truncate rounding mode
+ * has to be used regardless of the settings in the control register.
+ * FTOUI(Z)D
+ */
+#define arm_cvt_double_ui(inst, cond, dreg, sreg, to_zero) \
+			do { \
+				int __cvt_dreg = (int)(dreg); \
+				*(inst)++ = (arm_build_prefix((cond), 0x0ebc0040) | \
+							((__cvt_dreg & 1) << 22) | \
+							((__cvt_dreg & 0x1e) << 11) | \
+							((ARMVFP_CDOUBLE) << 8) | \
+							((((to_zero) != 0) ? 1 : 0) << 7) | \
+							(sreg)); \
+			} while (0)
+
+/*
  * Compare two floatingpoint values (nonsignaling)  FCMPx.
  */
 #define arm_cmpn_single_reg_reg(inst,cond,sreg1,sreg2) \

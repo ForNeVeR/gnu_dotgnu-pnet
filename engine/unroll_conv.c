@@ -104,7 +104,7 @@ break;
 
 case COP_L2F:
 {
-	/* Read a float32 value from a pointer */
+	/* Convert a signed long value to float */
 	UNROLL_START();
 	CheckFPFull(&unroll);
 #ifdef IL_NATIVE_INT32
@@ -138,7 +138,7 @@ break;
 
 case COP_LU2F:
 {
-	/* Read a float32 value from a pointer */
+	/* Convert an unsigned long value to float */
 	UNROLL_START();
 	CheckFPFull(&unroll);
 #ifdef IL_NATIVE_INT32
@@ -167,6 +167,44 @@ case COP_LU2F:
 break;
 
 #endif /* md_conv_uword_64_float */
+
+#ifdef md_conv_float_sword_32
+
+case COP_F2I:
+{
+	/* Convert native float to signed 32 bit using truncate rounding mode */
+	UNROLL_START();
+	CheckFPFull(&unroll);
+	reg = GetTopFPRegister(&unroll);
+	reg2 = GetWordRegister(&unroll, 0);
+	md_conv_float_sword_32(unroll.out, reg2, reg);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	PushRegister(&unroll, reg2, 0);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_conv_float_sword_32 */
+
+#ifdef md_conv_float_uword_32
+
+case COP_F2IU:
+{
+	/* Convert native float to unsigned 32 bit using truncate rounding mode */
+	UNROLL_START();
+	CheckFPFull(&unroll);
+	reg = GetTopFPRegister(&unroll);
+	reg2 = GetWordRegister(&unroll, 0);
+	md_conv_float_uword_32(unroll.out, reg2, reg);
+	FreeTopRegister(&unroll, -1);
+	FreeTopRegister(&unroll, -1);
+	PushRegister(&unroll, reg2, 0);
+	MODIFY_UNROLL_PC(CVM_LEN_NONE);
+}
+break;
+
+#endif /* md_conv_float_uword_32 */
 
 case COP_F2F:
 {

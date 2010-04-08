@@ -504,6 +504,58 @@ typedef arm_inst_ptr	md_inst_ptr;
 #define	md_reg_to_word_native_un(inst,reg)	\
 			do { ; } while (0)
 
+#ifdef ARM_HAS_FLOAT
+
+/*
+ * Convert a signed 32 bit value in the general register to a native
+ * floating-point value an load it into the top fp register.
+ */
+#define	md_conv_sword_32_float(inst,dreg,sreg)	\
+			do { \
+				int __i32f_dreg = ((int)(dreg) & ~MD_FREG_MASK); \
+				int __i32f_sreg = (__i32f_dreg << 1); \
+				arm_load_reg_single((inst), ARM_CC_AL, __i32f_sreg, (sreg)); \
+				arm_cvt_si_double((inst), ARM_CC_AL, __i32f_dreg, __i32f_sreg); \
+			} while (0)
+
+/*
+ * Convert an unsigned 32 bit value in the general register to a native
+ * floating-point value an load it into the top fp register.
+ */
+#define	md_conv_uword_32_float(inst,dreg,sreg)	\
+			do { \
+				int __u32f_dreg = ((int)(dreg) & ~MD_FREG_MASK); \
+				int __u32f_sreg = (__u32f_dreg << 1); \
+				arm_load_reg_single((inst), ARM_CC_AL, __u32f_sreg, (sreg)); \
+				arm_cvt_ui_double((inst), ARM_CC_AL, __u32f_dreg, __u32f_sreg); \
+			} while (0)
+
+/*
+ * Convert a native floating-point value to a signed 32 bit value using the
+ * truncate (round to zero) rounding mode and store it in a general purpose
+ * register.
+ */
+#define	md_conv_float_sword_32(inst,dreg,sreg)	\
+			do { \
+				int __fi32_dreg = ((int)(sreg) & ~MD_FREG_MASK); \
+				int __fi32_sreg = (__fi32_dreg << 1); \
+				arm_cvt_double_si((inst), ARM_CC_AL, __fi32_sreg, __fi32_dreg, 1); \
+				arm_store_reg_single((inst), ARM_CC_AL, (dreg), __fi32_sreg); \
+			} while (0)
+
+/*
+ * Convert a native floating-point value to an unsigned 32 bit value using
+ * the truncate (round to zero) rounding mode and store it in a general
+ * purpose register.
+ */
+#define	md_conv_float_uword_32(inst,dreg,sreg)	\
+			do { \
+				int __fu32_dreg = ((int)(sreg) & ~MD_FREG_MASK); \
+				int __fu32_sreg = (__fu32_dreg << 1); \
+				arm_cvt_double_ui((inst), ARM_CC_AL, __fu32_sreg, __fu32_dreg, 1); \
+				arm_store_reg_single((inst), ARM_CC_AL, (dreg), __fu32_sreg); \
+			} while (0)
+
 /*
  * Truncate floating point values to 32-bit or 64-bit.
  */
@@ -511,6 +563,8 @@ typedef arm_inst_ptr	md_inst_ptr;
 			do { ; } while (0)
 #define	md_reg_to_float_64(inst,reg)	\
 			do { ; } while (0)
+
+#endif /* ARM_HAS_FLOAT */
 
 /*
  * Swap the top two items on the floating-point stack.
@@ -796,6 +850,28 @@ md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
 #define	md_load_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
 			arm_load_memindex_ushort((inst), (reg), (basereg), (indexreg))
 
+#ifdef ARM_HAS_FLOAT
+
+/*
+ * Load a 32 bit floatingpoint value from an indexed array.
+ */
+#define	md_load_memindex_float_32(inst,reg,basereg,indexreg,disp) \
+			do { \
+				int __lf32_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_load_memindex_single((inst), ARM_CC_AL, __lf32_dreg, (basereg), (indexreg)); \
+			} while (0)
+
+/*
+ * Load a 64 bit floatingpoint value from an indexed array.
+ */
+#define	md_load_memindex_float_64(inst,reg,basereg,indexreg,disp) \
+			do { \
+				int __lf64_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_load_memindex_double((inst), ARM_CC_AL, __lf64_dreg, (basereg), (indexreg)); \
+			} while (0)
+
+#endif /* ARM_HAS_FLOAT */
+
 /*
  * Store a 32-bit word value into an indexed array.
  */
@@ -831,6 +907,28 @@ md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
  */
 #define	md_store_memindex_ushort(inst,reg,basereg,indexreg,disp)	\
 			arm_store_memindex_ushort((inst), (reg), (basereg), (indexreg))
+
+#ifdef ARM_HAS_FLOAT
+
+/*
+ * Store a 32 bit floatingpoint value into an indexed array.
+ */
+#define	md_store_memindex_float_32(inst,reg,basereg,indexreg,disp) \
+			do { \
+				int __sf32_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_store_memindex_single((inst), ARM_CC_AL, __sf32_dreg, (basereg), (indexreg)); \
+			} while (0)
+
+/*
+ * Store a 64 bit floatingpoint value into an indexed array.
+ */
+#define	md_store_memindex_float_64(inst,reg,basereg,indexreg,disp) \
+			do { \
+				int __sf64_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_store_memindex_double((inst), ARM_CC_AL, __sf64_dreg, (basereg), (indexreg)); \
+			} while (0)
+
+#endif /* ARM_HAS_FLOAT */
 
 #ifdef ARM_HAS_FLOAT
 

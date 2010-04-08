@@ -1,3 +1,14 @@
+2010-04-08  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/unroll_conv.c (COP_F2I, COP_F2IU): Add unroller support for
+	these cvm opcodes.
+
+	* engine/md_arm.h: Add support for converting 32 bit ints from and to
+	floatingpoint values. Add support for float array loads and stores.
+
+	* engine/arm_codegen.h: Add code generation macros for int to float
+	conversions any vice versa.
+ 
 2010-04-07  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.h: Mark the no longer used opcode COP_CCTOR_ONCE unsused.

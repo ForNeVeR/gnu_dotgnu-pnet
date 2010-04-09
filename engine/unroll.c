@@ -53,24 +53,40 @@ extern	"C" {
 #include "md_default.h"
 
 /*
+ * Determine if the machine-dependent macros support floating-point.
+ */
+#if (MD_FP_STACK_SIZE != 0)
+#define	MD_HAS_FP		1
+#define	MD_HAS_FP_STACK	1
+#elif (MD_FREG_0 != -1)
+#define	MD_HAS_FP		1
+#endif
+
+/*
  * Unrolled code generation state.
  */
 typedef struct
 {
 	md_inst_ptr	out;			/* Code output buffer */
-	int		regsUsed;			/* Registers currently in use */
+	int		regsUsed;			/* General registers currently in use */
 	int		regsSaved;			/* Fixed registers that were saved */
 	int		pseudoStack[32];	/* Registers that make up the pseudo stack */
 	int		pseudoStackSize;	/* Size of the pseudo stack */
-	int		fpStackSize;		/* Size of the floating-point stack */
 	int		stackHeight;		/* Current virtual height of CVM stack */
 	long	cachedLocal;		/* Local variable that was just stored */
 	int		cachedReg;			/* Register for variable that was stored */
 	int		thisValidated;		/* "this" has been checked for NULL */
 #if !MD_STATE_ALREADY_IN_REGS
-	int		pcOffset;		/* interpreter's pc variable offset */
+	int		pcOffset;			/* interpreter's pc variable offset */
 	int		stackOffset;		/* interpreter's stack variable offset */
 	int		frameOffset;		/* interpreter's frame variable offset */
+#endif
+#if MD_HAS_FP
+#if MD_HAS_FP_STACK
+	int		fpStackSize;		/* Size of the floating-point stack */
+#else /* !MD_HAS_FP_STACK */
+	int		fpRegsUsed;			/* Floatingpoint registers currently in use */
+#endif /* !MD_HAS_FP_STACK */
 #endif
 } MDUnroll;
 
@@ -84,16 +100,9 @@ static signed char const regAllocOrder[] =
 		 MD_REG_12, MD_REG_13, MD_REG_14, MD_REG_15};
 
 /*
- * Determine if the machine-dependent macros support floating-point.
- */
-#if (MD_FP_STACK_SIZE != 0) || (MD_FREG_0 != -1)
-#define	MD_HAS_FP	1
-#endif
-
-/*
  * Register allocation order for the floating-point registers.
  */
-#if (MD_FP_STACK_SIZE == 0) && (MD_FREG_0 != -1)
+#if MD_HAS_FP && !MD_HAS_FP_STACK
 static signed char const regAllocFPOrder[] =
 		{MD_FREG_0, MD_FREG_1, MD_FREG_2, MD_FREG_3,
 		 MD_FREG_4, MD_FREG_5, MD_FREG_6, MD_FREG_7,
@@ -125,7 +134,7 @@ static int FlushRegisterStackNoUpdate(MDUnroll *unroll)
 {
 	int index, reg;
 	int stackHeight;
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	int height;
 #endif
 
@@ -146,28 +155,29 @@ static int FlushRegisterStackNoUpdate(MDUnroll *unroll)
 								         stackHeight);
 			stackHeight += sizeof(CVMWord);
 		}
-		else if(!MD_IS_FREG(reg))
+#if MD_HAS_FP
+		else if(MD_IS_FREG(reg))
+		{
+#if !MD_HAS_FP_STACK
+			/* Flush an FP register */
+			md_store_membase_float_native
+				(unroll->out, reg, MD_REG_STACK, stackHeight);
+#else /* MD_HAS_FP_STACK */
+			/* Skip FP registers on the stack and handle them later */
+#endif /* MD_HAS_FP_STACK */
+			stackHeight += CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord);
+		}
+#endif /* MD_HAS_FP */
+		else
 		{
 			/* Flush a 32-bit word register */
 			md_store_membase_word_32(unroll->out, reg, MD_REG_STACK,
 								     stackHeight);
 			stackHeight += sizeof(CVMWord);
 		}
-		else
-		{
-#if MD_FP_STACK_SIZE != 0
-			/* Skip FP registers on the stack and handle them later */
-			stackHeight += CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord);
-#elif MD_FREG_0 != -1
-			/* Flush an FP register */
-			md_store_membase_float_native
-				(unroll->out, reg, MD_REG_STACK, stackHeight);
-			stackHeight += CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord);
-#endif
-		}
 	}
 
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	/* Flush the FPU stack from top-most to bottom-most */
 	height = stackHeight;
 	for(index = unroll->pseudoStackSize - 1; index >= 0; --index)
@@ -199,8 +209,14 @@ static void FlushRegisterStack(MDUnroll *unroll)
 {
 	unroll->stackHeight = FlushRegisterStackNoUpdate(unroll);
 	unroll->pseudoStackSize = 0;
-	unroll->fpStackSize = 0;
 	unroll->regsUsed = 0;
+#if MD_HAS_FP
+#if MD_HAS_FP_STACK
+	unroll->fpStackSize = 0;
+#else /* !MD_HAS_FP_STACK */
+	unroll->fpRegsUsed = 0;
+#endif /* !MD_HAS_FP_STACK */
+#endif /* MD_HAS_FP */
 }
 
 /*
@@ -425,30 +441,14 @@ static int GetWordRegister(MDUnroll *unroll, int flags)
 		}
 	}
 
-	/* Spill the bottom-most register to the CVM stack and reuse it */
+	/*
+	 * Spill the bottom-most registers to the CVM stack until we find a word
+	 * and reuse it.
+	 */
 	reg = unroll->pseudoStack[0];
-	if(!MD_IS_FREG(reg))
-	{
-		if(MD_IS_NATIVE_REG(reg))
-		{
-			reg &= ~MD_NATIVE_REG_MASK;
-			md_store_membase_word_native
-				(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
-		}
-		else
-		{
-			md_store_membase_word_32
-				(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
-		}
-		unroll->stackHeight += sizeof(CVMWord);
-		for(index = 1; index < unroll->pseudoStackSize; ++index)
-		{
-			unroll->pseudoStack[index - 1] = unroll->pseudoStack[index];
-		}
-		unroll->pseudoStack[unroll->pseudoStackSize - 1] = reg | nativemask;
-		return reg;
-	}
-	else
+#if MD_HAS_FP
+#if MD_HAS_FP_STACK
+	if(MD_IS_FREG(reg))
 	{
 		/* We have an FP register at the bottom, so flush everything */
 		FlushRegisterStack(unroll);
@@ -459,6 +459,40 @@ static int GetWordRegister(MDUnroll *unroll, int flags)
 		unroll->pseudoStack[(unroll->pseudoStackSize)++] = reg | nativemask;
 		return reg;
 	}
+#else /* !MD_HAS_FP_STACK */
+	while(MD_IS_FREG(reg))
+	{
+		md_store_membase_float_native
+			(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
+		unroll->stackHeight += (sizeof(CVMWord) * CVM_WORDS_PER_NATIVE_FLOAT);
+		unroll->fpRegsUsed &= ~(1 << (reg & ~MD_FREG_MASK));
+		for(index = 1; index < unroll->pseudoStackSize; ++index)
+		{
+			unroll->pseudoStack[index - 1] = unroll->pseudoStack[index];
+		}
+		--(unroll->pseudoStackSize);
+		reg = unroll->pseudoStack[0];
+	}
+#endif /* !MD_HAS_FP_STACK */
+#endif /* MD_HAS_FP */
+	if(MD_IS_NATIVE_REG(reg))
+	{
+		reg &= ~MD_NATIVE_REG_MASK;
+		md_store_membase_word_native
+			(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
+	}
+	else
+	{
+		md_store_membase_word_32
+			(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
+	}
+	unroll->stackHeight += sizeof(CVMWord);
+	for(index = 1; index < unroll->pseudoStackSize; ++index)
+	{
+		unroll->pseudoStack[index - 1] = unroll->pseudoStack[index];
+	}
+	unroll->pseudoStack[unroll->pseudoStackSize - 1] = reg | nativemask;
+	return reg;
 }
 
 /*
@@ -539,7 +573,7 @@ static void CheckWordFull(MDUnroll *unroll)
  */
 static void CheckFPFull(MDUnroll *unroll)
 {
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	/* Clear the cached local information */
 	unroll->cachedLocal = -1;
 	unroll->cachedReg = -1;
@@ -549,7 +583,7 @@ static void CheckFPFull(MDUnroll *unroll)
 	{
 		FlushRegisterStack(unroll);
 	}
-#else
+#else /* !MD_HAS_FP_STACK */
 	int index, reg, regmask;
 
 	/* Clear the cached local information */
@@ -560,8 +594,8 @@ static void CheckFPFull(MDUnroll *unroll)
 	for(index = 0; index < 16 && regAllocFPOrder[index] != -1; ++index)
 	{
 		reg = regAllocFPOrder[index];
-		regmask = (1 << reg);
-		if((unroll->regsUsed & regmask) == 0)
+		regmask = (1 << (reg & ~MD_FREG_MASK));
+		if((unroll->fpRegsUsed & regmask) == 0)
 		{
 			return;
 		}
@@ -569,7 +603,7 @@ static void CheckFPFull(MDUnroll *unroll)
 
 	/* Flush the entire register stack */
 	FlushRegisterStack(unroll);
-#endif
+#endif  /* !MD_HAS_FP_STACK */
 }
 
 /*
@@ -577,7 +611,7 @@ static void CheckFPFull(MDUnroll *unroll)
  */
 static int GetFPRegister(MDUnroll *unroll)
 {
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	/* Clear the cached local information */
 	unroll->cachedLocal = -1;
 	unroll->cachedReg = -1;
@@ -593,7 +627,7 @@ static int GetFPRegister(MDUnroll *unroll)
 	++(unroll->fpStackSize);
 	unroll->pseudoStack[(unroll->pseudoStackSize)++] = MD_FREG_0;
 	return MD_FREG_0;
-#else
+#else /* !MD_HAS_FP_STACK */
 	int index, reg, regmask;
 
 	/* Clear the cached local information */
@@ -604,22 +638,52 @@ static int GetFPRegister(MDUnroll *unroll)
 	for(index = 0; index < 16 && regAllocFPOrder[index] != -1; ++index)
 	{
 		reg = regAllocFPOrder[index];
-		regmask = (1 << reg);
-		if((unroll->regsUsed & regmask) == 0)
+		regmask = (1 << (reg & ~MD_FREG_MASK));
+		if((unroll->fpRegsUsed & regmask) == 0)
 		{
-			unroll->regsUsed |= regmask;
+			unroll->fpRegsUsed |= regmask;
 			unroll->pseudoStack[(unroll->pseudoStackSize)++] = reg;
 			return reg;
 		}
 	}
 
-	/* Flush the entire stack and then allocate the first FP register */
-	FlushRegisterStack(unroll);
-	reg = regAllocFPOrder[0];
-	unroll->regsUsed |= (1 << reg);
-	unroll->pseudoStack[(unroll->pseudoStackSize)++] = reg;
+	/*
+	 * Spill the bottom-most registers to the CVM stack until we find a
+	 * floatingpoint register and reuse it.
+	 */
+	reg = unroll->pseudoStack[0];
+	while(!MD_IS_FREG(reg))
+	{
+		if(MD_IS_NATIVE_REG(reg))
+		{
+			reg &= ~MD_NATIVE_REG_MASK;
+			md_store_membase_word_native
+				(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
+		}
+		else
+		{
+			md_store_membase_word_32
+				(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
+		}
+		unroll->stackHeight += sizeof(CVMWord);
+		for(index = 1; index < unroll->pseudoStackSize; ++index)
+		{
+			unroll->pseudoStack[index - 1] = unroll->pseudoStack[index];
+		}
+		--(unroll->pseudoStackSize);
+		unroll->regsUsed &= ~reg;
+		reg = unroll->pseudoStack[0];
+	}
+	md_store_membase_float_native
+			(unroll->out, reg, MD_REG_STACK, unroll->stackHeight);
+	unroll->stackHeight += (sizeof(CVMWord) * CVM_WORDS_PER_NATIVE_FLOAT);
+	for(index = 1; index < unroll->pseudoStackSize; ++index)
+	{
+		unroll->pseudoStack[index - 1] = unroll->pseudoStack[index];
+	}
+	unroll->pseudoStack[unroll->pseudoStackSize - 1] = reg;
 	return reg;
-#endif
+#endif /* !MD_HAS_FP_STACK */
 }
 
 #endif /* MD_HAS_FP */
@@ -988,10 +1052,10 @@ static int GetTopFPRegister(MDUnroll *unroll)
 	unroll->stackHeight -= CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord);
 	md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
 								 unroll->stackHeight);
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	++(unroll->fpStackSize);
 #else
-	unroll->regsUsed |= (1 << MD_FREG_0);
+	unroll->fpRegsUsed |= (1 << (MD_FREG_0 & ~MD_FREG_MASK));
 #endif
 	return MD_FREG_0;
 }
@@ -1027,7 +1091,7 @@ static void GetTopTwoFPRegisters(MDUnroll *unroll, int *reg1,
 		}
 	}
 
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 
 	/* See if we have one FP register in play */
 	if(unroll->pseudoStackSize == 1)
@@ -1090,7 +1154,7 @@ static void GetTopTwoFPRegisters(MDUnroll *unroll, int *reg1,
 	*reg1 = MD_FREG_0;
 	*reg2 = MD_FREG_0;
 
-#else /* MD_FP_STACK_SIZE == 0 */
+#else /* !MD_HAS_FP_STACK */
 
 	/* See if we have one FP register in play */
 	if(unroll->pseudoStackSize == 1)
@@ -1127,7 +1191,7 @@ static void GetTopTwoFPRegisters(MDUnroll *unroll, int *reg1,
 						  			CVM_WORDS_PER_NATIVE_FLOAT *
 										sizeof(CVMWord));
 
-#endif /* MD_FP_STACK_SIZE == 0 */
+#endif /* !MD_HAS_FP_STACK */
 }
 
 /*
@@ -1179,10 +1243,10 @@ static void GetWordAndFPRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 	md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
 								 unroll->stackHeight + sizeof(CVMWord));
 	unroll->regsUsed |= (1 << MD_REG_0);
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	++(unroll->fpStackSize);
 #else
-	unroll->regsUsed |= (1 << MD_FREG_0);
+	unroll->fpRegsUsed |= (1 << (MD_FREG_0 & ~MD_FREG_MASK));
 #endif
 }
 
@@ -1218,10 +1282,10 @@ static void GetFPAndWordRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 		unroll->stackHeight -= CVM_WORDS_PER_NATIVE_FLOAT * sizeof(CVMWord);
 		md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
 						             unroll->stackHeight);
-	#if MD_FP_STACK_SIZE != 0
+	#if MD_HAS_FP_STACK
 		++(unroll->fpStackSize);
 	#else
-		unroll->regsUsed |= (1 << MD_FREG_0);
+		unroll->fpRegsUsed |= (1 << (MD_FREG_0 & ~MD_FREG_MASK));
 	#endif
 		return;
 	}
@@ -1241,10 +1305,10 @@ static void GetFPAndWordRegisters(MDUnroll *unroll, int *reg1, int *reg2)
 									CVM_WORDS_PER_NATIVE_FLOAT *
 									sizeof(CVMWord));
 	unroll->regsUsed |= (1 << MD_REG_0);
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	++(unroll->fpStackSize);
 #else
-	unroll->regsUsed |= (1 << MD_FREG_0);
+	unroll->fpRegsUsed |= (1 << (MD_FREG_0 & ~MD_FREG_MASK));
 #endif
 }
 
@@ -1322,10 +1386,10 @@ static void GetTopTwoWordAndFPRegisters(MDUnroll *unroll,
 	md_load_membase_float_native(unroll->out, MD_FREG_0, MD_REG_STACK,
 								 unroll->stackHeight + 2 * sizeof(CVMWord));
 	unroll->regsUsed |= ((1 << MD_REG_0) | (1 << MD_REG_1));
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 	++(unroll->fpStackSize);
 #else
-	unroll->regsUsed |= (1 << MD_FREG_0);
+	unroll->fpRegsUsed |= (1 << (MD_FREG_0 & ~MD_FREG_MASK));
 #endif
 }
 
@@ -1347,10 +1411,10 @@ static void FreeTopRegister(MDUnroll *unroll, long local)
 	}
 	else
 	{
-#if MD_FP_STACK_SIZE != 0
+#if MD_HAS_FP_STACK
 		--(unroll->fpStackSize);
 #else
-		unroll->regsUsed &= ~(1 << reg);
+		unroll->fpRegsUsed &= ~(1 << (reg & ~MD_FREG_MASK));
 #endif
 	}
 }
@@ -1409,13 +1473,15 @@ static void PushRegister(MDUnroll *unroll, int reg, int flags)
 	{
 		unroll->pseudoStack[(unroll->pseudoStackSize)++] = reg;
 	}
-#if MD_FP_STACK_SIZE != 0
 	if(MD_IS_FREG(reg))
 	{
+#if MD_HAS_FP_STACK
 		++(unroll->fpStackSize);
+#else
+		unroll->fpRegsUsed |= (1 << (reg & ~MD_FREG_MASK));
+#endif
 	}
 	else
-#endif
 	{
 		unroll->regsUsed |= (1 << reg);
 	}
@@ -1650,7 +1716,6 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	unroll.regsUsed = 0;
 	unroll.regsSaved = 0;
 	unroll.pseudoStackSize = 0;
-	unroll.fpStackSize = 0;
 	unroll.stackHeight = 0;
 	unroll.cachedLocal = -1;
 	unroll.cachedReg = -1;
@@ -1659,6 +1724,13 @@ int _ILCVMUnrollMethod(ILCoder *coder, unsigned char *pc, ILMethod *method)
 	unroll.pcOffset = _ILCVMGetPcOffset(coder);
 	unroll.stackOffset = _ILCVMGetStackOffset(coder);
 	unroll.frameOffset = _ILCVMGetFrameOffset(coder);
+#endif
+#if MD_HAS_FP
+#if MD_HAS_FP_STACK
+	unroll.fpStackSize = 0;
+#else
+	unroll.fpRegsUsed = 0;
+#endif
 #endif
 	inUnrollBlock = 0;
 	overwritePC = 0;
@@ -1798,7 +1870,6 @@ int _ILCVMUnrollGetNativeStack(ILCoder *coder, unsigned char **pcPtr, CVMWord **
 	unroll.regsUsed = 0;
 	unroll.regsSaved = 0;
 	unroll.pseudoStackSize = 0;
-	unroll.fpStackSize = 0;
 	unroll.stackHeight = 0;
 	unroll.cachedLocal = -1;
 	unroll.cachedReg = -1;
@@ -1806,6 +1877,13 @@ int _ILCVMUnrollGetNativeStack(ILCoder *coder, unsigned char **pcPtr, CVMWord **
 	unroll.pcOffset = 0;
 	unroll.stackOffset = 0;
 	unroll.frameOffset = 0;
+#if MD_HAS_FP
+#if MD_HAS_FP_STACK
+	unroll.fpStackSize = 0;
+#else
+	unroll->fpRegsUsed = 0;
+#endif
+#endif
 
 	/* The start position of the code */
 	unrollStart = unroll.out;

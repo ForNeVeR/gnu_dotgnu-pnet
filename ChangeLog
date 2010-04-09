@@ -1,3 +1,10 @@
+2010-04-09  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/unroll.c: Rework register allocation for non stack organized
+	floatingpoint units. Track the used word and floatingpoint registers
+	in distinct bitmasks to allow up to 32 word registers and
+	32 floatingpoint registers.
+
 2010-04-08  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/unroll_conv.c (COP_F2I, COP_F2IU): Add unroller support for
@@ -7,7 +14,7 @@
 	floatingpoint values. Add support for float array loads and stores.
 
 	* engine/arm_codegen.h: Add code generation macros for int to float
-	conversions any vice versa.
+	conversions and vice versa.
  
 2010-04-07  Klaus Treichel  <ktreichel@web.de>
 

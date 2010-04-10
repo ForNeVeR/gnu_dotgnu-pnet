@@ -2,6 +2,7 @@
 
 	* engine/md_arm.h: Fix loads and stores from/to single precision float
 	arrays. Change some temporary variables in macros to distinct names.
+	Implement truncation from double to single precision stack value.
 
 2010-04-09  Klaus Treichel  <ktreichel@web.de>
 

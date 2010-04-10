@@ -560,7 +560,13 @@ typedef arm_inst_ptr	md_inst_ptr;
  * Truncate floating point values to 32-bit or 64-bit.
  */
 #define	md_reg_to_float_32(inst,reg)	\
-			do { ; } while (0)
+			do { \
+				int __cfs_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __cfs_sreg = (__cfs_dreg << 1); \
+				arm_cvt_double_single_reg_reg((inst), ARM_CC_AL, __cfs_sreg, __cfs_dreg); \
+				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __cfs_dreg, __cfs_sreg); \
+			} while (0)
+
 #define	md_reg_to_float_64(inst,reg)	\
 			do { ; } while (0)
 

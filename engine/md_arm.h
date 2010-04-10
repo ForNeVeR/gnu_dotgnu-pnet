@@ -199,10 +199,10 @@ typedef arm_inst_ptr	md_inst_ptr;
 
 #define md_load_const_float_32(inst,reg,mem) \
 			do { \
-				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				int __sreg = __dreg << 1; \
-				arm_load_mem_single((inst), ARM_CC_AL, __sreg, (mem)); \
-				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __dreg, __sreg); \
+				int __lcs_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __lcs_sreg = (__lcs_dreg << 1); \
+				arm_load_mem_single((inst), ARM_CC_AL, __lcs_sreg, (mem)); \
+				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __lcs_dreg, __lcs_sreg); \
 			} while (0)
 
 #else /* !ARM_HAS_FLOAT */
@@ -220,8 +220,8 @@ typedef arm_inst_ptr	md_inst_ptr;
 
 #define md_load_const_float_64(inst,reg,mem) \
 			do { \
-				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				arm_load_mem_double((inst), ARM_CC_AL, __dreg, (mem)); \
+				int __lcd_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_load_mem_double((inst), ARM_CC_AL, __lcd_dreg, (mem)); \
 			} while (0)
 
 #else /* !ARM_HAS_FLOAT */
@@ -300,16 +300,16 @@ typedef arm_inst_ptr	md_inst_ptr;
 
 #define	md_load_membase_float_32(inst,reg,basereg,offset)	\
 			do { \
-				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				int __sreg = __dreg << 1; \
-				arm_load_membase_single((inst), ARM_CC_AL, __sreg, (basereg), (offset)); \
-				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __dreg, __sreg); \
+				int __lmbs_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __lmbs_sreg = (__lmbs_dreg << 1); \
+				arm_load_membase_single((inst), ARM_CC_AL, __lmbs_sreg, (basereg), (offset)); \
+				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __lmbs_dreg, __lmbs_sreg); \
 			} while (0)
 
 #define md_load_membase_float_64(inst,reg,basereg,offset)	\
 			do { \
-				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				arm_load_membase_double((inst), ARM_CC_AL, __dreg, (basereg), (offset)); \
+				int __lmbd_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_load_membase_double((inst), ARM_CC_AL, __lmbd_dreg, (basereg), (offset)); \
 			} while (0)
 
 #define	md_load_membase_float_native(inst,reg,basereg,offset) \
@@ -382,16 +382,16 @@ typedef arm_inst_ptr	md_inst_ptr;
 
 #define	md_store_membase_float_32(inst,reg,basereg,offset)	\
 			do { \
-				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				int __sreg = __dreg << 1; \
-				arm_cvt_double_single_reg_reg((inst), ARM_CC_AL, __sreg, __dreg); \
-				arm_store_membase_single((inst), ARM_CC_AL, __sreg, (basereg), (offset)); \
+				int __smbs_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __smbs_sreg = (__smbs_dreg << 1); \
+				arm_cvt_double_single_reg_reg((inst), ARM_CC_AL, __smbs_sreg, __smbs_dreg); \
+				arm_store_membase_single((inst), ARM_CC_AL, __smbs_sreg, (basereg), (offset)); \
 			} while (0)
 
 #define md_store_membase_float_64(inst,reg,basereg,offset)	\
 			do { \
-				int __dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				arm_store_membase_double((inst), ARM_CC_AL, __dreg, (basereg), (offset)); \
+				int __smbd_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_store_membase_double((inst), ARM_CC_AL, __smbd_dreg, (basereg), (offset)); \
 			} while (0)
 
 #define	md_store_membase_float_native(inst,reg,basereg,offset) \
@@ -512,10 +512,10 @@ typedef arm_inst_ptr	md_inst_ptr;
  */
 #define	md_conv_sword_32_float(inst,dreg,sreg)	\
 			do { \
-				int __i32f_dreg = ((int)(dreg) & ~MD_FREG_MASK); \
-				int __i32f_sreg = (__i32f_dreg << 1); \
-				arm_load_reg_single((inst), ARM_CC_AL, __i32f_sreg, (sreg)); \
-				arm_cvt_si_double((inst), ARM_CC_AL, __i32f_dreg, __i32f_sreg); \
+				int __ci32s_dreg = ((int)(dreg) & ~MD_FREG_MASK); \
+				int __ci32s_sreg = (__ci32s_dreg << 1); \
+				arm_load_reg_single((inst), ARM_CC_AL, __ci32s_sreg, (sreg)); \
+				arm_cvt_si_double((inst), ARM_CC_AL, __ci32s_dreg, __ci32s_sreg); \
 			} while (0)
 
 /*
@@ -524,10 +524,10 @@ typedef arm_inst_ptr	md_inst_ptr;
  */
 #define	md_conv_uword_32_float(inst,dreg,sreg)	\
 			do { \
-				int __u32f_dreg = ((int)(dreg) & ~MD_FREG_MASK); \
-				int __u32f_sreg = (__u32f_dreg << 1); \
-				arm_load_reg_single((inst), ARM_CC_AL, __u32f_sreg, (sreg)); \
-				arm_cvt_ui_double((inst), ARM_CC_AL, __u32f_dreg, __u32f_sreg); \
+				int __cu32s_dreg = ((int)(dreg) & ~MD_FREG_MASK); \
+				int __cu32s_sreg = (__cu32s_dreg << 1); \
+				arm_load_reg_single((inst), ARM_CC_AL, __cu32s_sreg, (sreg)); \
+				arm_cvt_ui_double((inst), ARM_CC_AL, __cu32s_dreg, __cu32s_sreg); \
 			} while (0)
 
 /*
@@ -537,10 +537,10 @@ typedef arm_inst_ptr	md_inst_ptr;
  */
 #define	md_conv_float_sword_32(inst,dreg,sreg)	\
 			do { \
-				int __fi32_dreg = ((int)(sreg) & ~MD_FREG_MASK); \
-				int __fi32_sreg = (__fi32_dreg << 1); \
-				arm_cvt_double_si((inst), ARM_CC_AL, __fi32_sreg, __fi32_dreg, 1); \
-				arm_store_reg_single((inst), ARM_CC_AL, (dreg), __fi32_sreg); \
+				int __cfi32_dreg = ((int)(sreg) & ~MD_FREG_MASK); \
+				int __cfi32_sreg = (__cfi32_dreg << 1); \
+				arm_cvt_double_si((inst), ARM_CC_AL, __cfi32_sreg, __cfi32_dreg, 1); \
+				arm_store_reg_single((inst), ARM_CC_AL, (dreg), __cfi32_sreg); \
 			} while (0)
 
 /*
@@ -550,10 +550,10 @@ typedef arm_inst_ptr	md_inst_ptr;
  */
 #define	md_conv_float_uword_32(inst,dreg,sreg)	\
 			do { \
-				int __fu32_dreg = ((int)(sreg) & ~MD_FREG_MASK); \
-				int __fu32_sreg = (__fu32_dreg << 1); \
-				arm_cvt_double_ui((inst), ARM_CC_AL, __fu32_sreg, __fu32_dreg, 1); \
-				arm_store_reg_single((inst), ARM_CC_AL, (dreg), __fu32_sreg); \
+				int __cfu32_dreg = ((int)(sreg) & ~MD_FREG_MASK); \
+				int __cfu32_sreg = (__cfu32_dreg << 1); \
+				arm_cvt_double_ui((inst), ARM_CC_AL, __cfu32_sreg, __cfu32_dreg, 1); \
+				arm_store_reg_single((inst), ARM_CC_AL, (dreg), __cfu32_sreg); \
 			} while (0)
 
 /*
@@ -857,8 +857,10 @@ md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
  */
 #define	md_load_memindex_float_32(inst,reg,basereg,indexreg,disp) \
 			do { \
-				int __lf32_dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				arm_load_memindex_single((inst), ARM_CC_AL, __lf32_dreg, (basereg), (indexreg)); \
+				int __lmis_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __lmis_sreg = (__lmis_dreg << 1); \
+				arm_load_memindex_single((inst), ARM_CC_AL, __lmis_sreg, (basereg), (indexreg)); \
+				arm_cvt_single_double_reg_reg((inst), ARM_CC_AL, __lmis_dreg, __lmis_sreg); \
 			} while (0)
 
 /*
@@ -866,8 +868,8 @@ md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
  */
 #define	md_load_memindex_float_64(inst,reg,basereg,indexreg,disp) \
 			do { \
-				int __lf64_dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				arm_load_memindex_double((inst), ARM_CC_AL, __lf64_dreg, (basereg), (indexreg)); \
+				int __lmid_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_load_memindex_double((inst), ARM_CC_AL, __lmid_dreg, (basereg), (indexreg)); \
 			} while (0)
 
 #endif /* ARM_HAS_FLOAT */
@@ -915,8 +917,10 @@ md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
  */
 #define	md_store_memindex_float_32(inst,reg,basereg,indexreg,disp) \
 			do { \
-				int __sf32_dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				arm_store_memindex_single((inst), ARM_CC_AL, __sf32_dreg, (basereg), (indexreg)); \
+				int __smis_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				int __smis_sreg = (__smis_dreg << 1); \
+				arm_cvt_double_single_reg_reg((inst), ARM_CC_AL, __smis_sreg, __smis_dreg); \
+				arm_store_memindex_single((inst), ARM_CC_AL, __smis_sreg, (basereg), (indexreg)); \
 			} while (0)
 
 /*
@@ -924,8 +928,8 @@ md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
  */
 #define	md_store_memindex_float_64(inst,reg,basereg,indexreg,disp) \
 			do { \
-				int __sf64_dreg = ((int)(reg) & ~MD_FREG_MASK); \
-				arm_store_memindex_double((inst), ARM_CC_AL, __sf64_dreg, (basereg), (indexreg)); \
+				int __smid_dreg = ((int)(reg) & ~MD_FREG_MASK); \
+				arm_store_memindex_double((inst), ARM_CC_AL, __smid_dreg, (basereg), (indexreg)); \
 			} while (0)
 
 #endif /* ARM_HAS_FLOAT */

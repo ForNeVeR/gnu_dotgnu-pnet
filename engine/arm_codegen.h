@@ -230,6 +230,17 @@ typedef enum
 } ARM_SHIFT;
 
 /*
+ * Defines to enable individual instructions that are aveilable only in
+ * specific processor verions.
+ */
+
+/*
+ * LDRSB and LDRSH are available in arm versions 4 and above.
+ */
+#define ARM_HAS_LDRSB 1
+#define ARM_HAS_LDRSH 1
+
+/*
  * Type for instruction pointers (word-based, not byte-based).
  */
 typedef unsigned int *arm_inst_ptr;
@@ -612,6 +623,37 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 							(((unsigned int)(dreg)) << 12); \
 			} while (0)
 
+#define arm_load_membase_extend(inst,cond,reg,basereg,imm,mask) \
+			do { \
+				int __lmbx_offset = (int)(imm); \
+				if((__lmbx_offset > -256) && (__lmbx_offset < 256)) \
+				{ \
+					unsigned int __lmbx_u; \
+					if(__lmbx_offset >= 0) \
+					{ \
+						__lmbx_u = 0x00800000; \
+					} \
+					else \
+					{ \
+						__lmbx_offset = -__lmbx_offset; \
+						__lmbx_u = 0; \
+					} \
+					*(inst)++ = arm_build_prefix((cond), (mask)) | \
+								(__lmbx_u) | \
+								(((unsigned int)(basereg)) << 16) | \
+								(((unsigned int)(reg)) << 12) | \
+								((((unsigned int)__lmbx_offset) & 0xf0) << 4) | \
+								(((unsigned int)__lmbx_offset) & 0x0f); \
+				} \
+				else \
+				{ \
+					arm_alu_reg_imm((inst), ARM_ADD, ARM_WORK, (basereg), __lmbx_offset); \
+					*(inst)++ = arm_build_prefix((cond), (mask)) | \
+								(((unsigned int)(ARM_WORK)) << 16) | \
+								(((unsigned int)(reg)) << 12); \
+				} \
+			} while (0)
+
 /*
  * Load a value from an address into a register.
  */
@@ -650,6 +692,16 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_load_membase_either((inst), (reg), (basereg), (imm), \
 										0x00400000); \
 			} while (0)
+
+#if ARM_HAS_LDRSB
+
+#define	arm_load_membase_sbyte(inst,reg,basereg,imm)	\
+			do { \
+				arm_load_membase_extend((inst), ARM_CC_AL, (reg), (basereg), (imm), 0x015000d0); \
+			} while (0)
+
+#else /* !ARM_HAS_LDRSB */
+
 #define	arm_load_membase_sbyte(inst,reg,basereg,imm)	\
 			do { \
 				arm_load_membase_either((inst), (reg), (basereg), (imm), \
@@ -657,13 +709,23 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 24); \
 				arm_shift_reg_imm8((inst), ARM_SAR, (reg), (reg), 24); \
 			} while (0)
+
+#endif /* !ARM_HAS_LDRSB */
+
 #define	arm_load_membase_ushort(inst,reg,basereg,imm)	\
 			do { \
-				arm_load_membase_byte((inst), ARM_WORK, (basereg), (imm)); \
-				arm_load_membase_byte((inst), (reg), (basereg), (imm) + 1); \
-				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 8); \
-				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
+				arm_load_membase_extend((inst), ARM_CC_AL, (reg), (basereg), (imm), 0x015000b0); \
 			} while (0)
+
+#if ARM_HAS_LDRSH
+
+#define	arm_load_membase_short(inst,reg,basereg,imm)	\
+			do { \
+				arm_load_membase_extend((inst), ARM_CC_AL, (reg), (basereg), (imm), 0x015000f0); \
+			} while (0)
+
+#else /* !ARM_HAS_LDRSH */
+
 #define	arm_load_membase_short(inst,reg,basereg,imm)	\
 			do { \
 				arm_load_membase_byte((inst), ARM_WORK, (basereg), (imm)); \
@@ -672,6 +734,8 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_shift_reg_imm8((inst), ARM_SAR, (reg), (reg), 16); \
 				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
 			} while (0)
+
+#endif /* !ARM_HAS_LDRSH */
 
 /*
  * Store a value from a register into an address.
@@ -719,11 +783,34 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 			} while (0)
 #define	arm_store_membase_short(inst,reg,basereg,imm)	\
 			do { \
-				arm_store_membase_either((inst), (reg), (basereg), (imm), \
-										 0x00400000); \
-				arm_shift_reg_imm8((inst), ARM_SHR, (reg), (reg), 8); \
-				arm_store_membase_either((inst), (reg), (basereg), \
-										 (imm) + 1, 0x00400000); \
+				int __smbi16_offset = (int)(imm); \
+				if((__smbi16_offset > -256) && (__smbi16_offset < 256)) \
+				{ \
+					unsigned int __smbi16_u; \
+					if(__smbi16_offset < 0) \
+					{ \
+						__smbi16_offset = -__smbi16_offset; \
+						__smbi16_u = 0; \
+					} \
+					else \
+					{ \
+						__smbi16_u = 0x00800000; \
+					} \
+					*(inst)++ = arm_build_prefix(ARM_CC_AL, 0x014000b0) | \
+								(__smbi16_u) | \
+								(((unsigned int)(basereg)) << 16) | \
+								(((unsigned int)(reg)) << 12) | \
+								((((unsigned int)__smbi16_offset) & 0xf0) << 4) | \
+								(((unsigned int)__smbi16_offset) & 0x0f); \
+				} \
+				else \
+				{ \
+					arm_store_membase_either((inst), (reg), (basereg), (imm), \
+											 0x00400000); \
+					arm_shift_reg_imm8((inst), ARM_SHR, (reg), (reg), 8); \
+					arm_store_membase_either((inst), (reg), (basereg), \
+											 (imm) + 1, 0x00400000); \
+				} \
 			} while (0)
 #define	arm_store_membase_ushort(inst,reg,basereg,imm)	\
 			do { \
@@ -733,6 +820,13 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 /*
  * Load a value from an indexed address into a register.
  */
+#define arm_load_memiindex_extend(inst,cond,reg,basereg,indexreg,mask) \
+			do { \
+				*(inst)++ = arm_build_prefix((cond), (mask)) | \
+							(((unsigned int)(basereg)) << 16) | \
+							(((unsigned int)(reg)) << 12) | \
+							(((unsigned int)(indexreg))); \
+			} while (0)
 #define arm_load_memindex_either(inst,reg,basereg,indexreg,shift,mask)	\
 			do { \
 				*(inst)++ = arm_prefix(0x07900000 | (mask)) | \
@@ -751,6 +845,16 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_load_memindex_either((inst), (reg), (basereg), \
 									     (indexreg), 0, 0x00400000); \
 			} while (0)
+
+#if ARM_HAS_LDRSB
+
+#define	arm_load_memindex_sbyte(inst,reg,basereg,indexreg)	\
+			do { \
+				arm_load_memiindex_extend((inst), ARM_CC_AL, (reg), (basereg), (indexreg), 0x019000d0); \
+			} while (0)
+
+#else /* !ARM_HAS_LDRSB */
+
 #define	arm_load_memindex_sbyte(inst,reg,basereg,indexreg)	\
 			do { \
 				arm_load_memindex_either((inst), (reg), (basereg), \
@@ -758,17 +862,25 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_shift_reg_imm8((inst), ARM_SHL, (reg), (reg), 24); \
 				arm_shift_reg_imm8((inst), ARM_SAR, (reg), (reg), 24); \
 			} while (0)
+
+#endif /* !ARM_HAS_LDRSB */
+
 #define	arm_load_memindex_ushort(inst,reg,basereg,indexreg)	\
 			do { \
-				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, (basereg), \
-								(indexreg)); \
-				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, ARM_WORK, \
-								(indexreg)); \
-				arm_load_membase_byte((inst), (reg), ARM_WORK, 0); \
-				arm_load_membase_byte((inst), ARM_WORK, ARM_WORK, 1); \
-				arm_shift_reg_imm8((inst), ARM_SHL, ARM_WORK, ARM_WORK, 8); \
-				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, (indexreg), (indexreg)); \
+				arm_load_memiindex_extend((inst), ARM_CC_AL, (reg), (basereg), ARM_WORK, 0x019000b0); \
 			} while (0)
+
+#if ARM_HAS_LDRSH
+
+#define	arm_load_memindex_short(inst,reg,basereg,indexreg)	\
+			do { \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, (indexreg), (indexreg)); \
+				arm_load_memiindex_extend((inst), ARM_CC_AL, (reg), (basereg), ARM_WORK, 0x019000f0); \
+			} while (0)
+
+#else /* !ARM_HAS_LDRSH */
+
 #define	arm_load_memindex_short(inst,reg,basereg,indexreg)	\
 			do { \
 				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, (basereg), \
@@ -782,11 +894,10 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 				arm_alu_reg_reg((inst), ARM_ORR, (reg), (reg), ARM_WORK); \
 			} while (0)
 
+#endif /* !ARM_HAS_LDRSH */
+
 /*
  * Store a value from a register into an indexed address.
- *
- * Note: storing a 16-bit value destroys the values in the base
- * register and the source register.
  */
 #define arm_store_memindex_either(inst,reg,basereg,indexreg,shift,mask)	\
 			do { \
@@ -813,12 +924,11 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 			} while (0)
 #define	arm_store_memindex_short(inst,reg,basereg,indexreg)	\
 			do { \
-				arm_store_memindex_either((inst), (reg), (basereg), \
-										  (indexreg), 1, 0x00400000); \
-				arm_alu_reg_imm8((inst), ARM_ADD, (basereg), (basereg), 1); \
-				arm_shift_reg_imm8((inst), ARM_SHR, (reg), (reg), 8); \
-				arm_store_memindex_either((inst), (reg), (basereg), \
-										  (indexreg), 1, 0x00400000); \
+				arm_alu_reg_reg((inst), ARM_ADD, ARM_WORK, (indexreg), (indexreg)); \
+				*(inst)++ = arm_build_prefix(ARM_CC_AL, 0x018000b0) | \
+							(((unsigned int)(basereg)) << 16) | \
+							(((unsigned int)(reg)) << 12) | \
+							ARM_WORK; \
 			} while (0)
 #define	arm_store_memindex_ushort(inst,reg,basereg,indexreg)	\
 			do { \

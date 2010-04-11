@@ -127,8 +127,8 @@ arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value)
 }
 
 arm_inst_ptr _arm_alu_reg_imm(arm_inst_ptr inst, int opc,
-					          int dreg, int sreg, int imm,
-					          int saveWork)
+							  int dreg, int sreg, int imm,
+							  int saveWork)
 {
 	int tempreg;
 	if(saveWork)
@@ -151,7 +151,7 @@ arm_inst_ptr _arm_alu_reg_imm(arm_inst_ptr inst, int opc,
 	{
 		tempreg = ARM_WORK;
 	}
-	_arm_mov_reg_imm(inst, tempreg, imm);
+	inst = _arm_mov_reg_imm(inst, tempreg, imm);
 	arm_alu_reg_reg(inst, opc, dreg, sreg, tempreg);
 	if(saveWork)
 	{
@@ -170,6 +170,15 @@ md_inst_ptr _md_arm_setcc(md_inst_ptr inst, int reg, int cond, int invcond)
 
 #ifdef ARM_HAS_FLOAT
 
+/*
+ * Comparision results:
+ *  Flags:    | N | Z | C | V |
+ *  ===================================
+ *  ==        | 0 | 1 | 1 | 0 |
+ *  <         | 1 | 0 | 0 | 0 |
+ *  >         | 0 | 0 | 1 | 0 |
+ *  unordered | 0 | 0 | 1 | 1 |
+ */
 md_inst_ptr _md_arm_cmp_float(md_inst_ptr inst, int dreg, int sreg1,
 							  int sreg2, int lessop)
 {

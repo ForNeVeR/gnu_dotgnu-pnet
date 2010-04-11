@@ -72,6 +72,12 @@ fi
 TREECC_VERSION=`"$TREECC" -v | (read name version rest; echo $version)`
 AC_SUBST(TREECC_VERSION)
 
+dnl Check for endianess of the target
+AC_C_BIGENDIAN([AC_DEFINE([IL_WORDS_BIGENDIAN], 1, [Define if the target system is big endian])],
+			   [AC_DEFINE([IL_WORDS_LITTLEENDIAN], 1, [Define if the target system is little endian])],
+			   [AC_DEFINE([IL_WORDS_UNKNOWNENDIAN], 1, [Define if endianess of the target system could not be detected])],
+			   [AC_DEFINE([IL_WORDS_MIXEDENDIAN], 1, [Define if the target system is neither big nor little endian])])
+
 if test x$cross_compiling = xyes ; then
 	AC_PATH_PROG(ILASM, ilasm)
 else

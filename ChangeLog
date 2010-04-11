@@ -1,8 +1,13 @@
 2010-04-11  Klaus Treichel  <ktreichel@web.de>
 
+	* configure.in: Add check for the endianness of the target.
+
 	* engine/arm_codegen.h: Rework loading and storing 16 bit values and
 	signed bytes using the LDRH / STRH opcodes and the LDRSH and LDRSB
 	opcodes if available (armv4 and later).
+
+	* engine/cvm_config.h: Define CVM_LITTLE_ENDIAN for arm if the target
+	is running in little endian mode.
 
 	* engine/md_arm.c (_arm_alu_reg_imm): Add missing assignment of the
 	returnvalue from the call to _arm_move_reg_imm to inst.

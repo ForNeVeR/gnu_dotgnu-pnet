@@ -94,6 +94,9 @@ extern int _ILCVMInsnCount[];
 	#define	CVM_ARM
 	#define	CVM_LONGS_ALIGNED_WORD
 	#define CVM_WORDS_AND_PTRS_SAME_SIZE
+#if defined(IL_WORDS_LITTLEENDIAN)
+	#define CVM_LITTLE_ENDIAN
+#endif
 #endif
 #if defined(__powerpc__) || defined(powerpc) || \
 		defined(__powerpc) || defined(PPC)

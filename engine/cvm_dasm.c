@@ -316,7 +316,8 @@ static CVMOpcode const opcodes[256] = {
 	{"swrite_elem",		CVM_OPER_NONE},
 	{"iwrite_elem",		CVM_OPER_NONE},
 	{"pwrite_elem",		CVM_OPER_NONE},
-	{"ckarray_load_i4",	CVM_OPER_NONE},
+	{"elem_addr_shift_i4", CVM_OPER_UINT8},
+	{"elem_addr_mul_i4", CVM_OPER_UINT32},
 	{"ckarray_load_i8",	CVM_OPER_NONE},
 	{"ckarray_store_i8", CVM_OPER_TWO_UINT8},
 	{"array_len",		CVM_OPER_NONE},
@@ -357,7 +358,6 @@ static CVMOpcode const opcodes[256] = {
 	{"push_thread",		CVM_OPER_NONE},
 	{"push_thread_raw",	CVM_OPER_NONE},
 	{"pushdown",		CVM_OPER_UINT32},
-	{"cctor_once",		CVM_OPER_NONE},
 	{"calli",			CVM_OPER_NONE},
 	{"jmpi",			CVM_OPER_NONE},
 
@@ -423,7 +423,7 @@ static CVMOpcode const opcodes[256] = {
 	 */
 	{"prefix",			CVM_OPER_PREFIX},
 };
-static CVMOpcode const prefixOpcodes[0x90] = {
+static CVMOpcode const prefixOpcodes[0xA0] = {
 	/*
 	 * Reserved opcodes.
 	 */
@@ -644,13 +644,45 @@ static CVMOpcode const prefixOpcodes[0x90] = {
 	{"tanh",			CVM_OPER_NONE},
 
 	/*
+	 * Unroller support opcodes.
+	 */
+	{"unroll_stack",	CVM_OPER_NONE},
+	{"unroll_stack_return", CVM_OPER_NONE},
+
+	/*
+	 * Generics support opcodes.
+	 */
+	{"repl_word_n",		CVM_OPER_UINT32},
+	{"call_virtgen",	CVM_OPER_TWO_UINT32},
+
+	/*
+	 * Inlined array functions.
+	 */
+	{"sarray_copy_aai4", CVM_OPER_UINT32},
+	{"sarray_copy_ai4ai4i4", CVM_OPER_UINT32},
+	{"sarray_clear_ai4i4", CVM_OPER_UINT32},
+
+	/*
+	 * Enghanced method profiling opcodes.
+	 */
+	{"profile_start",	CVM_OPER_NONE},
+	{"profile_end",		CVM_OPER_NONE},
+
+	/*
 	 * Reserved opcodes.
 	 */
-	{"preserved_8B",	CVM_OPER_NONE},
-	{"preserved_8C",	CVM_OPER_NONE},
-	{"preserved_8D",	CVM_OPER_NONE},
-	{"preserved_8E",	CVM_OPER_NONE},
-	{"preserved_8F",	CVM_OPER_NONE},
+	{"preserved_94",	CVM_OPER_NONE},
+	{"preserved_95",	CVM_OPER_NONE},
+	{"preserved_96",	CVM_OPER_NONE},
+	{"preserved_97",	CVM_OPER_NONE},
+	{"preserved_98",	CVM_OPER_NONE},
+	{"preserved_99",	CVM_OPER_NONE},
+	{"preserved_9A",	CVM_OPER_NONE},
+	{"preserved_9B",	CVM_OPER_NONE},
+	{"preserved_9C",	CVM_OPER_NONE},
+	{"preserved_9D",	CVM_OPER_NONE},
+	{"preserved_9E",	CVM_OPER_NONE},
+	{"preserved_9F",	CVM_OPER_NONE}
 };
 
 /*

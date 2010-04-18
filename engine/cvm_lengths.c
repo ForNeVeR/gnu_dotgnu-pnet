@@ -269,7 +269,8 @@ unsigned char const _ILCVMLengths[512] = {
 	/* swrite_elem */		CVM_LEN_NONE,
 	/* iwrite_elem */		CVM_LEN_NONE,
 	/* pwrite_elem */		CVM_LEN_NONE,
-	/* ckarray_load_i4 */	CVM_LEN_NONE,
+	/* elem_addr_shift_i4 */ CVM_LEN_BYTE,
+	/* elem_addr_mul_i4 */	CVM_LEN_WORD,
 	/* ckarray_load_i8 */	CVM_LEN_NONE,
 	/* ckarray_store_i8 */ 	CVM_LEN_BYTE2,
 	/* array_len */			CVM_LEN_NONE,
@@ -310,7 +311,6 @@ unsigned char const _ILCVMLengths[512] = {
 	/* push_thread */		CVM_LEN_NONE,
 	/* push_thread_raw */	CVM_LEN_NONE,
 	/* pushdown */			CVM_LEN_WORD,
-	/* cctor_once */		CVM_LEN_NONE,
 	/* calli */				CVM_LEN_NONE,
 	/* jmpi */				CVM_LEN_NONE,
 
@@ -589,16 +589,36 @@ unsigned char const _ILCVMLengths[512] = {
 	/* sqrt */				CVMP_LEN_NONE,
 	/* tan */				CVMP_LEN_NONE,
 	/* tanh */				CVMP_LEN_NONE,
-	/* preserved_8b */		CVMP_LEN_NONE,
-	/* preserved_8c */		CVMP_LEN_NONE,
-	/* preserved_8d */		CVMP_LEN_NONE,
-	/* preserved_8e */		CVMP_LEN_NONE,
-	/* preserved_8f */		CVMP_LEN_NONE,
 
-	/* preserved_90 */		CVMP_LEN_NONE,
-	/* preserved_91 */		CVMP_LEN_NONE,
-	/* preserved_92 */		CVMP_LEN_NONE,
-	/* preserved_93 */		CVMP_LEN_NONE,
+	/*
+	 * Unroller support opcodes.
+	 */
+
+	/* unroll_stack */		CVMP_LEN_NONE,
+	/* unroll_stack_return */ CVMP_LEN_NONE,
+
+	/*
+	 * Generics support opcodes.
+	 */
+
+	/* repl_word_n */		CVMP_LEN_WORD,
+	/* call_virtgen */		CVMP_LEN_WORD2,
+
+	/*
+	 * Inlined array functions.
+	 */
+
+	/* sarray_copy_aai4 */	CVMP_LEN_WORD,
+	/* sarray_copy_ai4ai4i4 */ CVMP_LEN_WORD,
+	/* sarray_clear_ai4i4 */ CVMP_LEN_WORD,
+
+	/*
+	 * Enghanced method profiling opcodes.
+	 */
+
+	/* profile_start */		CVMP_LEN_NONE,
+	/* profile_end */		CVMP_LEN_NONE,
+
 	/* preserved_94 */		CVMP_LEN_NONE,
 	/* preserved_95 */		CVMP_LEN_NONE,
 	/* preserved_96 */		CVMP_LEN_NONE,

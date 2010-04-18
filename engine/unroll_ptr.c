@@ -999,6 +999,42 @@ case COP_ARRAY_LEN:
 }
 break;
 
+#ifdef md_lea_memindex_shift
+
+case COP_ELEM_ADDR_SHIFT_I4:
+{
+	/* Load the effective address of an element from an array */
+	unsigned temp = (unsigned)CVM_ARG_BYTE;
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_32BIT);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	md_lea_memindex_shift(unroll.out, reg, reg, reg2, temp, MD_ARRAY_HEADER);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_BYTE);
+}
+break;
+
+#endif /* md_lea_memindex_shift */
+
+#ifdef md_lea_memindex_mul
+
+case COP_ELEM_ADDR_MUL_I4:
+{
+	/* Load the effective address of an element from an array */
+	ILUInt32 temp = (unsigned)CVM_ARG_WORD;
+	UNROLL_START();
+	GetTopTwoWordRegisters(&unroll, &reg, &reg2,
+						   MD_REG1_NATIVE | MD_REG2_32BIT);
+	CheckArrayAccess(&unroll, reg, reg2, pc, (unsigned char *)inst);
+	md_lea_memindex_mul(unroll.out, reg, reg, reg2, temp, MD_ARRAY_HEADER);
+	FreeTopRegister(&unroll, -1);
+	MODIFY_UNROLL_PC(CVM_LEN_WORD);
+}
+break;
+
+#endif /* md_lea_memindex_mul */
+
 case COP_BREAD_FIELD:
 {
 	/* Read a byte field from an object */

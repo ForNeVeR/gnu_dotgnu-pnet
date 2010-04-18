@@ -21,6 +21,84 @@
 #ifdef IL_CVMC_CODE
 
 /*
+ * Load the address of an array element.
+ */
+static void GetArrayElementAddress(ILCoder *coder, ILEngineType indexType,
+								   int size)
+{
+#ifdef IL_NATIVE_INT64
+	if(indexType == ILEngineType_I4)
+#endif
+	{
+		/* Check if size is a power of two */
+		if((size > 0) && ((size & (size -1)) == 0))
+		{
+			int shift = 0;
+
+			while((size & (1 << shift)) == 0)
+			{
+				++shift;
+			}
+			CVM_OUT_BYTE(COP_ELEM_ADDR_SHIFT_I4, shift);
+			CVM_ADJUST(-1);
+		}
+		else
+		{
+			CVM_OUT_WORD(COP_ELEM_ADDR_MUL_I4, size);
+			CVM_ADJUST(-1);
+		}
+	}
+#ifdef IL_NATIVE_INT64
+	else
+	{
+		CVM_OUT_NONE(COP_CKARRAY_LOAD_I8);
+		if(size == 2)
+		{
+			CVM_OUT_NONE(COP_LDC_I4_1);
+			CVM_ADJUST(1);
+			CVM_OUT_NONE(COP_LSHL);
+			CVM_ADJUST(-1);
+		}
+		else if(size == 4)
+		{
+			CVM_OUT_NONE(COP_LDC_I4_2);
+			CVM_ADJUST(1);
+			CVM_OUT_NONE(COP_LSHL);
+			CVM_ADJUST(-1);
+		}
+		else if(size == 8)
+		{
+			CVM_OUT_NONE(COP_LDC_I4_3);
+			CVM_ADJUST(1);
+			CVM_OUT_NONE(COP_LSHL);
+			CVM_ADJUST(-1);
+		}
+		else if(size != 1)
+		{
+			if(size < 8)
+			{
+				CVM_OUT_NONE(COP_LDC_I4_0 + size);
+			}
+			else if(size < 128)
+			{
+				CVM_OUT_BYTE(COP_LDC_I4_S, size);
+			}
+			else
+			{
+				CVM_OUT_WORD(COP_LDC_I4, size);
+			}
+			CVM_OUT_NONE(COP_IU2L);
+			CVM_ADJUST(CVM_WORDS_PER_LONG);
+			CVM_OUT_NONE(COP_LMUL);
+			CVM_ADJUST(-CVM_WORDS_PER_LONG);
+		}
+		CVM_OUT_NONE(COP_PADD_I8);
+		CVM_ADJUST(-CVM_WORDS_PER_LONG);
+	}
+#endif
+}
+
+/*
  * Load elements from an array.
  */
 static void LoadArrayElem(ILCoder *coder, int opcode1, int opcode2,
@@ -118,101 +196,7 @@ static void CVMCoder_ArrayAccess(ILCoder *coder, int opcode,
 			/* Load the address of an array element */
 			size = _ILSizeOfTypeLocked(_ILCoderToILCVMCoder(coder)->process,
 									   elemType);
-		#ifdef IL_NATIVE_INT64
-			if(indexType == ILEngineType_I4)
-		#endif
-			{
-				CVM_OUT_NONE(COP_CKARRAY_LOAD_I4);
-				if(size == 2)
-				{
-					CVM_OUT_NONE(COP_LDC_I4_1);
-					CVM_ADJUST(1);
-					CVM_OUT_NONE(COP_ISHL);
-					CVM_ADJUST(-1);
-				}
-				else if(size == 4)
-				{
-					CVM_OUT_NONE(COP_LDC_I4_2);
-					CVM_ADJUST(1);
-					CVM_OUT_NONE(COP_ISHL);
-					CVM_ADJUST(-1);
-				}
-				else if(size == 8)
-				{
-					CVM_OUT_NONE(COP_LDC_I4_3);
-					CVM_ADJUST(1);
-					CVM_OUT_NONE(COP_ISHL);
-					CVM_ADJUST(-1);
-				}
-				else if(size != 1)
-				{
-					if(size < 8)
-					{
-						CVM_OUT_NONE(COP_LDC_I4_0 + size);
-					}
-					else if(size < 128)
-					{
-						CVM_OUT_BYTE(COP_LDC_I4_S, size);
-					}
-					else
-					{
-						CVM_OUT_WORD(COP_LDC_I4, size);
-					}
-					CVM_ADJUST(1);
-					CVM_OUT_NONE(COP_IMUL);
-					CVM_ADJUST(-1);
-				}
-				CVM_OUT_NONE(COP_PADD_I4);
-				CVM_ADJUST(-1);
-			}
-		#ifdef IL_NATIVE_INT64
-			else
-			{
-				CVM_OUT_NONE(COP_CKARRAY_LOAD_I8);
-				if(size == 2)
-				{
-					CVM_OUT_NONE(COP_LDC_I4_1);
-					CVM_ADJUST(1);
-					CVM_OUT_NONE(COP_LSHL);
-					CVM_ADJUST(-1);
-				}
-				else if(size == 4)
-				{
-					CVM_OUT_NONE(COP_LDC_I4_2);
-					CVM_ADJUST(1);
-					CVM_OUT_NONE(COP_LSHL);
-					CVM_ADJUST(-1);
-				}
-				else if(size == 8)
-				{
-					CVM_OUT_NONE(COP_LDC_I4_3);
-					CVM_ADJUST(1);
-					CVM_OUT_NONE(COP_LSHL);
-					CVM_ADJUST(-1);
-				}
-				else if(size != 1)
-				{
-					if(size < 8)
-					{
-						CVM_OUT_NONE(COP_LDC_I4_0 + size);
-					}
-					else if(size < 128)
-					{
-						CVM_OUT_BYTE(COP_LDC_I4_S, size);
-					}
-					else
-					{
-						CVM_OUT_WORD(COP_LDC_I4, size);
-					}
-					CVM_OUT_NONE(COP_IU2L);
-					CVM_ADJUST(CVM_WORDS_PER_LONG);
-					CVM_OUT_NONE(COP_LMUL);
-					CVM_ADJUST(-CVM_WORDS_PER_LONG);
-				}
-				CVM_OUT_NONE(COP_PADD_I8);
-				CVM_ADJUST(-CVM_WORDS_PER_LONG);
-			}
-		#endif
+			GetArrayElementAddress(coder, indexType, size);
 		}
 		break;
 

@@ -266,50 +266,48 @@ extern	"C" {
 #define	COP_SWRITE_ELEM				0xBB
 #define	COP_IWRITE_ELEM				0xBC
 #define	COP_PWRITE_ELEM				0xBD
-#define	COP_CKARRAY_LOAD_I4			0xBE
-#define	COP_CKARRAY_LOAD_I8			0xBF
-#define	COP_CKARRAY_STORE_I8		0xC0
-#define	COP_ARRAY_LEN				0xC1
+#define	COP_ELEM_ADDR_SHIFT_I4		0xBE
+#define	COP_ELEM_ADDR_MUL_I4		0xBF
+#define	COP_CKARRAY_LOAD_I8			0xC0
+#define	COP_CKARRAY_STORE_I8		0xC1
+#define	COP_ARRAY_LEN				0xC2
 
 /*
  * Field opcodes.
  */
-#define	COP_BREAD_FIELD				0xC2
-#define	COP_UBREAD_FIELD			0xC3
-#define	COP_SREAD_FIELD				0xC4
-#define	COP_USREAD_FIELD			0xC5
-#define	COP_IREAD_FIELD				0xC6
-#define	COP_PREAD_FIELD				0xC7
-#define	COP_BWRITE_FIELD			0xC8
-#define	COP_SWRITE_FIELD			0xC9
-#define	COP_IWRITE_FIELD			0xCA
-#define	COP_PWRITE_FIELD			0xCB
-#define	COP_PREAD_THIS				0xCC
-#define	COP_IREAD_THIS				0xCD
+#define	COP_BREAD_FIELD				0xC3
+#define	COP_UBREAD_FIELD			0xC4
+#define	COP_SREAD_FIELD				0xC5
+#define	COP_USREAD_FIELD			0xC6
+#define	COP_IREAD_FIELD				0xC7
+#define	COP_PREAD_FIELD				0xC8
+#define	COP_BWRITE_FIELD			0xC9
+#define	COP_SWRITE_FIELD			0xCA
+#define	COP_IWRITE_FIELD			0xCB
+#define	COP_PWRITE_FIELD			0xCC
+#define	COP_PREAD_THIS				0xCD
+#define	COP_IREAD_THIS				0xCE
 
 /*
  * Call management opcodes.
  */
-#define	COP_CALL					0xCE
-#define	COP_CALL_CTOR				0xCF
-#define	COP_CALL_NATIVE				0xD0
-#define	COP_CALL_NATIVE_VOID		0xD1
-#define	COP_CALL_NATIVE_RAW			0xD2
-#define	COP_CALL_NATIVE_VOID_RAW	0xD3
-#define	COP_CALL_VIRTUAL			0xD4
-#define	COP_CALL_INTERFACE			0xD5
-#define	COP_RETURN					0xD6
-#define	COP_RETURN_1				0xD7
-#define	COP_RETURN_2				0xD8
-#define	COP_RETURN_N				0xD9
-#define	COP_JSR						0xDA
-#define	COP_RET_JSR					0xDB
-#define	COP_PUSH_THREAD				0xDC
-#define	COP_PUSH_THREAD_RAW			0xDD
-#define	COP_PUSHDOWN				0xDE
-/*
- * #define	COP_CCTOR_ONCE				0xDF     NOT USED ANYMORE
- */
+#define	COP_CALL					0xCF
+#define	COP_CALL_CTOR				0xD0
+#define	COP_CALL_NATIVE				0xD1
+#define	COP_CALL_NATIVE_VOID		0xD2
+#define	COP_CALL_NATIVE_RAW			0xD3
+#define	COP_CALL_NATIVE_VOID_RAW	0xD4
+#define	COP_CALL_VIRTUAL			0xD5
+#define	COP_CALL_INTERFACE			0xD6
+#define	COP_RETURN					0xD7
+#define	COP_RETURN_1				0xD8
+#define	COP_RETURN_2				0xD9
+#define	COP_RETURN_N				0xDA
+#define	COP_JSR						0xDB
+#define	COP_RET_JSR					0xDC
+#define	COP_PUSH_THREAD				0xDD
+#define	COP_PUSH_THREAD_RAW			0xDE
+#define	COP_PUSHDOWN				0xDF
 #define	COP_CALLI					0xE0
 #define	COP_JMPI					0xE1
 

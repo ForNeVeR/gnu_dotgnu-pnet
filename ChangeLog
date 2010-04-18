@@ -1,3 +1,29 @@
+2010-04-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.h: Replace the opcode COP_CKARRAY_LOAD_I4 by the two
+	opcodes COP_ELEM_ADDR_SHIFT_I4 and COP_ELEM_ADDR_MUL_I4.
+
+	* engine/cvm_dasm.c: Sync opcode tables with cvm.h.
+
+	* engine/cvm_lengths.h: Likewise
+
+	* engine/cvm_ptr.c (COP_ELEM_ADDR_SHIFT_I4, COP_ELEM_ADDR_MUL_I4): 
+	Implement the two new opcodes.
+	(COP_CKARRAY_LOAD_I4): Remove implementation of this opcode.
+
+	* engine/cvmc_ptr.c (GetArrayElementAddress): Ad new support function
+	for the cli LDELEMA opcode.
+	(CVMCoder_ArrayAccess): Use the new function for the IL_OP_LDELEMA
+	opcode.
+
+	* engine/md_amd64.h (md_lea_memindex_shift): Add macro for unrolling the
+	COP_ELEM_ADDR_SHIFT_I4 opcode.
+
+	* engine/md_x86.h (md_lea_memindex_shift): Likewise.
+
+	* engine/unroll_ptr.c (COP_ELEM_ADDR_SHIFT_I4, COP_ELEM_ADDR_MUL_I4):
+	Add support for unrolling these opcodes.
+
 2010-04-11  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add check for the endianness of the target.

@@ -642,6 +642,24 @@ extern md_inst_ptr _md_x86_widen_byte(md_inst_ptr inst, int reg, int isSigned);
 			} while (0)
 
 /*
+ * Load the effective address of a memory base + shifted index into
+ * a register.
+ * WARNING: indexreg might be destroyed by this operation.
+ */
+#define	md_lea_memindex_shift(inst,reg,basereg,indexreg,shift,offset)	\
+			do { \
+				if((shift) <= 3) \
+				{ \
+					x86_lea_memindex((inst), (reg), (basereg), (offset), (indexreg), (shift)); \
+				} \
+				else \
+				{ \
+					x86_shift_reg_imm((inst), X86_SHL, (indexreg), (shift)); \
+					x86_lea_memindex((inst), (reg), (basereg), (offset), (indexreg), 0); \
+				} \
+			} while (0)
+
+/*
  * Move values between registers.
  */
 #define	md_mov_reg_reg(inst,dreg,sreg)	\

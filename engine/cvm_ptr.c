@@ -1600,32 +1600,28 @@ VMCASE(COP_PWRITE_ELEM):
 VMBREAK(COP_PWRITE_ELEM);
 
 /**
- * <opcode name="ckarray_load_i4" group="Array handling">
- *   <operation>Check an array load with an <code>int32</code>
- *				index</operation>
+ * <opcode name="elem_addr_shift_i4" group="Array handling">
+ *   <operation>Load the address of an array element with an
+ *				<code>int32</code> index where the size of an array
+ *				element is a power of two</operation>
  *
- *   <format>ckarray_load_i4</format>
- *   <dformat>{ckarray_load_i4}</dformat>
+ *   <format>elem_addr_shift_i4<fsep/>N[1]</format>
+ *   <dformat>{elem_addr_shift_i4}<fsep/>N</dformat>
  *
- *   <form name="ckarray_load_i4" code="COP_CKARRAY_LOAD_I4"/>
+ *   <form name="elem_addr_shift_i4" code="COP_ELEM_ADDR_SHIFT_I4"/>
  *
  *   <before>..., array, index</before>
- *   <after>..., pointer, index</after>
+ *   <after>..., pointer</after>
  *
- *   <description>Retrieve <i>array</i> and <i>index</i>
- *   from the stack (without popping them) as the types <code>ptr</code>
- *   and <code>int32</code> respectively.  Throw a
- *   <code>System.IndexOutOfRangeException</code> if <i>index</i> is
- *   out of range.  Otherwise set <i>pointer</i> to the address of
- *   the first element in the array.</description>
+ *   <description>Pop <i>array</i> and <i>index</i> from the stack as the
+ *   types <code>ptr</code> and <code>int32</code> respectively.
+ *   Throw a <code>System.IndexOutOfRangeException</code> if <i>index</i>
+ *   is out of range.  Otherwise push <i>pointer</i> the address of the
+ *   <i>index</i>'th element in the array on the stack. The size of each
+ *   array element is 1 << <i>N</i> bytes.</description>
  *
  *   <notes>This instruction is used to assist in obtaining the address
- *   of an array element.  The program will normally follow this
- *   instruction with an <i>imul</i> operation to adjust the index
- *   for the size of the elements, followed by <i>padd_i4</i> to compute
- *   the final element address.  This instruction sequence can also be
- *   used in combination with <i>mread</i> to fetch odd-sized array
- *   elements by pointer.</notes>
+ *   of an array element where the element size is a power of two.</notes>
  *
  *   <exceptions>
  *     <exception name="System.NullReferenceException">Raised if
@@ -1635,7 +1631,7 @@ VMBREAK(COP_PWRITE_ELEM);
  *   </exceptions>
  * </opcode>
  */
-VMCASE(COP_CKARRAY_LOAD_I4):
+VMCASE(COP_ELEM_ADDR_SHIFT_I4):
 {
 	/* Check an array load that uses an I4 index */
 	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue))
@@ -1643,10 +1639,11 @@ VMCASE(COP_CKARRAY_LOAD_I4):
 		if(stacktop[-1].uintValue <
 				((ILUInt32)(ArrayLength(tempptr))))
 		{
-			/* Adjust the pointer to address the first array element */
+			/* Replace the array by the address to the requested array alamant */
 			stacktop[-2].ptrValue = (void *)(((unsigned char *)tempptr) +
-											 sizeof(System_Array));
-			MODIFY_PC_AND_STACK(CVM_LEN_NONE, 0);
+											 sizeof(System_Array)) +
+											 (stacktop[-1].uintValue << CVM_ARG_BYTE);
+			MODIFY_PC_AND_STACK(CVM_LEN_BYTE, -1);
 		}
 		else
 		{
@@ -1655,7 +1652,62 @@ VMCASE(COP_CKARRAY_LOAD_I4):
 	}
 	END_NULL_CHECK();
 }
-VMBREAK(COP_CKARRAY_LOAD_I4);
+VMBREAK(COP_ELEM_ADDR_SHIFT_I4);
+
+/**
+ * <opcode name="elem_addr_mul_i4" group="Array handling">
+ *   <operation>Load the address of an array element with an
+ *				<code>int32</code> index with arbitrary element sizes.
+ *				</operation>
+ *
+ *   <format>elem_addr_mul_i4</format>
+ *   <dformat>{elem_addr_mul_i4}</dformat>
+ *
+ *   <form name="elem_addr_mul_i4" code="COP_ELEM_ADDR_MUL_I4"/>
+ *
+ *   <before>..., array, index</before>
+ *   <after>..., pointer</after>
+ *
+ *   <description>Pop <i>array</i> and <i>index</i> from the stack as the
+ *   types <code>ptr</code> and <code>int32</code> respectively.
+ *   Throw a <code>System.IndexOutOfRangeException</code> if <i>index</i>
+ *   is out of range.  Otherwise push <i>pointer</i> the address of the
+ *   element at <i>index</i> in the array on the stack.</description>
+ *
+ *   <notes>This instruction is used to assist in obtaining the address
+ *   of an array element where the element size is an arbitrary 32 bit
+ *   value.</notes>
+ *
+ *   <exceptions>
+ *     <exception name="System.NullReferenceException">Raised if
+ *     <i>array</i> is <code>null</code>.</exception>
+ *     <exception name="System.IndexOutOfRangeException">Raised if
+ *     <i>index</i> is not within the array's bounds.</exception>
+ *   </exceptions>
+ * </opcode>
+ */
+VMCASE(COP_ELEM_ADDR_MUL_I4):
+{
+	/* Check an array load that uses an I4 index */
+	BEGIN_NULL_CHECK_STMT((tempptr = stacktop[-2].ptrValue))
+	{
+		if(stacktop[-1].uintValue <
+				((ILUInt32)(ArrayLength(tempptr))))
+		{
+			/* Replace the array by the address to the requested array alamant */
+			stacktop[-2].ptrValue = (void *)(((unsigned char *)tempptr) +
+											 sizeof(System_Array)) +
+											 (stacktop[-1].uintValue * CVM_ARG_WORD);
+			MODIFY_PC_AND_STACK(CVM_LEN_WORD, -1);
+		}
+		else
+		{
+			ARRAY_INDEX_EXCEPTION();
+		}
+	}
+	END_NULL_CHECK();
+}
+VMBREAK(COP_ELEM_ADDR_MUL_I4);
 
 /**
  * <opcode name="ckarray_load_i8" group="Array handling">

@@ -1,3 +1,8 @@
+2010-04-20  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_gc.c (_IL_GC_ReRegisterForFinalizeInternal): Set the
+	finalization context for the reregistered finalizer.
+
 2010-04-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.h: Replace the opcode COP_CKARRAY_LOAD_I4 by the two

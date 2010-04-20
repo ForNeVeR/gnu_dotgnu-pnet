@@ -38,7 +38,7 @@ void _IL_GC_ReRegisterForFinalizeInternal(ILExecThread *_thread, ILObject *obj)
 		{
 			ILGCRegisterFinalizer
 				(GetObjectGcBase(obj),
-				 _ILFinalizeObject, (void *)0);
+				 _ILFinalizeObject, _thread->process->finalizationContext);
 		}
 	}
 	else

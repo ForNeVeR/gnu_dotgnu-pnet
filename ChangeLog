@@ -3,6 +3,13 @@
 	* engine/lib_gc.c (_IL_GC_ReRegisterForFinalizeInternal): Set the
 	finalization context for the reregistered finalizer.
 
+	* engine/arm_codegen.h (arm_alu_reg_reg_lslimm, arm_muladd_reg_reg_reg):
+	Add codegeneration macros.
+
+	* engine/md_arm.h (md_lea_membase): Optimize
+	(md_lea_memindex_shift, md_lea_memindex_mul): Add macros for calculating
+	the effective addresses of array elements.
+
 2010-04-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.h: Replace the opcode COP_CKARRAY_LOAD_I4 by the two
@@ -16,7 +23,7 @@
 	Implement the two new opcodes.
 	(COP_CKARRAY_LOAD_I4): Remove implementation of this opcode.
 
-	* engine/cvmc_ptr.c (GetArrayElementAddress): Ad new support function
+	* engine/cvmc_ptr.c (GetArrayElementAddress): Add new support function
 	for the cli LDELEMA opcode.
 	(CVMCoder_ArrayAccess): Use the new function for the IL_OP_LDELEMA
 	opcode.

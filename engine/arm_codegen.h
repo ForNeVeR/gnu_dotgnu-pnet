@@ -235,6 +235,11 @@ typedef enum
  */
 
 /*
+ * MLA is available in arm versions 2 and above 
+ */
+#define ARM_HAS_MLA 1
+
+/*
  * LDRSB and LDRSH are available in arm versions 4 and above.
  */
 #define ARM_HAS_LDRSB 1
@@ -272,6 +277,15 @@ typedef unsigned int *arm_inst_ptr;
 							(((unsigned int)(opc)) << 21) | \
 							(((unsigned int)(dreg)) << 12) | \
 							(((unsigned int)(sreg1)) << 16) | \
+							 ((unsigned int)(sreg2)); \
+			} while (0)
+#define	arm_alu_reg_reg_lslimm(inst,opc,dreg,sreg1,sreg2,shift)	\
+			do { \
+				*(inst)++ = arm_always | \
+							(((unsigned int)(opc)) << 21) | \
+							(((unsigned int)(dreg)) << 12) | \
+							(((unsigned int)(sreg1)) << 16) | \
+							(((unsigned int)(shift) & 0x1f) << 7) | \
 							 ((unsigned int)(sreg2)); \
 			} while (0)
 #define	arm_alu_reg_imm8(inst,opc,dreg,sreg,imm)	\
@@ -501,6 +515,23 @@ extern arm_inst_ptr _arm_mov_reg_imm(arm_inst_ptr inst, int reg, int value);
 								 ((unsigned int)(sreg1)); \
 				} \
 			} while (0)
+
+#if ARM_HAS_MLA
+
+/*
+ * Perform a multiply and accumulate operation.
+ * dreg = sreg1 + sreg2 * sreg3
+ */
+#define arm_muladd_reg_reg_reg(inst,cond,dreg,sreg1,sreg2,sreg3)	\
+			do { \
+				*(inst)++ = (arm_build_prefix((cond), 0x00200090) | \
+							((dreg) << 16) | \
+							((sreg1) << 12) | \
+							((sreg2) << 8) | \
+							(sreg3)); \
+			} while (0)
+
+#endif /* ARM_HAS_MLA */
 
 /*
  * Branch or jump immediate by a byte offset.  The offset is

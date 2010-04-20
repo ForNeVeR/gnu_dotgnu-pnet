@@ -644,11 +644,31 @@ typedef arm_inst_ptr	md_inst_ptr;
 #define	md_lea_membase(inst,reg,basereg,offset)	\
 			do { \
 				int ___value = (int)(offset); \
-				arm_mov_reg_reg((inst), (reg), (basereg)); \
-				if(___value != 0) \
+				if(___value == 0) \
 				{ \
-					arm_alu_reg_imm((inst), ARM_ADD, (reg), (reg), ___value); \
+					arm_mov_reg_reg((inst), (reg), (basereg)); \
 				} \
+				else \
+				{ \
+					arm_alu_reg_imm((inst), ARM_ADD, (reg), (basereg), ___value); \
+				} \
+			} while (0)
+
+/*
+ * Load the effective address of a memory base + shifted index into
+ * a register.
+ */
+#define	md_lea_memindex_shift(inst,reg,basereg,indexreg,shift,offset)	\
+				arm_alu_reg_reg_lslimm((inst), ARM_ADD, (reg), (basereg), (indexreg), (shift))
+
+/*
+ * Load the effective address of a memory base + multiplied index into
+ * a register.
+ */
+#define	md_lea_memindex_mul(inst,reg,basereg,indexreg,imm,offset)	\
+			do { \
+				arm_mov_reg_imm((inst), ARM_WORK, imm); \
+				arm_muladd_reg_reg_reg((inst), ARM_CC_AL, (reg), (basereg), (indexreg), ARM_WORK); \
 			} while (0)
 
 /*

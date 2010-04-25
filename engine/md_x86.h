@@ -962,6 +962,7 @@ extern md_inst_ptr _md_x86_mov_memindex_reg_byte
 #define md_tan_reg_float(inst,reg) \
 			do { \
 				x86_fptan((inst)); \
+				x86_fstp((inst), 0); \
 			} while (0)
 
 #ifdef	__cplusplus

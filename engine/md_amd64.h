@@ -919,6 +919,7 @@ extern md_inst_ptr _md_amd64_mov_memindex_reg_byte
 #define md_tan_reg_float(inst,reg) \
 			do { \
 				amd64_fptan((inst)); \
+				amd64_fstp((inst), 0); \
 			} while (0)
 
 #ifdef	__cplusplus

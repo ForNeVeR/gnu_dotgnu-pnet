@@ -1,3 +1,10 @@
+2010-04-25  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/md_amd64.h (md_tan_reg_float): Pop the additional 1 pushsed
+	by the fptan opcode from the fpu register stack.
+
+	* engine/md_x86.h (md_tan_reg_float): likewise.
+
 2010-04-20  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_gc.c (_IL_GC_ReRegisterForFinalizeInternal): Set the

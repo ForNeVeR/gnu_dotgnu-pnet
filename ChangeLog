@@ -1,3 +1,8 @@
+2010-04-25  Klaus Treichel  <ktreichel@web.de>
+
+	* tests/runtime/System/TestMath.cs (TestMathTanDouble): Add tests for the
+	System.Math.Tan function.
+
 2010-03-15  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Xml/XmlSecureResolver.cs: Added

@@ -102,6 +102,14 @@ public class TestMath : TestCase
 		AssertEquals("-2.5", -2.0, Math.Round(-2.5));
 	}
 
+	public void TestMathTanDouble()
+	{
+		AssertEquals("Tan(0.25 * Math.PI)", 1.0, Math.Round(Math.Tan(0.25 * Math.PI) * 100000000) / 100000000);
+		AssertEquals("Tan(Double.NaN)", Double.NaN, Math.Tan(Double.NaN));
+		AssertEquals("Tan(Double.PositiveInfinity)", Double.NaN, Math.Tan(Double.PositiveInfinity));
+		AssertEquals("Tan(Double.NegativeInfinity)", Double.NaN, Math.Tan(Double.NegativeInfinity));
+	}
+
 #if !ECMA_COMPAT && CONFIG_FRAMEWORK_2_0 && !CONFIG_COMPACT_FRAMEWORK
 
 	public void TestMathRoundDoubleMidpointRounding()

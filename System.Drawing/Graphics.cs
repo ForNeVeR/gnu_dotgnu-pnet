@@ -36,14 +36,19 @@ using System.Drawing.Toolkit;
 public sealed class Graphics : MarshalByRefObject, IDisposable
 {
 	// Internal state.
+	// static members
+	internal static Graphics defaultGraphics;
+
+	// instance members
 	private IToolkitGraphics graphics;
 	private TextLayoutManager textLayoutManager;
 	private Region clip;
 	internal Matrix transform;
 	private float pageScale;
+	private float dpiX;
+	private float dpiY;
 	private GraphicsUnit pageUnit;
 	internal GraphicsContainer stackTop;
-	internal static Graphics defaultGraphics;
 	// The window this graphics represents overlying the IToolkitGraphics
 	internal Rectangle baseWindow;
 	// The current clip in device coordinates - useful when deciding if something
@@ -52,6 +57,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 
 	// Default DPI for the screen.
 	internal const float DefaultScreenDpi = 96.0f;
+
+	// Static constructor
+	static Graphics()
+			{
+				defaultGraphics = new Graphics
+							(ToolkitManager.Toolkit.GetDefaultGraphics());
+				defaultGraphics.PageUnit = GraphicsUnit.Pixel;
+			}
 
 	// Constructor.
 	internal Graphics(IToolkitGraphics graphics)
@@ -63,6 +76,16 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 				this.pageUnit = GraphicsUnit.World;
 				this.stackTop = null;
 				this.baseWindow = Rectangle.Empty;
+				if(graphics != null)
+				{
+					dpiX = graphics.DpiX;
+					dpiY = graphics.DpiY;
+				}
+				else
+				{
+					dpiX = DefaultScreenDpi;
+					dpiY = DefaultScreenDpi;
+				}
 			}
 
 	// Window Constructor. Copies the existing Graphics and creates a new
@@ -83,6 +106,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				// Use the same toolkit
 				this.graphics = graphics.graphics;
+				dpiX = graphics.DpiX;
+				dpiY = graphics.DpiY;
 				if (graphics.clip != null)
 				{
 					clip = graphics.clip.Clone();
@@ -122,6 +147,8 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 					{
 						graphics.Dispose();
 						graphics = null;
+						dpiX = DefaultScreenDpi;
+						dpiY = DefaultScreenDpi;
 					}
 					if (clip != null)
 					{
@@ -212,34 +239,14 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				get
 				{
-					lock(this)
-					{
-						if(graphics != null)
-						{
-							return graphics.DpiX;
-						}
-						else
-						{
-							return DefaultScreenDpi;
-						}
-					}
+					return dpiX;
 				}
 			}
 	public float DpiY
 			{
 				get
 				{
-					lock(this)
-					{
-						if(graphics != null)
-						{
-							return graphics.DpiY;
-						}
-						else
-						{
-							return DefaultScreenDpi;
-						}
-					}
+					return dpiY;
 				}
 			}
 	public InterpolationMode InterpolationMode
@@ -4539,16 +4546,7 @@ public sealed class Graphics : MarshalByRefObject, IDisposable
 			{
 				get
 				{
-					lock(typeof(Graphics))
-					{
-						if(defaultGraphics == null)
-						{
-							defaultGraphics = new Graphics
-								(ToolkitManager.Toolkit.GetDefaultGraphics());
-							defaultGraphics.PageUnit = GraphicsUnit.Pixel;
-						}
-						return defaultGraphics;
-					}
+					return defaultGraphics;
 				}
 			}
 

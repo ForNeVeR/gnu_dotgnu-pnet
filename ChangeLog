@@ -1,3 +1,10 @@
+2010-04-27  Klaus Treichel  <ktreichel@web.de>
+
+	* System.Drawing/Graphics.cs: Create the default graphics object in
+	a static constructor so that a lock is not needed in the getter.
+	Cache DpiX and DpiY of the underlying IToolkitGraphics object to avoid
+	locking the graphics object in the getters.
+
 2010-04-25  Klaus Treichel  <ktreichel@web.de>
 
 	* tests/runtime/System/TestMath.cs (TestMathTanDouble): Add tests for the

@@ -1,3 +1,10 @@
+2010-05-17  Heiko Weiss  <heiko.weiss@de.trumpf.com>
+	
+	* Xsharp/Display.cs: replaced waiting for x-event endless with waiting 
+	with timeout. This avoids pending invokes not to be processed.
+	* System.Windows.Forms/Control.cs: replaced hoverTimer for each control
+	with one static hoverTimer for all controls.
+
 2010-04-27  Klaus Treichel  <ktreichel@web.de>
 
 	* System.Drawing/Graphics.cs: Create the default graphics object in

@@ -99,7 +99,9 @@ public class Control : IWin32Window, IDisposable
 	private IToolkitWindowBuffer buffer;
 	private ControlBindingsCollection controlBindingsCollection;
 	private ControlCollection controlCollection;
-	private Timer hoverTimer;
+	static private Timer hoverTimer;
+	static private Control hoverControl;
+
 
 
 	// Miscellaneous flags for controls.
@@ -247,10 +249,13 @@ public class Control : IWin32Window, IDisposable
 				height = initialSize.Height;
 
 				controlBindingsCollection = new ControlBindingsCollection(this);
-				hoverTimer = new Timer();
-				hoverTimer.Interval = 1000;
-				hoverTimer.Enabled = false;
-				hoverTimer.Tick += new EventHandler(this.ProcessHoverTimerEvent);
+				if( null == hoverTimer ) 
+				{
+					hoverTimer = new Timer();
+					hoverTimer.Interval = 1000;
+					hoverTimer.Enabled = false;
+					hoverTimer.Tick += new EventHandler(ProcessHoverTimerEvent);
+				}
 				
 				updateDistances = true;
 			}
@@ -320,9 +325,12 @@ public class Control : IWin32Window, IDisposable
 
 
 	// Process a hoverTimer event
-	private void ProcessHoverTimerEvent(object sender, EventArgs e)
+	static private void ProcessHoverTimerEvent(object sender, EventArgs e)
 	{
-		OnMouseHover(e);
+		if( hoverControl != null ) 
+		{
+			hoverControl.OnMouseHover(e);
+		}
 	}
 
 #if CONFIG_COMPONENT_MODEL
@@ -2256,6 +2264,14 @@ public class Control : IWin32Window, IDisposable
 
 #endif // !CONFIG_COMPACT_FORMS
 
+	private bool IsDisposedOrDisposing
+	{
+		get 
+		{
+			return GetControlFlag(ControlFlags.Disposed) || GetControlFlag(ControlFlags.Disposing);
+		}
+	}
+
 	// Dispose of this control.
 #if CONFIG_COMPACT_FORMS
 	public new void Dispose()
@@ -2277,7 +2293,7 @@ public class Control : IWin32Window, IDisposable
 	protected virtual void Dispose(bool disposing)
 #endif
 			{
-				if( GetControlFlag(ControlFlags.Disposed) || GetControlFlag(ControlFlags.Disposing) ) {
+				if( this.IsDisposedOrDisposing ) {
 					return;// do nothing if already disposing or disposed
 				}
 				
@@ -2321,13 +2337,8 @@ public class Control : IWin32Window, IDisposable
 						}
 						numChildren = 0;
 						children = null;
-						
-						if( null != hoverTimer ) {
-							hoverTimer.Enabled = false;
-							hoverTimer.Tick -= new EventHandler(this.ProcessHoverTimerEvent);
-							hoverTimer.Dispose();
-							hoverTimer = null;
-						}
+
+						StopHover();
 					}
 					finally
 					{
@@ -5063,9 +5074,11 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseDown(MouseEventArgs e)
 			{
-				if( null == hoverTimer ) return; // we are disposed
-				hoverTimer.Enabled = false;
-				hoverTimer.Stop();
+				if( this.IsDisposedOrDisposing ) {
+					return;// do nothing if already disposing or disposed
+				}
+
+				StopHover();
 
 				MouseEventHandler handler;
 				handler = (MouseEventHandler)(GetHandler(EventId.MouseDown));
@@ -5083,9 +5096,11 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseEnter(EventArgs e)
 			{
-				if( null == hoverTimer ) return; // we are disposed
-				hoverTimer.Enabled = true;
-				hoverTimer.Start();
+				if( this.IsDisposedOrDisposing ) {
+					return;// do nothing if already disposing or disposed
+				}
+
+				StartHover();
 
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.MouseEnter));
@@ -5094,14 +5109,34 @@ public class Control : IWin32Window, IDisposable
 					handler(this, e);
 				}
 			}
+
+	private void StartHover() 
+	{
+		hoverTimer.Stop();
+		hoverControl = this;
+		hoverTimer.Start();
+	}
+
+	private void StopHover() 
+	{
+		if( hoverControl == this ) 
+		{
+			hoverControl = null;
+			hoverTimer.Stop();
+		}
+	}
+
 #if CONFIG_COMPONENT_MODEL
 	[EditorBrowsable(EditorBrowsableState.Advanced)]
 #endif
 	protected virtual void OnMouseHover(EventArgs e)
 			{
-				if( null == hoverTimer ) return; // we are disposed
-				hoverTimer.Stop();
+				StopHover();
 
+				if( this.IsDisposedOrDisposing ) {
+					return;// do nothing if already disposing or disposed
+				}
+				
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.MouseHover));
 				if(handler != null)
@@ -5114,9 +5149,10 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseLeave(EventArgs e)
 			{
-				if( null == hoverTimer ) return; // we are disposed
-				hoverTimer.Enabled = false;
-				hoverTimer.Stop();
+				if( this.IsDisposedOrDisposing ) {
+					return;// do nothing if already disposing or disposed
+				}
+				StopHover();
 
 				EventHandler handler;
 				handler = (EventHandler)(GetHandler(EventId.MouseLeave));
@@ -5142,9 +5178,10 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseUp(MouseEventArgs e)
 			{
-				if( null == hoverTimer ) return; // we are disposed
-				hoverTimer.Enabled = false;
-				hoverTimer.Stop();
+				if( this.IsDisposedOrDisposing ) {
+					return;// do nothing if already disposing or disposed
+				}
+				StopHover();
 
 				MouseEventHandler handler;
 				handler = (MouseEventHandler)(GetHandler(EventId.MouseUp));
@@ -5162,9 +5199,10 @@ public class Control : IWin32Window, IDisposable
 #endif
 	protected virtual void OnMouseWheel(MouseEventArgs e)
 			{
-				if( null == hoverTimer ) return; // we are disposed
-				hoverTimer.Enabled = false;
-				hoverTimer.Stop();
+				if( this.IsDisposedOrDisposing ) {
+					return;// do nothing if already disposing or disposed
+				}
+				StopHover();
 
 				MouseEventHandler handler;
 				handler = (MouseEventHandler)(GetHandler(EventId.MouseWheel));

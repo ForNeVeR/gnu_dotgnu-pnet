@@ -607,8 +607,12 @@ public sealed class Display : IDisposable
 							Unlock();
 							try
 							{
-								Xlib.XNextEvent(dpy, out xevent);
-								DispatchEvent(ref xevent);
+								timeout = 100;
+								if(Xlib.XNextEventWithTimeout
+									(dpy, out xevent, timeout) > 0)
+								{
+									DispatchEvent(ref xevent);
+								}
 							}
 							finally
 							{

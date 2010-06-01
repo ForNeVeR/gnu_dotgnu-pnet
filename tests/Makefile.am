@@ -11,7 +11,7 @@ test_crypt_SOURCES  = test_crypt.c \
 test_crypt_LDADD    = ../image/libILImage.a ../support/libILSupport.a \
 					  $(GCLIBS)	
 
-AM_CFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/libgc/include -I$(top_builddir)/libgc/libatomic_ops/src
+AM_CFLAGS = -I$(top_srcdir)/include
 
 TESTS = test_thread test_crypt
 

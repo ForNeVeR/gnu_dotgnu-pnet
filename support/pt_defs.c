@@ -38,6 +38,15 @@
 
 #ifdef IL_USE_PTHREADS
 
+#ifdef HAVE_LIBGC
+#include <private/gc_priv.h>	/* For SIG_SUSPEND */
+#if defined(SIG_SUSPEND) && defined(GC_DARWIN_THREADS)
+/* SIG_SUSPEND is unused by LIBGC 6 for GC_DARWIN_THREADS and the definition */
+/* is wrong (SIGRTMIN + x). SIGRTMIN is not defined on MAC OSX */
+#undef SIG_SUSPEND
+#endif
+#endif
+
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -47,6 +56,11 @@ extern	"C" {
  * enabled.
  */
 static sigset_t		_interruptSet;
+
+/*
+ * Signal mask to wait on if a thtead is suspended.
+ */
+static sigset_t		_suspendSet;
 
 /*
  * Choose the version to use for modifying the counter in a count semaphore
@@ -218,27 +232,12 @@ pthread_mutexattr_t _ILMutexAttr;
  */
 void _ILThreadSuspendUntilResumed(ILThread *thread)
 {
-	sigset_t mask;
-
-	/* Set up the signal mask to allow through only selected signals */
-	sigfillset(&mask);
-	sigdelset(&mask, IL_SIG_RESUME);
-#ifdef SIG_SUSPEND
-	sigdelset(&mask, SIG_SUSPEND);
-#endif
-	sigdelset(&mask, PTHREAD_SIG_CANCEL);
-	sigdelset(&mask, SIGINT);
-	sigdelset(&mask, SIGQUIT);
-	sigdelset(&mask, SIGTERM);
-	sigdelset(&mask, SIGABRT);
-
 	/* Suspend until we receive IL_SIG_RESUME from something in this process */
 	do
 	{
-		sigsuspend(&mask);
+		sigsuspend(&_suspendSet);
 	}
 	while(!(thread->resumeRequested));
-
 }
 
 /*
@@ -978,6 +977,20 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	 */
 	sigemptyset(&_interruptSet);
 	sigaddset(&_interruptSet, IL_SIG_INTERRUPT);
+
+	/*
+	 * Initialize the signal mask to resume a suspended thread.
+	 */
+	sigfillset(&_suspendSet);
+	sigdelset(&_suspendSet, IL_SIG_RESUME);
+#ifdef SIG_SUSPEND
+	sigdelset(&_suspendSet, SIG_SUSPEND);
+#endif
+	sigdelset(&_suspendSet, PTHREAD_SIG_CANCEL);
+	sigdelset(&_suspendSet, SIGINT);
+	sigdelset(&_suspendSet, SIGQUIT);
+	sigdelset(&_suspendSet, SIGTERM);
+	sigdelset(&_suspendSet, SIGABRT);
 
 #if !defined(USE_COMPILER_TLS)
 	/* We need a thread-specific key for storing thread objects */

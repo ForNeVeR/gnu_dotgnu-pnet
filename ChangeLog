@@ -1,3 +1,18 @@
+2010-06-01  Klaus Treichel  <ktreichel@web.de>
+
+	* support/pt_defs.h: Don't include libgc's private header gc_priv.h
+	here anymore because SIG_SUSPEND is needed only in pt_defs.c.
+
+	* support/pt_defs.c: Include libgc's private header gc_priv.h here
+	now and handle it's definition of SIG_SUSPEND.
+	Use one global static sigset now for the signals to wait for in a
+	suspended thread.
+
+	* engine/Makefile.am: Remove libgc's include directories from the compiler
+	flags as they are not needed anymore.
+
+	* tests/Makefile.am: likewise.
+
 2010-04-25  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/md_amd64.h (md_tan_reg_float): Pop the additional 1 pushsed

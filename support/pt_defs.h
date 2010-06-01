@@ -27,14 +27,6 @@
 #ifdef HAVE_SETJMP_H
 #include <setjmp.h>
 #endif
-#ifdef HAVE_LIBGC
-#include <private/gc_priv.h>	/* For SIG_SUSPEND */
-#if defined(SIG_SUSPEND) && defined(GC_DARWIN_THREADS)
-/* SIG_SUSPEND is unused by LIBGC 6 for GC_DARWIN_THREADS and the definition */
-/* is wrong (SIGRTMIN + x). SIGRTMIN is not defined on MAC OSX */
-#undef SIG_SUSPEND
-#endif
-#endif
 
 #ifdef	__cplusplus
 extern	"C" {

@@ -1,3 +1,10 @@
+2010-06-02  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/Makefile.am: Readd libgc's include directory to the compiler
+	flags.
+
+	* tests/Makefile.am: likewise.
+
 2010-06-01  Klaus Treichel  <ktreichel@web.de>
 
 	* support/pt_defs.h: Don't include libgc's private header gc_priv.h

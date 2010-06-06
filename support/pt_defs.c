@@ -38,15 +38,6 @@
 
 #ifdef IL_USE_PTHREADS
 
-#ifdef HAVE_LIBGC
-#include <private/gc_priv.h>	/* For SIG_SUSPEND */
-#if defined(SIG_SUSPEND) && defined(GC_DARWIN_THREADS)
-/* SIG_SUSPEND is unused by LIBGC 6 for GC_DARWIN_THREADS and the definition */
-/* is wrong (SIGRTMIN + x). SIGRTMIN is not defined on MAC OSX */
-#undef SIG_SUSPEND
-#endif
-#endif
-
 #ifdef	__cplusplus
 extern	"C" {
 #endif
@@ -943,6 +934,9 @@ void _ILThreadInitSystem(ILThread *mainThread)
 {
 	struct sigaction action;
 	sigset_t set;
+#ifdef HAVE_LIBGC
+	int suspendSignal;
+#endif
 
 	/* Set up the signal handlers that we require */
 	ILMemZero(&action, sizeof(action));
@@ -983,8 +977,11 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	 */
 	sigfillset(&_suspendSet);
 	sigdelset(&_suspendSet, IL_SIG_RESUME);
-#ifdef SIG_SUSPEND
-	sigdelset(&_suspendSet, SIG_SUSPEND);
+#ifdef HAVE_LIBGC
+	if((suspendSignal = GC_get_suspend_signal()) != -1)
+	{
+		sigdelset(&_suspendSet, suspendSignal);
+	}
 #endif
 	sigdelset(&_suspendSet, PTHREAD_SIG_CANCEL);
 	sigdelset(&_suspendSet, SIGINT);

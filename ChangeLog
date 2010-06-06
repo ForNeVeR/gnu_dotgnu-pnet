@@ -1,3 +1,9 @@
+2010-06-06  Klaus Treichel  <ktreichel@web.de>
+
+	* support/pt_defs.c (_ILThreadInitSystem): Use the new public libgc
+	function GC_get_suspend_signal(void) to determine the signal used by
+	libgc to suspend a thread instead of including libgs's private headers.
+
 2010-06-05  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/Makefile.am: Add -I$(top_srcdir)/include to AM_CFLAGS if built

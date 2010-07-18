@@ -1411,10 +1411,12 @@ static void FreeTopRegister(MDUnroll *unroll, long local)
 	}
 	else
 	{
+#if MD_HAS_FP
 #if MD_HAS_FP_STACK
 		--(unroll->fpStackSize);
 #else
 		unroll->fpRegsUsed &= ~(1 << (reg & ~MD_FREG_MASK));
+#endif
 #endif
 	}
 }

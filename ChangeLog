@@ -1,3 +1,8 @@
+2010-07-18  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/unroll.c (FreeTopRegister): Fix build with unroller without
+	float support like on ppc.
+
 2010-06-06  Klaus Treichel  <ktreichel@web.de>
 
 	* support/pt_defs.c (_ILThreadInitSystem): Use the new public libgc

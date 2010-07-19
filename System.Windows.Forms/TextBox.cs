@@ -34,7 +34,7 @@ public class TextBox : TextBoxBase
 {
 	private bool acceptsReturn;
 	private char passwordChar;
-	private CharacterCasing characterCasing;
+	private CharacterCasing characterCasing = CharacterCasing.Normal;
 	private ScrollBars scrollBars;
 	private HorizontalAlignment textAlign;
 
@@ -137,7 +137,6 @@ public class TextBox : TextBoxBase
 		}
 	}
 
-	[TODO]
 	// Handle this
 	// Gets or sets whether the TextBox control modifies the case of characters as they are typed.
 	public CharacterCasing CharacterCasing
@@ -385,7 +384,7 @@ public class TextBox : TextBoxBase
 			}
 			
 			if( value == null ) value = string.Empty;
-			
+
 			if( value.Length > 0 && value.IndexOfAny( new char [] { '\n', '\r' } ) >= 0 ) {	// check if chars are in use, before use of StringBuilder (performance)
 			
 				// Change all text endings of CR or LF into CRLF
@@ -1120,6 +1119,17 @@ public class TextBox : TextBoxBase
 	// Called to change the text. Sets the update to whats needed to but doesnt change the selection point or caret
 	private void SetTextActual( string text)
 	{
+		switch( this.characterCasing ) 
+		{
+			case CharacterCasing.Upper :
+				text = text.ToUpper();
+				break;
+
+			case CharacterCasing.Lower :
+				text = text.ToLower();
+				break;
+		}
+
 		if( !IsHandleCreated ) {
 			// create handle here to be sure that LayoutInfo will be set correct.
 			this.CreateHandle();

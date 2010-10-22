@@ -1,3 +1,13 @@
+2010-10-22  Klaus Treichel  <ktreichel@web.de>
+
+	* support/thread.c (ILThreadInit): Move initialization of the
+	interlocked functions from here to the specific _ILThreadInitSystem
+	functions
+
+	* support/pt_defs.c, support/no_defs.c, support/w32_defs.c
+	(_ILThreadInitSystem): Move initialization of the interlocked functions
+	to here.
+
 2010-07-18  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/unroll.c (FreeTopRegister): Fix build with unroller without

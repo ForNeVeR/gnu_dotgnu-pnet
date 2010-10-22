@@ -128,6 +128,9 @@ void _ILThreadInitSystem(ILThread *mainThread)
 					GetCurrentProcess(), (HANDLE *)(&(mainThread->handle)),
 					0, 0, DUPLICATE_SAME_ACCESS);
 	mainThread->identifier = GetCurrentThreadId();
+
+	/* Initialize the atomic operations */
+	ILInterlockedInit();
 }
 
 /*

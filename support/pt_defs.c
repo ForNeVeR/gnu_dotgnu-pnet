@@ -1019,6 +1019,9 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	/* Set the thread handle and identifier for the main thread */
 	mainThread->handle = pthread_self();
 	mainThread->identifier = mainThread->handle;
+
+	/* Initialize the atomic operations */
+	ILInterlockedInit();
 }
 
 void _ILThreadSetPriority(ILThread *thread, int priority)

@@ -43,6 +43,9 @@ void _ILThreadInitSystem(ILThread *mainThread)
 {
 	mainThread->handle = 0;
 	mainThread->identifier = 0;
+
+	/* Initialize the atomic operations */
+	ILInterlockedInit();
 }
 
 int _ILThreadCreateSystem(ILThread *thread)

@@ -1,3 +1,8 @@
+2010-10-24  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_ptr.c: Fix cvmdoc generation for the
+	COP_ELEM_ADDR_SHIFT_I4 opcode.
+
 2010-10-22  Klaus Treichel  <ktreichel@web.de>
 
 	* support/thread.c (ILThreadInit): Move initialization of the

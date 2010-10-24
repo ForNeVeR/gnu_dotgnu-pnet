@@ -1618,7 +1618,7 @@ VMBREAK(COP_PWRITE_ELEM);
  *   Throw a <code>System.IndexOutOfRangeException</code> if <i>index</i>
  *   is out of range.  Otherwise push <i>pointer</i> the address of the
  *   <i>index</i>'th element in the array on the stack. The size of each
- *   array element is 1 << <i>N</i> bytes.</description>
+ *   array element is 1 &lt;&lt; <i>N</i> bytes.</description>
  *
  *   <notes>This instruction is used to assist in obtaining the address
  *   of an array element where the element size is a power of two.</notes>

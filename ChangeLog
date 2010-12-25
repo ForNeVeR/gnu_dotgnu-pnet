@@ -1,3 +1,20 @@
+2010-12-25  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_config.h: Move configuration of interpreter loop variables
+	from cvm.c to here.
+	Add optional definition of a vmbreak barrier if the unroller is used to
+	clobber registers that are used by the unrolled code but not saved.
+
+	* engine/cvm.c: Move configuration of interpreter loop variables to
+	cvm_config.h
+	(_ILCVMInterpreter): Prepend a CVM_ to the configurable register
+	 variables.
+
+	* engine/mklabel.sh: Add the CVM_VMBREAK_BARRIER to the VMBREAK and
+	VMBREAKNOEND definitions for the direct threaded mode.
+
+	* engine/thread.c: Do some reformatting.
+
 2010-10-24  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_ptr.c: Fix cvmdoc generation for the

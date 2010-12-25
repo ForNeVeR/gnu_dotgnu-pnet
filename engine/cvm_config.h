@@ -243,6 +243,78 @@ extern int _ILCVMInsnCount[];
 #endif
 
 /*
+ * Macros that can be used to bind important interpreter loop
+ * variables to specific CPU registers for greater speed.
+ * If we don't do this, then gcc generates VERY bad code for
+ * the inner interpreter loop.  It just isn't smart enough to
+ * figure out that "pc", "stacktop", and "frame" are the
+ * best values to put into registers.
+ * If unrolling is done the macro CVM_VMBREAK_BARRIER should
+ * be defined to clobber all registers used by the unrolled
+ * code that are not saved to the stack before they are used.
+ * This makes sure that no values are stored in these registers
+ * between execution of two opcodes. This can easily happen
+ * with an optimizing compiler like gcc.
+ */
+#if !defined(IL_NO_REGISTERS_USED)
+#if defined(CVM_X86) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define CVM_REGISTER_ASM_X86 1
+
+	#define CVM_REGISTER_ASM_PC(x)			register x asm ("esi")
+	#define CVM_REGISTER_ASM_STACK(x)		register x asm ("edi")
+	#define CVM_REGISTER_ASM_FRAME(x)		register x asm ("ebx")
+#elif defined(CVM_X86_64) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define CVM_REGISTER_ASM_X86_64 1
+
+	/* 16 registers - so we can avoid using esi, edi and ebx. */
+	#define CVM_REGISTER_ASM_PC(x)			register x asm("r12")
+	#define CVM_REGISTER_ASM_STACK(x)		register x asm("r14") 
+	#define CVM_REGISTER_ASM_FRAME(x)		register x asm("r15") 
+#if defined(IL_CVM_DIRECT_UNROLLED)
+	#define CVM_VMBREAK_BARRIER()	\
+		__asm__ __volatile__ ("" : : : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "memory")
+#endif
+#elif defined(CVM_ARM) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define CVM_REGISTER_ASM_ARM 1
+
+    #define CVM_REGISTER_ASM_PC(x)			register x asm ("r4")
+    #define CVM_REGISTER_ASM_STACK(x)		register x asm ("r5")
+    #define CVM_REGISTER_ASM_FRAME(x)		register x asm ("r6")
+#elif defined(CVM_PPC) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define CVM_REGISTER_ASM_PPC 1
+
+	#define CVM_REGISTER_ASM_PC(x)			register x asm ("r18")
+	#define CVM_REGISTER_ASM_STACK(x)		register x asm ("r19")
+	#define CVM_REGISTER_ASM_FRAME(x)		register x asm ("r20")
+#elif defined(CVM_IA64) && defined(__GNUC__) && !defined(IL_NO_ASM)
+
+	#define CVM_REGISTER_ASM_IA64 1
+
+	#define CVM_REGISTER_ASM_PC(x)			register x asm ("r4")
+	#define CVM_REGISTER_ASM_STACK(x)		register x asm ("r5")
+	#define CVM_REGISTER_ASM_FRAME(x)		register x asm ("r6")
+#else
+	#define IL_NO_REGISTERS_USED 1
+#endif
+#endif /* !defined(IL_NO_REGISTERS_USED) */
+
+#if defined(IL_NO_REGISTERS_USED)
+	#define CVM_REGISTER_ASM_PC(x)			x
+	#define CVM_REGISTER_ASM_STACK(x)		x
+	#define CVM_REGISTER_ASM_FRAME(x)		x
+#endif
+
+#if defined(IL_CVM_DIRECT)
+#if !defined(CVM_VMBREAK_BARRIER)
+	#define CVM_BREAK_BARRIER()
+#endif
+#endif
+
+/*
  * The constructor offset value.
  */
 #ifdef IL_CVM_DIRECT

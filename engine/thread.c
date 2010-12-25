@@ -244,7 +244,7 @@ ILExecThread *ILThreadRegisterForManagedExecution(ILExecProcess *process, ILThre
 		return execThread;
 	}
 
-	/* Create a new engine-level thread */	
+	/* Create a new engine-level thread */
 	if ((execThread = _ILExecThreadCreate(process, 0)) == 0)
 	{
 		return 0;

@@ -282,9 +282,11 @@ echo '#define VMPREFIXDEFAULT     _DEFAULT_PREFIX_label'
 echo '#endif /* !IL_VMCASE_BARRIER */'
 echo '#define VMBREAK(val)        \
             CVM_DUMP(); \
+            CVM_VMBREAK_BARRIER(); \
             VM_CGOTO_BREAK(val)'
 echo '#define VMBREAKNOEND        \
             CVM_DUMP(); \
+            CVM_VMBREAK_BARRIER(); \
             VM_CGOTO_BREAKNOEND(val)'
 echo '#define VMOUTERBREAK'
 echo '#else /* !IL_CVM_DIRECT */'

@@ -41,23 +41,8 @@ extern	"C" {
  * are now in "cvm_config.h".
  */
 
-/*
- * Macros that can be used to bind important interpreter loop
- * variables to specific CPU registers for greater speed.
- * If we don't do this, then gcc generates VERY bad code for
- * the inner interpreter loop.  It just isn't smart enough to
- * figure out that "pc", "stacktop", and "frame" are the
- * best values to put into registers.
- */
 #if !defined(IL_NO_REGISTERS_USED)
 #if defined(CVM_X86) && defined(__GNUC__) && !defined(IL_NO_ASM)
-
-	#define REGISTER_ASM_X86 1
-
-    #define REGISTER_ASM_PC(x)              register x asm ("esi")
-    #define REGISTER_ASM_STACK(x)           register x asm ("edi")
-    #define REGISTER_ASM_FRAME(x)           register x asm ("ebx")
-
 	/*
 	 * Memory copies on x86 use esi and edi, but we want them
 	 * for something else.  So we force the copy to go through
@@ -89,74 +74,26 @@ extern	"C" {
 	{
 		return ILMemCmp(dst, src, len);
 	}
-#elif defined(CVM_X86_64) && defined(__GNUC__) && !defined(IL_NO_ASM)
-
-	#define REGISTER_ASM_X86_64 1
-
-	/* 16 registers - so we can avoid using esi, edi and ebx. */
-	#define REGISTER_ASM_PC(x)              register x asm("r12")
-	#define REGISTER_ASM_STACK(x)           register x asm("r14") 
-	#define REGISTER_ASM_FRAME(x)           register x asm("r15") 
-	#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
-	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
-	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
-	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
-	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
-
-	#define X86_64_CGOTO(pc) do { __asm__ __volatile__ (\
-								"jmpq *(%0)" \
-								:: "r" (pc) ); \
-								/* just to fool the compiler */ \
-								goto ** ((void **)(pc)); } while(0)
-	/* VM_CGOTO_SWITCH segfaults with just a jmpq */
-	#define VM_CGOTO_PREFIXSWITCH(val) X86_64_CGOTO(pc)
-	#define VM_CGOTO_BREAK(val) X86_64_CGOTO(pc)
-	#define VM_CGOTO_BREAKNOEND(val) X86_64_CGOTO(pc)
-	
-#elif defined(CVM_ARM) && defined(__GNUC__) && !defined(IL_NO_ASM)
-
-	#define REGISTER_ASM_ARM 1
-
-    #define REGISTER_ASM_PC(x)              register x asm ("r4")
-    #define REGISTER_ASM_STACK(x)           register x asm ("r5")
-    #define REGISTER_ASM_FRAME(x)           register x asm ("r6")
-	#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
-	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
-	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
-	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
-	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
-#elif defined(CVM_PPC) && defined(__GNUC__) && !defined(IL_NO_ASM)
-    #define REGISTER_ASM_PC(x)              register x asm ("r18")
-    #define REGISTER_ASM_STACK(x)           register x asm ("r19")
-    #define REGISTER_ASM_FRAME(x)           register x asm ("r20")
-    #define IL_MEMCPY(dst,src,len)          (ILMemCpy((dst), (src), (len)))
-    #define IL_MEMMOVE(dst,src,len)         (ILMemMove((dst), (src), (len)))
-    #define IL_MEMZERO(dst,len)             (ILMemZero((dst), (len)))
-    #define IL_MEMSET(dst,ch,len)           (ILMemSet((dst), (ch), (len)))
-    #define IL_MEMCMP(dst,src,len)          (ILMemCmp((dst), (src), (len)))
-#elif defined(CVM_IA64) && defined(__GNUC__) && !defined(IL_NO_ASM)
-    #define REGISTER_ASM_PC(x)              register x asm ("r4")
-    #define REGISTER_ASM_STACK(x)           register x asm ("r5")
-    #define REGISTER_ASM_FRAME(x)           register x asm ("r6")
-	#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
-	#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
-	#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
-	#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
-	#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
-#else
-	#define IL_NO_REGISTERS_USED 1
 #endif
 #endif
 
-#if defined(IL_NO_REGISTERS_USED)
-	#define REGISTER_ASM_PC(x)		x
-	#define REGISTER_ASM_STACK(x)		x
-	#define REGISTER_ASM_FRAME(x)		x
-	#define	IL_MEMCPY(dst,src,len)		(ILMemCpy((dst), (src), (len)))
-	#define	IL_MEMMOVE(dst,src,len)		(ILMemMove((dst), (src), (len)))
-	#define	IL_MEMZERO(dst,len)		(ILMemZero((dst), (len)))
-	#define	IL_MEMSET(dst,ch,len)		(ILMemSet((dst), (ch), (len)))
-	#define	IL_MEMCMP(dst,src,len)		(ILMemCmp((dst), (src), (len)))
+/*
+ * Define the memory macros if not defined.
+ */
+#ifndef IL_MEMCPY
+#define	IL_MEMCPY(dst,src,len)			(ILMemCpy((dst), (src), (len)))
+#endif
+#ifndef IL_MEMMOVE
+#define	IL_MEMMOVE(dst,src,len)			(ILMemMove((dst), (src), (len)))
+#endif
+#ifndef IL_MEMZERO
+#define	IL_MEMZERO(dst,len)				(ILMemZero((dst), (len)))
+#endif
+#ifndef IL_MEMSET
+#define	IL_MEMSET(dst,ch,len)			(ILMemSet((dst), (ch), (len)))
+#endif
+#ifndef IL_MEMCMP
+#define	IL_MEMCMP(dst,src,len)			(ILMemCmp((dst), (src), (len)))
 #endif
 
 /*
@@ -631,9 +568,9 @@ CVM_DEFINE_TABLES();
 
 int _ILCVMInterpreter(ILExecThread *thread)
 {
-	REGISTER_ASM_PC(unsigned char *IL_PC_VOLATILE pc);
-	REGISTER_ASM_STACK(CVMWord *IL_STACKTOP_VOLATILE stacktop);
-	REGISTER_ASM_FRAME(CVMWord *IL_FRAME_VOLATILE frame);
+	CVM_REGISTER_ASM_PC(unsigned char *IL_PC_VOLATILE pc);
+	CVM_REGISTER_ASM_STACK(CVMWord *IL_STACKTOP_VOLATILE stacktop);
+	CVM_REGISTER_ASM_FRAME(CVMWord *IL_FRAME_VOLATILE frame);
 	int divResult;
 	CVMWord  *IL_STACKMAX_VOLATILE stackmax;
 	ILMethod *IL_METHOD_VOLATILE method;

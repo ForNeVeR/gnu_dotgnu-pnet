@@ -310,7 +310,7 @@ extern int _ILCVMInsnCount[];
 
 #if defined(IL_CVM_DIRECT)
 #if !defined(CVM_VMBREAK_BARRIER)
-	#define CVM_BREAK_BARRIER()
+	#define CVM_VMBREAK_BARRIER()
 #endif
 #endif
 

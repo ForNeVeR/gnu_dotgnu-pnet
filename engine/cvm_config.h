@@ -264,6 +264,10 @@ extern int _ILCVMInsnCount[];
 	#define CVM_REGISTER_ASM_PC(x)			register x asm ("esi")
 	#define CVM_REGISTER_ASM_STACK(x)		register x asm ("edi")
 	#define CVM_REGISTER_ASM_FRAME(x)		register x asm ("ebx")
+#if defined(IL_CVM_DIRECT_UNROLLED)
+	#define CVM_VMBREAK_BARRIER()	\
+		__asm__ __volatile__ ("" : : : "eax", "ecx", "edx", "memory")
+#endif
 #elif defined(CVM_X86_64) && defined(__GNUC__) && !defined(IL_NO_ASM)
 
 	#define CVM_REGISTER_ASM_X86_64 1

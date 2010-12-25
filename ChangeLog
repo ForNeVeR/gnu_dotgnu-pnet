@@ -8,7 +8,7 @@
 	* engine/cvm.c: Move configuration of interpreter loop variables to
 	cvm_config.h
 	Remove the volatile from the volatile interpreter variable configuration
-	for gcc 4.x and x86_64 because they are not needed anymore.
+	for gcc 4.x and x86_64 and x86 because they are not needed anymore.
 	(_ILCVMInterpreter): Prepend a CVM_ to the configurable register
 	variables.	
 

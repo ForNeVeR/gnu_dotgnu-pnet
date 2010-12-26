@@ -1,3 +1,10 @@
+2010-12-26  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm_config.h: Add the vmbreak barrier definition for arm.
+
+	* engine/cvm.c: Remove the volatile from the volatile interpreter
+	variable configuration for gcc 4.x and arm.
+
 2010-12-25  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_config.h: Move configuration of interpreter loop variables

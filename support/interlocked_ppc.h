@@ -532,7 +532,7 @@ static IL_INLINE ILInt32 ILInterlockedAddI4(volatile ILInt32 *dest,
 		"\tadd		%0, %0, %3\n"
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "cc"
 	);
@@ -554,7 +554,7 @@ static IL_INLINE ILInt32 ILInterlockedAddI4_Acquire(volatile ILInt32 *dest,
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
 		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);
@@ -576,7 +576,7 @@ static IL_INLINE ILInt32 ILInterlockedAddI4_Release(volatile ILInt32 *dest,
 		"\tadd		%0, %0, %3\n"
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);
@@ -599,7 +599,7 @@ static IL_INLINE ILInt32 ILInterlockedAddI4_Full(volatile ILInt32 *dest,
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
 		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);
@@ -623,7 +623,7 @@ static IL_INLINE ILInt32 ILInterlockedSubI4(volatile ILInt32 *dest,
 		"\tsubf		%0, %3, %0\n"
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "cc"
 	);
@@ -645,7 +645,7 @@ static IL_INLINE ILInt32 ILInterlockedSubI4_Acquire(volatile ILInt32 *dest,
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
 		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);
@@ -667,7 +667,7 @@ static IL_INLINE ILInt32 ILInterlockedSubI4_Release(volatile ILInt32 *dest,
 		"\tsubf		%0, %3, %0\n"
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);
@@ -690,7 +690,7 @@ static IL_INLINE ILInt32 ILInterlockedSubI4_Full(volatile ILInt32 *dest,
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
 		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);
@@ -714,7 +714,7 @@ static IL_INLINE void ILInterlockedAndU4(volatile ILUInt32 *dest,
 		"\tand		%0, %0, %3\n"
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "cc"
 	);
@@ -735,7 +735,7 @@ static IL_INLINE void ILInterlockedAndU4_Full(volatile ILUInt32 *dest,
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
 		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);
@@ -757,7 +757,7 @@ static IL_INLINE void ILInterlockedOrU4(volatile ILUInt32 *dest,
 		"\tor		%0, %0, %3\n"
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "cc"
 	);
@@ -778,7 +778,7 @@ static IL_INLINE void ILInterlockedOrU4_Full(volatile ILUInt32 *dest,
 		"\tstwcx.	%0, 0, %2\n"
 		"\tbne-		1b\n"
 		_IL_INTERLOCKED_PPC_LWSYNC
-		: "=r" (retval), "=m" (*dest)
+		: "=&r" (retval), "=m" (*dest)
 		: "r" (dest), "r" (value)
 		: "memory", "cc"
 	);

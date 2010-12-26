@@ -225,7 +225,7 @@ static void OutputCondBranch(ILCoder *coder, int iopcode, int lopcode,
  * Output a branch instruction using a CVM coder.
  */
 static void CVMCoder_Branch(ILCoder *coder, int opcode, ILUInt32 dest,
-				   		    ILEngineType type1, ILEngineType type2)
+							ILEngineType type1, ILEngineType type2)
 {
 	/* Determine what form of branch to use */
 	switch(opcode)

@@ -6,6 +6,13 @@
 	* engine/cvm.c: Remove the volatile from the volatile interpreter
 	variable configuration for gcc 4.x and arm and ppc.
 
+	* engine/cvm_ptr.c: Do some reformatting.
+
+	* engine/cvmc_branch.c: Do some reformatting.
+
+	* support/interlocked_ppc.h: Add an early clobber to the output of the
+	interlocked	Add, Sub And and Or functions.
+
 2010-12-25  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_config.h: Move configuration of interpreter loop variables

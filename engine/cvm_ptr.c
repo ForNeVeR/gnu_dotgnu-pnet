@@ -2375,7 +2375,7 @@ VMCASE(COP_CASTCLASS):
 	classInfo = CVM_ARG_PTR(ILClass *);
 	if(!stacktop[-1].ptrValue ||
 	   CanCastClass(ILProgramItem_Image(method),
-	   			    GetObjectClass(stacktop[-1].ptrValue), classInfo))
+					GetObjectClass(stacktop[-1].ptrValue), classInfo))
 	{
 		MODIFY_PC_AND_STACK(CVM_LEN_PTR, 0);
 	}

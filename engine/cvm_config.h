@@ -287,6 +287,10 @@ extern int _ILCVMInsnCount[];
     #define CVM_REGISTER_ASM_PC(x)			register x asm ("r4")
     #define CVM_REGISTER_ASM_STACK(x)		register x asm ("r5")
     #define CVM_REGISTER_ASM_FRAME(x)		register x asm ("r6")
+#if defined(IL_CVM_DIRECT_UNROLLED)
+	#define CVM_VMBREAK_BARRIER()   \
+		__asm__ __volatile__ ("" : : : "r0", "r1", "r2", "r3", "memory")
+#endif
 #elif defined(CVM_PPC) && defined(__GNUC__) && !defined(IL_NO_ASM)
 
 	#define CVM_REGISTER_ASM_PPC 1

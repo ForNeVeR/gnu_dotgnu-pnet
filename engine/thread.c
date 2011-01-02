@@ -317,10 +317,6 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 							   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 			thread->aborting = 1;
 			thread->threadAbortException = 0;
-#ifdef IL_USE_CVM
-			thread->abortHandlerEndPC = 0;
-			thread->abortHandlerFrame = 0;
-#endif
 			ILExecThreadSetException(thread, exception);
 
 			return 0;
@@ -680,8 +676,6 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	thread->numFrames = 0;
 	thread->maxFrames = 0;
 	thread->pc = 0;
-	thread->abortHandlerEndPC = 0;
-	thread->abortHandlerFrame = 0;
 	thread->frame = 0;
 	thread->stackTop = 0;
 #endif

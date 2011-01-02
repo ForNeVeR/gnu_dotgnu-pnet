@@ -2,11 +2,15 @@
 
 	* engine/call.c (_ILCallMethod): Don't copy the currentException back
 	to the thrownException anymore if built with libjit.
+	(_ILCallMethod): Remove copying the exceptHeight for cvm.
 
 	* engine/cvm.c, engine/cvm_arith.c, engine/cvm_call.c, engine/cvm_except.c:
 	Change exception handling from code to unwind table based.
 	Fix catching exceptions in finally/fault blocks.
 	Add support for filter based exceptions.
+
+	* engine/cvm_call.c, engine/debugger.c : Remove copying the
+	exceptHeight.
 
 	* engine/cvm.h: Mark some prefixed opcodes for exception handling
 	obsolete or replace them by new ones.
@@ -37,6 +41,12 @@
 	* engine/null_coder.c: Adjust the null coder to match the new coder
 	structure.
 
+	* engine/system.c (FindAndSetStackTrace): Remove copying the
+	exceptHeight.
+
+	* engine/thread.c, engine/lib_thread.c: Remove initialization of
+	abortHandlerEndPc and abortHandlerFrame.
+
 	* engine/verify.c: Add functions for creating the coder exception block
 	structure from the method's exception regions.
 	(_ILVerify): Create the coder exception structure from the method's
@@ -47,6 +57,11 @@
 
 	* engine/verify_except.c: Rework verification and generation of exception
 	handling opcodes. Fix support for filters.
+
+	* engine/engine.h: Remove the now obsolete exceptHeight member from
+	ILCallFrame and ILExecThread.
+	Remove the now obsolete AbortHandlerFrame and abortHandlerEndPc from
+	ILExecThread.
 
 	* include/il_coder.h: Add coder specific exception block structs.
 	Modify the coder structure and adjust the corresponding macros.

@@ -63,7 +63,6 @@ static int FindAndSetStackTrace(ILExecThread *thread, ILObject *object)
 		callFrame->method = thread->method;
 		callFrame->pc = thread->pc;
 		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Get the stack trace and pop the frame */

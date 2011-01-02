@@ -1198,7 +1198,6 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	frame->method = thread->method;
 	frame->pc = IL_INVALID_PC;
 	frame->frame = thread->frame;
-	frame->exceptHeight = thread->exceptHeight;
 	frame->permissions = 0;
 
 	/* Call the method */
@@ -1212,7 +1211,6 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	{
 		thread->pc = pcstart;
 	}
-	thread->exceptHeight = 0;
 	thread->method = method;
 	threwException = _ILCVMInterpreter(thread);
 	if(threwException)

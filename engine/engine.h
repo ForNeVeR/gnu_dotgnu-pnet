@@ -403,7 +403,6 @@ typedef struct _tagILCallFrame
 	ILMethod       *method;			/* Method being executed in the frame */
 	unsigned char  *pc;				/* PC to return to in the parent method */
 	CVMWord		   *frame;			/* Base of the local variable frame */
-	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
 	void           *permissions;	/* Permissions for this stack frame */
 #ifdef ENHANCED_PROFILER
 	ILInt64			profileTime;	/* Preformance counter for profiling */
@@ -473,16 +472,9 @@ struct _tagILExecThread
 
 	/* Current thread state */
 	unsigned char  *pc;				/* Current program position */
-	CVMWord		   *exceptHeight;	/* Height of the frame for exceptions */
 	CVMWord		   *frame;			/* Base of the local variable frame */
 	CVMWord        *stackTop;		/* Current stack top */
 	ILUInt32		offset;			/* Current IL offset */
-
-	/* The PC where the ThreadAbortException should be rethrown */
-	unsigned char	*abortHandlerEndPC;
-
-	/* The frame where the ThreadAbortException was first noticed */
-	ILUInt32		abortHandlerFrame;
 
 	/* Stack of call frames in use */
 	ILCallFrame	   *frameStack;

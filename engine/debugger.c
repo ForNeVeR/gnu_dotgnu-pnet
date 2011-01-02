@@ -2089,7 +2089,6 @@ void ShowStackTrace(ILDebugger *debugger, FILE *stream)
 	frame->method = thread->method;
 	frame->pc = thread->pc;
 	frame->frame = thread->frame;
-	frame->exceptHeight = thread->exceptHeight;
 	frame->permissions = 0;
 
 	fputs("  <StackTrace>\n", stream);

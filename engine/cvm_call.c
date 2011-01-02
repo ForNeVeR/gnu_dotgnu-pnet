@@ -606,7 +606,6 @@ VMCASE(COP_CALL):
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALL_RETURN(pc);
 		callFrame->frame = frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Pass control to the new method */
@@ -639,7 +638,6 @@ VMCASE(COP_CALL):
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALL_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
@@ -696,7 +694,6 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALL_RETURN(pc);
 		callFrame->frame = frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Pass control to the new method */
@@ -728,7 +725,6 @@ VMCASE(COP_CALL_CTOR):
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALL_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
@@ -940,7 +936,6 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->method = method;
 			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(pc);
 			callFrame->frame = frame;
-			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
 
 			/* Pass control to the new method */
@@ -973,7 +968,6 @@ VMCASE(COP_CALL_VIRTUAL):
 			callFrame->method = method;
 			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(thread->pc);
 			callFrame->frame = thread->frame;
-			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
 
 			/* Restore the state information and jump to the new method */
@@ -1075,7 +1069,6 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->method = method;
 			callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(pc);
 			callFrame->frame = frame;
-			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
 
 			/* Pass control to the new method */
@@ -1108,7 +1101,6 @@ VMCASE(COP_CALL_INTERFACE):
 			callFrame->method = method;
 			callFrame->pc = CVM_ARG_CALLI_RETURN_SMALL(thread->pc);
 			callFrame->frame = thread->frame;
-			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
 
 			/* Restore the state information and jump to the new method */
@@ -1159,7 +1151,6 @@ popFrame:
 
 	methodToCall = callFrame->method;
 	pc = callFrame->pc;
-	thread->exceptHeight = callFrame->exceptHeight;
 	frame = callFrame->frame;
 	method = methodToCall;
 
@@ -1453,7 +1444,6 @@ VMCASE(COP_CALLI):
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALLIND_RETURN(pc);
 		callFrame->frame = frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Pass control to the new method */
@@ -1486,7 +1476,6 @@ VMCASE(COP_CALLI):
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALLIND_RETURN(thread->pc);
 		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
@@ -1545,7 +1534,6 @@ case COP_CALL_VIRTUAL:
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALLV_RETURN_LARGE(thread->pc);
 		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
@@ -1612,7 +1600,6 @@ case COP_CALL_INTERFACE:
 		callFrame->method = method;
 		callFrame->pc = CVM_ARG_CALLI_RETURN_LARGE(thread->pc);
 		callFrame->frame = thread->frame;
-		callFrame->exceptHeight = thread->exceptHeight;
 		callFrame->permissions = 0;
 
 		/* Restore the state information and jump to the new method */
@@ -1871,7 +1858,6 @@ VMCASE(COP_PREFIX_CALL_VIRTGEN):
 			callFrame->method = method;
 			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(pc);
 			callFrame->frame = frame;
-			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
 
 			/* Pass control to the new method */
@@ -1904,7 +1890,6 @@ VMCASE(COP_PREFIX_CALL_VIRTGEN):
 			callFrame->method = method;
 			callFrame->pc = CVM_ARG_CALLV_RETURN_SMALL(thread->pc);
 			callFrame->frame = thread->frame;
-			callFrame->exceptHeight = thread->exceptHeight;
 			callFrame->permissions = 0;
 
 			/* Restore the state information and jump to the new method */

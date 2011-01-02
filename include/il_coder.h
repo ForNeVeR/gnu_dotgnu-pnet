@@ -1,7 +1,7 @@
 /*
  * il_coder.h - Interface to the "coder" within the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2010  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,6 +62,75 @@ typedef enum
 
 } ILEngineType;
 #define	ILEngineType_ValidTypes	8
+
+/*
+ * Structures to keep track of the exception handling blocks
+ * during verification.
+ */
+
+/*
+ * Exceprion handler block types
+ *
+ * The values are choosen so that the different types can be determined
+ * easily.
+ * 1. try blocks: no bits are set
+ * 2. handler blocks (typed catch and filtered catch): bit 0x01 is set
+ * 3. cleanups (finally or fault): bit 0x04 is set
+ * 4. filters for filtered catch blocks: value is 0x02
+ */
+#define IL_CODER_HANDLER_TYPE_TRY				0x00
+#define IL_CODER_HANDLER_TYPE_CATCH				0x01
+#define IL_CODER_HANDLER_TYPE_FILTEREDCATCH		0x03
+#define IL_CODER_HANDLER_TYPE_FINALLY			0x04
+#define IL_CODER_HANDLER_TYPE_FAULT				0x06
+#define IL_CODER_HANDLER_TYPE_FILTER			0x02
+#define IL_CODER_HANDLER_TYPE_MASK				0x07
+
+typedef struct _tagILCoderExceptionBlock ILCoderExceptionBlock;
+typedef struct _tagILCoderHandlerBlock ILCoderHandlerBlock;
+typedef struct _tagILCoderTryBlock ILCoderTryBlock;
+typedef struct _tagILCoderExceptions ILCoderExceptions;
+
+struct _tagILCoderHandlerBlock
+{
+	ILCoderExceptionBlock	   *nextHandler;
+	ILClass					   *exceptionClass;
+	ILCoderExceptionBlock	   *filterBlock;
+	ILCoderExceptionBlock	   *tryBlock;
+};
+
+struct _tagILCoderTryBlock
+{
+	ILCoderExceptionBlock	   *handlerBlock;
+};
+
+struct _tagILCoderExceptionBlock
+{
+	ILUInt32					flags;
+	ILUInt32					startOffset;
+	ILUInt32					endOffset;
+	ILUInt32					userData;
+	void					   *ptrUserData;
+	void					   *startLabel;
+	void					   *handlerLabel;
+	ILCoderExceptionBlock	   *parent;
+	ILCoderExceptionBlock	   *nested;
+	ILCoderExceptionBlock	   *nextNested;
+	union
+	{
+		ILCoderTryBlock			tryBlock;
+		ILCoderHandlerBlock		handlerBlock;
+	} un;
+};
+
+struct _tagILCoderExceptions
+{
+	ILCoderExceptionBlock	   *blocks;
+	ILCoderExceptionBlock	   *firstBlock;
+	ILUInt32					numBlocks;
+	ILUInt32					lastLabel;
+	void					   *rethrowLabel;
+};
 
 /*
  * Type that is used for stack items during verfication.
@@ -693,7 +762,7 @@ struct _tagILCoderClass
 	/*
 	 * Set up exception handling for the current method.
 	 */
-	void (*setupExceptions)(ILCoder *coder, ILException *exceptions,
+	void (*setupExceptions)(ILCoder *coder, ILCoderExceptions *coderExceptions,
 							int hasRethrow);
 
 	/*
@@ -713,45 +782,34 @@ struct _tagILCoderClass
 	/*
 	 * Re-throw the current exception for a particular exception region.
 	 */
-	void (*rethrow)(ILCoder *coder, ILException *exception);
+	void (*rethrow)(ILCoder *coder, ILCoderExceptionBlock *exception);
 
 	/*
 	 * Jump to a "finally" or "fault" sub-routine.
 	 */
-	void (*jsr)(ILCoder *coder, ILUInt32 dest);
+	void (*callFinally)(ILCoder *coder, ILCoderExceptionBlock *exception,
+						ILUInt32 dest);
 
 	/*
 	 * Return from a "finally" or "fault" sub-routine.
 	 */
-	void (*retFromJsr)(ILCoder *coder);
+	void (*retFromFinally)(ILCoder *coder);
 
 	/*
-	 * Start a "try" handler block for a region of code.
+	 * Leave a catch region with a leave opcode.
 	 */
-	void (*tryHandlerStart)(ILCoder *coder, ILUInt32 start, ILUInt32 end);
+	void (*leaveCatch)(ILCoder *coder, ILCoderExceptionBlock *exception);
 
 	/*
-	 * End the current "try" handler block.
+	 * Return from a filter subroutine.
 	 */
-	void (*tryHandlerEnd)(ILCoder *coder);
+	void (*retFromFilter)(ILCoder *coder);
 
 	/*
-	 * Output instructions to match a "catch" clause.
-	 * If "hasRethrow" is non-zero, then the method contains
-	 * "rethrow" instructions and the object must be saved in
-	 * a local variable before jumping to the catch clause.
+	 * Build the exception handling table or code for this method.
 	 */
-	void (*catchClause)(ILCoder *coder, ILException *exception,
-						ILClass *classInfo, int hasRethrow);
-	
-	/*
-	 * End a catch or finally clause.  Finally clauses are usually always a
-	 * potential exit point while catch clauses are a potential exit point
-	 * if there are no finally clauses in the try/catch region.
-	 */
-	void (*endCatchFinallyClause)(ILCoder *coder, ILException *exception);
-
-	void (*finallyClause)(ILCoder *coder, ILException *exception, int dest);
+	void (*outputExceptionTable)(ILCoder *coder,
+								 ILCoderExceptions *coderExceptions);
 
 	/*
 	 * Convert a program counter into an exception handler address.
@@ -1141,22 +1199,16 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->setStackTrace))((coder)))
 #define	ILCoderRethrow(coder,exception) \
 			((*((coder)->classInfo->rethrow))((coder), (exception)))
-#define	ILCoderJsr(coder,dest) \
-			((*((coder)->classInfo->jsr))((coder), (dest)))
-#define	ILCoderRetFromJsr(coder) \
-			((*((coder)->classInfo->retFromJsr))((coder)))
-#define	ILCoderTryHandlerStart(coder,start,end) \
-			((*((coder)->classInfo->tryHandlerStart))((coder), (start), (end)))
-#define	ILCoderTryHandlerEnd(coder) \
-			((*((coder)->classInfo->tryHandlerEnd))((coder)))
-#define	ILCoderCatch(coder,exception,info,hasRethrow) \
-			((*((coder)->classInfo->catchClause))((coder), (exception), \
-												  (info), (hasRethrow)))
-#define ILCoderEndCatchFinally(coder, exception) \
-			((*((coder)->classInfo->endCatchFinallyClause))((coder), \
-												  (exception)))
-#define ILCoderFinally(coder, exception, dest) \
-			((*((coder)->classInfo->finallyClause))((coder), (exception), (dest)))
+#define	ILCoderCallFinally(coder,exception,dest) \
+			((*((coder)->classInfo->callFinally))((coder), (exception), (dest)))
+#define	ILCoderRetFromFinally(coder) \
+			((*((coder)->classInfo->retFromFinally))((coder)))
+#define ILCoderLeaveCatch(coder, exception) \
+			((*((coder)->classInfo->leaveCatch))((coder), (exception)))
+#define ILCoderRetFromFilter(coder) \
+			((*((coder)->classInfo->retFromFilter))((coder)))
+#define ILCoderOutputExceptionTable(coder, exceptions) \
+			((*((coder)->classInfo->outputExceptionTable))((coder), (exceptions)))
 #define	ILCoderPCToHandler(coder,pc,beyond) \
 			((*((coder)->classInfo->pcToHandler))((coder), (pc), (beyond)))
 #define	ILCoderPCToMethod(coder,pc,beyond) \

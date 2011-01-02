@@ -1675,9 +1675,7 @@ VMCASE(COP_FFIXUP):
 VMCASE(COP_DFIXUP):
 {
 	COPY_STATE_TO_THREAD();
-	stacktop[0].ptrValue =
-		_ILSystemException(thread, "System.NotImplementedException");
-	stacktop += 1;
+	tempptr = _ILSystemException(thread, "System.NotImplementedException");
 	goto throwException;
 }
 /* Not reached */
@@ -2164,9 +2162,7 @@ VMCASE(COP_PREFIX_FWRITE_ELEM):
 VMCASE(COP_PREFIX_DWRITE_ELEM):
 {
 	COPY_STATE_TO_THREAD();
-	stacktop[0].ptrValue =
-		_ILSystemException(thread, "System.NotImplementedException");
-	stacktop += 1;
+	tempptr = _ILSystemException(thread, "System.NotImplementedException");
 	goto throwException;
 }
 /* Not reached */

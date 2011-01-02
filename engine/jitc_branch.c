@@ -25,13 +25,30 @@
  */
 static void JITCoder_Label(ILCoder *coder, ILUInt32 offset)
 {
-	ILJITCoder *jitCoder = _ILCoderToILJITCoder(coder);
-	ILJITLabel *label = _ILJitLabelGet(jitCoder, offset, _IL_JIT_LABEL_NORMAL);
+	ILJITCoder *jitCoder;
+	ILJITLabel *label;
 
+	jitCoder = _ILCoderToILJITCoder(coder);
+	label = _ILJitLabelGet(jitCoder, offset, _IL_JIT_LABEL_NORMAL);
 	if(label)
 	{
 		_ILJitValuesResetNullChecked(jitCoder);
-		if(label->labelType == _IL_JIT_LABEL_STARTFINALLY)
+		if(label->labelType == _IL_JIT_LABEL_STARTCATCH)
+		{
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"StartCatcher: %i\n", 
+					offset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			_ILJitLabelRestoreStack(jitCoder, label);
+			jit_insn_label(jitCoder->jitFunction, &(label->label));
+		}
+		else if(label->labelType == _IL_JIT_LABEL_STARTFINALLY)
 		{
 		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
 			if (jitCoder->flags & IL_CODER_FLAG_STATS)
@@ -44,6 +61,22 @@ static void JITCoder_Label(ILCoder *coder, ILUInt32 offset)
 			}
 		#endif
 			jit_insn_start_finally(jitCoder->jitFunction, &(label->label));
+		}
+		else if(label->labelType == _IL_JIT_LABEL_STARTFILTER)
+		{
+			
+		#if !defined(IL_CONFIG_REDUCE_CODE) && !defined(IL_WITHOUT_TOOLS)
+			if (jitCoder->flags & IL_CODER_FLAG_STATS)
+			{
+				ILMutexLock(globalTraceMutex);
+				fprintf(stdout,
+					"StartFilter: %i\n", 
+					offset);
+				ILMutexUnlock(globalTraceMutex);
+			}
+		#endif
+			jit_insn_start_filter(jitCoder->jitFunction, &(label->label),
+									_IL_JIT_TYPE_INT32);
 		}
 		else
 		{
@@ -68,7 +101,7 @@ static void JITCoder_Label(ILCoder *coder, ILUInt32 offset)
  * The result value is returned.
  */
 static ILJitValue OutputCompare(ILJITCoder *coder, int opcode,
-				   		     ILJitValue *value1, ILJitValue *value2)
+								ILJitValue *value1, ILJitValue *value2)
 {
 	switch(opcode)
 	{

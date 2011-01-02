@@ -26,6 +26,7 @@
 #define _IL_JIT_LABEL_NORMAL 1
 #define _IL_JIT_LABEL_STARTCATCH 2
 #define _IL_JIT_LABEL_STARTFINALLY 4
+#define _IL_JIT_LABEL_STARTFILTER 8
 
 /*
  * Define the structure of a JIT label.

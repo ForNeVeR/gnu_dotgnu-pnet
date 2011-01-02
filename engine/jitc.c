@@ -468,15 +468,11 @@ struct _tagILJITCoder
 #include "jitc_stack.c"
 #include "jitc_labels.c"
 #include "jitc_profile.c"
+#include "jitc_except.c"
 #undef	IL_JITC_CODER_INSTANCE
 
 	/* The current jitted function. */
 	ILJitFunction	jitFunction;
-
-	/* Flag if the catcher is started. */
-	int				isInCatcher;
-	jit_label_t     nextBlock;
-	jit_label_t     rethrowBlock;
 
 	/* The manager for running the required cctors. */
 	ILCCtorMgr		cctorMgr;
@@ -1551,7 +1547,7 @@ void ILRuntimeExceptionRethrow(ILObject *object)
 
 		if(thread)
 		{
-			thread->currentException = object;
+			thread->thrownException = object;
 			jit_exception_throw(object);
 		}
 	}
@@ -1570,7 +1566,7 @@ void ILRuntimeExceptionThrow(ILObject *object)
 
 		if(thread)
 		{
-			thread->currentException = (ILObject *)exception;
+			thread->thrownException = (ILObject *)exception;
 			exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
 			jit_exception_throw(exception);
 		}
@@ -1592,7 +1588,7 @@ void ILRuntimeExceptionThrowClass(ILClass *classInfo)
 	/* thrown an OutOfMenory exception then. */
 	if(thread)
 	{
-		thread->currentException = (ILObject *)exception;
+		thread->thrownException = (ILObject *)exception;
 		exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
 		jit_exception_throw(exception);
 	}
@@ -1607,8 +1603,8 @@ void ILRuntimeExceptionThrowOutOfMemory()
 
 	if(thread)
 	{
-		thread->currentException = thread->process->outOfMemoryObject;
-		jit_exception_throw(thread->currentException);
+		thread->thrownException = thread->process->outOfMemoryObject;
+		jit_exception_throw(thread->thrownException);
 		return;
 	}
 	jit_exception_builtin(JIT_RESULT_OUT_OF_MEMORY);
@@ -1623,9 +1619,7 @@ void ILRuntimeHandleManagedSafePointFlags(ILExecThread *thread)
 	{
 		if(_ILExecThreadSelfAborting(thread) == 0)
 		{
-			thread->currentException = thread->thrownException;
-			thread->thrownException = 0;
-			jit_exception_throw(thread->currentException);
+			jit_exception_throw(thread->thrownException);
 		}
 	}
 	else if(thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND)
@@ -1645,21 +1639,14 @@ void ILRuntimeHandleManagedSafePointFlags(ILExecThread *thread)
 static void _ILJitHandleThrownException(ILJitFunction func,
 										ILJitValue thread)
 { 
-	ILJitValue thrownException = jit_insn_load_relative(func, thread,
-									offsetof(ILExecThread, thrownException),
-									_IL_JIT_TYPE_VPTR);
-	ILJitValue nullException = jit_value_create_nint_constant(func,
-															  _IL_JIT_TYPE_VPTR,
-														      (jit_nint)0);
-	jit_label_t label = jit_label_undefined;
+	ILJitValue thrownException;
+	jit_label_t label;
 
+	label = jit_label_undefined;
+	thrownException = jit_insn_load_relative(func, thread,
+											 offsetof(ILExecThread, thrownException),
+											 _IL_JIT_TYPE_VPTR);
 	jit_insn_branch_if_not(func, thrownException, &label);
-	jit_insn_store_relative(func, thread, 
-							offsetof(ILExecThread, currentException),
-							thrownException);
-	jit_insn_store_relative(func, thread, 
-							offsetof(ILExecThread, thrownException),
-							nullException);
 	jit_insn_throw(func, thrownException);
 	jit_insn_label(func, &label);
 }
@@ -2084,7 +2071,7 @@ void *_ILJitExceptionHandler(int exception_type)
 		}
 		break;
 	}
-	thread->currentException = object;
+	thread->thrownException = object;
 	return object;
 }
 
@@ -2093,21 +2080,14 @@ void *_ILJitExceptionHandler(int exception_type)
  */
 static void _ILJitThrowCurrentException(ILJITCoder *coder)
 {
-	ILJitValue thread = _ILJitCoderGetThread(coder);
-	ILJitValue thrownException = jit_insn_load_relative(coder->jitFunction,
-									thread,
-									offsetof(ILExecThread, thrownException), 
-									_IL_JIT_TYPE_VPTR);
-	ILJitValue nullException = jit_value_create_nint_constant(coder->jitFunction,
-															  _IL_JIT_TYPE_VPTR,
-														      (jit_nint)0);
+	ILJitValue thread;
+	ILJitValue thrownException;
 
-	jit_insn_store_relative(coder->jitFunction, thread, 
-							offsetof(ILExecThread, currentException),
-							thrownException);
-	jit_insn_store_relative(coder->jitFunction, thread, 
-							offsetof(ILExecThread, thrownException),
-							nullException);
+	thread = _ILJitCoderGetThread(coder);
+	thrownException = jit_insn_load_relative(coder->jitFunction,
+											 thread,
+											 offsetof(ILExecThread, thrownException), 
+											 _IL_JIT_TYPE_VPTR);
 	jit_insn_throw(coder->jitFunction, thrownException);
 }
 
@@ -2700,6 +2680,7 @@ static ILCoder *JITCoder_Create(ILExecProcess *process, ILUInt32 size,
 #include "jitc_stack.c"
 #include "jitc_labels.c"
 #include "jitc_profile.c"
+#include "jitc_except.c"
 #undef IL_JITC_CODER_INIT
 
 	/* Ready to go */
@@ -5079,11 +5060,11 @@ void ILJitBacktrace(void *frame, void *pc, int numFrames)
 #include "jitc_ptr.c"
 #include "jitc_array.c"
 #include "jitc_branch.c"
+#include "jitc_profile.c"
 #include "jitc_except.c"
 #include "jitc_conv.c"
 #include "jitc_obj.c"
 #include "jitc_call.c"
-#include "jitc_profile.c"
 #undef	IL_JITC_CODE
 
 /*
@@ -5173,13 +5154,11 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_Throw,
 	JITCoder_SetStackTrace,
 	JITCoder_Rethrow,
-	JITCoder_Jsr,
-	JITCoder_RetFromJsr,
-	JITCoder_TryHandlerStart,
-	JITCoder_TryHandlerEnd,
-	JITCoder_Catch,
-	JITCoder_EndCatchFinally,
-	JITCoder_Finally,
+	JITCoder_CallFinally,
+	JITCoder_RetFromFinally,
+	JITCoder_LeaveCatch,
+	JITCoder_RetFromFilter,
+	JITCoder_OutputExceptionTable,
 	JITCoder_PCToHandler,
 	JITCoder_PCToMethod,
 	JITCoder_GetILOffset,

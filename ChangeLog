@@ -1,3 +1,56 @@
+2011-01-02  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/call.c (_ILCallMethod): Don't copy the currentException back
+	to the thrownException anymore if built with libjit.
+
+	* engine/cvm.c, engine/cvm_arith.c, engine/cvm_call.c, engine/cvm_except.c:
+	Change exception handling from code to unwind table based.
+	Fix catching exceptions in finally/fault blocks.
+	Add support for filter based exceptions.
+
+	* engine/cvm.h: Mark some prefixed opcodes for exception handling
+	obsolete or replace them by new ones.
+	Add declaration of the cvm unwind information structs.
+
+	* engine/cvm_lengths.c: Adjust to the opcode changes in cvm.h
+
+	* engine/cvmc.c: Adjust the cvm coder to match the new coder structure.
+
+	* engine/cvmc_except.c (CVMCoder_jsr, CVMCoder_RetFromJsr): removed
+	(CVMCoder_TryHandlerStart, CVMCoder_TryHandlerEnd): ditto
+	(CVMCoder_Catch, CVMCoder_EndCatchFinally, CVMCoder_Finally): ditto
+	(CVMCoder_CallFinally, CVMCoder_RetFromFinally): added
+	(CVMCoder_LeaveCatch, CVMCoder_RetFromFilter): ditto
+	(CVMCoder_OutputExceptionTable): Add function to convert the coder
+	exception structure to the cvm structure.
+
+	* engine/jitc.c: Adjust the jit coder to match the new coder structure.
+
+	* engine/jitc_branch.c (JITCoder_Label): Add handling of start labels of
+	catch and filter blocks.
+	(OutputCompare): Do some reformatting.
+
+	* engine/jitc_except.c: Rework generation of the exception handling code.
+
+	* engine/jitc_labels.c: Add label type for filter block starts.
+
+	* engine/null_coder.c: Adjust the null coder to match the new coder
+	structure.
+
+	* engine/verify.c: Add functions for creating the coder exception block
+	structure from the method's exception regions.
+	(_ILVerify): Create the coder exception structure from the method's
+	exception regions.
+	Add more verification checks of the exception regions.
+	Change the exceptional synchronized method exit handling to
+	adding an extra fault block for the whole method to exit the monitor.
+
+	* engine/verify_except.c: Rework verification and generation of exception
+	handling opcodes. Fix support for filters.
+
+	* include/il_coder.h: Add coder specific exception block structs.
+	Modify the coder structure and adjust the corresponding macros.
+
 2010-12-26  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_config.h: Add the vmbreak barrier definitions for arm

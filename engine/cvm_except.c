@@ -20,7 +20,48 @@
 
 #if defined(IL_CVM_GLOBALS)
 
-/* Moved to system.c */
+/*
+ * Find the most nested unwind information block where the pc.
+ * Returns NULL if no such exception block could be found.
+ */
+static const ILCVMUnwind *FindUnwindBlock(const ILCVMUnwind *unwind,
+										  ILCVMContext *context)
+{
+	const unsigned char *pc;
+	ILInt32 index ;
+	CVMWord *stacktop;
+	const ILCVMUnwind *prevEB;
+
+	pc = context->pc;
+	stacktop = context->frame;
+	prevEB = 0;
+	index = 0;
+	while(index >= 0)
+	{
+		const ILCVMUnwind *block;
+
+		block = &(unwind[index]);
+		if(pc < block->start)
+		{
+			break;
+		}
+		else if(pc >= block->end)
+		{
+			index = block->nextNested;
+		}
+		else
+		{
+			prevEB = block;
+			stacktop += block->stackChange;
+			index = block->nested;
+		}
+	}
+	/*
+	 * Update the stacktop in the context structure.
+	 */
+	context->stackTop = stacktop;
+	return prevEB;
+}
 
 #elif defined(IL_CVM_LOCALS)
 
@@ -72,59 +113,32 @@ VMBREAK(COP_JSR);
  *   <after>...</after>
  *
  *   <description>The <i>address</i> is popped from the stack as the
- *   type <code>ptr</code> and transferred into <i>pc</i>.</description>
+ *   type <code>ptr</code> and transferred into <i>pc</i>.
+ *   If the resultint pc is an invalid pc the finally block was called
+ *   during exception handling and the interpreter is left with an
+ *   return code.</description>
  *
- *   <notes>This instruction is used to implement <code>finally</code>
- *   blocks.</notes>
+ *   <notes>This instruction is used to implement returning from
+ *   <code>finally</code> blocks.</notes>
  * </opcode>
  */
 VMCASE(COP_RET_JSR):
 {
 	/* Return from a subroutine within this method */
-	pc = (unsigned char *)(stacktop[-1].ptrValue);
-	stacktop -= 1;
+	if((unsigned char *)(stacktop[-1].ptrValue) == IL_INVALID_PC)
+	{
+		COPY_STATE_TO_THREAD();
+		return _CVM_EXIT_RETURN;
+	}
+	else
+	{
+		pc = (unsigned char *)(stacktop[-1].ptrValue);
+		stacktop -= 1;
+	}
 }
 VMBREAK(COP_RET_JSR);
 
 #elif defined(IL_CVM_PREFIX)
-
-/**
- * <opcode name="enter_try" group="Exception handling instructions">
- *   <operation>Enter <code>try</code> context for the
- *				current method</operation>
- *
- *   <format>prefix<fsep/>enter_try</format>
- *   <dformat>{enter_try}</dformat>
- *
- *   <form name="enter_try" code="COP_PREFIX_ENTER_TRY"/>
- *
- *   <description>The exception frame height for the current method
- *   is set to the current height of the stack.</description>
- *
- *   <notes>This must be in the prolog of any method that includes
- *   <code>try</code> blocks.  It sets the "base height" of the stack
- *   so that <i>throw</i> instructions know where to unwind the stack
- *   to when an exception is thrown.</notes>
- * </opcode>
- */
-VMCASE(COP_PREFIX_ENTER_TRY):
-{
-	/* Enter a try context for this method */
-	thread->exceptHeight = stacktop;
-
-	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
-}
-VMBREAK(COP_PREFIX_ENTER_TRY);
-
-/* Label that we jump to when the engine throws an internal exception */
-throwException:
-{
-	if(!ILCoderPCToHandler(thread->process->coder, pc, 0))
-	{
-		goto throwCaller;
-	}
-}
-/* Fall through */
 
 /**
  * <opcode name="throw" group="Exception handling instructions">
@@ -155,114 +169,12 @@ throwException:
  */
 VMCASE(COP_PREFIX_THROW):
 {
-	/* Move the exception object down the stack to just above the locals */
-	thread->exceptHeight->ptrValue = stacktop[-1].ptrValue;
-	thread->currentException = stacktop[-1].ptrValue;
-	stacktop = thread->exceptHeight + 1;
-
-	/* Search the exception handler table for an applicable handler */
-searchForHandler:
-#ifdef IL_DUMP_CVM
-	fputs("Throw ", IL_DUMP_CVM_STREAM);
-	DUMP_STACK();
-#endif
-	
-	tempNum = (ILUInt32)(pc - (unsigned char *)(method->userData));
-	pc = ILCoderPCToHandler(thread->process->coder, pc, 0);
-	
-	while(tempNum < CVM_ARG_TRY_START || tempNum >= CVM_ARG_TRY_END)
-	{
-		pc += CVM_ARG_TRY_LENGTH;
-	}
-	pc += CVM_LEN_TRY;
+	--stacktop;
+	tempptr = stacktop[0].ptrValue;
+	COPY_STATE_TO_THREAD();
+	goto throwException;
 }
 VMBREAK(COP_PREFIX_THROW);
-
-/**
- * <opcode name="throw_caller" group="Exception handling instructions">
- *   <operation>Throw an exception to the caller of this method</operation>
- *
- *   <format>prefix<fsep/>throw_caller</format>
- *   <dformat>{throw_caller}</dformat>
- *
- *   <form name="throw_caller" code="COP_PREFIX_THROW_CALLER"/>
- *
- *   <before>..., working1, ..., workingN, object</before>
- *   <after>..., object</after>
- *
- *   <description>The <i>object</i> is popped from the stack as
- *   type <code>ptr</code>.  The call frame stack is then unwound
- *   until a call frame with a non-zero exception frame height is found.
- *   The stack is then reset to the specified exception frame height.
- *   Then, <i>object</i> is re-pushed onto the stack and control is
- *   passed to the call frame method's exception matching code.</description>
- *
- *   <notes>This is used to throw exceptions from within methods that
- *   do not have an <i>enter_try</i> instruction.  Use <i>throw</i>
- *   if the method does include <code>try</code> blocks.</notes>
- * </opcode>
- */
-VMCASE(COP_PREFIX_THROW_CALLER):
-{
-	/* Throw an exception to the caller of this method */
-throwCaller:
-#ifdef IL_DUMP_CVM
-	fputs("Throw Caller ", IL_DUMP_CVM_STREAM);
-	DUMP_STACK();
-#endif
-	tempptr = stacktop[-1].ptrValue;
-	thread->currentException = tempptr;
-	if(!tempptr)
-	{
-		--stacktop;
-		NULL_POINTER_EXCEPTION();
-	}
-
-	/* Locate a call frame that has an exception handler */
-	do
-	{
-		stacktop = frame;
-		callFrame = &(thread->frameStack[--(thread->numFrames)]);
-		methodToCall = callFrame->method;
-		pc = callFrame->pc;
-		thread->exceptHeight = callFrame->exceptHeight;
-		frame = callFrame->frame;
-		method = methodToCall;
-
-#ifdef IL_DUMP_CVM
-		if(methodToCall)
-		{
-			BEGIN_NATIVE_CALL();
-			fprintf(IL_DUMP_CVM_STREAM, "Throwing Back To %s::%s\n",
-				    methodToCall->member.owner->className->name,
-				    methodToCall->member.name);
-			END_NATIVE_CALL();
-		}
-#endif
-
-		/* Should we return to an external method? */
-		if(callFrame->pc == IL_INVALID_PC)
-		{
-			thread->thrownException = tempptr;
-			COPY_STATE_TO_THREAD();
-			return 1;
-		}
-	}
-	while(!ILCoderPCToHandler(thread->process->coder, pc, 1));
-
-	/* Copy the exception object into place */
-	stacktop = thread->exceptHeight;
-	stacktop[0].ptrValue = tempptr;
-	++stacktop;
-
-	/* Back up one byte to ensure that the pc falls within
-	   the exception region for the method */
-	--pc;
-
-	/* Search for an exception handler within this method */
-	goto searchForHandler;
-}
-/* Not reached */
 
 /**
  * <opcode name="set_stack_trace" group="Exception handling instructions">
@@ -302,146 +214,63 @@ VMCASE(COP_PREFIX_SET_STACK_TRACE):
 VMBREAK(COP_PREFIX_SET_STACK_TRACE);
 
 /**
- * <opcode name="start_catch" group="Exception handling instructions">
- *   <operation>Save state information for Thread.Abort</operation>
+ * <opcode name="leave_catch" group="Exception handling instructions">
+ *   <operation>Leave a catch region and propagate a Thread.Abort exception</operation>
  *
- *   <format>prefix<fsep/>start_catch</format>
- *   <dformat>{set_stack_trace}</dformat>
+ *   <format>prefix<fsep/>leave_catch</format>
+ *   <dformat>{leave_catch}</dformat>
  *
- *   <form name="set_stack_trace" code="COP_PREFIX_START_CATCH"/>
+ *   <form name="leave_catch" code="COP_PREFIX_LEAVE_CATCH"/>
  *
- *   <before>...</before>
+ *   <before>...pointer</before>
  *   <after>...</after>
  *
- *   <description>
- *   If the thread is aborting and a <code>ThreadAbortException</code>
- *   has been thrown then save the current point where the
- *   <code>ThreadAbortException</code> was thrown.
- *   If the thread is aborting and the current exception isn't a 
- *   ThreadAbortException then reset the current exception to
- *   ThreadAbortException.  This happens if a thread throws an
- *   exception while it is being aborted (usually occurs in a finally clause).
+ *   <description>If the thread is aborting and a
+ *   <code>ThreadAbortException</code> has been thrown then there is an
+ *   invalid pc pushed on the stack by the exception handling mechanism
+ *   prior to invoking the handler. Otherwise a 0 pointer was pushed.
+ *   If the pointer on top of the stack is an invalid pc and the thread is 
+ *   still aborting then return from the interpreter with a propagate abort
+ *   returncode.
  *   </description>
  * </opcode>
  */
-VMCASE(COP_PREFIX_START_CATCH):
+VMCASE(COP_PREFIX_LEAVE_CATCH):
 {
-	if (thread->aborting)
+	--stacktop;
+	if((stacktop[0].ptrValue == IL_INVALID_PC) && (thread->aborting))
 	{
-		if (thread->currentException
-			&& ILExecThreadIsThreadAbortException(thread, thread->currentException)
-			&& !thread->threadAbortException)
-		{
-			/* Save info about the handler that noticed the abort */
-			thread->threadAbortException = thread->currentException;
-			thread->abortHandlerEndPC = CVMP_ARG_PTR(unsigned char *);
-			thread->abortHandlerFrame = thread->numFrames;
-		}
-		else
-		{
-			/* A non-thread abort exception has been caught so restore
-			   the "current exception" to be the ThreadAbortException */
-			thread->currentException = thread->threadAbortException;
-		}
+		COPY_STATE_TO_THREAD();
+		return _CVM_EXIT_PROPAGATE_ABORT;
 	}
-
-	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, 0);
-}
-VMBREAK(COP_PREFIX_START_CATCH);
-
-/**
- * <opcode name="start_finally" group="Exception handling instructions">
- *   <operation>Save state information for Thread.Abort</operation>
- *
- *   <format>prefix<fsep/>start_finally</format>
- *   <dformat>{set_stack_trace}</dformat>
- *
- *   <form name="set_stack_trace" code="COP_PREFIX_START_FINALLY"/>
- *
- *   <before>...</before>
- *   <after>...</after>
- *
- *   <description>
- *   If the thread is aborting and a <code>ThreadAbortException</code>
- *   has been thrown then save the current point where the
- *   <code>ThreadAbortException</code> was thrown.
- *   </description>
- * </opcode>
- */
-VMCASE(COP_PREFIX_START_FINALLY):
-{
-	if (thread->aborting)
-	{
-		if (thread->currentException
-			&& ILExecThreadIsThreadAbortException(thread, thread->currentException)
-			&& !thread->threadAbortException)
-		{
-			/* Save info about the handler that noticed the abort */
-			thread->threadAbortException = thread->currentException;
-			thread->abortHandlerEndPC = CVMP_ARG_PTR(unsigned char *);
-			thread->abortHandlerFrame = thread->numFrames;
-		}
-	}
-
-	MODIFY_PC_AND_STACK(CVMP_LEN_PTR, 0);
-}
-VMBREAK(COP_PREFIX_START_FINALLY);
-
-/**
- * <opcode name="propagate_abort" group="Exception handling instructions">
- *   <operation>Propagate ThreadAbortExceptions</operation>
- *
- *   <format>prefix<fsep/>propagate_abort</format>
-  *
- *   <form name="propagate_abort" code="COP_PREFIX_PROPAGATE_ABORT"/>
- *
- *   <before>...</before>
- *   <after>...</after>
- *
- *   <description>
- *   Check if the thread is aborting and propagate the ThreadAbortException
- *   if the thread is at the end (or past) the catch or finally clause that
- *   first detected the exception.
- *   </description>
- * </opcode>
- */
-VMCASE(COP_PREFIX_PROPAGATE_ABORT):
-{	
-	if (thread->aborting)
-	{
-		/* Check to see if we are at a point where the ThreadAbortException
-		   should be propagated */
-
-		if (
-			/* Verify that currentException isn't null (it shouldn't be) */
-			thread->currentException
-			/* Make sure exception is a ThreadAbortException */
-			&& ILExecThreadIsThreadAbortException(thread, thread->currentException)
-			&& 
-			/* Make sure we've reached or gone below (call stack wise) the catch/finally
-			   clause that first noticed the ThreadAbortException */
-			((pc >= thread->abortHandlerEndPC && thread->numFrames == thread->abortHandlerFrame)
-			|| 
-			(thread->numFrames < thread->abortHandlerFrame)))
-		{
-			/* Push the ThreadAbortException onto the stack */
-			stacktop[0].ptrValue = thread->currentException;						
-			
-			/* Since we've reached the end of the abort handler, reset these for 
-			   the next time a catch/finally is entered */
-			thread->threadAbortException = 0;
-			thread->abortHandlerEndPC = 0;
-			thread->abortHandlerFrame = 0;
-
-			/* Move PC on and increment stack by 1 */
-			MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 1);
-
-			goto throwException;
-		}
-	}
-
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
 }
-VMBREAK(COP_PREFIX_PROPAGATE_ABORT);
+VMBREAK(COP_PREFIX_LEAVE_CATCH);
+
+/**
+ * <opcode name="ret_from_filter" group="Exception handling instructions">
+ *   <operation>Return from an exception filter</operation>
+ *
+ *   <format>prefix<fsep/>ret_from_filter</format>
+ *   <dformat>{ret_from_filter}</dformat>
+ *
+ *   <form name="ret_from_filter" code="COP_PREFIX_RET_FROM_FILTER"/>
+ *
+ *   <before>...int</before>
+ *   <after>...</after>
+ *
+ *   <description>Return to the exception handling with a <code>return</code>
+ *   returncode. The value on top of the stack will be examined there.
+ *   If the value is not 0 the corresponding catch handler will be invoked.
+ *   </description>
+ * </opcode>
+ */
+VMCASE(COP_PREFIX_RET_FROM_FILTER):
+{
+	COPY_STATE_TO_THREAD();
+	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+	return _CVM_EXIT_RETURN;
+}
+VMBREAK(COP_PREFIX_RET_FROM_FILTER);
 
 #endif /* IL_CVM_PREFIX */

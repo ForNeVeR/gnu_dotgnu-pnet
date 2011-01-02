@@ -21,137 +21,34 @@
 #if defined(IL_VERIFY_GLOBALS)
 
 /*
- * Output a table of exception matching directives.
- * Each table entry specifies a region of code for the
- * directive.  Whenever an exception occurs in this
- * region, the method will jump to the instructions
- * contained in the table entry.  These instructions
- * will typically call "finally" handlers, and then
- * attempt to match the exception against the rules.
+ * Find the most nested exception block where an offset is located.
+ * Returns NULL if no such exception block could be found.
  */
-static void OutputExceptionTable(ILCoder *coder, ILMethod *method,
-								 ILException *exceptions, int hasRethrow,
-								 int coderFlags)
+static ILCoderExceptionBlock *FindExceptionBlock(ILCoderExceptions *coderExceptions,
+												 ILUInt32 offset)
 {
-	ILUInt32 offset;
-	ILUInt32 end;
-	int isStatic;
-	ILException *exception;
-	ILClass *classInfo;
-	
-	/* Process all regions in the method */
-	offset = 0;
-	for(;;)
+	ILCoderExceptionBlock *block;
+	ILCoderExceptionBlock *prevEB;
+
+	prevEB = 0;
+	block = coderExceptions->firstBlock;
+	while(block)
 	{
-		int handlerStarted;
-
-		handlerStarted = 0;
-
-		/* Find the end of the region that starts at "offset" */
-		end = IL_MAX_UINT32;
-		exception = exceptions;
-		while(exception != 0)
-		{
-			if(offset < exception->tryOffset)
-			{
-				/* We are in the code before this exception region */
-				if(end > exception->tryOffset)
-				{
-					end = exception->tryOffset;
-				}
-			}
-			else if(offset >= exception->tryOffset &&
-			        offset < (exception->tryOffset + exception->tryLength))
-			{
-				/* We are in code in the middle of this exception region */
-				if(end > (exception->tryOffset + exception->tryLength))
-				{
-					end = exception->tryOffset + exception->tryLength;
-				}
-			}
-			exception = exception->next;
-		}
-		if(end == IL_MAX_UINT32)
+		if(offset < block->startOffset)
 		{
 			break;
 		}
-
-		/* Output exception matching code for this region */
-		exception = exceptions;
-		while(exception != 0)
+		else if(offset >= block->endOffset)
 		{
-			if(offset >= exception->tryOffset &&
-			   offset < (exception->tryOffset + exception->tryLength))
-			{
-				if((exception->flags & (IL_META_EXCEPTION_FINALLY |
-										IL_META_EXCEPTION_FAULT)) != 0)
-				{
-					/* Call a "finally" or "fault" clause */
-					if(!handlerStarted)
-					{
-						/* Output the region information to the table */
-						ILCoderTryHandlerStart(coder, offset, end);
-						handlerStarted = 1;
-					}
-					ILCoderFinally(coder, exception, exception->handlerOffset);
-				}
-				else if((exception->flags & IL_META_EXCEPTION_FILTER) == 0)
-				{
-					if(!handlerStarted)
-					{
-						/* Output the region information to the table */
-						ILCoderTryHandlerStart(coder, offset, end);
-						handlerStarted = 1;
-					}
-					/* Match against a "catch" clause */
-					classInfo = ILProgramItemToClass
-						((ILProgramItem *)ILImageTokenInfo
-							(ILProgramItem_Image(method), exception->extraArg));
-
-					ILCoderCatch(coder, exception, classInfo, hasRethrow);
-				}
-				else
-				{
-					/* TODO: handle a "filter" clause */
-				}
-			}
-			exception = exception->next;
+			block = block->nextNested;
 		}
-
-		if(handlerStarted)
+		else
 		{
-			/* If execution falls off the end of the matching code,
-			   then throw the exception to the calling method */
-			ILCoderThrow(coder, 0);
-
-			/* Mark the end of the handler */
-			ILCoderTryHandlerEnd(coder);
+			prevEB = block;
+			block = block->nested;
 		}
-
-		/* Advance to the next region within the code */
-		offset = end;
 	}
-
-	/* If execution gets here, then there were no applicable catch blocks,
-	   so we always throw the exception to the calling method */
-	ILCoderTryHandlerStart(coder, 0, IL_MAX_UINT32);
-	
-	if (ILMethod_IsSynchronized(method))
-	{
-		/* Exit the sync lock before throwing to the calling method */
-		isStatic = ILMethod_IsStatic(method);
-		PUSH_SYNC_OBJECT();
-		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
-	}
-
-	/* Notify the coder to emit profiling for method end */
-	if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
-	{
-		ILCoderProfileEnd(coder);
-	}
-
-	ILCoderThrow(coder, 0);
-	ILCoderTryHandlerEnd(coder);
+	return prevEB;
 }
 
 /*
@@ -172,20 +69,23 @@ static IL_INLINE int InsideExceptionBlock(ILException *exception,
 }
 
 /*
- * Determine if an offset is inside an exception handler's "handle it" range.
+ * Determine the most nested catch block where the offset is in..
  */
-static IL_INLINE int InsideExceptionHandler(ILException *exception,
-										    ILUInt32 offset)
+static IL_INLINE ILCoderExceptionBlock *
+InsideExceptionHandler(ILCoderExceptions *coderExceptions, ILUInt32 offset)
 {
-	if(offset >= exception->handlerOffset &&
-	   offset < (exception->handlerOffset + exception->handlerLength))
+	ILCoderExceptionBlock *block;
+
+	block = FindExceptionBlock(coderExceptions, offset);
+	while(block)
 	{
-		return 1;
+		if(block->flags & IL_CODER_HANDLER_TYPE_CATCH)
+		{
+			return block;
+		}
+		block = block->parent;
 	}
-	else
-	{
-		return 0;
-	}
+	return 0;
 }
 
 /*
@@ -249,7 +149,7 @@ case IL_OP_THROW:
 		   the object to those handlers.  Otherwise throw directly
 		   to the calling method */
 		ILCoderSetStackTrace(coder);
-		if (exceptions)
+		if(coderExceptions.numBlocks > 0)
 		{
 			/* Throw to the exception table */
 			ILCoderThrow(coder, 1);
@@ -285,21 +185,10 @@ break;
 case IL_OP_PREFIX + IL_PREFIX_OP_RETHROW:
 {
 	/* Re-throw the current exception */
-	exception = exceptions;
-	while(exception != 0)
+	coderException = InsideExceptionHandler(&coderExceptions, offset);
+	if(coderException)
 	{
-		if((exception->flags & (IL_META_EXCEPTION_FINALLY |
-								IL_META_EXCEPTION_FAULT |
-								IL_META_EXCEPTION_FILTER)) == 0 &&
-		   InsideExceptionHandler(exception, offset))
-		{
-			break;
-		}
-		exception = exception->next;
-	}
-	if(exception != 0)
-	{
-		ILCoderRethrow(coder, exception);
+		ILCoderRethrow(coder, coderException);
 		lastWasJump = 1;
 	}
 	else
@@ -314,34 +203,15 @@ case IL_OP_ENDFINALLY:
 	/* End the current "finally" or "fault" clause */
 	if(stackSize == 0)
 	{
-		currentException = 0;
-		
-		exception = exceptions;
-
-		while(exception != 0)
-		{
-			if (offset >= exception->handlerOffset 
-				&& offset <= (exception->handlerOffset + exception->handlerLength))
-			{
-				if (exception->flags & IL_META_EXCEPTION_FINALLY)
-				{
-					/* This is a current exception clause that's leaving. */
-					currentException = exception;
-
-					break;
-				}
-			}
-
-			exception = exception->next;
-		}
-
-		if (currentException == 0)
+		coderException = FindExceptionBlock(&coderExceptions, offset);
+		if(!coderException ||
+		   ((coderException->flags & IL_CODER_HANDLER_TYPE_FINALLY) == 0))
 		{
 			VERIFY_BRANCH_ERROR();
 		}
-		
-		ILCoderEndCatchFinally(coder, currentException);
-		ILCoderRetFromJsr(coder);
+		/* We are in a finally or fault block */
+		ILCoderRetFromFinally(coder);
+		stackSize = 0;
 		lastWasJump = 1;
 	}
 	else
@@ -353,9 +223,26 @@ break;
 
 case IL_OP_PREFIX + IL_PREFIX_OP_ENDFILTER:
 {
-	/* End the current "filter" clause */
-	/* TODO */
-	lastWasJump = 1;
+	/*
+	 * End the current "filter" clause.
+	 * There must be exactly one element on the evaluation stack of
+	 * type int32.
+	 */
+	if(stackSize == 1)
+	{
+		coderException = FindExceptionBlock(&coderExceptions, offset);
+		if(!coderException ||
+		   (coderException->flags != IL_CODER_HANDLER_TYPE_FILTER))
+		{
+			VERIFY_BRANCH_ERROR();
+		}
+		ILCoderRetFromFilter(coder);
+		lastWasJump = 1;
+	}
+	else
+	{
+	   VERIFY_STACK_ERROR();
+	}
 }
 break;
 
@@ -365,7 +252,7 @@ case IL_OP_LEAVE_S:
 	dest = GET_SHORT_DEST();
 processLeave:
 	
-	currentException = 0;
+	currentCoderException = 0;
 	
 	/* The stack must be empty when we leave the block */
 	while(stackSize)
@@ -376,43 +263,58 @@ processLeave:
 		stackSize--;
 	}
 
-	/* Find the handler for this "leave" instruction*/
-	exception = exceptions;
-	while(exception != 0)
-	{
-		if (offset >= exception->handlerOffset 
-			&& offset < (exception->handlerOffset + exception->handlerLength))
-		{
-			if (exception->flags == IL_META_EXCEPTION_FINALLY 
-				|| exceptions->flags == IL_META_EXCEPTION_CATCH)
-			{
-				currentException = exception;				
-			}			
-		}
-		
-		exception = exception->next;
-	}
-	
 	/* Call any applicable "finally" handlers, but not "fault" handlers */
-	exception = exceptions;
-	while(exception != 0)
-	{		
-		if((exception->flags & IL_META_EXCEPTION_FINALLY) != 0 &&
-		   InsideExceptionBlock(exception, offset) &&
-		   !InsideExceptionBlock(exception, dest))
-		{
-			/* Call the "finally" clause for exiting this level */
-			ILCoderFinally(coder, exception, exception->handlerOffset);
-		}
-
-		exception = exception->next;
-	}
-
-	if (currentException)
+	coderException = FindExceptionBlock(&coderExceptions, offset);
+	while(coderException != 0)
 	{
-		ILCoderEndCatchFinally(coder, currentException);
+		/*
+		 * If the leave target is inside this exception block then stop here.
+		 */
+		if((coderException->startOffset <= dest) &&
+		   (coderException->endOffset > dest))
+		{
+			break;
+		}
+		switch(coderException->flags)
+		{
+			case IL_CODER_HANDLER_TYPE_TRY:
+			{
+				currentCoderException = coderException->un.tryBlock.handlerBlock;
+				while(currentCoderException)
+				{
+					if(currentCoderException->flags == IL_CODER_HANDLER_TYPE_FINALLY)
+					{
+						/* Call the "finally" clause for exiting this level */
+						ILCoderCallFinally(coder, currentCoderException,
+										   currentCoderException->startOffset);
+					}
+					currentCoderException = currentCoderException->un.handlerBlock.nextHandler;
+				}
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_FINALLY:
+			case IL_CODER_HANDLER_TYPE_FAULT:
+			case IL_CODER_HANDLER_TYPE_FILTER:
+			{
+				/*
+				 * Finally, fault and filters are not allowed to be left with
+				 * a leave opcode.
+				 */
+				VERIFY_BRANCH_ERROR();
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_CATCH:
+			case IL_CODER_HANDLER_TYPE_FILTEREDCATCH:
+			{
+				ILCoderLeaveCatch(coder, coderException);
+			}
+			break;
+		}
+		coderException = coderException->parent;
 	}
-	
+
 	/* Output the branch instruction */
 	ILCoderBranch(coder, opcode, dest, ILEngineType_I4, ILEngineType_I4);
 	VALIDATE_BRANCH_STACK(dest);

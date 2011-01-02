@@ -336,7 +336,8 @@ static void Coder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 static void Coder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 }
-static void Coder_SetupExceptions(ILCoder *coder, ILException *exceptions,
+static void Coder_SetupExceptions(ILCoder *coder,
+								  ILCoderExceptions *exceptions,
 								  int hasRethrow)
 {
 }
@@ -346,29 +347,24 @@ static void Coder_Throw(ILCoder *coder, int inCurrentMethod)
 static void Coder_SetStackTrace(ILCoder *coder)
 {
 }
-static void Coder_Rethrow(ILCoder *coder, ILException *exception)
+static void Coder_Rethrow(ILCoder *coder, ILCoderExceptionBlock *exception)
 {
 }
-static void Coder_Jsr(ILCoder *coder, ILUInt32 dest)
+static void Coder_CallFinally(ILCoder *coder, ILCoderExceptionBlock *exception,
+							  ILUInt32 dest)
 {
 }
-static void Coder_RetFromJsr(ILCoder *coder)
+static void Coder_RetFromFinally(ILCoder *coder)
 {
 }
-static void Coder_TryHandlerStart(ILCoder *coder, ILUInt32 start, ILUInt32 end)
+static void Coder_LeaveCatch(ILCoder *coder, ILCoderExceptionBlock *exception)
 {
 }
-static void Coder_TryHandlerEnd(ILCoder *coder)
+static void Coder_RetFromFilter(ILCoder *coder)
 {
 }
-static void Coder_Catch(ILCoder *coder, ILException *exception,
-					    ILClass *classInfo, int hasRethrow)
-{
-}
-static void Coder_EndCatchFinally(ILCoder *coder, ILException *exception)
-{
-}
-static void Coder_Finally(ILCoder *coder, ILException *exception, int dest)
+static void Coder_OutputExceptionTable(ILCoder *coder,
+									   ILCoderExceptions *exceptions)
 {
 }
 static void *Coder_PCToHandler(ILCoder *coder, void *pc, int beyond)
@@ -549,13 +545,11 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_Throw,
 	Coder_SetStackTrace,
 	Coder_Rethrow,
-	Coder_Jsr,
-	Coder_RetFromJsr,
-	Coder_TryHandlerStart,
-	Coder_TryHandlerEnd,
-	Coder_Catch,
-	Coder_EndCatchFinally,
-	Coder_Finally,
+	Coder_CallFinally,
+	Coder_RetFromFinally,
+	Coder_LeaveCatch,
+	Coder_RetFromFilter,
+	Coder_OutputExceptionTable,
 	Coder_PCToHandler,
 	Coder_PCToMethod,
 	Coder_GetILOffset,

@@ -34,6 +34,13 @@ extern	"C" {
 #endif
 
 /*
+ * Some error codes used during verification
+ */
+#define IL_VERIFY_OK			0
+#define IL_VERIFY_BRANCH_ERR	1
+#define IL_VERIFY_TYPE_ERR		2
+
+/*
  * Temporary memory allocator.
  */
 typedef struct
@@ -634,6 +641,352 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 	}
 }
 
+static int
+NestExceptionBlocks(ILCoderExceptionBlock *block,
+					ILCoderExceptionBlock *prevEB,
+					ILCoderExceptionBlock *firstNestedEB,
+					ILCoderExceptionBlock **firstEB)
+{
+	ILCoderExceptionBlock *lastNestedEB;
+	ILCoderExceptionBlock *nextEB;
+
+	block->nested = firstNestedEB;
+	block->parent = firstNestedEB->parent;
+	firstNestedEB->parent = block;
+	lastNestedEB = firstNestedEB;
+	nextEB = firstNestedEB->nextNested;
+	while(nextEB)
+	{
+		if(block->endOffset <= nextEB->startOffset)
+		{
+			/*
+			 * The next block is not nested in the current block.
+			 */
+			break;
+		}
+		if(block->endOffset >= nextEB->endOffset)
+		{
+			/*
+			 * The next block is nested in the current block too.
+			 */
+			nextEB->parent = block;
+			lastNestedEB = nextEB;
+		}
+		else
+		{
+			/* Partially overlapping blocks are not allowed */
+			return 0;
+		}
+		nextEB = nextEB->nextNested;
+	}
+	block->nextNested = lastNestedEB->nextNested;
+	lastNestedEB->nextNested = 0;
+	if(prevEB)
+	{
+		prevEB->nextNested = block;
+	}
+	else
+	{
+		if(block->parent)
+		{
+			nextEB = block->parent;
+			nextEB->nested = block;
+		}
+		else
+		{
+			nextEB = *firstEB;
+			*firstEB = block;
+		}
+	}
+	return 1;
+}
+
+static int
+InsertExceptionBlock(ILCoderExceptions *coderExceptions,
+					 ILCoderExceptionBlock *block)
+{
+	ILCoderExceptionBlock *prevEB;
+	ILCoderExceptionBlock *checkEB;
+
+	prevEB = 0;
+	checkEB = coderExceptions->firstBlock;
+	while(checkEB)
+	{
+		if(block->endOffset <= checkEB->startOffset)
+		{
+			/* The current block is before the check block */
+			if(prevEB)
+			{
+				block->nextNested = prevEB->nextNested;
+				prevEB->nextNested = block;
+				block->parent = prevEB->parent;
+			}
+			else
+			{
+				if(checkEB->parent)
+				{
+					checkEB = checkEB->parent;
+					block->nextNested = checkEB->nested;
+					checkEB->nested = block;
+					block->parent = checkEB;
+				}
+				else
+				{
+					block->nextNested = coderExceptions->firstBlock;
+					coderExceptions->firstBlock = block;
+				}
+			}
+			break;
+		}
+		else if(block->startOffset >= checkEB->endOffset)
+		{
+			/*
+			 * The current block starts after the check block.
+			 */
+			if(checkEB->nextNested)
+			{
+				prevEB = checkEB;
+				checkEB = checkEB->nextNested;
+			}
+			else
+			{
+				checkEB->nextNested = block;
+				block->parent = checkEB->parent;
+				break;
+			}
+		}
+		else if(block->startOffset <= checkEB->startOffset &&
+				block->endOffset >= checkEB->endOffset)
+		{
+			/*
+			 * The current block encloses the check block.
+			 */
+			if(!NestExceptionBlocks(block, prevEB, checkEB,
+									&(coderExceptions->firstBlock)))
+			{
+				return 0;
+			}
+			break;
+		}
+		else if(block->startOffset >= checkEB->startOffset &&
+				block->endOffset <= checkEB->endOffset)
+		{
+			/*
+			 * The current try block is nested in the check try block.
+			 */
+			if(checkEB->nested)
+			{
+				prevEB = 0;
+				checkEB = checkEB->nested;
+			}
+			else
+			{
+				checkEB->nested = block;
+				block->parent = checkEB;
+				break;
+			}
+		}
+		else
+		{
+			/*
+			 * Partially overlapping blocks are not allowed.
+			 */
+			return 0;
+		}
+	}
+	return 1;
+}
+
+static ILCoderExceptionBlock *
+FindOrAddTryBlock(ILCoderExceptions *coderExceptions,
+				  ILUInt32 tryStart, ILUInt32 tryEnd)
+{
+	ILCoderExceptionBlock *block;
+	ILUInt32 current;
+	
+	current = 0;
+	while(current < coderExceptions->numBlocks)
+	{
+		block = &(coderExceptions->blocks[current]);
+		if((block->startOffset == tryStart) && (block->endOffset == tryEnd) &&
+			(block->flags == IL_CODER_HANDLER_TYPE_TRY))
+		{
+			return block;
+		}
+		++current;
+	}
+	/* If we get here no matching try block was found */
+	block = &(coderExceptions->blocks[coderExceptions->numBlocks++]);
+	block->flags = IL_CODER_HANDLER_TYPE_TRY;
+	block->startOffset = tryStart;
+	block->endOffset = tryEnd;
+	block->un.tryBlock.handlerBlock = 0;
+	block->parent = 0;
+	block->nested = 0;
+	block->nextNested = 0;
+
+	/*
+	 * Now insert the new try block at it's place in the exception block
+	 * structure
+	 */
+	if(!coderExceptions->firstBlock)
+	{
+		coderExceptions->firstBlock = block;
+	}
+	else
+	{
+		if(!InsertExceptionBlock(coderExceptions, block))
+		{
+			--coderExceptions->numBlocks;
+			return 0;
+		}
+	}
+	return block;
+}
+
+static void
+AddHandlerBlock(ILCoderExceptionBlock *tryBlock, ILCoderExceptionBlock *handler)
+{
+	if(!tryBlock->un.tryBlock.handlerBlock)
+	{
+		tryBlock->un.tryBlock.handlerBlock = handler;
+	}
+	else
+	{
+		ILCoderExceptionBlock *nextHandler;
+
+		nextHandler = tryBlock->un.tryBlock.handlerBlock;
+		while(nextHandler)
+		{
+			if(!nextHandler->un.handlerBlock.nextHandler)
+			{
+				nextHandler->un.handlerBlock.nextHandler = handler;
+				break;
+			}
+			nextHandler = nextHandler->un.handlerBlock.nextHandler;
+		}
+	}
+}
+
+static int
+AddExceptionBlock(ILCoderExceptions *coderExceptions,
+				  ILMethod *method, ILException *exception)
+{
+	ILCoderExceptionBlock *tryBlock;
+	ILCoderExceptionBlock *handler;
+	ILUInt32 startOffset;
+	ILUInt32 endOffset;
+
+	startOffset = exception->tryOffset;
+	endOffset = exception->tryOffset + exception->tryLength;
+	if(endOffset < startOffset)
+	{
+		return IL_VERIFY_BRANCH_ERR;
+	}
+	/*
+	 * Find the try block for this exception handler.
+	 */
+	tryBlock = FindOrAddTryBlock(coderExceptions, startOffset, endOffset);
+	if(!tryBlock)
+	{
+		return IL_VERIFY_BRANCH_ERR;
+	}
+
+	startOffset = exception->handlerOffset;
+	endOffset = exception->handlerOffset + exception->handlerLength;
+	if(endOffset < startOffset)
+	{
+		return IL_VERIFY_BRANCH_ERR;
+	}
+
+	/*
+	 * Allocate a new handler block.
+	 */
+	handler = &(coderExceptions->blocks[coderExceptions->numBlocks++]);
+	handler->startOffset = startOffset;
+	handler->endOffset = endOffset;
+	handler->parent = 0;
+	handler->nested = 0;
+	handler->nextNested = 0;
+	handler->startLabel = 0;
+	handler->handlerLabel = 0;
+	if(exception->flags & (IL_META_EXCEPTION_FINALLY | IL_META_EXCEPTION_FAULT))
+	{
+		/*
+		 * A finally or fault handler.
+		 */
+		if(exception->flags & IL_META_EXCEPTION_FINALLY)
+		{
+			handler->flags = IL_CODER_HANDLER_TYPE_FINALLY;
+		}
+		else
+		{
+			handler->flags = IL_CODER_HANDLER_TYPE_FAULT;
+		}
+		handler->un.handlerBlock.nextHandler = 0;
+		handler->un.handlerBlock.filterBlock = 0;
+		handler->un.handlerBlock.exceptionClass = 0;
+		handler->un.handlerBlock.tryBlock = tryBlock;;
+	}
+	else
+	{
+		handler->un.handlerBlock.nextHandler = 0;
+		handler->un.handlerBlock.tryBlock = tryBlock;;
+		if(exception->flags & IL_META_EXCEPTION_FILTER)
+		{
+			/*
+			 * A catch block with filter.
+			 */
+			ILCoderExceptionBlock *filterBlock;
+
+			filterBlock = &(coderExceptions->blocks[coderExceptions->numBlocks++]);
+			filterBlock->flags = IL_CODER_HANDLER_TYPE_FILTER;
+			filterBlock->startOffset = exception->extraArg;
+			filterBlock->endOffset = exception->handlerOffset;
+			filterBlock->parent = 0;
+			filterBlock->nested = 0;
+			filterBlock->nextNested = 0;
+			filterBlock->startLabel = 0;
+			filterBlock->handlerLabel = 0;
+			if(!InsertExceptionBlock(coderExceptions, filterBlock))
+			{
+				return IL_VERIFY_BRANCH_ERR;
+			}
+			handler->flags = IL_CODER_HANDLER_TYPE_FILTEREDCATCH;
+			handler->un.handlerBlock.filterBlock = filterBlock;
+			handler->un.handlerBlock.exceptionClass = 0;
+		}
+		else
+		{
+			/*
+			 * A catch block.
+			 */
+			ILClass *classInfo;
+			ILProgramItem *item;
+
+			handler->flags = IL_CODER_HANDLER_TYPE_CATCH;
+			handler->un.handlerBlock.filterBlock = 0;
+
+			/* Validate the class token */
+			item = ((ILProgramItem *)ILImageTokenInfo(ILProgramItem_Image(method),
+													  exception->extraArg));
+			classInfo = ILProgramItemToClass(item);
+			if(!classInfo ||
+			   !ILClassAccessible(classInfo, ILMethod_Owner(method)))
+			{
+				return IL_VERIFY_TYPE_ERR;
+			}
+			handler->un.handlerBlock.exceptionClass = classInfo;
+		}
+	}
+	if(!InsertExceptionBlock(coderExceptions, handler))
+	{
+		return IL_VERIFY_BRANCH_ERR;
+	}
+	AddHandlerBlock(tryBlock, handler);
+	return IL_VERIFY_OK;
+}
+
 /*
  * Push the appropriate synchronization object for a synchronized method.
  */
@@ -706,6 +1059,11 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 			  ILMethodCode *code, int unsafeAllowed, ILExecThread *thread)
 {
 	TempAllocator allocator;
+	ILCoderExceptions coderExceptions;
+	ILCoderExceptionBlock *coderException;
+	ILCoderExceptionBlock *currentCoderException;
+	int numHandlers;
+	int extraCodeLen;
 	unsigned long *jumpMask;
 	unsigned char *pc;
 	ILUInt32 len;
@@ -733,7 +1091,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 	ILType *localVars;
 	int lastWasJump;
 	ILException *exceptions;
-	ILException *exception, *currentException;
+	ILException *exception;
 	int hasRethrow;
 	int tryInlineType;
 	int coderFlags;
@@ -769,21 +1127,146 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 		return 0;
 	}
 
-	coderFlags = ILCoderGetFlags(coder);
-	optimizationLevel = ILCoderGetOptimizationLevel(coder);
-	isStatic = ILMethod_IsStatic(method);
-	isSynchronized = ILMethod_IsSynchronized(method);
-
-restart:
-	result = 0;
-	labelList = 0;
-	hasRethrow = 0;
-
+	/* Clear the exception management structure */
+	ILMemZero(&coderExceptions, sizeof(ILCoderExceptions));
+	/*
+	 * Initialize the size of the additional code generated for
+	 * synchronization.
+	 */
+	extraCodeLen = 0;
+	/* And set the last label to the code length */
+	coderExceptions.lastLabel = code->codeLen;
+	
 	/* Initialize the memory allocator that is used for temporary
 	   allocation during bytecode verification */
 	ILMemZero(allocator.buffer, sizeof(allocator.buffer));
 	allocator.posn = 0;
 	allocator.overflow = 0;
+
+	coderFlags = ILCoderGetFlags(coder);
+	optimizationLevel = ILCoderGetOptimizationLevel(coder);
+	isStatic = ILMethod_IsStatic(method);
+	isSynchronized = ILMethod_IsSynchronized(method);
+
+	result = 0;
+	if(exceptions || isSynchronized)
+	{
+		numHandlers = 0;
+		exception = exceptions;
+		while(exception)
+		{
+			++numHandlers;
+			exception = exception->next;
+		}
+		if(isSynchronized)
+		{
+			/* We'll need an extra try and flnally block for synchronization */
+			++numHandlers;
+		}
+		/*
+		 * Allocate memory for the exception infos.
+		 * There might be create 3 coder exception blocks for one
+		 * IL exception.
+		 * So we allocate memory for the worst case here.
+		 */
+		coderExceptions.blocks = ILCalloc(sizeof(ILCoderExceptionBlock),
+										  numHandlers * 3);
+		if(!coderExceptions.blocks)
+		{
+			return 0;
+		}
+
+		/* Now setup the exception structure */
+		exception = exceptions;
+		while(exception)
+		{
+			switch(AddExceptionBlock(&coderExceptions, method, exception))
+			{
+				case IL_VERIFY_BRANCH_ERR:
+				{
+					VERIFY_BRANCH_ERROR();
+				}
+				break;
+
+				case IL_VERIFY_TYPE_ERR:
+				{
+					VERIFY_TYPE_ERROR();
+				}
+				break;
+			}
+			exception = exception->next;
+		}
+		/*
+		 * Now check if all exception block limits are in the code.
+		 */
+		len = code->codeLen;
+		coderException = coderExceptions.firstBlock;
+		if(coderException)
+		{
+			/*
+			 * Check the start offset of the first exception block in the
+			 * lowest list.
+			 */
+			if(coderException->startOffset > len)
+			{
+				VERIFY_BRANCH_ERROR();
+			}
+			/*
+			 * Look for the last exception block in the lowest list.
+			 */
+			while(coderException->nextNested)
+			{
+				coderException = coderException->nextNested;
+			}
+			/*
+			 * Check the end offset of the last exception block in the
+			 * lowest list.
+			 * All other exceprion blocks end at or before this offset.
+			 */
+			if(coderException->endOffset > len)
+			{
+				VERIFY_BRANCH_ERROR();
+			}
+		}
+		if(isSynchronized)
+		{
+			/*
+			 * Wrap the whole function in a try block with a fault handler.
+			 */
+			ILException tempException;
+
+			tempException.flags = IL_META_EXCEPTION_FAULT;
+			tempException.tryOffset = 0;
+			tempException.tryLength = len;
+			tempException.handlerOffset = len;
+			tempException.handlerLength = 1;
+			tempException.extraArg = 0;
+			tempException.userData = 0;
+			tempException.ptrUserData = 0;
+			tempException.next = 0;
+
+			switch(AddExceptionBlock(&coderExceptions, method, &tempException))
+			{
+				case IL_VERIFY_BRANCH_ERR:
+				{
+					VERIFY_BRANCH_ERROR();
+				}
+				break;
+
+				case IL_VERIFY_TYPE_ERR:
+				{
+					VERIFY_TYPE_ERROR();
+				}
+				break;
+			}
+			extraCodeLen = 2;
+		}
+	}
+
+restart:
+	result = 0;
+	labelList = 0;
+	hasRethrow = 0;
 
 	/* Reset the prefix information */
 	ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
@@ -801,7 +1284,7 @@ restart:
 
 	/* Allocate the jump target mask */
 	jumpMask = (unsigned long *)TempAllocate
-					(&allocator, BYTES_FOR_MASK(code->codeLen));
+					(&allocator, BYTES_FOR_MASK(code->codeLen + extraCodeLen));
 	if(!jumpMask)
 	{
 		VERIFY_MEMORY_ERROR();
@@ -968,108 +1451,63 @@ restart:
 	}
 
 	/* Mark the start and end of exception blocks as special jump targets */
-	exception = exceptions;
-	while(exception != 0)
+	numHandlers = 0;
+	while(numHandlers < coderExceptions.numBlocks)
 	{
-		/* Mark the start and end of the try region */
-		if(exception->tryOffset >= code->codeLen ||
-		   (exception->tryOffset + exception->tryLength) <
-				exception->tryOffset || /* Wrap-around check */
-		   (exception->tryOffset + exception->tryLength) > code->codeLen)
+		coderException = &(coderExceptions.blocks[numHandlers]);
+		MarkJumpTarget(jumpMask, coderException->startOffset);
+		MarkSpecialJumpTarget(jumpMask, coderException->startOffset);
+		MarkJumpTarget(jumpMask, coderException->endOffset);
+		MarkSpecialJumpTarget(jumpMask, coderException->endOffset);
+		switch(coderException->flags)
 		{
-			VERIFY_BRANCH_ERROR();
+			case IL_CODER_HANDLER_TYPE_TRY:
+			{
+				/* Nothing to do here */
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_CATCH:
+			{
+				/* This is a typed catch block */
+				classInfo = coderException->un.handlerBlock.exceptionClass;
+				/*
+				 * This block will be called with an object of the given
+				 * type on the stack.
+				 */
+				SET_TARGET_STACK(coderException->startOffset, classInfo);
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_FINALLY:
+			case IL_CODER_HANDLER_TYPE_FAULT:
+			{
+				/* This is a finally or fault clause */
+				/* The clause will be called with nothing on the stack */
+				SET_TARGET_STACK_EMPTY(coderException->startOffset);
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_FILTER:
+			case IL_CODER_HANDLER_TYPE_FILTEREDCATCH:
+			{
+				/* This is an exception filter or the corresponding catch block */
+				/* 
+				 * The block will be called with an object on the stack,
+				 * so record that in the label list for later
+				 */
+				classInfo = ILClassResolveSystem(ILProgramItem_Image(method),
+												 0, "Object", "System");
+				if(!classInfo)
+				{
+					/* Ran out of memory trying to create "System.Object" */
+					VERIFY_MEMORY_ERROR();
+				}
+				SET_TARGET_STACK(coderException->startOffset, classInfo);
+			}
+			break;
 		}
-		MarkJumpTarget(jumpMask, exception->tryOffset);
-		MarkSpecialJumpTarget(jumpMask, exception->tryOffset);
-		MarkJumpTarget(jumpMask, exception->tryOffset + exception->tryLength);
-		MarkSpecialJumpTarget
-			(jumpMask, exception->tryOffset + exception->tryLength);
-
-		/* The stack must be empty on entry to the try region */
-		SET_TARGET_STACK_EMPTY(exception->tryOffset);
-
-		/* What else do we need to do? */
-		if((exception->flags & IL_META_EXCEPTION_FILTER) != 0)
-		{
-			/* This is an exception filter */
-			if(exception->extraArg >= code->codeLen)
-			{
-				VERIFY_BRANCH_ERROR();
-			}
-			MarkJumpTarget(jumpMask, exception->extraArg);
-			MarkSpecialJumpTarget(jumpMask, exception->extraArg);
-
-			/* The filter label will be called with an object on the stack,
-			   so record that in the label list for later */
-			classInfo = ILClassResolveSystem(ILProgramItem_Image(method), 0,
-											 "Object", "System");
-			if(!classInfo)
-			{
-				/* Ran out of memory trying to create "System.Object" */
-				VERIFY_MEMORY_ERROR();
-			}
-			SET_TARGET_STACK(exception->extraArg, classInfo);
-		}
-		else if((exception->flags & IL_META_EXCEPTION_FINALLY) != 0 ||
-		        (exception->flags & IL_META_EXCEPTION_FAULT) != 0)
-		{
-			/* This is a finally or fault clause */
-			if(exception->handlerOffset >= code->codeLen ||
-			   (exception->handlerOffset + exception->handlerLength) <
-			   		exception->handlerOffset || /* Wrap-around check */
-			   (exception->handlerOffset + exception->handlerLength) >
-			   		code->codeLen)
-			{
-				VERIFY_BRANCH_ERROR();
-			}
-			MarkJumpTarget(jumpMask, exception->handlerOffset);
-			MarkSpecialJumpTarget(jumpMask, exception->handlerOffset);
-			MarkJumpTarget
-				(jumpMask, exception->handlerOffset + exception->handlerLength);
-			MarkSpecialJumpTarget
-				(jumpMask, exception->handlerOffset + exception->handlerLength);
-
-			/* The clause will be called with nothing on the stack */
-			SET_TARGET_STACK_EMPTY(exception->handlerOffset);
-		}
-		else
-		{
-			/* This is a catch block */
-			if(exception->handlerOffset >= code->codeLen ||
-			   (exception->handlerOffset + exception->handlerLength) <
-			   		exception->handlerOffset || /* Wrap-around check */
-			   (exception->handlerOffset + exception->handlerLength) >
-			   		code->codeLen)
-			{
-				VERIFY_BRANCH_ERROR();
-			}
-			MarkJumpTarget(jumpMask, exception->handlerOffset);
-			MarkSpecialJumpTarget(jumpMask, exception->handlerOffset);
-			MarkJumpTarget
-				(jumpMask, exception->handlerOffset + exception->handlerLength);
-			MarkSpecialJumpTarget
-				(jumpMask, exception->handlerOffset + exception->handlerLength);
-
-			/* Validate the class token */
-			classInfo = ILProgramItemToClass
-				((ILProgramItem *)ILImageTokenInfo(ILProgramItem_Image(method),
-												   exception->extraArg));
-			if(classInfo &&
-			   ILClassAccessible(classInfo, ILMethod_Owner(method)))
-			{
-				/* The handler label will be called with an object on the
-				   stack, so record that in the label list for later */
-				SET_TARGET_STACK(exception->handlerOffset, classInfo);
-			}
-			else
-			{
-				/* The class token is invalid, or not accessible to us */
-				VERIFY_TYPE_ERROR();
-			}
-		}
-
-		/* Move on to the next exception */
-		exception = exception->next;
+		++numHandlers;
 	}
 
 	/* Make sure that all jump targets are instruction starts */
@@ -1127,7 +1565,7 @@ restart:
 	/* Set up for exception handling if necessary */
 	if(exceptions || isSynchronized)
 	{
-		ILCoderSetupExceptions(coder, exceptions, hasRethrow);
+		ILCoderSetupExceptions(coder, &coderExceptions, hasRethrow);
 	}
 
 	/* Verify the code */
@@ -1253,13 +1691,47 @@ restart:
 		VERIFY_INSN_ERROR();
 	}
 
+	/*
+	 * Generate the code for the fault block for synchronization.
+	 */
+	if(isSynchronized)
+	{
+		coderException = FindExceptionBlock(&coderExceptions, code->codeLen);
+		/*
+		 * This check is for catching bugs.
+		 */
+		if(!coderException ||
+		   ((coderException->flags & IL_CODER_HANDLER_TYPE_FINALLY) == 0))
+		{
+			VERIFY_BRANCH_ERROR();
+		}
+		/*
+		 * Insert the start label for the fault handler.
+		 */
+		ILCoderLabel(coder, code->codeLen);
+
+		/*
+		 * Call the Monitor.Exit method.
+		 */
+		PUSH_SYNC_OBJECT();
+		ILCoderCallInlineable(coder, IL_INLINEMETHOD_MONITOR_EXIT, 0, 0);
+		/*
+		 * Leave the fault block.
+		 */
+		ILCoderRetFromFinally(coder);
+		/*
+		 * Insert the end label for the fault handler.
+		 */
+		ILCoderLabel(coder, code->codeLen + 1);
+	}
+	
 	/* Mark the end of the method */
 	ILCoderMarkEnd(coder);
 
 	/* Output the exception handler table, if necessary */
-	if(exceptions != 0 || isSynchronized)
+	if(coderExceptions.numBlocks > 0)
 	{
-		OutputExceptionTable(coder, method, exceptions, hasRethrow, coderFlags);
+		ILCoderOutputExceptionTable(coder, &coderExceptions);
 	}
 
 	/* Finish processing using the coder */
@@ -1269,6 +1741,24 @@ restart:
 	if(result == IL_CODER_END_RESTART)
 	{
 		TempAllocatorDestroy(&allocator);
+		/* Reinitialize the memory allocator that is used for temporary
+		   allocation during bytecode verification */
+		ILMemZero(allocator.buffer, sizeof(allocator.buffer));
+		allocator.posn = 0;
+		allocator.overflow = 0;
+
+		/*
+		 * Reset the userdata in the exception blocks.
+		 */
+		numHandlers = 0;
+		while(numHandlers < coderExceptions.numBlocks)
+		{
+			coderException = &(coderExceptions.blocks[numHandlers]);
+			coderException->userData = 0;
+			coderException->ptrUserData = 0;
+			++numHandlers;
+		}
+		
 		goto restart;
 	}
 #ifdef IL_VERIFY_DEBUG
@@ -1293,6 +1783,11 @@ cleanup:
 	{
 		ILMethodFreeExceptions(exceptions);
 	}
+	if(coderExceptions.blocks)
+	{
+		ILFree(coderExceptions.blocks);
+	}
+
 	return result;
 }
 

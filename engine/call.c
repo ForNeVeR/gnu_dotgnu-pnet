@@ -1150,8 +1150,6 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 		return 0;
 	}
 	/* If we get here there is an unhandled exception. */
-	/* We need to set the thread->thrownException. */
-	thread->thrownException = thread->currentException;
 	return 1;
 }
 #else

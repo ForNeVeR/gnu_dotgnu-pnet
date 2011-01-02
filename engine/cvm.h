@@ -412,9 +412,13 @@ extern	"C" {
 /*
  * Prefixed exception handling opcodes.
  */
-#define	COP_PREFIX_ENTER_TRY		0x1E
+/* Not needed anymore
+ * #define	COP_PREFIX_ENTER_TRY		0x1E
+ */
 #define	COP_PREFIX_THROW			0x1F
-#define	COP_PREFIX_THROW_CALLER		0x20
+/* Not needed anymore
+ * #define	COP_PREFIX_THROW_CALLER		0x20
+ */
 #define	COP_PREFIX_SET_STACK_TRACE	0x21
 
 /*
@@ -532,9 +536,15 @@ extern	"C" {
 /*
  * More prefixed exception handling opcodes.
  */
-#define COP_PREFIX_START_CATCH			0x62
-#define COP_PREFIX_START_FINALLY		0x63
-#define	COP_PREFIX_PROPAGATE_ABORT		0x64
+/*
+ * Those are not needed anymore
+ * #define COP_PREFIX_START_CATCH			0x62
+ * #define COP_PREFIX_START_FINALLY		0x63
+ * #define	COP_PREFIX_PROPAGATE_ABORT		0x64
+ * and replaced by
+ */
+#define COP_PREFIX_LEAVE_CATCH			0x62
+#define COP_PREFIX_RET_FROM_FILTER		0x63
 
 /*
  * More inline method replacements.
@@ -646,6 +656,105 @@ typedef union
  * Maximum number of arguments that can be packed for a native call.
  */
 #define	CVM_MAX_NATIVE_ARGS		32
+
+/*
+ * Unwind information for the cvm interpreter.
+ */
+
+/*
+ * Values for the flags member.
+ * For comments see il_coder.h
+ */
+#define _IL_CVM_UNWIND_TYPE_TRY				0x00
+#define _IL_CVM_UNWIND_TYPE_CATCH			0x01
+#define _IL_CVM_UNWIND_TYPE_FILTEREDCATCH	0x03
+#define _IL_CVM_UNWIND_TYPE_FINALLY			0x04
+#define _IL_CVM_UNWIND_TYPE_FAULT			0x06
+#define _IL_CVM_UNWIND_TYPE_FILTER			0x02
+
+/*
+ * NOTE: Index fields with a value < 0 mark the end of the list.
+ */
+typedef struct _tagILCVMUnwindTry ILCVMUnwindTry;
+typedef struct _tagILCVMUnwindHandler ILCVMUnwindHandler;
+typedef struct _tagILCVMUnwind ILCVMUnwind;
+
+struct _tagILCVMUnwindTry
+{
+	ILInt32				firstHandler;
+};
+
+struct _tagILCVMUnwindHandler
+{
+	ILInt32				nextHandler;
+	union
+	{
+		ILInt32			filter;
+		ILClass		   *exceptionClass;
+	} un;
+};
+
+struct _tagILCVMUnwind
+{
+	unsigned char	   *start;
+	unsigned char	   *end;
+	ILUInt32			flags;
+	/*
+	 * Index of the surrounding unwind information block.
+	 */
+	ILInt32				parent;
+	/*
+	 * Index of the first nested unwind information block.
+	 */
+	ILInt32				nested;
+	 /*
+	  * Index of the next nested unwind information block in a single
+	  * linked list.
+	  */
+	ILInt32				nextNested;
+	/*
+	 * The number of CVMWords the stackpointer is increased on entry
+	 * of the block without taking temporary values on the stack into account.
+	 * This value is 1 for example for finally and filter blocks
+	 * (for the return pointer).
+	 * The size of the stack needed for locals in the outer most block for
+	 * a method.
+	 */
+	ILInt32				stackChange;
+	/*
+	 * Local variable offset to store a caught exception.
+	 * This is used for rethrowing an exception.
+	 */
+	ILUInt32			exceptionSlot;
+	
+	union
+	{
+		ILCVMUnwindTry		tryBlock;
+		ILCVMUnwindHandler	handlerBlock;	
+	} un;
+};
+
+/*
+ * Context definition for the cvm interpreter (aka ucontext)
+ */
+typedef struct _tagILCVMContext ILCVMContext;
+struct _tagILCVMContext
+{
+	unsigned char		   *pc;
+	CVMWord				   *stackTop;
+	CVMWord				   *frame;
+};
+
+/*
+ * Exceptioncontext definition for the cvm interpreter.
+ */
+typedef struct _tagILCVMExceptionContext ILCVMExceptionContext;
+struct _tagILCVMExceptionContext
+{
+	ILObject			   *exception;
+	ILCVMContext		   *context;
+	const ILCVMUnwind	   *unwind;
+};
 
 #ifdef	__cplusplus
 };

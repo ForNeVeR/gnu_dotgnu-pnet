@@ -105,9 +105,9 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 			{ \
 				ILInterlockedAndU4(&(thread->managedSafePointFlags), \
 								   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT); \
-				stacktop[0].ptrValue = thread->thrownException; \
+				tempptr = thread->thrownException; \
 				thread->thrownException = 0; \
-				stacktop += 1; \
+				COPY_STATE_TO_THREAD(); \
 				goto throwException; \
 			} \
 		} \
@@ -190,10 +190,8 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				if(thread->thrownException != 0) \
 				{ \
 					/* An exception occurred, which we now must handle */ \
-					pc = thread->pc; \
-					stacktop[0].ptrValue = thread->thrownException; \
+					tempptr = thread->thrownException; \
 					thread->thrownException = 0; \
-					stacktop += 1; \
 					goto throwException; \
 				} \
 			} while (0)
@@ -926,7 +924,7 @@ VMCASE(COP_CALL_VIRTUAL):
 {
 	/* Call a virtual method */
 	tempptr = stacktop[-((ILInt32)CVM_ARG_DWIDE1_SMALL)].ptrValue;
-	BEGIN_NULL_CHECK(tempptr)
+	if(tempptr)
 	{
 		/* Locate the method to be called */
 		methodToCall = (GetObjectClassPrivate(tempptr))
@@ -985,7 +983,10 @@ VMCASE(COP_CALL_VIRTUAL):
 			CVM_OPTIMIZE_BLOCK();
 		}
 	}
-	END_NULL_CHECK();
+	else
+	{
+		NULL_POINTER_EXCEPTION();
+	}
 }
 VMBREAK(COP_CALL_VIRTUAL);
 
@@ -1475,7 +1476,7 @@ VMCASE(COP_CALLI):
 
 			CONVERT_FAILED_EXCEPTION();
 		}
-		
+
 		END_NATIVE_CALL();
 
 		/* Allocate a new call frame */

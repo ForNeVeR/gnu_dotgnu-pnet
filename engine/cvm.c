@@ -41,6 +41,51 @@ extern	"C" {
  * are now in "cvm_config.h".
  */
 
+/*
+ * Return values for ILCVMInterpreter.
+ */
+
+/*
+ * Return value for normal exit
+ */
+#define _CVM_EXIT_OK						0
+/*
+ * Return value for exit with an exception pending
+ */
+#define _CVM_EXIT_EXCEPT					1
+
+/*
+ * Additional return values for the interpreter function.
+ */
+/*
+ * Return value if an exception is thrown.
+ * Exception handling has to be performed.
+ */
+#define _CVM_EXIT_THROW						2
+/*
+ * Return value for propagating a ThreadAbortException.
+ */
+#define _CVM_EXIT_PROPAGATE_ABORT			3
+/*
+ * Return value for normal returning from a finally, fault or filter block.
+ */
+#define _CVM_EXIT_RETURN					4
+/*
+ * Return value from unwind to execute a handler by the caller.
+ */
+#define _CVM_EXIT_EXECUTE_HANDLER			5
+/*
+ * Return value for continuing to unwind in the caller.
+ * This is for keeping the call nesting level as small as possible.
+ */
+#define _CVM_EXIT_CONTINUE_UNWIND			6
+
+/*
+ * Return values from a filter call as specified in ECMA
+ */
+#define _CVM_EXCEPTION_CONTINUE_SEARCH		0
+#define _CVM_EXCEPTION_EXECUTE_HANDLER		1
+
 #if !defined(IL_NO_REGISTERS_USED)
 #if defined(CVM_X86) && defined(__GNUC__) && !defined(IL_NO_ASM)
 	/*
@@ -231,16 +276,12 @@ extern	"C" {
 	#define END_NULL_CHECK()
 #else
 	#define BEGIN_NULL_CHECK(x) \
-		if ((x) != 0) \
+		if ((x) == 0) goto throwNullReferenceException; \
 		{
 
 	#define BEGIN_NULL_CHECK_STMT(x) BEGIN_NULL_CHECK(x)
 
 	#define END_NULL_CHECK() \
-		} \
-		else \
-		{ \
-			NULL_POINTER_EXCEPTION(); \
 		}
 #endif
 
@@ -303,11 +344,7 @@ extern	"C" {
  */
 #define	OVERFLOW_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, "System.OverflowException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwOverflowException; \
 			} while (0)
 
 /*
@@ -315,11 +352,7 @@ extern	"C" {
  */
 #define	ARITHMETIC_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, "System.ArithmeticException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwArithmeticException; \
 			} while (0)
 
 /*
@@ -327,12 +360,7 @@ extern	"C" {
  */
 #define	ZERO_DIV_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, \
-									   "System.DivideByZeroException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwDivideByZeroException; \
 			} while (0)
 
 /*
@@ -340,12 +368,7 @@ extern	"C" {
  */
 #define	NULL_POINTER_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, \
-									   "System.NullReferenceException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwNullReferenceException; \
 			} while (0)
 
 /*
@@ -353,12 +376,7 @@ extern	"C" {
  */
 #define	STACK_OVERFLOW_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, \
-									   "System.StackOverflowException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwStackOverflowException; \
 			} while (0)
 
 /*
@@ -366,12 +384,7 @@ extern	"C" {
  */
 #define	MISSING_METHOD_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, \
-									   "System.MissingMethodException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwMissingMethodException; \
 			} while (0)
 
 /*
@@ -389,11 +402,7 @@ extern	"C" {
  */
 #define	INVALID_CAST_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, "System.InvalidCastException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwInvalidCastException; \
 			} while (0)
 
 /*
@@ -401,12 +410,7 @@ extern	"C" {
  */
 #define	ARRAY_INDEX_EXCEPTION()	\
 			do { \
-				COPY_STATE_TO_THREAD(); \
-				stacktop[0].ptrValue = \
-					_ILSystemException(thread, \
-									   "System.IndexOutOfRangeException"); \
-				stacktop += 1; \
-				goto throwException; \
+				goto throwIndexOutOfRangeException; \
 			} while (0)
 
 /*
@@ -566,7 +570,7 @@ static IL_INLINE void *ReadPointer(unsigned char *pc)
  */
 CVM_DEFINE_TABLES();
 
-int _ILCVMInterpreter(ILExecThread *thread)
+static int Interpreter(ILExecThread *thread)
 {
 	CVM_REGISTER_ASM_PC(unsigned char *IL_PC_VOLATILE pc);
 	CVM_REGISTER_ASM_STACK(CVMWord *IL_STACKTOP_VOLATILE stacktop);
@@ -954,6 +958,494 @@ int _ILCVMInterpreter(ILExecThread *thread)
 
 	/* We should never get here, but keep the compiler happy */
 	return 0;
+
+	/*
+	 * Jump target to throw a NullReferenceException
+	 */
+throwNullReferenceException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.NullReferenceException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an ArithmeticException
+	 */
+throwArithmeticException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.ArithmeticException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an OverflowException
+	 */
+throwOverflowException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.OverflowException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw a DivideByZeroException
+	 */
+throwDivideByZeroException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.DivideByZeroException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw a StackOverflowException
+	 */
+throwStackOverflowException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.StackOverflowException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw a MissingMethodException
+	 */
+throwMissingMethodException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.MissingMethodException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an InvalidCastException
+	 */
+throwInvalidCastException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.InvalidCastException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an IndexOutOfRangeException
+	 */
+throwIndexOutOfRangeException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.IndexOutOfRangeException");
+	goto throwException;
+	/*
+	 * Label that we jump to when the engine throws an exception.
+	 * The exception thrown is expected to be in tempptr.
+	 */
+throwException:
+	/* Pop the exception object from the stack and store it to the thread. */
+	thread->thrownException = tempptr;
+#ifdef IL_DUMP_CVM
+	fputs("Throw ", IL_DUMP_CVM_STREAM);
+	DUMP_STACK();
+#endif
+	return _CVM_EXIT_THROW;
+}
+
+/*
+ * Forward declarations.
+ */
+static int unwind(ILExecThread *thread,
+				  ILCVMExceptionContext *callerExceptionContext);
+
+/*
+ * Call an exception filter.
+ * NOTE: Exceptions are caught at exit from a filter and interpreted
+ * as a 0 return value (continue search) as specified by ECMA.
+ */
+static int CallFilter(ILExecThread *thread,
+					  ILCVMExceptionContext *callerExceptionContext)
+{
+	int result;
+
+	do
+	{
+		result = Interpreter(thread);
+		if(result == _CVM_EXIT_THROW)
+		{
+			/*
+			 * Perform exception handling.
+			 */
+			result = unwind(thread, callerExceptionContext);
+		}
+	} while(result == _CVM_EXIT_EXECUTE_HANDLER);
+	if(result == _CVM_EXIT_RETURN)
+	{
+		CVMWord *stacktop;
+		/*
+		 * We returned from en ENDFILTER opcode.
+		 */
+
+		/*
+		 * Pop the result of the filter call.
+		 * The result is on top of the stack.
+		 */
+		stacktop = thread->stackTop;
+		if(stacktop[-1].intValue)
+		{
+			return _CVM_EXCEPTION_EXECUTE_HANDLER;
+		}
+	}
+	return _CVM_EXCEPTION_CONTINUE_SEARCH;
+}
+
+/*
+ * Call a catch clause while thread abort is in effect.
+ */
+static int CallHandler(ILExecThread *thread,
+					   ILCVMExceptionContext *callerExceptionContext)
+{
+	int result;
+
+	do
+	{
+		result = Interpreter(thread);
+		if(result == _CVM_EXIT_THROW)
+		{
+			/*
+			 * Perform exception handling.
+			 */
+			result = unwind(thread, callerExceptionContext);
+		}
+	} while(result == _CVM_EXIT_EXECUTE_HANDLER);
+	return result;
+}
+
+/*
+ * Perform normal exception unwinding
+ */
+static int unwind(ILExecThread *thread,
+				  ILCVMExceptionContext *callerExceptionContext)
+{
+	unsigned char *pc;
+	CVMWord *stacktop;
+	CVMWord *frame;
+	ILCallFrame *callFrame;
+	ILMethod *method;
+	ILObject *exception;
+	ILCVMExceptionContext exceptionContext;
+	const ILCVMUnwind *unwind;
+	int threadIsAborting;
+
+	/*
+	 * Get the state from the thread.
+	 */
+	pc = thread->pc;
+	frame = thread->frame;
+	stacktop = thread->stackTop;
+	method = thread->method;
+	exception = thread->thrownException;
+	thread->thrownException = 0;
+
+	threadIsAborting = 0;
+	/*
+	 * Check if the thread is aborting
+	 */
+	if (thread->aborting)
+	{
+		if (exception && ILExecThreadIsThreadAbortException(thread, exception))
+		{
+			threadIsAborting = 1;
+		}
+	}
+
+	unwind = (ILCVMUnwind *)ILCoderPCToHandler(thread->process->coder, pc, 0);
+	do
+	{
+		ILCVMContext context;
+
+		if(unwind)
+		{
+			const ILCVMUnwind *exceptUnwind;
+			/*
+			 * Locate the unwind block ehere the exceptionPc is located
+			 * and adjust the stacktop accordingly.
+			 */
+			context.pc = pc;
+			context.frame = frame;
+			context.stackTop = frame;
+			exceptUnwind = FindUnwindBlock(unwind, &context);
+			while(exceptUnwind)
+			{
+				if(exceptUnwind->flags ==  _IL_CVM_UNWIND_TYPE_TRY)
+				{
+					const ILCVMUnwind *handler;
+					const ILCVMUnwind *filter;
+
+					if(exceptUnwind->un.tryBlock.firstHandler >= 0)
+					{
+						int stopExecuteHandlers;
+						int result;
+
+						/*
+						 * Process the handlers for this try block.
+						 */
+						result = _CVM_EXIT_OK;
+						stopExecuteHandlers = 0;
+						handler = &(unwind[exceptUnwind->un.tryBlock.firstHandler]);
+						while(handler)
+						{
+							switch(handler->flags)
+							{
+								case _IL_CVM_UNWIND_TYPE_CATCH:
+								{
+									/*
+									 * A typed exception handler.
+									 */
+									if(stopExecuteHandlers)
+									{
+										break;
+									}
+									
+									if(exception && CanCastClass(ILProgramItem_Image(method),
+																 GetObjectClass(exception),
+																 handler->un.handlerBlock.un.exceptionClass))
+									{
+									executeHandler:
+										stacktop = context.stackTop;
+										/*
+										 * Push the flag for propagating
+										 * a ThreadAbortException on the stack.
+										 */
+										stacktop[0].ptrValue = (threadIsAborting ? IL_INVALID_PC : 0);
+										++stacktop;
+										/*
+										 * Push the exception object on the stack.
+										 */
+										stacktop[0].ptrValue = exception;
+										++stacktop;
+										/*
+										 * Store the exception in the frame for
+										 * rethrowing the exception.
+										 */
+										if(exceptUnwind->exceptionSlot != IL_MAX_UINT32)
+										{
+											frame[exceptUnwind->exceptionSlot].ptrValue = exception;
+										}
+										/*
+										 * and jump to the handler.
+										 */
+										thread->pc = handler->start;
+										thread->stackTop = stacktop;
+										thread->frame = context.frame;
+										thread->method = method;
+										if(threadIsAborting)
+										{
+											exceptionContext.exception = exception;
+											exceptionContext.context = &context;
+											exceptionContext.unwind = handler;
+											result = CallHandler(thread, &exceptionContext);
+											if(result == _CVM_EXIT_PROPAGATE_ABORT)
+											{
+												/*
+												 * Don't execute any handlers for this try block anymore.
+												 * Remaining finally or fault blocks should be executed.
+												 */
+												stopExecuteHandlers = 1;
+											}
+										}
+										else
+										{
+											return _CVM_EXIT_EXECUTE_HANDLER;
+										}
+									}
+								}
+								break;
+
+								case _IL_CVM_UNWIND_TYPE_FILTEREDCATCH:
+								{
+									if(stopExecuteHandlers)
+									{
+										break;
+									}
+
+									filter = &(unwind[handler->un.handlerBlock.un.filter]);
+									/*
+									 * Push the exception object on the stack.
+									 */
+									stacktop = context.stackTop;
+									stacktop[0].ptrValue = exception;
+									++stacktop;
+									/*
+									 * and execute the filter.
+									 */
+									thread->pc = filter->start;
+									thread->stackTop = stacktop;
+									thread->frame = context.frame;
+									thread->method = method;
+									exceptionContext.exception = exception;
+									exceptionContext.context = &context;
+									exceptionContext.unwind = filter;
+									if(CallFilter(thread, &exceptionContext) == _CVM_EXCEPTION_EXECUTE_HANDLER)
+									{
+										/*
+										 * The handler should be called
+										 */
+										goto executeHandler;
+									}
+								}
+								break;
+
+								case _IL_CVM_UNWIND_TYPE_FINALLY:
+								case _IL_CVM_UNWIND_TYPE_FAULT:
+								{
+									/*
+									 * Call a cleanup handler.
+									 */
+									/*
+									 * Push the return address on the stack.
+									 * IL_INVALID_PC is pushed so that the
+									 * interpreter knows that the finally block
+									 * was called during exception handling and
+									 * is left on returning from the finally block.
+									 */
+									stacktop = context.stackTop;
+									stacktop[0].ptrValue = IL_INVALID_PC;
+									++stacktop;
+									/*
+									 * and jump to the handler.
+									 */
+									thread->pc = handler->start;
+									thread->stackTop = stacktop;
+									thread->frame = context.frame;
+									thread->method = method;
+									exceptionContext.exception = exception;
+									exceptionContext.context = &context;
+									exceptionContext.unwind = handler;
+									result = CallHandler(thread, &exceptionContext);
+								}
+								break;
+							}
+							/*
+							 * Check if aborting the thread has been reset.
+							 */
+							if(threadIsAborting)
+							{
+								if(!thread->aborting)
+								{
+									/*
+									 * The abort has been aborted.
+									 * So reset the threadIsAborting flag.
+									 */
+									threadIsAborting = 0;
+								}
+							}
+							if(result == _CVM_EXIT_CONTINUE_UNWIND)
+							{
+								/*
+								 * An exception has been thrown while
+								 * performing the unwinding.
+								 * So continue unwinding using this
+								 * exception if the thread is not aborted.
+								 */
+								if(!threadIsAborting)
+								{
+									exception = exceptionContext.exception;
+									if(thread->aborting)
+									{
+										if(exception &&
+										   ILExecThreadIsThreadAbortException(thread, exception))
+										{
+											threadIsAborting = 1;
+										}
+									}
+								}
+								break;
+							}
+							/*
+							 * Get the next handler.
+							 */
+							if(handler->un.handlerBlock.nextHandler >= 0)
+							{
+								handler = &(unwind[handler->un.handlerBlock.nextHandler]);
+							}
+							else
+							{
+								break;
+							}
+						}
+					}
+				}
+				else if(callerExceptionContext)
+				{
+					if((callerExceptionContext->context->frame == frame) &&
+					   (callerExceptionContext->unwind == exceptUnwind))
+					{
+						/*
+						 * We are trying to unwind below the caller's position.
+						 * So update the caller's exceptioncontext and let him
+						 * decide what to do.
+						 */
+						callerExceptionContext->exception = exception;
+						callerExceptionContext->context->pc = pc;
+						return _CVM_EXIT_CONTINUE_UNWIND;
+					}
+				}
+				/*
+				 * Walk up to the parent unwind block.
+				 */
+				if(exceptUnwind->parent >= 0)
+				{
+					context.stackTop -= exceptUnwind->stackChange;
+					exceptUnwind = &(unwind[exceptUnwind->parent]);
+				}
+				else
+				{
+					break;
+				}
+			}
+		}
+		/*
+		 * Walk the stack up to caller.
+		 */
+		stacktop = frame;
+		callFrame = &(thread->frameStack[--(thread->numFrames)]);
+		pc = callFrame->pc;
+		frame = callFrame->frame;
+		method = callFrame->method;
+
+#ifdef IL_DUMP_CVM
+		if(method)
+		{
+			fprintf(IL_DUMP_CVM_STREAM, "Throwing Back To %s::%s\n",
+				    method->member.owner->className->name,
+				    method->member.name);
+		}
+#endif
+
+		/* Should we return to an external method? */
+		if(callFrame->pc == IL_INVALID_PC)
+		{
+			thread->thrownException = exception;
+			COPY_STATE_TO_THREAD();
+			return _CVM_EXIT_EXCEPT;
+		}
+		unwind = (ILCVMUnwind *)ILCoderPCToHandler(thread->process->coder, pc - 1, 1);
+	} while(1);
+}
+
+int _ILCVMInterpreter(ILExecThread *thread)
+{
+	int result;
+
+		if(!thread)
+	{
+		/*
+		 * Export the goto label tables from the interpreter if necessary
+		 */
+		return Interpreter(thread);
+	}
+
+	do
+	{
+		result = Interpreter(thread);
+		while(result == _CVM_EXIT_THROW)
+		{
+			/*
+			 * Perform exception handling.
+			 */
+			result = unwind(thread, 0);
+		}
+		if(result != _CVM_EXIT_EXECUTE_HANDLER)
+		{
+			break;
+		}
+	} while(1);
+	return result;
 }
 
 #ifdef	__cplusplus

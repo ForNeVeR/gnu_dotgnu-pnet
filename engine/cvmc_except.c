@@ -24,29 +24,39 @@
 /*
  * Set up exception handling for the current method.
  */
-static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
+static void CVMCoder_SetupExceptions(ILCoder *_coder, ILCoderExceptions *exceptions,
 									 int hasRethrow)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
+	ILCoderExceptionBlock *exception;
+	ILUInt32 index;
 	ILUInt32 extraLocals;
 
-/* If the method uses "rethrow", then we need to allocate local
-	   variables for each of the "catch" blocks, to hold the exception
-	   object temporarily prior to the "rethrow" */
-	if(hasRethrow)
-	{
-		extraLocals = 0;
-		while(exceptions != 0)
-		{
-			if((exceptions->flags & (IL_META_EXCEPTION_FINALLY |
-									 IL_META_EXCEPTION_FAULT |
-									 IL_META_EXCEPTION_FILTER)) == 0)
-			{
-				exceptions->userData = extraLocals + coder->minHeight;
 
-				++extraLocals;
+	extraLocals = 0;
+	if(exceptions->numBlocks > 0)
+	{
+		index = 0;
+		while(index < exceptions->numBlocks)
+		{
+			exception = &(exceptions->blocks[index]);
+			exception->userData = IL_MAX_UINT32;
+			if((exception->flags & IL_CODER_HANDLER_TYPE_CATCH) != 0)
+			{
+				if(exception->un.handlerBlock.tryBlock->userData == IL_MAX_UINT32)
+				{
+					exception->un.handlerBlock.tryBlock->userData = extraLocals + coder->minHeight;
+					++extraLocals;
+				}
+				exception->userData = exception->un.handlerBlock.tryBlock->userData;
 			}
-			exceptions = exceptions->next;
+			else
+			{
+				/*
+				 * TODO: Look for the first parent catch block and use it's exception slot
+				 */
+			}
+			++index;
 		}
 		if(extraLocals == 1)
 		{
@@ -74,7 +84,6 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
 
 	/* Set up the method's frame to perform exception handling */
 	coder->needTry = 1;
-	CVMP_OUT_NONE(COP_PREFIX_ENTER_TRY);
 }
 
 /*
@@ -82,14 +91,7 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILException *exceptions,
  */
 static void CVMCoder_Throw(ILCoder *coder, int inCurrentMethod)
 {
-	if(inCurrentMethod == 1)
-	{
-		CVMP_OUT_WORD(COP_PREFIX_THROW, 1);
-	}
-	else
-	{
-		CVMP_OUT_NONE(COP_PREFIX_THROW_CALLER);
-	}
+	CVMP_OUT_NONE(COP_PREFIX_THROW);
 	CVM_ADJUST(-1);
 }
 
@@ -104,7 +106,7 @@ static void CVMCoder_SetStackTrace(ILCoder *coder)
 /*
  * Output a rethrow instruction.
  */
-static void CVMCoder_Rethrow(ILCoder *coder, ILException *exception)
+static void CVMCoder_Rethrow(ILCoder *coder, ILCoderExceptionBlock *exception)
 {
 	/* Push the saved exception object back onto the stack */
 	CVM_OUT_WIDE(COP_PLOAD, exception->userData);
@@ -116,9 +118,10 @@ static void CVMCoder_Rethrow(ILCoder *coder, ILException *exception)
 }
 
 /*
- * Output a "jump to subroutine" instruction.
+ * Output a "call to a finally ot fault subroutine" instruction.
  */
-static void CVMCoder_Jsr(ILCoder *coder, ILUInt32 dest)
+static void CVMCoder_CallFinally(ILCoder *coder, ILCoderExceptionBlock *exception,
+								 ILUInt32 dest)
 {
 	OutputBranch(coder, COP_JSR, dest);
 }
@@ -126,121 +129,216 @@ static void CVMCoder_Jsr(ILCoder *coder, ILUInt32 dest)
 /*
  * Output a "return from subroutine" instruction.
  */
-static void CVMCoder_RetFromJsr(ILCoder *coder)
+static void CVMCoder_RetFromFinally(ILCoder *coder)
 {
 	CVM_OUT_NONE(COP_RET_JSR);
 }
 
-/*
- * Start a "try" handler block for a region of code.
- */
-static void CVMCoder_TryHandlerStart(ILCoder *_coder,
-									 ILUInt32 start, ILUInt32 end)
+static void CVMCoder_LeaveCatch(ILCoder *coder,
+								ILCoderExceptionBlock *exception)
+{
+	CVMP_OUT_NONE(COP_PREFIX_LEAVE_CATCH);
+}
+
+static void CVMCoder_RetFromFilter(ILCoder *coder)
+{
+	CVMP_OUT_NONE(COP_PREFIX_RET_FROM_FILTER);
+}
+
+static void CVMCoder_OutputExceptionTable(ILCoder *_coder,
+										  ILCoderExceptions *exceptions)
 {
 	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	ILCVMLabel *label;
+	ILCoderExceptionBlock *exception;
+	ILCVMUnwind *cvmUnwind;
+	ILCVMUnwind *unwind;
+	ILCVMLabel *startLabel;
+	ILCVMLabel *endLabel;
+	int parent;
+	int index;
+
+	if(exceptions->numBlocks == 0)
+	{
+		/* There is no exception handling needed for this method */
+		return;
+	}
+
+	cvmUnwind = (ILCVMUnwind *)ILCacheAlloc(&(coder->codePosn),
+											(exceptions->numBlocks + 1) * sizeof(ILCVMUnwind));
+	if(!cvmUnwind)
+	{
+		return;
+	}
 	
-	/* End the exception region if this is the first try block */
-	if(coder->needTry)
-	{
-		/* Don't need to do this again */
-		coder->needTry = 0;
+	/* Clear the cvm unwind information */
+	ILMemZero(cvmUnwind, (exceptions->numBlocks + 1) * sizeof(ILCVMUnwind));
 
-		/* Set the cookie for the method's exception region
-		   to the current method position */
-		ILCacheSetCookie(&(coder->codePosn), CVM_POSN());
+	/*
+	 * Set the cookie for the method's exception region
+	 * to the unwind information.
+	 */
+	ILCacheSetCookie(&(coder->codePosn), cvmUnwind);
 
-		/* End the exception region and start a normal region */
-		ILCacheNewRegion(&(coder->codePosn), 0);
-	}
+	/* Setup the unwind information for the method */
+	cvmUnwind[0].start = coder->start;
+	cvmUnwind[0].end = CVM_POSN();
+	cvmUnwind[0].flags = _IL_CVM_UNWIND_TYPE_TRY;
+	cvmUnwind[0].parent = -1;
+	cvmUnwind[0].nested = -1;
+	cvmUnwind[0].nextNested = -1;
+	cvmUnwind[0].stackChange = coder->minHeight;
+	cvmUnwind[0].exceptionSlot = -1;
+	cvmUnwind[0].un.tryBlock.firstHandler = -1;
 
-	/* Output the start and end of the code covered by the handler */
-	coder->tryHandler = CVM_POSN();
-	if(start == 0 && end == IL_MAX_UINT32)
+	parent = 0;
+	index = 0;
+	while(index < exceptions->numBlocks)
 	{
-		/* This handler is the last one in the table */
-		CVM_OUT_TRY(start, end);
-	}
-	else
-	{
-		/* Convert the IL offsets into CVM offsets.  We assume that
-		   the labels were created previously while generating the
-		   code for the body of the method */
-		label = GetLabel(coder, start);
-		if(!label)
+		exception = &(exceptions->blocks[index]);
+		startLabel = GetLabel(coder, exception->startOffset);
+		endLabel = GetLabel(coder, exception->endOffset);
+		if(!startLabel || !endLabel)
 		{
+			/*
+			 * This is a bug in the coder.
+			 * Both labels must be  defined at this point.
+			 */
 			return;
 		}
-		start = label->offset;
-		label = GetLabel(coder, end);
-		if(!label)
+		unwind = &(cvmUnwind[index + 1]);
+		unwind->start = coder->start + startLabel->offset;
+		unwind->end = coder->start + endLabel->offset;
+		unwind->parent = -1;
+		unwind->nested = -1;
+		unwind->nextNested = -1;
+		unwind->stackChange = 0;
+		/*
+		 * Copy the exception slot to the unwind information.
+		 */
+		unwind->exceptionSlot = exception->userData;
+		/*
+		 * And reuse the exception's userData for the index in the unwind information.
+		 */
+		exception->userData = index + 1;
+		switch(exception->flags)
 		{
-			return;
+			case IL_CODER_HANDLER_TYPE_TRY:
+			{
+				unwind->flags = _IL_CVM_UNWIND_TYPE_TRY;
+				unwind->stackChange = 0;
+				unwind->un.tryBlock.firstHandler = -1;
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_CATCH:
+			{
+				unwind->flags = _IL_CVM_UNWIND_TYPE_CATCH;
+				unwind->stackChange = 1; /* For the propagate abort flag */
+				unwind->un.handlerBlock.nextHandler = -1;
+				unwind->un.handlerBlock.un.exceptionClass =
+					exception->un.handlerBlock.exceptionClass;
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_FILTEREDCATCH:
+			{
+				unwind->flags = _IL_CVM_UNWIND_TYPE_FILTEREDCATCH;
+				unwind->stackChange = 1; /* For the propagate abort flag */
+				unwind->un.handlerBlock.nextHandler = -1;
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_FINALLY:
+			{
+				unwind->flags = _IL_CVM_UNWIND_TYPE_FINALLY;
+				unwind->stackChange = 1; /* For the return address */
+				unwind->un.handlerBlock.nextHandler = -1;
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_FAULT:
+			{
+				unwind->flags = _IL_CVM_UNWIND_TYPE_FAULT;
+				unwind->stackChange = 1; /* For the return address */
+				unwind->un.handlerBlock.nextHandler = -1;
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_FILTER:
+			{
+				unwind->flags = _IL_CVM_UNWIND_TYPE_FILTER;
+				unwind->stackChange = 0;
+			}
+			break;
 		}
-		end = label->offset;
-		CVM_OUT_TRY(start, end);
+		++index;
 	}
-}
 
-/*
- * End a "try" handler block for a region of code.
- */
-static void CVMCoder_TryHandlerEnd(ILCoder *coder)
-{
-	/* Back-patch the length value for the handler */	
-	CVM_BACKPATCH_TRY(((ILCVMCoder *)coder)->tryHandler);	
-}
-
-/*
- * Output instructions to match a "catch" clause.
- */
-static void CVMCoder_Catch(ILCoder *_coder, ILException *exception,
-						   ILClass *classInfo, int hasRethrow)
-{
-	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	unsigned char *temp;
-
-	/* Duplicate the exception object */
-	CVM_OUT_NONE(COP_DUP);
-	CVM_ADJUST(1);
-
-	/* Determine if the object is an instance of the right class */
-	CVM_OUT_PTR(COP_ISINST, classInfo);
-
-	/* Branch to the next test if not an instance */
-	temp = CVM_POSN();
-	CVM_OUT_BRANCH_PLACEHOLDER(COP_BRNULL);
-
-	/* If the method contains "rethrow" instructions, then save
-	   the object into a temporary local for this "catch" clause */
-	if(hasRethrow)
+	/*
+	 * Now set the indexes in the blocks.
+	 */
+	index = 0;
+	while(index < exceptions->numBlocks)
 	{
-		CVM_OUT_NONE(COP_DUP);
-		CVM_OUT_WIDE(COP_PSTORE, exception->userData);
+		exception = &(exceptions->blocks[index]);
+		unwind = &(cvmUnwind[exception->userData]);
+		if(exception->parent)
+		{
+			unwind->parent = exception->parent->userData;
+		}
+		else
+		{
+			/*
+			 * Set the outermost block as parent.
+			 */
+			unwind->parent = 0;
+		}
+		if(exception->nested)
+		{
+			unwind->nested = exception->nested->userData;
+		}
+		if(exception->nextNested)
+		{
+			unwind->nextNested = exception->nextNested->userData;
+		}
+		switch(exception->flags)
+		{
+			case IL_CODER_HANDLER_TYPE_TRY:
+			{
+				if(exception->un.tryBlock.handlerBlock)
+				{
+					unwind->un.tryBlock.firstHandler =
+						exception->un.tryBlock.handlerBlock->userData;
+				}
+			}
+			break;
+
+			case IL_CODER_HANDLER_TYPE_CATCH:
+			case IL_CODER_HANDLER_TYPE_FILTEREDCATCH:
+			case IL_CODER_HANDLER_TYPE_FINALLY:
+			case IL_CODER_HANDLER_TYPE_FAULT:
+			{
+				if(exception->un.handlerBlock.nextHandler)
+				{
+					unwind->un.handlerBlock.nextHandler =
+						exception->un.handlerBlock.nextHandler->userData;
+				}
+				if(exception->flags == IL_CODER_HANDLER_TYPE_FILTEREDCATCH)
+				{
+					if(exception->un.handlerBlock.filterBlock)
+					{
+						unwind->un.handlerBlock.un.filter =
+							exception->un.handlerBlock.filterBlock->userData;
+					}
+				}
+			}
+		}
+		++index;
 	}
-
-	CVMP_OUT_PTR(COP_PREFIX_START_CATCH, exception->ptrUserData);
-	
-	/* Branch to the start of the "catch" clause */
-	OutputBranch(_coder, COP_BR, exception->handlerOffset);
-
-	/* Back-patch the "brnull" instruction */
-	CVM_BACKPATCH_BRANCH(temp, (ILInt32)(CVM_POSN() - temp));
-
-	/* Adjust the stack back to its original height */
-	CVM_ADJUST(-1);
-}
-
-static void CVMCoder_EndCatchFinally(ILCoder *coder, ILException *exception)
-{
-	exception->ptrUserData = CVM_POSN();	
-	CVMP_OUT_NONE(COP_PREFIX_PROPAGATE_ABORT);
-}
-
-static void CVMCoder_Finally(ILCoder *coder, ILException *exception, int dest)
-{
-	CVMP_OUT_PTR(COP_PREFIX_START_FINALLY, exception->ptrUserData);
-	OutputBranch(coder, COP_JSR, dest);
+	/*
+	 * Set the nested information for the function block.
+	 */
+	cvmUnwind[0].nested = exceptions->firstBlock->userData;
 }
 
 /*

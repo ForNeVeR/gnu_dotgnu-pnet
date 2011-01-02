@@ -546,9 +546,9 @@ unsigned char const _ILCVMLengths[512] = {
 	/*
 	 * Reserved opcodes.
 	 */
-	/* start_catch */		CVMP_LEN_PTR,
-	/* start_finally */		CVMP_LEN_PTR,
-	/* propagate_abort */	CVMP_LEN_NONE,
+	/* leave_catch */		CVMP_LEN_NONE,
+	/* ret_from_finally */	CVMP_LEN_NONE,
+	/* preserved_64 */		CVMP_LEN_NONE,
 	/* preserved_65 */		CVMP_LEN_NONE,
 	/* preserved_66 */		CVMP_LEN_NONE,
 	/* preserved_67 */		CVMP_LEN_NONE,

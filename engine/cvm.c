@@ -147,14 +147,14 @@ extern	"C" {
  */
 #if defined(__GNUC__) && !defined(IL_VMCASE_BARRIER)
 #if (__GNUC__ == 4) && defined(CVM_X86)
-#define IL_PC_VOLATILE
-#define IL_STACKTOP_VOLATILE
-#define IL_FRAME_VOLATILE
-#define IL_STACKMAX_VOLATILE
-#define IL_METHOD_VOLATILE
-#define IL_METHODTOCALL_VOLATILE
-#define IL_CALLFRAME_VOLATILE
-#define IL_TEMPPTR_VOLATILE
+#define IL_PC_VOLATILE volatile
+#define IL_STACKTOP_VOLATILE volatile
+#define IL_FRAME_VOLATILE volatile
+#define IL_STACKMAX_VOLATILE volatile
+#define IL_METHOD_VOLATILE volatile
+#define IL_METHODTOCALL_VOLATILE volatile
+#define IL_CALLFRAME_VOLATILE volatile
+#define IL_TEMPPTR_VOLATILE volatile
 #endif
 #if (__GNUC__ == 4) && defined(CVM_X86_64)
 #define IL_PC_VOLATILE
@@ -276,7 +276,7 @@ extern	"C" {
 	#define END_NULL_CHECK()
 #else
 	#define BEGIN_NULL_CHECK(x) \
-		if ((x) == 0) goto throwNullReferenceException; \
+		if (IL_EXPECT((x) == 0, 0)) goto throwNullReferenceException; \
 		{
 
 	#define BEGIN_NULL_CHECK_STMT(x) BEGIN_NULL_CHECK(x)
@@ -290,7 +290,7 @@ extern	"C" {
 	#define END_INT_ZERO_DIV_CHECK()
 #else
 	#define BEGIN_INT_ZERO_DIV_CHECK(x) \
-		if ((x) != 0) \
+		if (IL_EXPECT((x) != 0, 1)) \
 		{
 
 	#define END_INT_ZERO_DIV_CHECK() \
@@ -309,7 +309,7 @@ extern	"C" {
 	#define END_INT_OVERFLOW_CHECK()
 #else
 	#define BEGIN_INT_OVERFLOW_CHECK(x) \
-		if (x) \
+		if (IL_EXPECT((x), 1)) \
 		{
 
 	#define END_INT_OVERFLOW_CHECK() \
@@ -958,82 +958,6 @@ static int Interpreter(ILExecThread *thread)
 
 	/* We should never get here, but keep the compiler happy */
 	return 0;
-
-	/*
-	 * Jump target to throw a NullReferenceException
-	 */
-throwNullReferenceException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.NullReferenceException");
-	goto throwException;
-
-	/*
-	 * Jump target to throw an ArithmeticException
-	 */
-throwArithmeticException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.ArithmeticException");
-	goto throwException;
-
-	/*
-	 * Jump target to throw an OverflowException
-	 */
-throwOverflowException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.OverflowException");
-	goto throwException;
-
-	/*
-	 * Jump target to throw a DivideByZeroException
-	 */
-throwDivideByZeroException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.DivideByZeroException");
-	goto throwException;
-
-	/*
-	 * Jump target to throw a StackOverflowException
-	 */
-throwStackOverflowException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.StackOverflowException");
-	goto throwException;
-
-	/*
-	 * Jump target to throw a MissingMethodException
-	 */
-throwMissingMethodException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.MissingMethodException");
-	goto throwException;
-
-	/*
-	 * Jump target to throw an InvalidCastException
-	 */
-throwInvalidCastException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.InvalidCastException");
-	goto throwException;
-
-	/*
-	 * Jump target to throw an IndexOutOfRangeException
-	 */
-throwIndexOutOfRangeException:
-	COPY_STATE_TO_THREAD();
-	tempptr = _ILSystemException(thread, "System.IndexOutOfRangeException");
-	goto throwException;
-	/*
-	 * Label that we jump to when the engine throws an exception.
-	 * The exception thrown is expected to be in tempptr.
-	 */
-throwException:
-	/* Pop the exception object from the stack and store it to the thread. */
-	thread->thrownException = tempptr;
-#ifdef IL_DUMP_CVM
-	fputs("Throw ", IL_DUMP_CVM_STREAM);
-	DUMP_STACK();
-#endif
-	return _CVM_EXIT_THROW;
 }
 
 /*

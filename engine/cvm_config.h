@@ -265,8 +265,32 @@ extern int _ILCVMInsnCount[];
 	#define CVM_REGISTER_ASM_STACK(x)		register x asm ("edi")
 	#define CVM_REGISTER_ASM_FRAME(x)		register x asm ("ebx")
 #if defined(IL_CVM_DIRECT_UNROLLED)
+	/*
+	 * This is the barrier needed to make the interpreter work.
+	 *
 	#define CVM_VMBREAK_BARRIER()	\
-		__asm__ __volatile__ ("" : : : "eax", "ecx", "edx", "memory")
+		__asm__ __volatile__ ("" : : : "ecx", "edx")
+	 *
+	 * The extended barrier makes gcc (version 4.4) build faster code.
+	 * (Tested on an intel atom cpu box)
+	 * As of gcc 4.4 the interpreter segfaults if built with -O3 on x86
+	 */
+	#define CVM_VMBREAK_BARRIER()	\
+	__asm__ __volatile__ ("" : : : "ecx", "edx", "memory")
+	/*
+	 * Define arch specific replacements for the cvm interpreter switch
+	 * , case and break statements.
+	 * For these x86 specific versions all variables with a *VOLATILE* macro
+	 * that are not kept in a register (see CVM_REGISTER* macros) MUST be defined
+	 * volatile.
+	 *
+	 * NOTE: The goto statement in the macro is just for the compiler.
+	 */
+	#define X86_CGOTO(pc) do { __asm__ __volatile__ ("jmp *(%0)" : : "r" (pc)); \
+							   goto ** ((void **)(pc)); } while(0)
+	#define VM_CGOTO_PREFIXSWITCH(val) X86_CGOTO(pc)
+	#define VM_CGOTO_BREAK(val) X86_CGOTO(pc)
+	#define VM_CGOTO_BREAKNOEND(val) X86_CGOTO(pc)
 #endif
 #elif defined(CVM_X86_64) && defined(__GNUC__) && !defined(IL_NO_ASM)
 
@@ -343,6 +367,17 @@ extern int _ILCVMInsnCount[];
 #if defined(CVM_X86)
 #define IL_VMCASE_BARRIER
 #endif
+#endif
+
+/*
+ * predict the outcome of an expression to allow the compiler to
+ * optimize better.
+ * The result must be a compile time constant. Usually either 0 or 1.
+ */
+#if (__GNUC__ >= 3)
+#define IL_EXPECT(expr, result) __builtin_expect((expr), (result))
+#else
+#define IL_EXPECT(expr, result) (expr)
 #endif
 
 #ifdef	__cplusplus

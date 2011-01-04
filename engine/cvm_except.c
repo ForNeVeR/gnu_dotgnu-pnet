@@ -172,6 +172,93 @@ VMCASE(COP_PREFIX_THROW):
 	--stacktop;
 	tempptr = stacktop[0].ptrValue;
 	COPY_STATE_TO_THREAD();
+	/*
+	 * Label that we jump to when the engine throws an exception.
+	 * The exception thrown is expected to be in tempptr.
+	 */
+throwException:
+	/* Pop the exception object from the stack and store it to the thread. */
+	thread->thrownException = tempptr;
+#ifdef IL_DUMP_CVM
+	fputs("Throw ", IL_DUMP_CVM_STREAM);
+	DUMP_STACK();
+#endif
+	return _CVM_EXIT_THROW;
+
+	/*
+	 * Jump target to throw a ThreadAbortException from the
+	 * managed barrier.
+	 */
+throwThreadAbortException:
+	ILInterlockedAndU4(&(thread->managedSafePointFlags),
+					   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
+	tempptr = thread->thrownException;
+	thread->thrownException = 0;
+	COPY_STATE_TO_THREAD();
+	goto throwException;
+
+	/*
+	 * Jump target to throw a NullReferenceException
+	 */
+throwNullReferenceException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.NullReferenceException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an ArithmeticException
+	 */
+throwArithmeticException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.ArithmeticException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an OverflowException
+	 */
+throwOverflowException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.OverflowException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw a DivideByZeroException
+	 */
+throwDivideByZeroException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.DivideByZeroException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw a StackOverflowException
+	 */
+throwStackOverflowException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.StackOverflowException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw a MissingMethodException
+	 */
+throwMissingMethodException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.MissingMethodException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an InvalidCastException
+	 */
+throwInvalidCastException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.InvalidCastException");
+	goto throwException;
+
+	/*
+	 * Jump target to throw an IndexOutOfRangeException
+	 */
+throwIndexOutOfRangeException:
+	COPY_STATE_TO_THREAD();
+	tempptr = _ILSystemException(thread, "System.IndexOutOfRangeException");
 	goto throwException;
 }
 VMBREAK(COP_PREFIX_THROW);

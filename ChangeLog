@@ -1,3 +1,19 @@
+2011-01-04  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.c: Make the interpreter loop variables volatile again
+	on x86.
+	Mark the consditions that lead to exceptions most probably not true.
+	(Interpreter): Move the exceptions to cvm_except.c in the throw opcode.
+
+	* cvm_call.c: Mark the consditions that lead to exceptions most
+	probably not true.
+
+	* cvm_config.h: Add IL_EXPECT macro for __builtin_expect for gcc >= 3.
+	Add optimizations for x86.
+
+	* cvm_except.c (CVM_PREFIX_OP_THROW): Move the exceptions from cvm.c
+	to here.
+
 2011-01-02  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/call.c (_ILCallMethod): Don't copy the currentException back

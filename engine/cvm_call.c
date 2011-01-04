@@ -97,18 +97,13 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 
 
 #define CHECK_MANAGED_BARRIER()	\
-	if (thread->managedSafePointFlags)	\
+	if (IL_EXPECT(thread->managedSafePointFlags, 0))	\
 	{	\
 		if  ((thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_ABORT) && ILThreadIsAbortRequested()) \
 		{ \
 			if (_ILExecThreadSelfAborting(thread) == 0) \
 			{ \
-				ILInterlockedAndU4(&(thread->managedSafePointFlags), \
-								   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT); \
-				tempptr = thread->thrownException; \
-				thread->thrownException = 0; \
-				COPY_STATE_TO_THREAD(); \
-				goto throwException; \
+				goto throwThreadAbortException; \
 			} \
 		} \
 		else if (thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND) \
@@ -187,7 +182,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				stacktop = thread->stackTop; \
 				frame = thread->frame; \
 				stackmax = thread->stackLimit; \
-				if(thread->thrownException != 0) \
+				if(IL_EXPECT(thread->thrownException != 0, 0)) \
 				{ \
 					/* An exception occurred, which we now must handle */ \
 					tempptr = thread->thrownException; \

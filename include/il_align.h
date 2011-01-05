@@ -22,6 +22,9 @@
 #define	_IL_ALIGN_H
 
 #include "il_values.h"
+#ifdef HAVE_STDDEF_H
+#include <stddef.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -30,7 +33,8 @@ extern	"C" {
 /*
  * The following is some macro magic that attempts to detect
  * the best alignment to use on the target platform.  The final
- * value, "IL_BEST_ALIGNMENT", will be a compile-time constant.
+ * value, "IL_BEST_ALIGNMENT", will be a compile-time constant if
+ * the offsetof macro is available.
  */
 
 #define	_IL_ALIGN_CHECK_TYPE(type,name)	\
@@ -39,8 +43,13 @@ extern	"C" {
 		type field; \
 	}
 
+#ifdef offsetof
+#define _IL_ALIGN_FOR_TYPE(name)	\
+	(offsetof(struct _IL_align_##name, field))
+#else
 #define	_IL_ALIGN_FOR_TYPE(name)	\
 	((ILNativeUInt)(&(((struct _IL_align_##name *)0)->field)))
+#endif
 
 #define	_IL_ALIGN_MAX(a,b)	\
 	((a) > (b) ? (a) : (b))

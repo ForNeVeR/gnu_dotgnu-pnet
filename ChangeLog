@@ -7,6 +7,9 @@
 	* engine/amd64_codegen.h (amd64_alu_reg_imm_size): Replace check for
 	reg == X86_EAX with reg == AMD64_RAX.
 
+	* include/il_align.h: Use offsetof to determine the alignment of the
+	types if available.
+
 2011-01-04  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: Make the interpreter loop variables volatile again

@@ -135,7 +135,7 @@ typedef union {
 
 #define amd64_alu_reg_imm_size(inst,opc,reg,imm,size) 	\
 	do {	\
-		if ((reg) == X86_EAX) {	\
+		if ((reg) == AMD64_RAX) {	\
 			amd64_emit_rex(inst, size, 0, 0, 0); \
 			*(inst)++ = (((unsigned char)(opc)) << 3) + 5;	\
 			x86_imm_emit32 ((inst), (imm));	\

@@ -4,6 +4,9 @@
 	the now unused members currentException and threadAbortException from
 	ILExecThread.
 
+	* engine/amd64_codegen.h (amd64_alu_reg_imm_size): Replace check for
+	reg == X86_EAX with reg == AMD64_RAX.
+
 2011-01-04  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: Make the interpreter loop variables volatile again

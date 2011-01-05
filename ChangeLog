@@ -1,3 +1,9 @@
+2011-01-05  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.h, engine/lib_thread.c, engine/thread.c: Remove
+	the now unused members currentException and threadAbortException from
+	ILExecThread.
+
 2011-01-04  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c: Make the interpreter loop variables volatile again

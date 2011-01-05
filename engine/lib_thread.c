@@ -417,7 +417,6 @@ void _IL_Thread_ResetAbort(ILExecThread *thread)
 		ILInterlockedAndU4(&(thread->managedSafePointFlags),
 						   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 		thread->aborting = 0;
-		thread->threadAbortException = 0;
 	}
 }
 

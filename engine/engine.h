@@ -435,15 +435,8 @@ struct _tagILExecThread
 	/* Flagged if the thread is running managed code */
 	int		runningManagedCode;
 
-	/* The last exception that was thrown (as seen from the CVM)
-	   This always stores the last exception thrown and is never reset */
-	ILObject	*currentException;
-
 	/* Last exception that was thrown */
 	ILObject       *thrownException;
-
-	/* The ThreadAbortException instance of the thread is being aborted */
-	ILObject	*threadAbortException;
 
 	/* Flag that indicates whether a thread is aborting */
 	volatile int	aborting;

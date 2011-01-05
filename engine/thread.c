@@ -316,7 +316,6 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 			ILInterlockedAndU4(&(thread->managedSafePointFlags),
 							   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 			thread->aborting = 1;
-			thread->threadAbortException = 0;
 			ILExecThreadSetException(thread, exception);
 
 			return 0;
@@ -662,10 +661,8 @@ ILExecThread *_ILExecThreadCreate(ILExecProcess *process, int ignoreProcessState
 	thread->thrownException = 0;
 	thread->threadStaticSlots = 0;
 	thread->threadStaticSlotsUsed = 0;
-	thread->currentException = 0;
 	thread->managedSafePointFlags = 0;
 	thread->runningManagedCode = 0;
-	thread->threadAbortException = 0;
 	thread->process = 0;
 
 #ifdef IL_CONFIG_APPDOMAINS

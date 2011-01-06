@@ -147,14 +147,14 @@ extern	"C" {
  */
 #if defined(__GNUC__) && !defined(IL_VMCASE_BARRIER)
 #if (__GNUC__ == 4) && defined(CVM_X86)
-#define IL_PC_VOLATILE volatile
-#define IL_STACKTOP_VOLATILE volatile
-#define IL_FRAME_VOLATILE volatile
-#define IL_STACKMAX_VOLATILE volatile
-#define IL_METHOD_VOLATILE volatile
-#define IL_METHODTOCALL_VOLATILE volatile
-#define IL_CALLFRAME_VOLATILE volatile
-#define IL_TEMPPTR_VOLATILE volatile
+#define IL_PC_VOLATILE
+#define IL_STACKTOP_VOLATILE
+#define IL_FRAME_VOLATILE
+#define IL_STACKMAX_VOLATILE
+#define IL_METHOD_VOLATILE
+#define IL_METHODTOCALL_VOLATILE
+#define IL_CALLFRAME_VOLATILE
+#define IL_TEMPPTR_VOLATILE
 #endif
 #if (__GNUC__ == 4) && defined(CVM_X86_64)
 #define IL_PC_VOLATILE

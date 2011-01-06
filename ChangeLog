@@ -1,3 +1,8 @@
+2011-01-06  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.c, engine/cvm_config.c: Revert the optimizations for
+	x86 because they seem to be gcc 4.4 optimizer specific.
+
 2011-01-05  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h, engine/lib_thread.c, engine/thread.c: Remove

@@ -2,8 +2,21 @@
 
 	* engine/cvm.c, engine/cvm_interrupts.c: Do some reformatting.
 
-	* engine/cvm_call.c, engine/cvm_except.c: Pop the current jump buffer
-	if interrupt based exceptions are used on exit from the interpreter.
+	* engine/cvm_call.c: Pop the current jump buffer if interrupt based
+	exceptions are used on exit from the interpreter.
+	Jump to the new label in cvm_except in the case of a thrown exception
+	in RESTORE_STATE_FROM_THREAD now.
+
+	* engine/cvm_except.c: Pop the current jump buffer if interrupt based
+	exceptions are used on exit from the interpreter.
+	Add a jump label for the case theh the exception is allready in
+	thread->thrownException.
+	Refine some comments.
+
+	* engine/cvm_config.h: Remove the memory clobber in the
+	CVM_BREAK_BARRIER for x86_64.
+	Add a missing clobber of ARM_WORK (r12) to the CVM_BREAK_BARRIER for
+	arm.
 
 2011-01-06  Klaus Treichel  <ktreichel@web.de>
 

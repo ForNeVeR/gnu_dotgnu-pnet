@@ -172,6 +172,7 @@ VMBREAK(COP_RET_JSR);
  */
 VMCASE(COP_PREFIX_THROW):
 {
+	/* Pop the exception object from the stack. */
 	--stacktop;
 	tempptr = stacktop[0].ptrValue;
 	COPY_STATE_TO_THREAD();
@@ -180,8 +181,13 @@ VMCASE(COP_PREFIX_THROW):
 	 * The exception thrown is expected to be in tempptr.
 	 */
 throwException:
-	/* Pop the exception object from the stack and store it to the thread. */
+	/* Store the exception to the thread. */
 	thread->thrownException = tempptr;
+	/*
+	 * Label that we jump to when the exception thrown is allready
+	 * stored in the thread's thrownException slot.
+	 */
+throwCurrentException:
 #ifdef IL_DUMP_CVM
 	fputs("Throw ", IL_DUMP_CVM_STREAM);
 	DUMP_STACK();

@@ -303,7 +303,7 @@ extern int _ILCVMInsnCount[];
 	#define CVM_REGISTER_ASM_FRAME(x)		register x asm("r15") 
 #if defined(IL_CVM_DIRECT_UNROLLED)
 	#define CVM_VMBREAK_BARRIER()	\
-		__asm__ __volatile__ ("" : : : "rax", "rbx", "rcx", "rdx", "rsi", "rdi", "memory")
+		__asm__ __volatile__ ("" : : : "rax", "rbx", "rcx", "rdx", "rsi", "rdi")
 #endif
 #elif defined(CVM_ARM) && defined(__GNUC__) && !defined(IL_NO_ASM)
 
@@ -313,8 +313,12 @@ extern int _ILCVMInsnCount[];
     #define CVM_REGISTER_ASM_STACK(x)		register x asm ("r5")
     #define CVM_REGISTER_ASM_FRAME(x)		register x asm ("r6")
 #if defined(IL_CVM_DIRECT_UNROLLED)
+	/*
+	 * NOTE: The "memory" clobber is only gor optimization purposes with gcc 4.4.
+	 * It may be removed again if performance is bad with other gcc versions.
+	 */
 	#define CVM_VMBREAK_BARRIER()   \
-		__asm__ __volatile__ ("" : : : "r0", "r1", "r2", "r3", "memory")
+		__asm__ __volatile__ ("" : : : "r0", "r1", "r2", "r3", "r12", "memory")
 #endif
 #elif defined(CVM_PPC) && defined(__GNUC__) && !defined(IL_NO_ASM)
 

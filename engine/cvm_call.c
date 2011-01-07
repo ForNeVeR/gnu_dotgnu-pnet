@@ -158,7 +158,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 #define	ALLOC_CALL_FRAME()	\
 			do { \
 				REPORT_METHOD_CALL(); \
-				if(thread->numFrames < thread->maxFrames) \
+				if(IL_EXPECT(thread->numFrames < thread->maxFrames, 1)) \
 				{ \
 					callFrame = &(thread->frameStack[(thread->numFrames)++]); \
 				} \
@@ -167,7 +167,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 					BEGIN_NATIVE_CALL(); \
 					callFrame = _ILAllocCallFrame(thread); \
 					END_NATIVE_CALL(); \
-					if(!callFrame) \
+					if(IL_EXPECT(!callFrame, 0)) \
 					{ \
 						STACK_OVERFLOW_EXCEPTION(); \
 					} \
@@ -177,6 +177,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 /*
  * Restore state information from the thread, except the pc.
  */
+#ifdef IL_DUMP_CVM
 #define	RESTORE_STATE_FROM_THREAD()	\
 			do { \
 				stacktop = thread->stackTop; \
@@ -185,11 +186,22 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				if(IL_EXPECT(thread->thrownException != 0, 0)) \
 				{ \
 					/* An exception occurred, which we now must handle */ \
-					tempptr = thread->thrownException; \
-					thread->thrownException = 0; \
-					goto throwException; \
+					goto throwCurrentException; \
 				} \
 			} while (0)
+#else
+#define	RESTORE_STATE_FROM_THREAD()	\
+			do { \
+				if(IL_EXPECT(thread->thrownException != 0, 0)) \
+				{ \
+					/* An exception occurred, which we now must handle */ \
+					goto throwCurrentException; \
+				} \
+				stacktop = thread->stackTop; \
+				frame = thread->frame; \
+				stackmax = thread->stackLimit; \
+			} while (0)
+#endif
 
 /*
  * Determine the number of stack words that are occupied

@@ -128,6 +128,9 @@ VMCASE(COP_RET_JSR):
 	if((unsigned char *)(stacktop[-1].ptrValue) == IL_INVALID_PC)
 	{
 		COPY_STATE_TO_THREAD();
+#if defined(IL_USE_INTERRUPT_BASED_X)
+		IL_MEMCPY(&thread->exceptionJumpBuffer, &backupJumpBuffer, sizeof(IL_JMP_BUFFER));
+#endif
 		return _CVM_EXIT_RETURN;
 	}
 	else
@@ -182,6 +185,9 @@ throwException:
 #ifdef IL_DUMP_CVM
 	fputs("Throw ", IL_DUMP_CVM_STREAM);
 	DUMP_STACK();
+#endif
+#if defined(IL_USE_INTERRUPT_BASED_X)
+	IL_MEMCPY(&thread->exceptionJumpBuffer, &backupJumpBuffer, sizeof(IL_JMP_BUFFER));
 #endif
 	return _CVM_EXIT_THROW;
 
@@ -328,6 +334,9 @@ VMCASE(COP_PREFIX_LEAVE_CATCH):
 	if((stacktop[0].ptrValue == IL_INVALID_PC) && (thread->aborting))
 	{
 		COPY_STATE_TO_THREAD();
+#if defined(IL_USE_INTERRUPT_BASED_X)
+		IL_MEMCPY(&thread->exceptionJumpBuffer, &backupJumpBuffer, sizeof(IL_JMP_BUFFER));
+#endif
 		return _CVM_EXIT_PROPAGATE_ABORT;
 	}
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
@@ -356,6 +365,9 @@ VMCASE(COP_PREFIX_RET_FROM_FILTER):
 {
 	COPY_STATE_TO_THREAD();
 	MODIFY_PC_AND_STACK(CVMP_LEN_NONE, 0);
+#if defined(IL_USE_INTERRUPT_BASED_X)
+	IL_MEMCPY(&thread->exceptionJumpBuffer, &backupJumpBuffer, sizeof(IL_JMP_BUFFER));
+#endif
 	return _CVM_EXIT_RETURN;
 }
 VMBREAK(COP_PREFIX_RET_FROM_FILTER);

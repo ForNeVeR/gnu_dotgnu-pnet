@@ -1152,11 +1152,11 @@ popFrame:
 	/* Should we return to an external method? */
 	if(pc == IL_INVALID_PC)
 	{
-#if defined(IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS)
+#if defined(IL_USE_INTERRUPT_BASED_X)
 		IL_MEMCPY(&thread->exceptionJumpBuffer, &backupJumpBuffer, sizeof(IL_JMP_BUFFER));
 #endif
 		COPY_STATE_TO_THREAD();
-		return 0;
+		return _CVM_EXIT_OK;
 	}
 
 #ifdef IL_DUMP_CVM

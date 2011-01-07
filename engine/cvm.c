@@ -1346,7 +1346,7 @@ int _ILCVMInterpreter(ILExecThread *thread)
 {
 	int result;
 
-		if(!thread)
+	if(!thread)
 	{
 		/*
 		 * Export the goto label tables from the interpreter if necessary

@@ -1,3 +1,10 @@
+2011-01-07  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/cvm.c, engine/cvm_interrupts.c: Do some reformatting.
+
+	* engine/cvm_call.c, engine/cvm_except.c: Pop the current jump buffer
+	if interrupt based exceptions are used on exit from the interpreter.
+
 2011-01-06  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c, engine/cvm_config.c: Revert the optimizations for

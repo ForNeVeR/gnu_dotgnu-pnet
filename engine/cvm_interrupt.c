@@ -76,4 +76,4 @@ switch (IL_SETJMP(thread->exceptionJumpBuffer))
 
 #endif
 
-#endif /* IL_USE_INTERRUPT_BASED_NULL_POINTER_CHECKS */
+#endif /* IL_USE_INTERRUPT_BASED_X */

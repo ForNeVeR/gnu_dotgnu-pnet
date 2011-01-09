@@ -1,7 +1,7 @@
 /*
  * process.c - Manage processes within the runtime engine.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2011  Southern Storm Software, Pty Ltd.
  *
  * Contributions by Thong Nguyen (tum@veridicus.com)
  *
@@ -1075,7 +1075,7 @@ int ILExecProcessExecuteFileInternal(ILExecThread *thread,
 	args = ILExecProcessSetCommandLine(process, filename, argv);
 
 	/* Call the entry point */
-	if(args != 0 && !ILExecThreadHasException(thread))
+	if(args != 0 && !_ILExecThreadHasException(thread))
 	{
 		execValue.ptrValue = args;
 		ILMemZero(&retValue, sizeof(retValue));
@@ -1269,13 +1269,13 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 	thread = ILExecProcessGetMain(process);
 	mainArgs = ILExecThreadNew(thread, "[oSystem.String;",
 						       "(Ti)V", (ILVaInt)argc);
-	if(!mainArgs || ILExecThreadHasException(thread))
+	if(!mainArgs || _ILExecThreadHasException(thread))
 	{
 		return 0;
 	}
 	allArgs = ILExecThreadNew(thread, "[oSystem.String;",
 						      "(Ti)V", (ILVaInt)(argc + 1));
-	if(!allArgs || ILExecThreadHasException(thread))
+	if(!allArgs || _ILExecThreadHasException(thread))
 	{
 		return 0;
 	}
@@ -1289,7 +1289,7 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 	}
 	argString = ILStringCreate(thread, expanded);
 	ILFree(expanded);
-	if(!argString || ILExecThreadHasException(thread))
+	if(!argString || _ILExecThreadHasException(thread))
 	{
 		return 0;
 	}
@@ -1297,7 +1297,7 @@ ILObject *ILExecProcessSetCommandLine(ILExecProcess *process,
 	for(opt = 0; opt < argc; ++opt)
 	{
 		argString = ILStringCreate(thread, args[opt]);
-		if(!argString || ILExecThreadHasException(thread))
+		if(!argString || _ILExecThreadHasException(thread))
 		{
 			return 0;
 		}

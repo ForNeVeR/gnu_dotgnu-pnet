@@ -1,7 +1,7 @@
 /*
  * convert.c - Convert methods using a coder.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -517,7 +517,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 		{
 			case IL_CONVERT_VERIFY_FAILED:
 			{
-				ILExecThreadSetException
+				_ILExecThreadSetException
 					(thread, _ILSystemException(thread, 
 						"System.Security.VerificationException"));
 			}
@@ -525,7 +525,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 
 			case IL_CONVERT_ENTRY_POINT:
 			{
-				ILExecThreadSetException
+				_ILExecThreadSetException
 					(thread, _ILSystemException(thread, 
 						"System.EntryPointNotFoundException"));
 			}
@@ -533,7 +533,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 
 			case IL_CONVERT_NOT_IMPLEMENTED:
 			{
-				ILExecThreadSetException
+				_ILExecThreadSetException
 					(thread, _ILSystemException(thread, 
 						"System.NotImplementedException"));
 			}
@@ -547,7 +547,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 
 			case IL_CONVERT_TYPE_INIT:
 			{
-				ILExecThreadSetException
+				_ILExecThreadSetException
 					(thread, _ILSystemException(thread, 
 						"System.TypeInitializationException"));
 			}
@@ -564,7 +564,7 @@ unsigned char *_ILConvertMethod(ILExecThread *thread, ILMethod *method)
 						(ILObject *)ILStringCreate(thread, errorInfo));
 				}
 
-				ILExecThreadSetException(thread, obj);
+				_ILExecThreadSetException(thread, obj);
 			}
 			break;
 		}

@@ -1,7 +1,7 @@
 /*
  * pinvoke.c - Handle PInvoke and "internalcall" methods within the engine.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -453,8 +453,8 @@ void *_ILMakeCifForConstructor(ILExecProcess *process, ILMethod *method, int isI
 			do { \
 				if((stacktop + (nwords)) > stacklimit) \
 				{ \
-					thread->thrownException = _ILSystemException \
-						(thread, "System.StackOverflowException"); \
+					_ILExecThreadSetException(thread, _ILSystemException \
+						(thread, "System.StackOverflowException")); \
 					return 1; \
 				} \
 			} while (0)
@@ -614,7 +614,7 @@ static int PackDelegateParams(ILExecThread *thread, ILMethod *method,
 						(thread, *((void **)(*args)),
 						 customName, customNameLen,
 						 customCookie, customCookieLen);
-					if(ILExecThreadHasException(thread))
+					if(_ILExecThreadHasException(thread))
 					{
 						return 1;
 					}
@@ -972,7 +972,7 @@ static void _DelegateInvoke(ILDelegateInvokeParams *params)
 		prevParams.delegate = (System_Delegate *)(params->delegate->prev);
 ;
 		_DelegateInvoke(&prevParams);
-		if(ILExecThreadHasException(params->thread))
+		if(_ILExecThreadHasException(params->thread))
 		{
 			return;
 		}

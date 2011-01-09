@@ -1,7 +1,7 @@
 /*
  * engine.h - Core definitions for the runtime engine.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -585,6 +585,22 @@ struct _tagObjectHeader
 	volatile ILLockWord lockWord;
 #endif
 };
+
+/*
+ * Some internal shortcuts for public functions.
+ * No checks for the validity of arguments are done here so use them with care.
+ */
+
+/*
+ * Define the exception related macros.
+ */
+#define _ILExecThreadHasException(thread)	((thread)->thrownException != 0)
+#define _ILExecThreadClearException(thread)	((thread)->thrownException = 0)
+#define _ILExecThreadGetException(thread)	((thread)->thrownException)
+#define _ILExecThreadSetException(thread,except)	\
+			((thread)->thrownException = (except))
+#define _ILExecThreadSetOutOfMemoryException(thread)	\
+			((thread)->thrownException = (thread)->process->outOfMemoryObject)
 
 /* global accessor function to get the global engine object */
 ILExecEngine *ILExecEngineInstance(void);

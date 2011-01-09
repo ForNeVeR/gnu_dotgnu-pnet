@@ -1,7 +1,7 @@
 /*
  * ilrun.c - Command-line version of the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -562,7 +562,7 @@ int main(int argc, char *argv[])
 	if(error == IL_EXECUTE_ERR_EXCEPTION)
 	{
 		/* Print the top-level exception that occurred */
-		if(!ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
+		if(!ILExecThreadIsThreadAbortException(thread, _ILExecThreadGetException(thread)))
 		{		
 			ILExecThreadPrintException(thread);
 		}

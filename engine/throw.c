@@ -1,7 +1,7 @@
 /*
  * throw.c - External API's for throwing and managing exceptions.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,31 +28,31 @@ extern	"C" {
 
 int ILExecThreadHasException(ILExecThread *thread)
 {
-	return (thread->thrownException != 0);
+	return _ILExecThreadHasException(thread);
 }
 
 ILObject *ILExecThreadGetException(ILExecThread *thread)
 {
-	return thread->thrownException;
+	return _ILExecThreadGetException(thread);
 }
 
 void ILExecThreadClearException(ILExecThread *thread)
 {
-	thread->thrownException = 0;
+	_ILExecThreadClearException(thread);
 }
 
 void ILExecThreadSetException(ILExecThread *thread, ILObject *obj)
 {
-	thread->thrownException = obj;
+	_ILExecThreadSetException(thread, obj);
 }
 
 void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object);
 
 void ILExecThreadThrow(ILExecThread *thread, ILObject *object)
 {
-	if(!ILExecThreadHasException(thread))
+	if(!_ILExecThreadHasException(thread))
 	{
-		ILExecThreadSetException(thread, object);
+		_ILExecThreadSetException(thread, object);
 	}
 }
 
@@ -64,7 +64,7 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 	ILObject *object;
 
 	/* Bail out if there already is a pending exception or if the thread is aborting */
-	if(ILExecThreadHasException(thread))
+	if(_ILExecThreadHasException(thread))
 	{
 		return;
 	}
@@ -82,7 +82,7 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 			{
 				ILExecThreadCall(thread, method, &resourceString,
 								 resourceString);
-				if(ILExecThreadHasException(thread))
+				if(_ILExecThreadHasException(thread))
 				{
 					/* The string lookup threw an exception */
 					return;
@@ -102,9 +102,9 @@ void ILExecThreadThrowSystem(ILExecThread *thread, const char *typeName,
 		object = ILExecThreadNew(thread, typeName, "(T)V");
 	}
 	_ILSetExceptionStackTrace(thread, object);
-	if(!ILExecThreadHasException(thread))
+	if(!_ILExecThreadHasException(thread))
 	{
-		ILExecThreadSetException(thread, object);
+		_ILExecThreadSetException(thread, object);
 	}
 }
 
@@ -117,7 +117,7 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 	ILObject *object;
 
 	/* Bail out if there already is a pending exception or if the thread is aborting */
-	if(ILExecThreadHasException(thread))
+	if(_ILExecThreadHasException(thread))
 	{
 		return;
 	}
@@ -136,7 +136,7 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 				ILExecThreadCall(thread, method, &resourceString,
 								 resourceString);
 			}
-			if(ILExecThreadHasException(thread))
+			if(_ILExecThreadHasException(thread))
 			{
 				/* The string create or lookup threw an exception */
 				return;
@@ -146,7 +146,7 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 
 	/* Convert the parameter name into a string */
 	paramString = ILStringCreate(thread, paramName);
-	if(ILExecThreadHasException(thread))
+	if(_ILExecThreadHasException(thread))
 	{
 		/* The string create threw an exception */
 		return;
@@ -166,9 +166,9 @@ void ILExecThreadThrowArgRange(ILExecThread *thread, const char *paramName,
 								 paramString);
 	}
 	_ILSetExceptionStackTrace(thread, object);
-	if(!ILExecThreadHasException(thread))
+	if(!_ILExecThreadHasException(thread))
 	{
-		ILExecThreadSetException(thread, object);
+		_ILExecThreadSetException(thread, object);
 	}
 }
 
@@ -178,14 +178,14 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 	ILObject *object;
 
 	/* Bail out if there already is a pending exception or if the thread is aborting */
-	if(ILExecThreadHasException(thread))
+	if(_ILExecThreadHasException(thread))
 	{
 		return;
 	}
 
 	/* Convert the parameter name into a string */
 	paramString = ILStringCreate(thread, paramName);
-	if(ILExecThreadHasException(thread))
+	if(_ILExecThreadHasException(thread))
 	{
 		/* The string create threw an exception */
 		return;
@@ -195,19 +195,20 @@ void ILExecThreadThrowArgNull(ILExecThread *thread, const char *paramName)
 	object = ILExecThreadNew(thread, "System.ArgumentNullException",
 							 "(ToSystem.String;)V", paramString);
 	_ILSetExceptionStackTrace(thread, object);
-	if(!ILExecThreadHasException(thread))
+	if(!_ILExecThreadHasException(thread))
 	{
-		ILExecThreadSetException(thread, object);
+		_ILExecThreadSetException(thread, object);
 	}
 }
+
 void ILExecThreadThrowOutOfMemory(ILExecThread *thread)
 {
 	/* Note: Eventhough the exception maybe of OutOfMemory, this may
 	 * be an accidental error */
 	_ILSetExceptionStackTrace(thread, thread->process->outOfMemoryObject);
-	if(!ILExecThreadHasException(thread))
+	if(!_ILExecThreadHasException(thread))
 	{
-		ILExecThreadSetException(thread, thread->process->outOfMemoryObject);
+		_ILExecThreadSetException(thread, thread->process->outOfMemoryObject);
 	}
 }
 
@@ -251,8 +252,8 @@ void ILExecThreadPrintException(ILExecThread *thread)
 
 	/* Get the exception object from the thread.  If there is no object,
 	   then assume that memory is exhausted */
-	exception = ILExecThreadGetException(thread);
-	ILExecThreadClearException(thread);
+	exception = _ILExecThreadGetException(thread);
+	_ILExecThreadClearException(thread);
 	if(!exception)
 	{
 		exception = thread->process->outOfMemoryObject;
@@ -260,7 +261,7 @@ void ILExecThreadPrintException(ILExecThread *thread)
 
 	/* Attempt to use "ToString" to format the exception, but not
 	   if we know that the exception is reporting out of memory */
-	if(exception != thread->process->outOfMemoryObject)		
+	if(exception != thread->process->outOfMemoryObject)
 	{
 		str = ILObjectToString(thread, exception);
 		if(str != 0 && (ansistr = ILStringToAnsi(thread, str)) != 0)

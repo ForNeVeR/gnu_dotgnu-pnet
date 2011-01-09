@@ -1,7 +1,7 @@
 /*
  * lib_delegate.c - Delegate handling for the runtime engine.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2011  Southern Storm Software, Pty Ltd.
  *
  * Contributions:  Thong Nguyen (tum@veridicus.com)
  *
@@ -221,8 +221,8 @@ static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
 	{
 		if(stacktop >= thread->stackLimit)
 		{
-			thread->thrownException = _ILSystemException
-				(thread, "System.StackOverflowException");
+			_ILExecThreadSetException(thread, _ILSystemException
+				(thread, "System.StackOverflowException"));
 			return 1;
 		}
 		stacktop->ptrValue = _this;
@@ -232,8 +232,8 @@ static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
 	/* Push the parameter words */
 	if((stacktop + params->numWords) >= thread->stackLimit)
 	{
-		thread->thrownException = _ILSystemException
-			(thread, "System.StackOverflowException");
+		_ILExecThreadSetException(thread, _ILSystemException
+			(thread, "System.StackOverflowException"));
 		return 1;
 	}
 	/* Expand "float" and "double" parameters, because the frame variables
@@ -288,7 +288,7 @@ static void Delegate_Invoke(ILExecThread *thread,
 	if(((System_Delegate *)_this)->prev)
 	{
 		Delegate_Invoke(thread, result, ((System_Delegate *)_this)->prev);
-		if(ILExecThreadHasException(thread))
+		if(_ILExecThreadHasException(thread))
 		{
 			return;
 		}

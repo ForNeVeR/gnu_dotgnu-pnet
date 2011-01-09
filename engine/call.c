@@ -1,7 +1,7 @@
 /*
  * call.c - External interface for calling methods using the engine.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,8 +71,8 @@ extern	"C" {
 			do { \
 				if((stacktop + (nwords)) > stacklimit) \
 				{ \
-					thread->thrownException = _ILSystemException \
-						(thread, "System.StackOverflowException"); \
+					_ILExecThreadSetException(thread, _ILSystemException \
+						(thread, "System.StackOverflowException")); \
 					return 1; \
 				} \
 			} while (0)
@@ -1170,7 +1170,7 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	}
 
 	/* Clear the pending exception on entry to the method */
-	thread->thrownException = 0;
+	_ILExecThreadClearException(thread);
 
 	/* Convert the method into CVM bytecode */
 	pcstart = _ILConvertMethod(thread, method);
@@ -1185,8 +1185,8 @@ int _ILCallMethod(ILExecThread *thread, ILMethod *method,
 	{
 	    if((frame = _ILAllocCallFrame(thread)) == 0)
 		{
-			thread->thrownException = _ILSystemException
-				(thread, "System.StackOverflowException");
+			_ILExecThreadSetException(thread, _ILSystemException
+				(thread, "System.StackOverflowException"));
 			return 1;
 	    }
 	}

@@ -1,7 +1,7 @@
 /*
  * lib_object.c - Internalcall methods for "System.Object".
  *
- * Copyright (C) 2001, 2009  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2009, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -121,8 +121,8 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 
 	if(!classInfo)
 	{
-		thread->thrownException = _ILSystemException
-			(thread, "System.TypeInitializationException");
+		_ILExecThreadSetException(thread, _ILSystemException
+			(thread, "System.TypeInitializationException"));
 		return 0;
 	}
 
@@ -137,8 +137,8 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 		if(!_ILLayoutClass(_ILExecThreadProcess(thread), classInfo))
 		{
 			IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
-			thread->thrownException = _ILSystemException
-				(thread, "System.TypeInitializationException");
+			_ILExecThreadSetException(thread, _ILSystemException
+				(thread, "System.TypeInitializationException"));
 			return 0;
 		}
 		IL_METADATA_UNLOCK(_ILExecThreadProcess(thread));
@@ -151,8 +151,8 @@ ILObject *_ILGetClrType(ILExecThread *thread, ILClass *classInfo)
 			/* Create a new "ClrType" instance */
 			if(!(thread->process->clrTypeClass))
 			{
-				thread->thrownException = _ILSystemException
-					(thread, "System.TypeInitializationException");
+				_ILExecThreadSetException(thread, _ILSystemException
+					(thread, "System.TypeInitializationException"));
 				return 0;
 			}
 			obj = _ILEngineAllocObject(thread, thread->process->clrTypeClass);

@@ -1,7 +1,7 @@
 /*
  * cvm.c - Implementation of the "Converted Virtual Machine".
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1052,8 +1052,8 @@ static int unwind(ILExecThread *thread,
 	frame = thread->frame;
 	stacktop = thread->stackTop;
 	method = thread->method;
-	exception = thread->thrownException;
-	thread->thrownException = 0;
+	exception = _ILExecThreadGetException(thread);
+	_ILExecThreadClearException(thread);
 
 	threadIsAborting = 0;
 	/*
@@ -1334,7 +1334,7 @@ static int unwind(ILExecThread *thread,
 		/* Should we return to an external method? */
 		if(callFrame->pc == IL_INVALID_PC)
 		{
-			thread->thrownException = exception;
+			_ILExecThreadSetException(thread, exception);
 			COPY_STATE_TO_THREAD();
 			return _CVM_EXIT_EXCEPT;
 		}

@@ -1,7 +1,7 @@
 /*
  * thread.c - Manage threads within the runtime engine.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * Contributions from Thong Nguyen <tum@veridicus.com>
  *
@@ -316,7 +316,7 @@ int _ILExecThreadSelfAborting(ILExecThread *thread)
 			ILInterlockedAndU4(&(thread->managedSafePointFlags),
 							   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
 			thread->aborting = 1;
-			ILExecThreadSetException(thread, exception);
+			_ILExecThreadSetException(thread, exception);
 
 			return 0;
 		}
@@ -887,7 +887,7 @@ ILLocalWatch *_ILAllocLocalWatch(ILExecThread *thread)
 	if((watches = (ILLocalWatch *)ILGCAllocPersistent
 				(sizeof(ILLocalWatch) * newsize)) == 0)
 	{
-		thread->thrownException = thread->process->outOfMemoryObject;
+		_ILExecThreadSetOutOfMemoryException(thread);
 		return 0;
 	}
 

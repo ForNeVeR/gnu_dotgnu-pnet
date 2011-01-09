@@ -1,3 +1,33 @@
+2011-01-09  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/engine.h: Add macros for accessing the current thrown
+	exception in the ILExecThread structure.
+
+	* engine/throv.c (ILExecThreadHasException): Replace implementation
+	by the new internal macro.
+	(ILExecThreadGetException): Likewise.
+	(ILExecThreadClearException): Likewise.
+	(ILExecThreadSetException): Likewise.
+	Replace all calls to one of these functions with a call of the
+	corresponding macro.
+
+	* engine/call.c, engine/cctormgr.c, engine/convert.c: Replace all calls
+	to functions that access the ILExecThread's thrownException and direct
+	accesses to the ILExecThread's thrownException member with calls to the
+	corresponding new macro.
+
+	* engine/custom.c, engine/cvm.c, engine/cvm_call.c: Likewise.
+
+	* engine/cvm_conv.c, engine/cvm_except.c, engine/heap.c: Likewise.
+
+	* engine/ilrun.c, engine/jitc.c, engine/lib_crypt.c: Likewise.
+
+	* engine/lib_delegate.c, engine/lib_object.c: Likewise.
+
+	* engine/lib_thread.c, engine/lib_type.c, engine/pinvoke.c: Likewise.
+
+	* engine/process.c, engine/system.c, engine/thread.c: Likewise.
+
 2011-01-07  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm.c, engine/cvm_interrupts.c: Do some reformatting.

@@ -1,7 +1,7 @@
 /*
  * custom.c - Handle custom marshaling operations.
  *
- * Copyright (C) 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2003, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ static ILObject *GetMarshallingInstance(ILExecThread *thread,
  */
 static void ThrowCustomError(ILExecThread *thread)
 {
-	if(!ILExecThreadHasException(thread))
+	if(!_ILExecThreadHasException(thread))
 	{
 		ILExecThreadThrowSystem(thread, "System.InvalidOperationException", 0);
 	}

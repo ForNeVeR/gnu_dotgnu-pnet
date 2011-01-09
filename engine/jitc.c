@@ -1,7 +1,7 @@
 /*
  * jitc.c - Coder implementation for JIT output.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1547,7 +1547,7 @@ void ILRuntimeExceptionRethrow(ILObject *object)
 
 		if(thread)
 		{
-			thread->thrownException = object;
+			_ILExecThreadSetException(thread, object);
 			jit_exception_throw(object);
 		}
 	}
@@ -1566,7 +1566,7 @@ void ILRuntimeExceptionThrow(ILObject *object)
 
 		if(thread)
 		{
-			thread->thrownException = (ILObject *)exception;
+			_ILExecThreadSetException(thread, (ILObject *)exception);
 			exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
 			jit_exception_throw(exception);
 		}
@@ -1588,7 +1588,7 @@ void ILRuntimeExceptionThrowClass(ILClass *classInfo)
 	/* thrown an OutOfMenory exception then. */
 	if(thread)
 	{
-		thread->thrownException = (ILObject *)exception;
+		_ILExecThreadSetException(thread, (ILObject *)exception);
 		exception->stackTrace = _ILJitGetExceptionStackTrace(thread);
 		jit_exception_throw(exception);
 	}
@@ -1603,8 +1603,8 @@ void ILRuntimeExceptionThrowOutOfMemory()
 
 	if(thread)
 	{
-		thread->thrownException = thread->process->outOfMemoryObject;
-		jit_exception_throw(thread->thrownException);
+		_ILExecThreadSetOutOfMemoryException(thread);
+		jit_exception_throw(_ILExecThreadGetException(thread));
 		return;
 	}
 	jit_exception_builtin(JIT_RESULT_OUT_OF_MEMORY);
@@ -1619,7 +1619,7 @@ void ILRuntimeHandleManagedSafePointFlags(ILExecThread *thread)
 	{
 		if(_ILExecThreadSelfAborting(thread) == 0)
 		{
-			jit_exception_throw(thread->thrownException);
+			jit_exception_throw(_ILExecThreadGetException(thread));
 		}
 	}
 	else if(thread->managedSafePointFlags & _IL_MANAGED_SAFEPOINT_THREAD_SUSPEND)
@@ -2071,7 +2071,7 @@ void *_ILJitExceptionHandler(int exception_type)
 		}
 		break;
 	}
-	thread->thrownException = object;
+	_ILExecThreadSetException(thread, object);
 	return object;
 }
 

@@ -1,7 +1,7 @@
 /*
  * lib_crypt.c - Internalcall methods for the CryptoMethods class.
  *
- * Copyright (C) 2002  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2002, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -318,7 +318,7 @@ ILNativeInt _IL_CryptoMethods_HashNew(ILExecThread *_thread, ILInt32 algorithm)
 		}
 		/* Not reached */
 	}
-	ILExecThreadSetException(_thread,
+	_ILExecThreadSetException(_thread,
 			_ILSystemException(_thread, "System.NotImplementedException"));
 	return 0;
 }
@@ -623,7 +623,7 @@ ILNativeInt _IL_CryptoMethods_EncryptCreate(ILExecThread *_thread,
 		}
 		/* Not reached */
 	}
-	ILExecThreadSetException(_thread,
+	_ILExecThreadSetException(_thread,
 			_ILSystemException(_thread, "System.NotImplementedException"));
 	return 0;
 }

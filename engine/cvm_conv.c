@@ -1,7 +1,7 @@
 /*
  * cvm_conv.c - Opcodes for converting between data types.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -241,7 +241,7 @@ static void *RefArrayToC(ILExecThread *thread, void *ref,
 	{
 		*newArray = (void *)((*conv)
 			(thread, ((ILString **)(ArrayToBuffer(array)))[index]));
-		if(ILExecThreadHasException(thread))
+		if(_ILExecThreadHasException(thread))
 		{
 			return 0;
 		}

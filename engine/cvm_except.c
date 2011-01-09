@@ -1,7 +1,7 @@
 /*
  * cvm_except.c - Opcodes for handling exceptions.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -182,7 +182,7 @@ VMCASE(COP_PREFIX_THROW):
 	 */
 throwException:
 	/* Store the exception to the thread. */
-	thread->thrownException = tempptr;
+	_ILExecThreadSetException(thread, tempptr);
 	/*
 	 * Label that we jump to when the exception thrown is allready
 	 * stored in the thread's thrownException slot.
@@ -202,12 +202,10 @@ throwCurrentException:
 	 * managed barrier.
 	 */
 throwThreadAbortException:
+	COPY_STATE_TO_THREAD();
 	ILInterlockedAndU4(&(thread->managedSafePointFlags),
 					   ~_IL_MANAGED_SAFEPOINT_THREAD_ABORT);
-	tempptr = thread->thrownException;
-	thread->thrownException = 0;
-	COPY_STATE_TO_THREAD();
-	goto throwException;
+	goto throwCurrentException;
 
 	/*
 	 * Jump target to throw a NullReferenceException

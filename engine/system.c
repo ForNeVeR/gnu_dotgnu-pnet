@@ -1,7 +1,7 @@
 /*
  * system.c - functions and objects used by the runtime.
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -112,7 +112,7 @@ void _ILSetExceptionStackTrace(ILExecThread *thread, ILObject *object)
 	{
 		/* We ran out of memory while allocating the stack trace,
 		   but it isn't serious: we can just throw without the trace */
-		thread->thrownException = 0;
+		_ILExecThreadClearException(thread);
 	}
 }
 
@@ -139,16 +139,16 @@ void *_ILSystemExceptionWithClass(ILExecThread *thread, ILClass *classInfo)
 		if(!FindAndSetStackTrace(thread, object))
 		{
 			/* We ran out of memory: pick up the "OutOfMemoryException" */
-			object = thread->thrownException;
-			thread->thrownException = 0;
+			object = _ILExecThreadGetException(thread);
+			_ILExecThreadClearException(thread);
 		}
 #endif /* IL_CONFIG_REFLECTION && IL_CONFIG_DEBUG_LINES */
 	}
 	else
 	{
 		/* The system ran out of memory, so copy the "OutOfMemoryException" */
-		object = thread->thrownException;
-		thread->thrownException = 0;
+		object = _ILExecThreadGetException(thread);
+		_ILExecThreadClearException(thread);
 	}
 	return object;
 }

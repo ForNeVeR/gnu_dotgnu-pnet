@@ -1,7 +1,7 @@
 /*
  * lib_type.c - Internalcall methods for "Type" and related classes.
  *
- * Copyright (C) 2001, 2002, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2008, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -646,7 +646,7 @@ ILObject *_ILGetTypeFromImage(ILExecThread *thread,
 void _ILClrNotImplemented(ILExecThread *thread)
 {
 	/* Avoid re-entering the C# class library to create the exception */
-	ILExecThreadSetException
+	_ILExecThreadSetException
 		(thread, _ILSystemException(thread, "System.NotImplementedException"));
 }
 

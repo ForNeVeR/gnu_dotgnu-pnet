@@ -1,7 +1,7 @@
 /*
  * lib_thread.c - Internalcall methods for "System.Threading.*".
  *
- * Copyright (C) 2001, 2002, 2003  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2002, 2003, 2011  Southern Storm Software, Pty Ltd.
  *
  * Contributions from Thong Nguyen <tum@veridicus.com>
  *
@@ -193,8 +193,8 @@ static void __PrivateThreadStart(void *objectArg)
 		);
 
 	/* Print out any uncaught exceptions */
-	if (ILExecThreadHasException(thread)
-		&& !ILExecThreadIsThreadAbortException(thread, ILExecThreadGetException(thread)))
+	if (_ILExecThreadHasException(thread)
+		&& !ILExecThreadIsThreadAbortException(thread, _ILExecThreadGetException(thread)))
 	{				
 		ILExecThreadPrintException(thread);
 	}

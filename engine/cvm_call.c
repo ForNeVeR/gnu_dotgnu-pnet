@@ -1,7 +1,7 @@
 /*
  * cvm_call.c - Opcodes for performing calls to other methods.
  *
- * Copyright (C) 2001, 2008  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 	if((newframe = (ILCallFrame *)ILGCAllocPersistent
 				(sizeof(ILCallFrame) * newsize)) == 0)
 	{
-	    thread->thrownException = thread->process->outOfMemoryObject;
+	    _ILExecThreadSetOutOfMemoryException(thread);
 		return 0;
 	}
 	ILMemCpy(newframe, thread->frameStack,
@@ -90,7 +90,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 	return &(thread->frameStack[(thread->numFrames)++]);
 #else
 	/* We are not allowed to grow the frame stack */
-    thread->thrownException = thread->process->outOfMemoryObject;
+    _ILExecThreadSetOutOfMemoryException(thread);
 	return 0;
 #endif
 }
@@ -183,7 +183,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 				stacktop = thread->stackTop; \
 				frame = thread->frame; \
 				stackmax = thread->stackLimit; \
-				if(IL_EXPECT(thread->thrownException != 0, 0)) \
+				if(IL_EXPECT(_ILExecThreadGetException(thread) != 0, 0)) \
 				{ \
 					/* An exception occurred, which we now must handle */ \
 					goto throwCurrentException; \
@@ -192,7 +192,7 @@ ILCallFrame *_ILAllocCallFrame(ILExecThread *thread)
 #else
 #define	RESTORE_STATE_FROM_THREAD()	\
 			do { \
-				if(IL_EXPECT(thread->thrownException != 0, 0)) \
+				if(IL_EXPECT(_ILExecThreadGetException(thread) != 0, 0)) \
 				{ \
 					/* An exception occurred, which we now must handle */ \
 					goto throwCurrentException; \

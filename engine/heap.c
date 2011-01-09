@@ -1,7 +1,7 @@
 /*
  * heap.c - Heap routines for the runtime engine.
  *
- * Copyright (C) 2001, 2008, 2009  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2008, 2009, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,8 +46,8 @@ static int InitializeClass(ILExecThread *thread, ILClass *classInfo)
 	{
 		/* Throw a "TypeInitializationException" */
 		METADATA_UNLOCK(_ILExecThreadProcess(thread));
-		thread->thrownException = _ILSystemException
-			(thread, "System.TypeInitializationException");
+		_ILExecThreadSetException(thread, _ILSystemException
+			(thread, "System.TypeInitializationException"));
 		return 0;
 	}
 
@@ -165,7 +165,7 @@ void _ILFinalizeObject(void *block, void *data)
 		if(ILExecThreadCall(ILExecThreadCurrent(),
 							method, (void *)0, object))
 		{
-			ILExecThreadClearException(ILExecThreadCurrent());
+			_ILExecThreadClearException(ILExecThreadCurrent());
 		}
 	}
 	
@@ -210,7 +210,7 @@ ILObject *_ILEngineAlloc(ILExecThread *thread, ILClass *classInfo,
 		if(!ptr)
 		{
 			/* Throw an "OutOfMemoryException" */
-			thread->thrownException = thread->process->outOfMemoryObject;
+			_ILExecThreadSetOutOfMemoryException(thread);
 			return 0;
 		}
 
@@ -273,7 +273,7 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 		if(!ptr)
 		{
 			/* Throw an "OutOfMemoryException" */
-			thread->thrownException = thread->process->outOfMemoryObject;
+			_ILExecThreadSetOutOfMemoryException(thread);
 			return 0;
 		}
 		
@@ -330,7 +330,7 @@ ILObject *_ILEngineAllocTyped(ILExecThread *thread, ILClass *classInfo)
 	if(!ptr)
 	{
 		/* Throw an "OutOfMemoryException" */
-		thread->thrownException = thread->process->outOfMemoryObject;
+		_ILExecThreadSetOutOfMemoryException(thread);
 		return 0;
 	}
 		

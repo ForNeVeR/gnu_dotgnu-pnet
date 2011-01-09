@@ -1,7 +1,7 @@
 /*
  * cctormgr.c - Queue and execute class initializers (static constructors).
  *
- * Copyright (C) 2001  Southern Storm Software, Pty Ltd.
+ * Copyright (C) 2001, 2011  Southern Storm Software, Pty Ltd.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -511,19 +511,20 @@ static int _ILCCtorMgr_QueueClass(ILCCtorMgr *cctorMgr,
  */
 static void _ILCCtorMgr_ThrowTypeInitializationException(ILExecThread *thread)
 {
-	ILObject *exception = ILExecThreadGetException(thread);
+	ILObject *exception;
 
+	exception = _ILExecThreadGetException(thread);
 	if(exception)
 	{
 		ILObject *typeInitializationException = 0;
 
-		ILExecThreadClearException(thread);
+		_ILExecThreadClearException(thread);
 
 		ILExecThreadThrowSystem(thread,
 								"System.TypeInitializationException",
 								 0);
 
-		typeInitializationException = ILExecThreadGetException(thread);
+		typeInitializationException = _ILExecThreadGetException(thread);
 		if(typeInitializationException)
 		{
 			/* Set the inner exception thrown by the class initializer. */

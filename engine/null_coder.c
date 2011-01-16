@@ -45,7 +45,9 @@ static unsigned long Coder_GetCacheSize(ILCoder *coder)
 	return 0;
 }
 static int Coder_Setup(ILCoder *coder, unsigned char **start,
-					   ILMethod *method, ILMethodCode *code)
+					   ILMethod *method, ILMethodCode *code,
+					   ILCoderExceptions *coderExceptions,
+					   int hasRethrow)
 {
 	return 1;
 }
@@ -336,11 +338,6 @@ static void Coder_LoadVirtualAddr(ILCoder *coder, ILMethod *methodInfo)
 static void Coder_LoadInterfaceAddr(ILCoder *coder, ILMethod *methodInfo)
 {
 }
-static void Coder_SetupExceptions(ILCoder *coder,
-								  ILCoderExceptions *exceptions,
-								  int hasRethrow)
-{
-}
 static void Coder_Throw(ILCoder *coder, int inCurrentMethod)
 {
 }
@@ -541,7 +538,6 @@ ILCoderClass const _ILNullCoderClass = {
 	Coder_LoadFuncAddr,
 	Coder_LoadVirtualAddr,
 	Coder_LoadInterfaceAddr,
-	Coder_SetupExceptions,
 	Coder_Throw,
 	Coder_SetStackTrace,
 	Coder_Rethrow,

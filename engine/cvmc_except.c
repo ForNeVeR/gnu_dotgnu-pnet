@@ -19,23 +19,21 @@
  */
 #include "cvm_format.h"
 
-#ifdef IL_CVMC_CODE
+#ifdef IL_CVMC_FUNCTIONS
 
 /*
- * Set up exception handling for the current method.
+ * Allocate extra local variables needed for exception handling.
  */
-static void CVMCoder_SetupExceptions(ILCoder *_coder, ILCoderExceptions *exceptions,
-									 int hasRethrow)
+static void CVMEntrySetupExceptions(CVMEntryContext *ctx, ILCVMCoder *coder,
+									ILCoderExceptions *exceptions)
 {
-	ILCVMCoder *coder = (ILCVMCoder *)_coder;
-	ILCoderExceptionBlock *exception;
-	ILUInt32 index;
-	ILUInt32 extraLocals;
-
-
-	extraLocals = 0;
 	if(exceptions->numBlocks > 0)
 	{
+		ILCoderExceptionBlock *exception;
+		ILUInt32 index;
+		ILUInt32 offset;
+
+		offset = ctx->numLocalWords + ctx->numArgWords;
 		index = 0;
 		while(index < exceptions->numBlocks)
 		{
@@ -45,46 +43,20 @@ static void CVMCoder_SetupExceptions(ILCoder *_coder, ILCoderExceptions *excepti
 			{
 				if(exception->un.handlerBlock.tryBlock->userData == IL_MAX_UINT32)
 				{
-					exception->un.handlerBlock.tryBlock->userData = extraLocals + coder->minHeight;
-					++extraLocals;
+					exception->un.handlerBlock.tryBlock->userData = offset;
+					++offset;
 				}
 				exception->userData = exception->un.handlerBlock.tryBlock->userData;
 			}
-			else
-			{
-				/*
-				 * TODO: Look for the first parent catch block and use it's exception slot
-				 */
-			}
 			++index;
 		}
-		if(extraLocals == 1)
-		{
-			CVM_OUT_NONE(COP_MK_LOCAL_1);
-		}
-		else if(extraLocals == 2)
-		{
-			CVM_OUT_NONE(COP_MK_LOCAL_2);
-		}
-		else if(extraLocals == 3)
-		{
-			CVM_OUT_NONE(COP_MK_LOCAL_3);
-		}
-		else if(extraLocals != 0)
-		{
-			CVM_OUT_WIDE(COP_MK_LOCAL_N, extraLocals);
-		}
-		coder->height += extraLocals;
-		coder->minHeight += extraLocals;
-		coder->maxHeight += extraLocals;
+		ctx->numLocalWords = offset - ctx->numArgWords;
 	}
-
-	/* Start the method's primary exception region here */
-	ILCacheNewRegion(&(coder->codePosn), (void *)0);
-
-	/* Set up the method's frame to perform exception handling */
-	coder->needTry = 1;
 }
+
+#endif
+
+#ifdef IL_CVMC_CODE
 
 /*
  * Output a throw instruction.

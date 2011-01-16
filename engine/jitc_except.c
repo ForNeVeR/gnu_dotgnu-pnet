@@ -285,22 +285,19 @@ static jit_label_t *GetNextTryBlockStartLabel(ILCoderExceptions *coderExceptions
 	return GetNextParentHandlerLabel(coderExceptions, coderException);
 }
 
-#endif	/* IL_JITC_FUNCTIONS */
-
-#ifdef IL_JITC_CODE
-
 /*
  * Set up exception handling for the current method.
  */
-static void JITCoder_SetupExceptions(ILCoder *_coder,
-									 ILCoderExceptions *exceptions,
-									 int hasRethrow)
+static void SetupExceptions(ILJITCoder *jitCoder,
+							ILCoderExceptions *exceptions,
+							int hasRethrow)
 {
-	ILJITCoder *jitCoder = _ILCoderToILJITCoder(_coder);
 	ILJitValue nullPointer;
 	ILJitValue nullInt32;
 	int currentException;
 	int currentCatchBlock;
+	jit_label_t startLabel;
+	jit_label_t endLabel;
 
 	if(exceptions->numBlocks == 0)
 	{
@@ -319,14 +316,16 @@ static void JITCoder_SetupExceptions(ILCoder *_coder,
 	}
 #endif
 
-	/* Setup the jit function to handle exceptions. */
-	jit_insn_uses_catcher(jitCoder->jitFunction);
-	jitCoder->nextBlock = jit_label_undefined;
-	jitCoder->rethrowBlock = jit_label_undefined;
-
 	/*
 	 * Initialize the values needed for exception handling.
 	 */
+	startLabel = jit_label_undefined;
+	endLabel = jit_label_undefined;
+	if(!jit_insn_label(jitCoder->jitFunction, &startLabel))
+	{
+		return;
+	}
+
 	nullPointer = jit_value_create_nint_constant(jitCoder->jitFunction,
 												 _IL_JIT_TYPE_VPTR,
 												 (jit_nint)0);
@@ -338,7 +337,32 @@ static void JITCoder_SetupExceptions(ILCoder *_coder,
 	jitCoder->abortBlock = jit_value_create(jitCoder->jitFunction, _IL_JIT_TYPE_INT32);
 	jit_insn_store(jitCoder->jitFunction, jitCoder->abortBlock, nullInt32);
 	jitCoder->aborting = jit_value_create(jitCoder->jitFunction, _IL_JIT_TYPE_INT32);
-	jit_insn_store(jitCoder->jitFunction, jitCoder->abortBlock, nullInt32);
+	jit_insn_store(jitCoder->jitFunction, jitCoder->aborting, nullInt32);
+
+	/*
+	 * Create a new block for the end label. This should be done
+	 * by jit_insn_label anyways but it doesn't hurt.
+	 */
+	if(!jit_insn_new_block(jitCoder->jitFunction))
+	{
+		return;
+	}
+
+	if(!jit_insn_label(jitCoder->jitFunction, &endLabel))
+	{
+		return;
+	}
+
+	if(!jit_insn_move_blocks_to_start(jitCoder->jitFunction, startLabel,
+									  endLabel))
+	{
+		return;
+	}
+
+	/* Setup the jit function to handle exceptions. */
+	jit_insn_uses_catcher(jitCoder->jitFunction);
+	jitCoder->nextBlock = jit_label_undefined;
+	jitCoder->rethrowBlock = jit_label_undefined;
 
 	/*
 	 * Setup the labels for the entries of the exception blocks.
@@ -453,6 +477,10 @@ static void JITCoder_SetupExceptions(ILCoder *_coder,
 		++currentException;
 	}
 }
+
+#endif	/* IL_JITC_FUNCTIONS */
+
+#ifdef IL_JITC_CODE
 
 /*
  * Output a throw instruction.
@@ -626,7 +654,12 @@ static void JITCoder_LeaveCatch(ILCoder *coder,
 								  jit_type_sys_int);
 	label1 = jit_label_undefined;
 	jit_insn_branch_if_not(jitCoder->jitFunction, temp, &label1);
-	/* If it still aborting then rethrow the thread abort exception. */
+	/* If it still aborting then reset the aborting flag */
+	temp = jit_value_create_nint_constant(jitCoder->jitFunction,
+										  _IL_JIT_TYPE_INT32,
+										 0);
+	jit_insn_store(jitCoder->jitFunction, jitCoder->aborting, temp);
+	/* and rethrow the thread abort exception. */
 	jit_insn_call_native(jitCoder->jitFunction,
 						 "ILRuntimeExceptionRethrow",
 						 ILRuntimeExceptionRethrow,
@@ -679,46 +712,39 @@ static void JITCoder_OutputExceptionTable(ILCoder *coder,
 							offsetof(ILExecThread, thrownException),
 							nullException);
 
-
 	temp = jit_value_create_nint_constant(jitCoder->jitFunction,
 										  _IL_JIT_TYPE_INT32, 0);
 	newAbortException = jit_value_create(jitCoder->jitFunction,
 										 _IL_JIT_TYPE_INT32);
 	jit_insn_store(jitCoder->jitFunction, newAbortException, temp);
 
-	/* Check if we have to handle a new thread abort. */
+	/* Check if we have to handle a thread abort. */
 	label = jit_label_undefined;
 	/*
-	 * First check if we are not alteady handling a thread abort.
+	 * First check if we are not allready handling a thread abort.
 	 */
-	jit_insn_branch_if_not(jitCoder->jitFunction,
-						   jitCoder->aborting,
-						   &label);
+	jit_insn_branch_if(jitCoder->jitFunction, jitCoder->aborting, &label);
+	/*
+	 * If we dont handle a thread abort check if the thread is aborting.
+	 */
 	temp = jit_insn_load_relative(jitCoder->jitFunction, thread,
 								  offsetof(ILExecThread, aborting),
 								  jit_type_sys_int);
-	/*
-	 * Then check if the thread is aborting.
-	 */
 	jit_insn_branch_if_not(jitCoder->jitFunction,
 						   temp, &label);
 	/*
-	 * Check if the exception is a threadAbortException.
+	 * If the thread is aborting check if the exception is a threadAbortException.
 	 */
 	threadAbortExceptionClass = jit_value_create_nint_constant(jitCoder->jitFunction,
 															   _IL_JIT_TYPE_VPTR,
 															   (jit_nint)jitCoder->process->threadAbortClass);
-
-	/* Get the class of the current exception */
 	exceptionClass = _ILJitGetObjectClass(jitCoder->jitFunction, exceptionObject);
-
-	/* Is the class not the ThreadAbortException class ? */
-	temp = jit_insn_ne(jitCoder->jitFunction,
+	temp = jit_insn_eq(jitCoder->jitFunction,
 					   exceptionClass,
 					   threadAbortExceptionClass);
 
 	/* If it's not then this exception is thrown while handling an abort. */
-	jit_insn_branch_if(jitCoder->jitFunction, temp, &label);
+	jit_insn_branch_if_not(jitCoder->jitFunction, temp, &label);
 
 	/* Otherwise store the current exception object for later use */
 	jit_insn_store(jitCoder->jitFunction, jitCoder->threadAbortException, exceptionObject);
@@ -804,7 +830,8 @@ static void JITCoder_OutputExceptionTable(ILCoder *coder,
 			currentExceptionBlock = jit_value_create_nint_constant(jitCoder->jitFunction,
 																   _IL_JIT_TYPE_INT32,
 																   currentCoderException->userData);
-			jit_insn_store(jitCoder->jitFunction, jitCoder->abortBlock, currentExceptionBlock);
+			jit_insn_store(jitCoder->jitFunction, jitCoder->abortBlock,
+						   currentExceptionBlock);
 			jit_insn_label(jitCoder->jitFunction, &label);
 			coderException = currentCoderException->un.tryBlock.handlerBlock;
 			while(coderException)
@@ -863,7 +890,8 @@ static void JITCoder_OutputExceptionTable(ILCoder *coder,
 														   ILRuntimeCanCastClass,
 														   _ILJitSignature_ILRuntimeCanCastClass,
 														   args, 3, JIT_CALL_NOTHROW);
-						jit_insn_branch_if_not(jitCoder->jitFunction, returnValue, notHandledLabel);
+						jit_insn_branch_if_not(jitCoder->jitFunction,
+											   returnValue, notHandledLabel);
 						/*
 						 * Save the current exception for a possible rethrow.
 						 */
@@ -906,7 +934,8 @@ static void JITCoder_OutputExceptionTable(ILCoder *coder,
 			currentExceptionBlock = jit_value_create_nint_constant(jitCoder->jitFunction,
 																   _IL_JIT_TYPE_INT32,
 																   currentCoderException->userData);
-			temp = jit_insn_eq(jitCoder->jitFunction, jitCoder->abortBlock, currentExceptionBlock);
+			temp = jit_insn_eq(jitCoder->jitFunction, jitCoder->abortBlock,
+							   currentExceptionBlock);
 			jit_insn_branch_if_not(jitCoder->jitFunction, temp, &label);
 			/*
 			 * The thread abort was last handled here.
@@ -926,7 +955,8 @@ static void JITCoder_OutputExceptionTable(ILCoder *coder,
 			/*
 			 * And set the new thread abort again.
 			 */
-			temp = jit_value_create_nint_constant(jitCoder->jitFunction, _IL_JIT_TYPE_INT32, 1);
+			temp = jit_value_create_nint_constant(jitCoder->jitFunction,
+												  _IL_JIT_TYPE_INT32, 1);
 			jit_insn_store(jitCoder->jitFunction, newAbortException, temp);
 			jit_insn_branch(jitCoder->jitFunction, &label);
 			jit_insn_label(jitCoder->jitFunction, &label1);
@@ -979,9 +1009,21 @@ static void JITCoder_OutputExceptionTable(ILCoder *coder,
 	/*
 	 * Restore the thrown exception and throw it to the caller.
 	 */
+	label = jit_label_undefined;
+	label1 = jit_label_undefined;
+	/*
+	 * If the thread is aborting then rethrow the thread_abort_exception.
+	 */
+	jit_insn_branch_if_not(jitCoder->jitFunction, jitCoder->aborting, &label);
+	jit_insn_store_relative(jitCoder->jitFunction, thread,
+							offsetof(ILExecThread, thrownException),
+							jitCoder->threadAbortException);
+	jit_insn_branch(jitCoder->jitFunction, &label1);
+	jit_insn_label(jitCoder->jitFunction, &label);
 	jit_insn_store_relative(jitCoder->jitFunction, thread,
 							offsetof(ILExecThread, thrownException),
 							exceptionObject);
+	jit_insn_label(jitCoder->jitFunction, &label1);
 	jit_insn_rethrow_unhandled(jitCoder->jitFunction);
 }
 

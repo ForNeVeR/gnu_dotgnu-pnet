@@ -1160,7 +1160,7 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 		}
 		if(isSynchronized)
 		{
-			/* We'll need an extra try and flnally block for synchronization */
+			/* We'll need an extra try and fault block for synchronization */
 			++numHandlers;
 		}
 		/*
@@ -1270,17 +1270,6 @@ restart:
 
 	/* Reset the prefix information */
 	ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
-
-	/* Set up the coder to process the method */
-	if(!ILCoderSetup(coder, start, method, code))
-	{
-		VERIFY_MEMORY_ERROR();
-	}
-
-	if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
-	{
-		ILCoderProfileStart(coder);
-	}
 
 	/* Allocate the jump target mask */
 	jumpMask = (unsigned long *)TempAllocate
@@ -1562,10 +1551,15 @@ restart:
 		numLocals = 0;
 	}
 
-	/* Set up for exception handling if necessary */
-	if(exceptions || isSynchronized)
+	/* Set up the coder to process the method */
+	if(!ILCoderSetup(coder, start, method, code, &coderExceptions, hasRethrow))
 	{
-		ILCoderSetupExceptions(coder, &coderExceptions, hasRethrow);
+		VERIFY_MEMORY_ERROR();
+	}
+
+	if((coderFlags & IL_CODER_FLAG_METHOD_PROFILE) != 0)
+	{
+		ILCoderProfileStart(coder);
 	}
 
 	/* Verify the code */

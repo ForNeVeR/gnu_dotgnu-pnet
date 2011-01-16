@@ -69,7 +69,6 @@ struct _tagILCVMCoder
 	ILCachePosn		codePosn;
 	unsigned char  *start;
 	unsigned char  *stackCheck;
-	int				needTry;
 	unsigned char  *tryHandler;
 	long			height;
 	long			minHeight;
@@ -101,6 +100,10 @@ struct _tagILCVMCoder
 	int		frameOffset;
 #endif
 };
+
+#define	IL_CVMC_DECLARATIONS
+#include "cvmc_setup.c"
+#undef	IL_CVMC_DECLARATIONS
 
 /*
  * Convert a pointer to an ILCoder to a pointer to the ILCVMVoder instance
@@ -152,6 +155,11 @@ static ILUInt32 GetStackTypeSize(ILExecProcess *process, ILType *type)
 	return (size + sizeof(CVMWord) - 1) / sizeof(CVMWord);
 }
 
+#define IL_CVMC_FUNCTIONS
+#include "cvmc_setup.c"
+#include "cvmc_except.c"
+#undef IL_CVMC_FUNCTIONS
+
 /*
  * Create a new CVM coder instance.
  */
@@ -177,7 +185,6 @@ static ILCoder *CVMCoder_Create(ILExecProcess *process, ILUInt32 size,
 	}
 	coder->start = 0;
 	coder->stackCheck = 0;
-	coder->needTry = 0;
 	coder->tryHandler = 0;
 	coder->height = 0;
 	coder->minHeight = 0;
@@ -587,7 +594,6 @@ ILCoderClass const _ILCVMCoderClass =
 	CVMCoder_LoadFuncAddr,
 	CVMCoder_LoadVirtualAddr,
 	CVMCoder_LoadInterfaceAddr,
-	CVMCoder_SetupExceptions,
 	CVMCoder_Throw,
 	CVMCoder_SetStackTrace,
 	CVMCoder_Rethrow,

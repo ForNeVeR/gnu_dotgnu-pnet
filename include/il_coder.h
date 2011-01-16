@@ -293,7 +293,9 @@ struct _tagILCoderClass
 	 * returned in "*start".
 	 */
 	int (*setup)(ILCoder *coder, unsigned char **start,
-				 ILMethod *method, ILMethodCode *code);
+				 ILMethod *method, ILMethodCode *code,
+				 ILCoderExceptions *coderExceptions,
+				 int hasRethrow);
 
 	/*
 	 * Set up a coder instance for processing a specific external method.
@@ -760,12 +762,6 @@ struct _tagILCoderClass
 	void (*loadInterfaceAddr)(ILCoder *coder, ILMethod *methodInfo);
 
 	/*
-	 * Set up exception handling for the current method.
-	 */
-	void (*setupExceptions)(ILCoder *coder, ILCoderExceptions *coderExceptions,
-							int hasRethrow);
-
-	/*
 	 * Throw an exception.  If "inCurrentMethod" is non-zero,
 	 * then there is a catch block in the current method that
 	 * surrounds the current code position.  If "inCurrentMethod"
@@ -981,8 +977,10 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->alloc))((coder), (size)))
 #define	ILCoderGetCacheSize(coder)	\
 			((*((coder)->classInfo->getCacheSize))((coder)))
-#define	ILCoderSetup(coder,start,method,code) \
-			((*((coder)->classInfo->setup))((coder), (start), (method), (code)))
+#define	ILCoderSetup(coder,start,method,code,exceptions,hasRethrow) \
+			((*((coder)->classInfo->setup))((coder), (start), (method), \
+											(code), (exceptions), \
+											(hasRethrow)))
 #define	ILCoderSetupExtern(coder,start,method,fn,cif,isInternal) \
 			((*((coder)->classInfo->setupExtern))((coder), (start), (method), \
 												  (fn), (cif), (isInternal)))
@@ -1190,9 +1188,6 @@ struct _tagILCoderClass
 			((*((coder)->classInfo->loadVirtualAddr))((coder), (methodInfo)))
 #define	ILCoderLoadInterfaceAddr(coder,methodInfo) \
 			((*((coder)->classInfo->loadInterfaceAddr))((coder), (methodInfo)))
-#define	ILCoderSetupExceptions(coder,exceptions,hasRethrow) \
-			((*((coder)->classInfo->setupExceptions))((coder), (exceptions), \
-													  (hasRethrow)))
 #define	ILCoderThrow(coder,inCurrent) \
 			((*((coder)->classInfo->throwException))((coder), (inCurrent)))
 #define	ILCoderSetStackTrace(coder) \

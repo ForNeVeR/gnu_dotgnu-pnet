@@ -5150,7 +5150,6 @@ ILCoderClass const _ILJITCoderClass =
 	JITCoder_LoadFuncAddr,
 	JITCoder_LoadVirtualAddr,
 	JITCoder_LoadInterfaceAddr,
-	JITCoder_SetupExceptions,
 	JITCoder_Throw,
 	JITCoder_SetStackTrace,
 	JITCoder_Rethrow,

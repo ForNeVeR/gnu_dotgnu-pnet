@@ -1,3 +1,47 @@
+2011-01-16  Klaus Treichel  <ktreichel@web.de>
+
+	* include/il_coder.h: Add ILCoderExceptions and hasRethrow arguments
+	to the coder setup function. This function has to setup the exception
+	handling now too.
+	Remove the setupExceptions function.
+
+	* engine/cvmc.c: Remove the unused needTry member fron the cvm coder.
+	Introduce the IL_CVMC_DECLARATIONS and IL_CVMC_FUNCTIONS defines to
+	allow inclusion of parts of coder sources at defined places.
+	Remove CVMCoder_SetupExceptions from the cvm coder instance.
+
+	* engine/cvmc_except.c (CVMCoder_SetupExceptions): Rename function to
+	CVMEntrySetupExceptions and add only the locals needed to the
+	CVMEntryContext.
+
+	* engine/cvmc_setup.c (CVMCoder_Setup): Call CVMEntrySetupExceptions
+	after allocating the locals so that the space for locals and excepion
+	slots will be allocated with one operation.
+	Create the cache region now in this function too if there are any
+	exception blocks.
+
+	* engine/jitc.c: Remove JITCoder_SetupExceptions from the jit coder
+	instance.
+
+	* engine/jitc_except.c (JITCoder_SetupExceptions): Rename to
+	SetupExceptions.
+	Move block with initialization of the values needed for exception
+	handling to the start of the function.
+	(JITCoder_LeaveCatch): Reset the flag for handling of a thread abort
+	now before rethrowing the thread abort exception.
+	(JITCoder_OutputExceptionTable): Fix the handling of a thread abort.
+
+	* engine/jitc_setup.c (JITCoder_Setup): Add call to SetupExceptions.
+
+	* engine/null_coder.c (Coder_Setup): Add new arguments.
+	(Coder_SetupExceptions): Remove.
+	Remove Coder_SetupExceptions from the null coder instance.
+
+	* engine/verify.c (_ILVerify): Move calls to ILCoderSetup and
+	ILCoderProfileStart just before the start code verification after
+	coder exception setup and label verification is done.
+	Remove the call to ILCoderSetupExceptions.
+
 2011-01-09  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/engine.h: Add macros for accessing the current thrown

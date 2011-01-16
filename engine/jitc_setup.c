@@ -24,7 +24,9 @@
  * Set up a JIT coder instance to process a specific method.
  */
 static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
-						  ILMethod *method, ILMethodCode *code)
+						  ILMethod *method, ILMethodCode *code,
+						  ILCoderExceptions *coderExceptions,
+						  int hasRethrow)
 {
 	ILJITCoder *coder = ((ILJITCoder *)_coder);
 #ifdef IL_DEBUGGER
@@ -115,6 +117,9 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 
 	/* Reset the isInCatcher flag. */
 	coder->isInCatcher = 0;
+
+	/* Setup exception handling */
+	SetupExceptions(coder, coderExceptions, hasRethrow);
 
 	return 1;
 }

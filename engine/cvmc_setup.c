@@ -18,7 +18,30 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifdef IL_CVMC_CODE
+
+#ifdef IL_CVMC_DECLARATIONS
+
+/*
+ * Context structure for outputting entry point code.
+ */
+typedef struct _tagCVMEntryContext
+{
+	ILUInt32	thisAdjust;			/* Value to adjust for "this" words */
+	ILUInt32	numArgWords;		/* Number of argument words */
+	ILUInt32	numLocals;			/* Number of declared local variables */
+	ILUInt32	numLocalWords;		/* Number of declared local words */
+	ILUInt32	extraLocals;		/* Extra locals for special purposes */
+	ILUInt32	extraOffset;		/* Allocation offset for extra locals */
+	int			firstExtraIsTop;	/* First extra is top-most on stack */
+	int			nativeArg;			/* Current native argument */
+	ILUInt32	nativeArgWords;		/* Number of native arguments on stack */
+	ILUInt32	returnOffset;		/* Offset of native return value */
+
+} CVMEntryContext;
+
+#endif
+
+#ifdef IL_CVMC_FUNCTIONS
 /*#define DONT_UNROLL_SYSTEM */
 
 /*
@@ -60,24 +83,6 @@
 					coder->maxLocals = temp; \
 				} \
 			} while (0)
-
-/*
- * Context structure for outputting entry point code.
- */
-typedef struct _tagCVMEntryContext
-{
-	ILUInt32	thisAdjust;			/* Value to adjust for "this" words */
-	ILUInt32	numArgWords;		/* Number of argument words */
-	ILUInt32	numLocals;			/* Number of declared local variables */
-	ILUInt32	numLocalWords;		/* Number of declared local words */
-	ILUInt32	extraLocals;		/* Extra locals for special purposes */
-	ILUInt32	extraOffset;		/* Allocation offset for extra locals */
-	int			firstExtraIsTop;	/* First extra is top-most on stack */
-	int			nativeArg;			/* Current native argument */
-	ILUInt32	nativeArgWords;		/* Number of native arguments on stack */
-	ILUInt32	returnOffset;		/* Offset of native return value */
-
-} CVMEntryContext;
 
 /*
  * Initialize an entry context.
@@ -1238,11 +1243,16 @@ static void CVMEntryCallNative(CVMEntryContext *ctx, ILCVMCoder *coder,
 	}
 }
 
+#endif /* IL_CVMC_FUNCTIONS */
+
+#ifdef IL_CVMC_CODE
+
 /*
  * Set up a CVM coder instance to process a specific method.
  */
 static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
-						  ILMethod *method, ILMethodCode *code)
+						  ILMethod *method, ILMethodCode *code,
+						  ILCoderExceptions *exceptions, int hasRethrow)
 {
 	ILCVMCoder *coder = ((ILCVMCoder *)_coder);
 	ILType *signature = ILMethod_Signature(method);
@@ -1266,6 +1276,9 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 		return 0;
 	}
 
+	/* Allocate locals needed for exception handling */
+	CVMEntrySetupExceptions(&ctx, coder, exceptions);
+
 #ifdef IL_DEBUGGER
 	/* Check if this method can be debugged */
 	debugger = ILDebuggerFromProcess(coder->process);
@@ -1276,8 +1289,17 @@ static int CVMCoder_Setup(ILCoder *_coder, unsigned char **start,
 	ILCCtorMgr_SetCurrentMethod(&(coder->cctorMgr), method);
 
 	/* Generate the entry point code */
-	return CVMEntryGen(&ctx, coder, method, signature,
-					   ILMethod_IsConstructor(method), 1, start, 1);
+	if(CVMEntryGen(&ctx, coder, method, signature,
+				   ILMethod_IsConstructor(method), 1, start, 1))
+	{
+		if(exceptions->numBlocks > 0)
+		{
+			/* Start the method's primary exception region here */
+			ILCacheNewRegion(&(coder->codePosn), (void *)0);
+		}
+		return 1;
+	}
+	return 0;
 }
 
 /*

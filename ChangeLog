@@ -1,3 +1,7 @@
+2011-02-28  Klaus Treichel  <ktreichel@web.de>
+
+	* configure.in: Add $(EXEEXT) to the executables in CSANT_FLAGS.
+
 2010-07-19  Heiko Weiss  <heiko.weiss@de.trumpf.com>
 	
 	* System.Windows.Forms/TextBox.cs: implemented CharacterCasing

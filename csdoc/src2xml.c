@@ -59,7 +59,7 @@ static void Convert(const char *filename)
 		while(buffer[temp] != '\0' && isspace(buffer[temp]))
 			++temp;
 		if(temp > 0)
-			strcpy(buffer, buffer + temp);
+			memmove(buffer, buffer + temp, strlen(buffer + temp) + 1);
 		temp = strlen(buffer);
 		while(temp > 0 && isspace(buffer[temp - 1]))
 			--temp;
@@ -78,7 +78,7 @@ static void Convert(const char *filename)
 				  (isspace(buffer[temp]) || buffer[temp] == '*'))
 				++temp;
 			if(temp > 0)
-				strcpy(buffer, buffer + temp);
+				memmove(buffer, buffer + temp, strlen(buffer + temp) + 1);
 			puts(buffer);
 			continue;
 		}

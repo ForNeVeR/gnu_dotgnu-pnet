@@ -1,3 +1,12 @@
+2011-02-28  Klaus Treichel  <ktreichel@web.de>
+
+	* csdoc/src2xml.c (Convert): Use memmove instead of strcpy to move
+	the contents of the text buffer because strcpy's behavior is undefined
+	if the regions overlap.
+
+	* cscc/Makefile.am: Use libtool for installing the programs to fix
+	install problems where the actual binary is in the .libs directory.
+
 2011-01-16  Klaus Treichel  <ktreichel@web.de>
 
 	* include/il_coder.h: Add ILCoderExceptions and hasRethrow arguments

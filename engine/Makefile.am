@@ -105,6 +105,8 @@ libILEngine_a_SOURCES = cctormgr.c \
 						cvm.c \
 						box.c \
 						call.c \
+						coder.c \
+						coder.h \
 						convert.c \
 						custom.c \
 						cvm_dasm.c \

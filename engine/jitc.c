@@ -372,11 +372,6 @@ static ILJitType _ILJitSignature_ILJitTraceInOut = 0;
  */
 static void *JITCoder_HandleLockedMethod(ILCoder *coder, ILMethod *method);
 
-/*
- * Forward declaration of the JIT coder's instance block.
- */
-typedef struct _tagILJITCoder ILJITCoder;
-
 #define	IL_JITC_DECLARATIONS
 #include "jitc_locals.c"
 #include "jitc_stack.c"
@@ -392,38 +387,6 @@ typedef struct _tagILJITCoder ILJITCoder;
 #include "jitc_profile.c"
 #undef	IL_JITC_DECLARATIONS
 
-/*
- * Prototype for inlining functioncalls.
- *
- * On entry of the function the args are allready popped off the evaluation
- * stack. The args pointer points to the first arg (the one at the lowest
- * stack position).
- * The function is responsible to push the result value on the stack if the
- * return type is not void.
- *
- * The function has to return 0 on failure. Any other value will be treated as
- * success.
- *
- * int func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitStackItem *, ILInt32)
- */
-typedef int (*ILJitInlineFunc)(ILJITCoder *jitCoder,
-									  ILMethod *method,
-									  ILCoderMethodInfo *methodInfo,
-									  ILJitStackItem *args,
-									  ILInt32 numArgs);
-
-/*
- * Private method information for the jit coder.
- */
-typedef struct _tagILJitMethodInfo ILJitMethodInfo;
-struct _tagILJitMethodInfo
-{
-	ILJitFunction jitFunction;		/* Implementation of the method. */
-	ILUInt32 implementationType;	/* Flag how the method is implemented. */
-	ILInternalInfo fnInfo;			/* Information for internal calls or pinvokes. */
-	ILJitInlineFunc inlineFunc;		/* Function for inlining. */
-};
-
 #define _IL_JIT_IMPL_DEFAULT		0x000
 #define _IL_JIT_IMPL_INTERNAL		0x001
 #define _IL_JIT_IMPL_INTERNALALLOC	0x002
@@ -434,17 +397,21 @@ struct _tagILJitMethodInfo
 #define _IL_JIT_IMPL_INLINE			0x200
 #define _IL_JIT_IMPL_INLINE_MASK	0x300
 
-/* Error codes stored in fnInfo.func in case a library or method was not */
-/* found */
+/*
+ * Error codes stored in fnInfo.func in case a library or method was not
+ * found
+ */
 #define _IL_JIT_PINVOKE_DLLNOTFOUND			((void *)0x01)
 #define _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND	((void *)0x02)
 #define _IL_JIT_PINVOKE_ERRORMASK			((void *)0x03)
 
 #ifdef IL_NATIVE_INT64
-#define _ILJitPinvokeError(fnInfo)	((((ILInt64)(fnInfo).func) & ~((ILInt64)_IL_JIT_PINVOKE_ERRORMASK)) == 0)
+#define _ILJitPinvokeError(fnInfo)	\
+	((((ILInt64)(fnInfo).un.func) & ~((ILInt64)_IL_JIT_PINVOKE_ERRORMASK)) == 0)
 #endif
 #ifdef IL_NATIVE_INT32
-#define _ILJitPinvokeError(fnInfo)	((((ILInt32)(fnInfo).func) & ~((ILInt32)_IL_JIT_PINVOKE_ERRORMASK)) == 0)
+#define _ILJitPinvokeError(fnInfo)	\
+	((((ILInt32)(fnInfo).un.func) & ~((ILInt32)_IL_JIT_PINVOKE_ERRORMASK)) == 0)
 #endif
 	
 /*
@@ -3162,7 +3129,7 @@ static int _ILJitFunctionIsInternal(ILJITCoder *coder, ILMethod *method,
 	{
 		if((jitMethodInfo->implementationType) & _IL_JIT_IMPL_INTERNALMASK)
 		{
-			fnInfo->func = jitMethodInfo->fnInfo.func;
+			*fnInfo = jitMethodInfo->fnInfo;
 			return (jitMethodInfo->implementationType) & _IL_JIT_IMPL_INTERNALMASK;
 		}
 	}
@@ -3395,7 +3362,8 @@ static int _ILJitCompileInternal(ILJitFunction func)
 		jitParams[current - 1] = paramValue;
 	}
 	returnValue = _ILJitCallInternal(jitCoder, thread, method,
-					 				 jitMethodInfo->fnInfo.func, methodName,
+					 				 jitMethodInfo->fnInfo.un.func,
+									 methodName,
 									 jitParams, numParams - 1);
 #else
 	for(current = 0; current < numParams; ++current)
@@ -3407,7 +3375,8 @@ static int _ILJitCompileInternal(ILJitFunction func)
 		jitParams[current] = paramValue;
 	}
 	returnValue = _ILJitCallInternal(jitCoder, thread, method,
-									 jitMethodInfo->fnInfo.func, methodName,
+									 jitMethodInfo->fnInfo.un.func,
+									 methodName,
 									 jitParams, numParams);
 #endif
 	jit_insn_return(jitCoder->jitFunction, returnValue);
@@ -3700,7 +3669,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 	/* Get the method's owner class. */
 	info = ILMethod_Owner(method);
 	classPrivate = (ILClassPrivate *)(info->userData);
-	fnInfo.func = 0;
+	ILMemZero(&fnInfo, sizeof(ILInternalInfo));
 
 	if(classPrivate->jitTypes.jitTypeKind != 0)
 	{
@@ -3719,39 +3688,6 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 				else if(!strcmp(ILMethod_Name(method), "Address"))
 				{
 					inlineFunc = _ILJitMArrayAddress;
-				}
-			}
-			break;
-
-			case IL_JIT_TYPEKIND_DELEGATE:
-			case IL_JIT_TYPEKIND_MULTICASTDELEGATE:
-			{
-				ILType *type = ILClassToType(info);
-
-				/* Handle the special cases. */
-				if(method == ILTypeGetDelegateMethod(type))
-				{
-					/* Flag method implemented in IL.. */
-					implementationType = _IL_JIT_IMPL_DEFAULT;
-
-					/* now set the on demand compiler function */
-					onDemandCompiler = _ILJitCompileMultiCastDelegateInvoke;
-				}
-				else if (method == (ILMethod *)ILTypeGetDelegateBeginInvokeMethod(type))
-				{
-					/* Flag method implemented in IL.. */
-					implementationType = _IL_JIT_IMPL_DEFAULT;
-
-					/* now set the on demand compiler function */
-					onDemandCompiler = _ILJitCompileDelegateBeginInvoke;
-				}
-				else if (method == (ILMethod *)ILTypeGetDelegateEndInvokeMethod(type))
-				{
-					/* Flag method implemented in IL.. */
-					implementationType = _IL_JIT_IMPL_DEFAULT;
-
-					/* now set the on demand compiler function */
-					onDemandCompiler = _ILJitCompileDelegateEndInvoke;
 				}
 			}
 			break;
@@ -4000,33 +3936,33 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 							newName[nameLength + 1] = '\0';
 
 							/* Look up the method within the module */
-							fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, newName);
+							fnInfo.un.func = ILDynLibraryGetSymbol(moduleHandle, newName);
 						}
-						if(!fnInfo.func)
+						if(!fnInfo.un.func)
 						{
 							/* Look up the method within the module */
-							fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+							fnInfo.un.func = ILDynLibraryGetSymbol(moduleHandle, name);
 						}
 
-						if(!(fnInfo.func))
+						if(!(fnInfo.un.func))
 						{
-							fnInfo.func = _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND;
+							fnInfo.un.func = _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND;
 						}
 
 					#else	/* !IL_WIN32_PLATFORM */
 
 						/* Look up the method within the module */
-						fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+						fnInfo.un.func = ILDynLibraryGetSymbol(moduleHandle, name);
 
-						if(!(fnInfo.func))
+						if(!(fnInfo.un.func))
 						{
-							fnInfo.func = _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND;
+							fnInfo.un.func = _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND;
 						}
 					#endif	/* !IL_WIN32_PLATFORM */
 					}
 					else
 					{
-						fnInfo.func = _IL_JIT_PINVOKE_DLLNOTFOUND;
+						fnInfo.un.func = _IL_JIT_PINVOKE_DLLNOTFOUND;
 					}
 
 					/* Flag the method pinvoke. */
@@ -4058,7 +3994,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 						{
 							_ILFindInternalCall(_ILExecThreadProcess(thread),
 												method, 0, &fnInfo);
-							if(fnInfo.func)
+							if(fnInfo.un.func)
 							{
 								/* Flag the method internal. */
 								implementationType = _IL_JIT_IMPL_INTERNAL;
@@ -4074,7 +4010,11 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 								{
 									implementationType = _IL_JIT_IMPL_DEFAULT;
 								}
-								if(fnInfo.func)
+								if(fnInfo.flags == _IL_INTERNAL_GENCODE)
+								{
+									implementationType = _IL_JIT_IMPL_DEFAULT;
+								}
+								else if(fnInfo.un.func)
 								{
 									/* Flag the method an allocating constructor. */
 									implementationType = _IL_JIT_IMPL_INTERNALALLOC;
@@ -4082,7 +4022,11 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 							}
 							else
 							{
-								if(fnInfo.func)
+								if(fnInfo.flags == _IL_INTERNAL_GENCODE)
+								{
+									implementationType = _IL_JIT_IMPL_DEFAULT;
+								}
+								else if(fnInfo.un.func)
 								{
 									/* Flag the method internal. */
 									implementationType = _IL_JIT_IMPL_INTERNAL;
@@ -4094,7 +4038,11 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 									{
 										implementationType = _IL_JIT_IMPL_DEFAULT;
 									}
-									if(fnInfo.func)
+									if(fnInfo.flags == _IL_INTERNAL_GENCODE)
+									{
+										implementationType = _IL_JIT_IMPL_DEFAULT;
+									}
+									else if(fnInfo.un.func)
 									{
 										/* Flag the method an allocating constructor. */
 										implementationType = _IL_JIT_IMPL_INTERNALALLOC;
@@ -4112,7 +4060,11 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 						}
 						else
 						{
-							if(fnInfo.func)
+							if(fnInfo.flags == _IL_INTERNAL_GENCODE)
+							{
+								implementationType = _IL_JIT_IMPL_DEFAULT;
+							}
+							else if(fnInfo.un.func)
 							{
 								/* Flag the method internal. */
 								implementationType = _IL_JIT_IMPL_INTERNAL;
@@ -4121,13 +4073,20 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 					}
 
 					/* Bail out if the native method could not be found. */
-					if(!(fnInfo.func))
+					if(fnInfo.flags == _IL_INTERNAL_NATIVE && !(fnInfo.un.func))
 					{
 						return 0;
 					}
 
 					/* now set the on demand compiler. */
-					onDemandCompiler = _ILJitCompileInternal;
+					if(fnInfo.flags == _IL_INTERNAL_GENCODE)
+					{
+						onDemandCompiler = _ILJitCompile;
+					}
+					else
+					{
+						onDemandCompiler = _ILJitCompileInternal;
+					}
 				}
 				break;
 
@@ -4195,7 +4154,7 @@ static int _ILJitSetMethodInfo(ILJITCoder *jitCoder, ILMethod *method,
 		/* Copy the infos to the MethodInfo structure. */
 		jitMethodInfo->jitFunction = jitFunction;
 		jitMethodInfo->implementationType = implementationType;
-		jitMethodInfo->fnInfo.func = fnInfo.func;
+		jitMethodInfo->fnInfo = fnInfo;
 		jitMethodInfo->inlineFunc = inlineFunc;
 
 		/* and link the new jitFunction to the method. */

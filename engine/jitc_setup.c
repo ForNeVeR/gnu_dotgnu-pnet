@@ -121,6 +121,8 @@ static int JITCoder_Setup(ILCoder *_coder, unsigned char **start,
 	/* Setup exception handling */
 	SetupExceptions(coder, coderExceptions, hasRethrow);
 
+	*start = (unsigned char *)1;
+
 	return 1;
 }
 

@@ -76,144 +76,6 @@ static ILField *GetFieldToken(ILExecProcess *process, ILMethod *method, unsigned
 }
 
 /*
- * Process a "box" operation on a value.  Returns zero if
- * invalid parameters.
- */
-static int BoxValue(ILExecProcess *process, ILEngineType valueType,
-					ILType *typeInfo, ILClass *boxClass)
-{
-	ILUInt32 size;
-	ILType *rawType;
-
-	/* Determine the raw version of the boxing type */
-	rawType = ILTypeGetEnumType(ILClassToType(boxClass));
-
-	/* Get the size of the value type */
-	size = _ILSizeOfTypeLocked(process, rawType);
-
-	/* Determine how to box the value */
-	if(ILType_IsPrimitive(rawType))
-	{
-		if(valueType == ILEngineType_I4)
-		{
-			/* Determine if we are boxing a byte, short, or int
-			   based on the raw type */
-			switch(ILType_ToElement(rawType))
-			{
-				case IL_META_ELEMTYPE_BOOLEAN:
-				case IL_META_ELEMTYPE_I1:
-				case IL_META_ELEMTYPE_U1:
-				{
-					ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Int8);
-					return 1;
-				}
-				/* Not reached */
-	
-				case IL_META_ELEMTYPE_I2:
-				case IL_META_ELEMTYPE_U2:
-				case IL_META_ELEMTYPE_CHAR:
-				{
-					ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Int16);
-					return 1;
-				}
-				/* Not reached */
-	
-				case IL_META_ELEMTYPE_I4:
-				case IL_META_ELEMTYPE_U4:
-			#ifdef IL_NATIVE_INT32
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-			#endif
-				{
-					ILCoderBox(process->coder, boxClass, valueType, size);
-					return 1;
-				}
-				/* Not reached */
-			}
-		}
-		else if(valueType == ILEngineType_I)
-		{
-			/* Box a native integer */
-			switch(ILType_ToElement(rawType))
-			{
-				case IL_META_ELEMTYPE_I:
-				case IL_META_ELEMTYPE_U:
-				{
-					ILCoderBox(process->coder, boxClass, valueType, size);
-					return 1;
-				}
-				/* Not reached */
-			}
-		}
-		else if(valueType == ILEngineType_I8)
-		{
-			/* Box a 64-bit integer */
-			switch(ILType_ToElement(rawType))
-			{
-				case IL_META_ELEMTYPE_I8:
-				case IL_META_ELEMTYPE_U8:
-				{
-					ILCoderBox(process->coder, boxClass, valueType, size);
-					return 1;
-				}
-				/* Not reached */
-			}
-		}
-		else if(valueType == ILEngineType_F)
-		{
-			/* Determine if we are boxing a float or double
-			   based on the size of the value type */
-			if(rawType == ILType_Float32)
-			{
-				ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Float32);
-				return 1;
-			}
-			else if(rawType == ILType_Float64 ||
-				    rawType == ILType_Float)
-			{
-				ILCoderBoxSmaller(process->coder, boxClass, valueType, ILType_Float64);
-				return 1;
-			}
-		}
-	}
-	else if(valueType == ILEngineType_MV ||
-			valueType == ILEngineType_TypedRef)
-	{
-		if(ILTypeIdentical(typeInfo, ILClassToType(boxClass)))
-		{
-			ILCoderBox(process->coder, boxClass, valueType, size);
-			return 1;
-		}
-	}
-	return 0;
-}
-
-/*
- * Process a "box" operation on a value.  Returns zero if
- * invalid parameters.
- */
-static int BoxPtr(ILExecProcess *process, ILType *typeInfo, 
-				  ILClass *boxClass, ILUInt32 pos)
-{
-	ILUInt32 size;
-	ILType *rawType;
-
-	/* Determine the raw version of the boxing type */
-	rawType = ILTypeGetEnumType(ILClassToType(boxClass));
-
-	/* Get the size of the value type */
-	size = _ILSizeOfTypeLocked(process, rawType);
-
-	if(ILTypeIdentical(typeInfo, ILClassToType(boxClass)))
-	{
-		ILCoderBoxPtr(process->coder, boxClass, size, pos);
-		return 1;
-	}
-
-	return 0;
-}
-
-/*
  * Get a particular system value type.
  */
 static ILType *GetSystemValueType(ILMethod *method, const char *name)
@@ -326,8 +188,9 @@ case IL_OP_BOX:
 	classInfo = GetClassToken(method, pc);
 	if(classInfo && ILClassIsValueType(classInfo))
 	{
-		if(BoxValue(_ILExecThreadProcess(thread), stack[stackSize - 1].engineType,
-					stack[stackSize - 1].typeInfo, classInfo))
+		if(_ILCoderBoxValue(_ILExecThreadProcess(thread),
+							stack[stackSize - 1].engineType,
+							stack[stackSize - 1].typeInfo, classInfo))
 		{
 			stack[stackSize - 1].engineType = ILEngineType_O;
 			stack[stackSize - 1].typeInfo = ILType_FromClass(classInfo);

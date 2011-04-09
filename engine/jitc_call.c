@@ -532,7 +532,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	#endif
 		returnValue = _ILJitCallInternal(jitCoder, thread,
 										 methodInfo,
-										 fnInfo.func, methodName,
+										 fnInfo.un.func, methodName,
 										 jitParams,
 										 argCount);
 		if(returnItem && returnItem->engineType != ILEngineType_Invalid)
@@ -585,7 +585,7 @@ static void JITCoder_CallMethod(ILCoder *coder, ILCoderMethodInfo *info,
 	{
 #if !defined(IL_CONFIG_REDUCE_CODE) && !defined(_IL_JIT_ENABLE_DEBUG)
 		ILPInvoke *pinv = ILPInvokeFind(methodInfo);
-		if(pinv && ((ILJitMethodInfo*)(methodInfo->userData))->fnInfo.func)
+		if(pinv && ((ILJitMethodInfo*)(methodInfo->userData))->fnInfo.un.func)
 		{
 			returnValue = _ILJitInlinePinvoke(jitCoder, methodInfo, jitParams);
 		}
@@ -845,7 +845,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 		#endif
 			returnValue = _ILJitCallInternal(jitCoder, thread,
 											 methodInfo,
-											 fnInfo.func, methodName,
+											 fnInfo.un.func, methodName,
 											 jitParams,
 											 argCount);
 			_ILJitStackPushNotNullValue(jitCoder, returnValue);
@@ -863,7 +863,7 @@ static void JITCoder_CallCtor(ILCoder *coder, ILCoderMethodInfo *info,
 
 			returnValue = _ILJitCallInternal(jitCoder, thread,
 											 methodInfo,
-											 fnInfo.func, methodName,
+											 fnInfo.un.func, methodName,
 											 jitParams, argCount + 1);
 			_ILJitStackPushNotNullValue(jitCoder, jitParams[0]);
 		}

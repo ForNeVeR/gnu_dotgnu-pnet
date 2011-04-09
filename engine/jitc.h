@@ -136,6 +136,45 @@ struct _tagILJitTypes
 	}
 
 /*
+ * Forward declaration of the JIT coder's instance block.
+ */
+typedef struct _tagILJITCoder ILJITCoder;
+
+typedef struct _tagILJitStackItem ILJitStackItem;
+
+/*
+ * Prototype for inlining functioncalls.
+ *
+ * On entry of the function the args are allready popped off the evaluation
+ * stack. The args pointer points to the first arg (the one at the lowest
+ * stack position).
+ * The function is responsible to push the result value on the stack if the
+ * return type is not void.
+ *
+ * The function has to return 0 on failure. Any other value will be treated as
+ * success.
+ *
+ * int func(ILJITCoder *, ILMethod *, ILCoderMethodInfo *, ILJitStackItem *, ILInt32)
+ */
+typedef int (*ILJitInlineFunc)(ILJITCoder *jitCoder,
+									  ILMethod *method,
+									  ILCoderMethodInfo *methodInfo,
+									  ILJitStackItem *args,
+									  ILInt32 numArgs);
+
+/*
+ * Private method information for the jit coder.
+ */
+typedef struct _tagILJitMethodInfo ILJitMethodInfo;
+struct _tagILJitMethodInfo
+{
+	ILJitFunction jitFunction;		/* Implementation of the method. */
+	ILUInt32 implementationType;	/* Flag how the method is implemented. */
+	ILInternalInfo fnInfo;			/* Information for internal calls or pinvokes. */
+	ILJitInlineFunc inlineFunc;		/* Function for inlining. */
+};
+
+/*
  * Initialize the libjit coder.
  * Returns 1 on success and 0 on failure.
  */

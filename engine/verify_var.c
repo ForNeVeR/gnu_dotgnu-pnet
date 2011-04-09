@@ -20,48 +20,8 @@
 
 #if defined(IL_VERIFY_GLOBALS)
 
-/*
- * Get the type of a parameter to the current method.
- */
-static ILType *GetParamType(ILType *signature, ILMethod *method, ILUInt32 num)
-{
-	ILClass *owner;
-	ILType *synthetic;
-	if(ILType_HasThis(signature))
-	{
-		/* This method has a "this" parameter */
-		if(!num)
-		{
-			owner = ILMethod_Owner(method);
-			if(ILClassIsValueType(owner))
-			{
-				/* The "this" parameter is a value type, which is
-				   being passed as a managed pointer.  Return
-				   ILType_Invalid to tell the caller that special
-				   handling is required */
-				return ILType_Invalid;
-			}
-			synthetic = ILClassGetSynType(owner);
-			if(synthetic)
-			{
-				return synthetic;
-			}
-			else
-			{
-				return ILType_FromClass(owner);
-			}
-		}
-		else
-		{
-			return ILTypeGetParam(signature, num);
-		}
-	}
-	else
-	{
-		return ILTypeGetParam(signature, num + 1);
-	}
-}
-
+	/* Nothing to do here */
+	
 #elif defined(IL_VERIFY_LOCALS)
 
 ILUInt32 argNum;
@@ -77,7 +37,7 @@ case IL_OP_LDARG_0:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
+	stack[stackSize].typeInfo = _ILCoderGetParamType(signature, method, argNum);
 	if(ILType_IsClass(stack[stackSize].typeInfo))
 	{
 		if(len >= 6 && pc[1] == IL_OP_LDFLD &&
@@ -144,7 +104,7 @@ checkLDArg:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
+	stack[stackSize].typeInfo = _ILCoderGetParamType(signature, method, argNum);
 checkLDArg2:
 	if(stack[stackSize].typeInfo == ILType_Invalid)
 	{
@@ -193,7 +153,7 @@ checkSTArg:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	type = GetParamType(signature, method, argNum);
+	type = _ILCoderGetParamType(signature, method, argNum);
 	if(type == ILType_Invalid)
 	{
 		/* Storing into the "this" argument of a value type method.
@@ -317,7 +277,7 @@ checkLDArgA:
 	{
 		VERIFY_INSN_ERROR();
 	}
-	stack[stackSize].typeInfo = GetParamType(signature, method, argNum);
+	stack[stackSize].typeInfo = _ILCoderGetParamType(signature, method, argNum);
 	if(stack[stackSize].typeInfo == ILType_Invalid)
 	{
 		/* Cannot take the address of the "this" parameter in

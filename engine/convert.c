@@ -36,6 +36,35 @@ extern	"C" {
 #define	IL_CONVERT_TYPE_INIT		5
 #define	IL_CONVERT_DLL_NOT_FOUND	6
 
+/*
+ * Gererate code for functions where no il code is available.
+ */
+static unsigned char *GenMethod(ILCoder *coder, ILMethod *method,
+								ILGenCodeFunc func,
+							    int *errorCode, const char **errorInfo)
+{
+	int result;
+	unsigned char *start;
+
+	do
+	{
+		ILCoderExceptions coderExceptions;
+
+		ILMemZero(&coderExceptions, sizeof(ILCoderExceptions));
+		result = (*func)(coder, method, &start, &coderExceptions);
+	} while (result == IL_CODER_END_RESTART);
+	
+	if(result != IL_CODER_END_OK)
+	{
+		*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+		return 0;
+	}
+	
+	/* The method is converted now */
+	*errorCode = IL_CONVERT_OK;
+	return start;
+}
+
 #ifdef IL_USE_JIT
 
 /*
@@ -83,11 +112,27 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	}
 	else
 	{
-		/* All other cases should be handled in the jit coder. */
+		ILJitMethodInfo *jitMethodInfo;
 
-		METADATA_UNLOCK(_ILExecThreadProcess(thread));
-		*errorCode = IL_CONVERT_OUT_OF_MEMORY;
-		return 0;
+		jitMethodInfo = (ILJitMethodInfo *)method->userData;
+		if(jitMethodInfo->fnInfo.flags == _IL_INTERNAL_GENCODE)
+		{
+			if(GenMethod(coder, method, jitMethodInfo->fnInfo.un.gen,
+						 errorCode, errorInfo) == 0)
+			{
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
+				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+				return 0;
+			}
+		}
+		else
+		{
+			/* All other cases should be handled in the jit coder. */
+
+			METADATA_UNLOCK(_ILExecThreadProcess(thread));
+			*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+			return 0;
+		}
 	}
 
 	/* The method is converted now */
@@ -230,11 +275,9 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 	else
 	{
 		/* This is a "PInvoke", "internalcall", or "runtime" method */
+		ILMemZero(&fnInfo, sizeof(ILInternalInfo));
+		ILMemZero(&ctorfnInfo, sizeof(ILInternalInfo));
 		pinv = ILPInvokeFind(method);
-		fnInfo.func = 0;
-		fnInfo.marshal = 0;
-		ctorfnInfo.func = 0;
-		ctorfnInfo.marshal = 0;
 		isConstructor = ILMethod_IsConstructor(method);
 		switch(method->implementAttrs &
 					(IL_META_METHODIMPL_CODE_TYPE_MASK |
@@ -309,16 +352,16 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 					newName[nameLength + 1] = '\0';
 
 					/* Look up the method within the module */
-					fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, newName);
+					fnInfo.un.func = ILDynLibraryGetSymbol(moduleHandle, newName);
 				}
-				if(!fnInfo.func)
+				if(!fnInfo.un.func)
 				{
 					/* Look up the method within the module */
-					fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+					fnInfo.un.func = ILDynLibraryGetSymbol(moduleHandle, name);
 				}
 			#else	/* !IL_WIN32_PLATFORM */
 				/* Look up the method within the module */
-				fnInfo.func = ILDynLibraryGetSymbol(moduleHandle, name);
+				fnInfo.un.func = ILDynLibraryGetSymbol(moduleHandle, name);
 			#endif	/* !IL_WIN32_PLATFORM */
 			#else /* !IL_CONFIG_PINVOKE */
 				METADATA_UNLOCK(_ILExecThreadProcess(thread));
@@ -380,7 +423,7 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		}
 
 		/* Bail out if we did not find the underlying native method */
-		if(!(fnInfo.func) && !(ctorfnInfo.func))
+		if(!(fnInfo.un.func) && !(ctorfnInfo.un.func))
 		{
 			METADATA_UNLOCK(_ILExecThreadProcess(thread));
 			if(pinv)
@@ -390,14 +433,20 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 			return 0;
 		}
 
-	#if defined(HAVE_LIBFFI)
-		/* Generate a "cif" structure to handle the native call details */
-		if(fnInfo.func)
+		if(fnInfo.un.gen && fnInfo.flags == _IL_INTERNAL_GENCODE)
 		{
-			/* Make the "cif" structure for the normal method entry */
-			cif = _ILMakeCifForMethod(_ILExecThreadProcess(thread),
-										method, (pinv == 0));
-			if(!cif)
+			if((start = GenMethod(coder, method, fnInfo.un.gen,
+								  errorCode, errorInfo)) == 0)
+			{
+				METADATA_UNLOCK(_ILExecThreadProcess(thread));
+				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+				return 0;
+			}
+		}
+		else if(ctorfnInfo.un.gen && (ctorfnInfo.flags == _IL_INTERNAL_GENCODE))
+		{
+			if((start = GenMethod(coder, method, ctorfnInfo.un.gen,
+								  errorCode, errorInfo)) == 0)
 			{
 				METADATA_UNLOCK(_ILExecThreadProcess(thread));
 				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
@@ -406,88 +455,105 @@ static unsigned char *ConvertMethod(ILExecThread *thread, ILMethod *method,
 		}
 		else
 		{
-			cif = 0;
-		}
-		if(ctorfnInfo.func)
-		{
-			/* Make the "cif" structure for the allocating constructor */
-			ctorcif = _ILMakeCifForConstructor(_ILExecThreadProcess(thread),
-												method, (pinv == 0));
-			if(!ctorcif)
+		#if defined(HAVE_LIBFFI)
+			/* Generate a "cif" structure to handle the native call details */
+			if(fnInfo.un.func)
 			{
-				METADATA_UNLOCK(_ILExecThreadProcess(thread));
-				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
-				return 0;
+				/* Make the "cif" structure for the normal method entry */
+				cif = _ILMakeCifForMethod(_ILExecThreadProcess(thread),
+										  method, (pinv == 0));
+				if(!cif)
+				{
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
+					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+					return 0;
+				}
 			}
-		}
-		else
-		{
-			ctorcif = 0;
-		}
-	#else
-		/* Use the marshalling function pointer as the cif if no libffi */
-		cif = fnInfo.marshal;
-		ctorcif = ctorfnInfo.marshal;
-	#endif
+			else
+			{
+				cif = 0;
+			}
+			if(ctorfnInfo.un.func)
+			{
+				/* Make the "cif" structure for the allocating constructor */
+				ctorcif = _ILMakeCifForConstructor(_ILExecThreadProcess(thread),
+													method, (pinv == 0));
+				if(!ctorcif)
+				{
+					METADATA_UNLOCK(_ILExecThreadProcess(thread));
+					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+					return 0;
+				}
+			}
+			else
+			{
+				ctorcif = 0;
+			}
+		#else
+			/* Use the marshalling function pointer as the cif if no libffi */
+			cif = fnInfo.marshal;
+			ctorcif = ctorfnInfo.marshal;
+		#endif
 
-		/* Generate the coder stub for marshalling the call */
-		if(!isConstructor)
-		{
-			/* We only need the method entry point */
-			if(!ILCoderSetupExtern(coder, &start, method,
-								   fnInfo.func, cif, (pinv == 0)))
+			/* Generate the coder stub for marshalling the call */
+			if(!isConstructor)
 			{
-				METADATA_UNLOCK(_ILExecThreadProcess(thread));
-				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
-				return 0;
-			}
-			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
-			{
-				/* Do we need a coder restart due to cache overflow? */
-				if(result != IL_CODER_END_RESTART)
-				{
-					METADATA_UNLOCK(_ILExecThreadProcess(thread));
-					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
-					return 0;
-				}
+				/* We only need the method entry point */
 				if(!ILCoderSetupExtern(coder, &start, method,
-									   fnInfo.func, cif, (pinv == 0)))
+									   fnInfo.un.func, cif, (pinv == 0)))
 				{
 					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
 				}
-			}
-		}
-		else
-		{
-			/* We need both the method and constructor entry points */
-			if(!ILCoderSetupExternCtor(coder, &start, method,
-								       fnInfo.func, cif,
-									   ctorfnInfo.func, ctorcif,
-									   (pinv == 0)))
-			{
-				METADATA_UNLOCK(_ILExecThreadProcess(thread));
-				*errorCode = IL_CONVERT_OUT_OF_MEMORY;
-				return 0;
-			}
-			while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
-			{
-				/* Do we need a coder restart due to cache overflow? */
-				if(result != IL_CODER_END_RESTART)
+				while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
 				{
-					METADATA_UNLOCK(_ILExecThreadProcess(thread));
-					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
-					return 0;
+					/* Do we need a coder restart due to cache overflow? */
+					if(result != IL_CODER_END_RESTART)
+					{
+						METADATA_UNLOCK(_ILExecThreadProcess(thread));
+						*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+						return 0;
+					}
+					if(!ILCoderSetupExtern(coder, &start, method,
+										   fnInfo.un.func, cif, (pinv == 0)))
+					{
+						METADATA_UNLOCK(_ILExecThreadProcess(thread));
+						*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+						return 0;
+					}
 				}
+			}
+			else
+			{
+				/* We need both the method and constructor entry points */
 				if(!ILCoderSetupExternCtor(coder, &start, method,
-									       fnInfo.func, cif,
-										   ctorfnInfo.func, ctorcif,
+									       fnInfo.un.func, cif,
+										   ctorfnInfo.un.func, ctorcif,
 										   (pinv == 0)))
 				{
 					METADATA_UNLOCK(_ILExecThreadProcess(thread));
 					*errorCode = IL_CONVERT_OUT_OF_MEMORY;
 					return 0;
+				}
+				while((result = ILCoderFinish(coder)) != IL_CODER_END_OK)
+				{
+					/* Do we need a coder restart due to cache overflow? */
+					if(result != IL_CODER_END_RESTART)
+					{
+						METADATA_UNLOCK(_ILExecThreadProcess(thread));
+						*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+						return 0;
+					}
+					if(!ILCoderSetupExternCtor(coder, &start, method,
+										       fnInfo.un.func, cif,
+											   ctorfnInfo.un.func, ctorcif,
+											   (pinv == 0)))
+					{
+						METADATA_UNLOCK(_ILExecThreadProcess(thread));
+						*errorCode = IL_CONVERT_OUT_OF_MEMORY;
+						return 0;
+					}
 				}
 			}
 		}

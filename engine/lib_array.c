@@ -1996,8 +1996,10 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 		if(!strcmp(name, ".ctor"))
 		{
 			*isCtor = 1;
-			info->func = (void *)System_SArray_ctor;
+			info->un.func = (void *)System_SArray_ctor;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_SArray_ctor_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else
@@ -2017,15 +2019,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				== (ILMember *)method)
 		{
 			/* This is the first constructor */
-			info->func = (void *)System_MArray_ctor_1;
+			info->un.func = (void *)System_MArray_ctor_1;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_ctor_1_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else
 		{
 			/* This is the second constructor */
-			info->func = (void *)System_MArray_ctor_2;
+			info->un.func = (void *)System_MArray_ctor_2;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_ctor_2_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 	}
@@ -2043,15 +2049,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_sbyte;
+						info->un.func = (void *)System_MArray_Get2_sbyte;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_sbyte_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_sbyte;
+						info->un.func = (void *)System_MArray_Get_sbyte;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_sbyte_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2061,15 +2071,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_byte;
+						info->un.func = (void *)System_MArray_Get2_byte;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_byte_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_byte;
+						info->un.func = (void *)System_MArray_Get_byte;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_byte_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2079,15 +2093,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_short;
+						info->un.func = (void *)System_MArray_Get2_short;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_short_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_short;
+						info->un.func = (void *)System_MArray_Get_short;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_short_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2098,15 +2116,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_ushort;
+						info->un.func = (void *)System_MArray_Get2_ushort;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_ushort_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_ushort;
+						info->un.func = (void *)System_MArray_Get_ushort;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_ushort_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2116,15 +2138,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_int;
+						info->un.func = (void *)System_MArray_Get2_int;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_int_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_int;
+						info->un.func = (void *)System_MArray_Get_int;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_int_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2134,15 +2160,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_uint;
+						info->un.func = (void *)System_MArray_Get2_uint;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_uint_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_uint;
+						info->un.func = (void *)System_MArray_Get_uint;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_uint_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2152,15 +2182,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_nativeInt;
+						info->un.func = (void *)System_MArray_Get2_nativeInt;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_nativeInt_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_nativeInt;
+						info->un.func = (void *)System_MArray_Get_nativeInt;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_nativeInt_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2170,15 +2204,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_nativeUInt;
+						info->un.func = (void *)System_MArray_Get2_nativeUInt;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_nativeUInt_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_nativeUInt;
+						info->un.func = (void *)System_MArray_Get_nativeUInt;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_nativeUInt_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2188,15 +2226,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_long;
+						info->un.func = (void *)System_MArray_Get2_long;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_long_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_long;
+						info->un.func = (void *)System_MArray_Get_long;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_long_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2206,15 +2248,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_ulong;
+						info->un.func = (void *)System_MArray_Get2_ulong;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_ulong_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_ulong;
+						info->un.func = (void *)System_MArray_Get_ulong;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_ulong_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2224,15 +2270,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_float;
+						info->un.func = (void *)System_MArray_Get2_float;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_float_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_float;
+						info->un.func = (void *)System_MArray_Get_float;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_float_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2242,15 +2292,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_double;
+						info->un.func = (void *)System_MArray_Get2_double;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_double_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_double;
+						info->un.func = (void *)System_MArray_Get_double;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_double_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2260,15 +2314,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Get2_nativeFloat;
+						info->un.func = (void *)System_MArray_Get2_nativeFloat;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get2_nativeFloat_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Get_nativeFloat;
+						info->un.func = (void *)System_MArray_Get_nativeFloat;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Get_nativeFloat_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2276,33 +2334,43 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 
 				case IL_META_ELEMTYPE_TYPEDBYREF:
 				{
-					info->func = (void *)System_MArray_Get_managedValue;
+					info->un.func = (void *)System_MArray_Get_managedValue;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 					info->marshal =
 						(void *)System_MArray_Get_managedValue_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					return 1;
 				}
 				/* Not reached */
 			}
-			info->func = (void *)System_MArray_Get_int;
+			info->un.func = (void *)System_MArray_Get_int;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Get_int_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else if(ILType_IsValueType(type))
 		{
-			info->func = (void *)System_MArray_Get_managedValue;
+			info->un.func = (void *)System_MArray_Get_managedValue;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Get_managedValue_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else if(rank == 2)
 		{
-			info->func = (void *)System_MArray_Get2_ref;
+			info->un.func = (void *)System_MArray_Get2_ref;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Get2_ref_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else
 		{
-			info->func = (void *)System_MArray_Get_ref;
+			info->un.func = (void *)System_MArray_Get_ref;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Get_ref_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 	}
@@ -2320,15 +2388,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_byte;
+						info->un.func = (void *)System_MArray_Set2_byte;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_byte_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_byte;
+						info->un.func = (void *)System_MArray_Set_byte;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_byte_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2340,15 +2412,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_short;
+						info->un.func = (void *)System_MArray_Set2_short;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_short_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_short;
+						info->un.func = (void *)System_MArray_Set_short;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_short_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2359,15 +2435,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_int;
+						info->un.func = (void *)System_MArray_Set2_int;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_int_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_int;
+						info->un.func = (void *)System_MArray_Set_int;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_int_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2378,15 +2458,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_nativeInt;
+						info->un.func = (void *)System_MArray_Set2_nativeInt;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_nativeInt_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_nativeInt;
+						info->un.func = (void *)System_MArray_Set_nativeInt;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_nativeInt_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2397,15 +2481,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_long;
+						info->un.func = (void *)System_MArray_Set2_long;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_long_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_long;
+						info->un.func = (void *)System_MArray_Set_long;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_long_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2415,15 +2503,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_float;
+						info->un.func = (void *)System_MArray_Set2_float;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_float_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_float;
+						info->un.func = (void *)System_MArray_Set_float;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_float_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2433,15 +2525,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_double;
+						info->un.func = (void *)System_MArray_Set2_double;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_double_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_double;
+						info->un.func = (void *)System_MArray_Set_double;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_double_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2451,15 +2547,19 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 				{
 					if(rank == 2)
 					{
-						info->func = (void *)System_MArray_Set2_nativeFloat;
+						info->un.func = (void *)System_MArray_Set2_nativeFloat;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set2_nativeFloat_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					else
 					{
-						info->func = (void *)System_MArray_Set_nativeFloat;
+						info->un.func = (void *)System_MArray_Set_nativeFloat;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 						info->marshal =
 							(void *)System_MArray_Set_nativeFloat_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					}
 					return 1;
 				}
@@ -2467,40 +2567,52 @@ int _ILGetInternalArray(ILMethod *method, int *isCtor, ILInternalInfo *info)
 
 				case IL_META_ELEMTYPE_TYPEDBYREF:
 				{
-					info->func = (void *)System_MArray_Set_managedValue;
+					info->un.func = (void *)System_MArray_Set_managedValue;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 					info->marshal =
 						(void *)System_MArray_Set_managedValue_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 					return 1;
 				}
 				/* Not reached */
 			}
-			info->func = (void *)System_MArray_Set_int;
+			info->un.func = (void *)System_MArray_Set_int;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Set_int_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else if(ILType_IsValueType(type))
 		{
-			info->func = (void *)System_MArray_Set_managedValue;
+			info->un.func = (void *)System_MArray_Set_managedValue;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Set_managedValue_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else if(rank == 2)
 		{
-			info->func = (void *)System_MArray_Set2_ref;
+			info->un.func = (void *)System_MArray_Set2_ref;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Set2_ref_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 		else
 		{
-			info->func = (void *)System_MArray_Set_ref;
+			info->un.func = (void *)System_MArray_Set_ref;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 			info->marshal = (void *)System_MArray_Set_ref_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 			return 1;
 		}
 	}
 	else if(!strcmp(name, "Address"))
 	{
-		info->func = (void *)System_MArray_Address;
+		info->un.func = (void *)System_MArray_Address;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 		info->marshal = (void *)System_MArray_Address_marshal;
+#endif /* defined(IL_USE_CVM) && !defined(HAVE_LIBFFI) */
 		return 1;
 	}
 	else

@@ -1577,22 +1577,6 @@ static int GetArrayClearHandler(ILExecProcess *process,
 	return -1;
 }
 
-/*
- * Set return type information within a stack item.
- */
-static void SetReturnType(ILEngineStackItem *item, ILType *returnType)
-{
-	item->engineType = TypeToEngineType(returnType);
-	if(item->engineType != ILEngineType_M)
-	{
-		item->typeInfo = returnType;
-	}
-	else
-	{
-		item->typeInfo = ILType_Ref(ILTypeStripPrefixes(returnType));
-	}
-}
-
 #elif defined(IL_VERIFY_LOCALS)
 
 ILType *methodSignature;
@@ -1681,14 +1665,7 @@ case IL_OP_CALL:
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
-				if(returnType != ILType_Void)
-				{
-					SetReturnType(&(stack[stackSize]), returnType);
-				}
-				else
-				{
-					stack[stackSize].engineType = ILEngineType_Invalid;
-				}
+				_ILCoderSetReturnType(&(stack[stackSize]), returnType);
 
 callNonvirtualFromVirtual:
 								
@@ -2271,14 +2248,7 @@ case IL_OP_CALLI:
 		if(numParams >= 0)
 		{
 			returnType = ILTypeGetReturn(methodSignature);
-			if(returnType != ILType_Void)
-			{
-				SetReturnType(&(stack[stackSize]), returnType);
-			}
-			else
-			{
-				stack[stackSize].engineType = ILEngineType_Invalid;
-			}
+			_ILCoderSetReturnType(&(stack[stackSize]), returnType);
 			ILCoderCallIndirect(coder, &callInfo, &(stack[stackSize]));
 			stackSize -= (ILUInt32)numParams;
 			if(returnType != ILType_Void)
@@ -2452,8 +2422,9 @@ case IL_OP_CALLVIRT:
 						}
 						else
 						{
-							if(BoxPtr(_ILExecThreadProcess(thread), 
-									  constrainedType, thisClass, numParams))
+							if(_ILCoderBoxPtr(_ILExecThreadProcess(thread), 
+											  constrainedType, thisClass,
+											  numParams))
 							{
 								item->engineType = ILEngineType_O;
 								item->typeInfo = ILType_FromClass(thisClass);
@@ -2477,14 +2448,7 @@ case IL_OP_CALLVIRT:
 			if(numParams >= 0)
 			{
 				returnType = ILTypeGetReturn(methodSignature);
-				if(returnType != ILType_Void)
-				{
-					SetReturnType(&(stack[stackSize]), returnType);
-				}
-				else
-				{
-					stack[stackSize].engineType = ILEngineType_Invalid;
-				}
+				_ILCoderSetReturnType(&(stack[stackSize]), returnType);
 				if(!ILMethod_IsVirtual(methodInfo) || callNonVirtual)
 				{
 					goto callNonvirtualFromVirtual;

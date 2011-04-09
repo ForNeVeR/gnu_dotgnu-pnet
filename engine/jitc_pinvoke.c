@@ -126,11 +126,11 @@ static int _ILJitCompilePinvoke(jit_function_t func)
 	/* Check if the method to invoke was found on this system. */
 	if(_ILJitPinvokeError(jitMethodInfo->fnInfo))
 	{
-		if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_DLLNOTFOUND)
+		if(jitMethodInfo->fnInfo.un.func == _IL_JIT_PINVOKE_DLLNOTFOUND)
 		{
 			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_DLL_NOT_FOUND);
 		}
-		else if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND)
+		else if(jitMethodInfo->fnInfo.un.func == _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND)
 		{
 			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_ENTRYPOINT_NOT_FOUND);
 		}
@@ -273,7 +273,7 @@ static int _ILJitCompilePinvoke(jit_function_t func)
 #endif
 	if(returnType==jit_type_void)
 	{
-		jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.func,
+		jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.un.func,
 								callSignature,
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 								jitParams, numParams - 1, 0);
@@ -284,7 +284,7 @@ static int _ILJitCompilePinvoke(jit_function_t func)
 	else
 	{
 		type = ILTypeGetEnumType(ILTypeGetReturn(ilSignature));
-		returnValue = jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.func,
+		returnValue = jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.un.func,
 								 callSignature,
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 								 jitParams, numParams - 1, 0);
@@ -430,11 +430,11 @@ static ILJitValue _ILJitInlinePinvoke(ILJITCoder *jitCoder, ILMethod *method, IL
 	/* Check if the method to invoke was found on this system. */
 	if(_ILJitPinvokeError(jitMethodInfo->fnInfo))
 	{
-		if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_DLLNOTFOUND)
+		if(jitMethodInfo->fnInfo.un.func == _IL_JIT_PINVOKE_DLLNOTFOUND)
 		{
 			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_DLL_NOT_FOUND);
 		}
-		else if(jitMethodInfo->fnInfo.func == _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND)
+		else if(jitMethodInfo->fnInfo.un.func == _IL_JIT_PINVOKE_ENTRYPOINTNOTFOUND)
 		{
 			_ILJitThrowSystem(jitCoder->jitFunction, _IL_JIT_ENTRYPOINT_NOT_FOUND);
 		}
@@ -587,7 +587,7 @@ static ILJitValue _ILJitInlinePinvoke(ILJITCoder *jitCoder, ILMethod *method, IL
 #endif
 	if(returnType==jit_type_void)
 	{
-		 jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.func,
+		 jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.un.func,
 								callSignature,
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 								jitParams, numParams - 1, 0);
@@ -598,7 +598,7 @@ static ILJitValue _ILJitInlinePinvoke(ILJITCoder *jitCoder, ILMethod *method, IL
 	else
 	{
 		type = ILTypeGetEnumType(ILTypeGetReturn(ilSignature));
-		returnValue = jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.func,
+		returnValue = jit_insn_call_native(func, 0, jitMethodInfo->fnInfo.un.func,
 								 callSignature,
 #ifdef IL_JIT_THREAD_IN_SIGNATURE
 								 jitParams, numParams - 1, 0);

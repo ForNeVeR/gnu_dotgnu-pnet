@@ -1,3 +1,69 @@
+2011-04-09  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/Makefile.am: Add coder.c and coder.h to the sources.
+
+	* engine/coder.c, engine/coder.h: Add code generation helper functions
+	and move some functions from the verifyer to here.
+	(_ILCoderBoxPtr) BoxPtr moved from verify_obj.c to here.
+	(_ILCoderBoxValue) BoxValue moved from verify_obj.c to here.
+	(_ILCoderGetParamType) GetParamType moved ftom verify_var.c to here.
+	(_ILCoderSetReturnType) Moved from verify_call.c to here and include
+	the handling of void return types too.
+
+	* engine/convert.c (GenMethod): Add method for processing dynamic code
+	generators.
+	(ConvertMethod): Adjust to changed ILInternalInfo structure and handle
+	dynamic code generators.
+
+	* engine/engine.h (ILGenCodeFunc): Define signature for dynamic code
+	generators.
+	(ILInternalInfo): Modify struct to handle dynamic code generators.
+
+	* engine/internal.c (_ILFindInternalCall): Adjust to changed
+	ILInternalInfo structure.
+
+	* engine/lib_array.c (_ILGetInternalArray): Adjust to changed
+	ILInternalInfo structure.
+ 
+	* engine/lib_delegate.c (_ILAsyncResult_SetOutParams): Add Check for null
+	outParams and no invoke arguments.
+	(Delegate_ctor): Replace by dynamic code generator.
+	(Delegate_Invoke): likewise
+	(Delegate_BeginInvoke): likewise
+	(Delegate_EndInvoke): likewise
+	(_ILGetInternalDelegate): Return the new code generators instead of the
+	native functions for the constructor and the Invoke, BeginInvoke and
+	EndInvoke methods.
+
+	* engine/jitc.c: Move declaration of ILJITCoder, ILJitInlineFunc and
+	ILJitMethodInfo to engine/jitc.h.
+	(_ILJitFunctionIsInternal, _ILJitCompileInternal): Adjust to changed
+	ILInternalInfo structure.
+	(_ILJitSetMethodInfo): Adjust to changed ILInternalInfo structure.
+	Use the dynamic code gereration for the delegate methods now.
+
+	* engine/jitc.h: Move declaration of ILJITCoder, ILJitInlineFunc and
+	ILJitMethodInfo from engine/jitc.c to here.
+
+	* engine/jitc_call.c, engine/jitc_pinvoke.c, engine/jitc_setup.c,
+	engine/jitc_stack.c: Adjust to changed ILInternalInfo structure.
+
+	* engine/verify.c: Include coder.h
+
+	* engine/verify_call.c (SetReturnType): Move to coder.c
+	_ILCoderSetReturnType.
+	Change calls to SetReturnType and the handling of void return type to
+	call _ILCoderSetReturnType.
+	Change call to BoxPtr to call _ILCoderBoxPtr.
+
+	* engine/verify_obj.c (BoxPtr): Moved to coder.c _ILCoderBoxPtr.
+	(BoxValue): Moved to coder.c _ILCoderBoxValue.
+	Change call to BoxValue to call _ILCoderBoxValue.
+
+	* engine/verify_var.c (GetParamType): Moved to coder.c
+	_ILCoderGetParamType.
+	Change calls to GetParamType to call _ILCoderGetParamType.
+
 2011-02-28  Klaus Treichel  <ktreichel@web.de>
 
 	* csdoc/src2xml.c (Convert): Use memmove instead of strcpy to move

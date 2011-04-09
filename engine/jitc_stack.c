@@ -22,7 +22,6 @@
 
 #ifdef _IL_JIT_OPTIMIZE_LOCALS
 
-typedef struct _tagILJitStackItem ILJitStackItem;
 struct _tagILJitStackItem
 {
 	ILInt32			flags;

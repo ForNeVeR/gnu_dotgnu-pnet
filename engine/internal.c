@@ -151,19 +151,15 @@ int _ILFindInternalCall(ILExecProcess *process,ILMethod *method,
 						if(ctorAlloc && entry[1].methodName &&
 						   !(entry[1].signature))
 						{
-							info->func = entry[1].func;
-						#if defined(HAVE_LIBFFI)
-							info->marshal = 0;
-						#else
+							info->un.func = entry[1].func;
+						#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 							info->marshal = entry[1].marshal;
 						#endif
 						}
 						else
 						{
-							info->func = entry->func;
-						#if defined(HAVE_LIBFFI)
-							info->marshal = 0;
-						#else
+							info->un.func = entry->func;
+						#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 							info->marshal = entry->marshal;
 						#endif
 						}
@@ -212,19 +208,15 @@ int _ILFindInternalCall(ILExecProcess *process,ILMethod *method,
 							if(ctorAlloc && entry[1].methodName &&
 							   !(entry[1].signature))
 							{
-								info->func = entry[1].func;
-							#if defined(HAVE_LIBFFI)
-								info->marshal = 0;
-							#else
+								info->un.func = entry[1].func;
+							#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 								info->marshal = entry[1].marshal;
 							#endif
 							}
 							else
 							{
-								info->func = entry->func;
-							#if defined(HAVE_LIBFFI)
-								info->marshal = 0;
-							#else
+								info->un.func = entry->func;
+							#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
 								info->marshal = entry->marshal;
 							#endif
 							}

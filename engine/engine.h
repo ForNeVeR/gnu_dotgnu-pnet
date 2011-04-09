@@ -209,6 +209,37 @@ struct _tagILExecContext
 /* class private data */
 typedef struct _tagILClassPrivate ILClassPrivate;
  
+/*
+ * Values for the ILInternalInfo's flags member.
+ */
+#define _IL_INTERNAL_NATIVE			0
+#define _IL_INTERNAL_GENCODE		1
+
+/*
+ * Prototype fpr the code generator stored in the ILInternalInfo's func member
+ * if flags == _IL_INTERNAL_GENCODE.
+ */
+typedef int (*ILGenCodeFunc)(ILCoder *coder, ILMethod *method,
+							 unsigned char **start,
+							 ILCoderExceptions *coderExceptions);
+
+/*
+ * Information that is returned for an internalcall method.
+ * The "marshal" value is ignored for libffi-capable systems.
+ */
+typedef struct
+{
+	union
+	{
+		void *func;
+		ILGenCodeFunc gen;
+	} un;
+#if defined(IL_USE_CVM) && !defined(HAVE_LIBFFI)
+	void *marshal;
+#endif
+	ILInt32 flags;
+} ILInternalInfo;
+
 #ifdef IL_USE_JIT
 #include "jitc.h"
 #endif
@@ -858,17 +889,6 @@ ILObject *_ILEngineAllocAtomic(ILExecThread *thread, ILClass *classInfo,
 ILObject *_ILEngineAllocObject(ILExecThread *thread, ILClass *classInfo);
 
 /*
- * Information that is returned for an internalcall method.
- * The "marshal" value is ignored for libffi-capable systems.
- */
-typedef struct
-{
-	void *func;
-	void *marshal;
-
-} ILInternalInfo;
-
-/*
  * Find the function for an "internalcall" method.
  * Returns zero if there is no function information.
  */
@@ -1263,6 +1283,11 @@ ILUInt32 _ILPackCVMStackArgs(ILExecThread *thread, CVMWord *stacktop,
  * by a specific type.
  */
 ILUInt32 _ILStackWordsForType(ILExecThread *thread, ILType *type);
+
+/*
+ * Get the engine type for a given type.
+ */
+ILEngineType _ILTypeToEngineType(ILType *type);
 
 #ifdef	__cplusplus
 };

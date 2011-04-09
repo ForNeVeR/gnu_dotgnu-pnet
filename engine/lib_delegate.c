@@ -20,8 +20,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include "engine.h"
+#include "engine_private.h"
+#include "coder.h"
 #include "lib_defs.h"
+#include "il_opcodes.h"
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -117,6 +119,15 @@ void _IL_AsyncResult_SetOutParams(ILExecThread *_thread, ILObject *del,
 
 	paramcount = ILTypeNumParams(invokeSignature);
 
+	if(paramcount == 0 || outParams == 0)
+	{
+		/*
+		 * The called method has no arguments so there is nothing to do.
+		 * Or the outParams Array is null. This might be a programming error.
+		 */
+		return;
+	}
+
 	if (ArrayLength(args) < paramcount || ArrayLength(outParams) < paramcount)
 	{
 		return;
@@ -144,954 +155,1324 @@ void _IL_AsyncResult_SetOutParams(ILExecThread *_thread, ILObject *del,
 			outArray[j++] = argsArray[i - 1];
 		}
 	}
-
 }
 
-/*
- * public Delegate(Object target, IntPtr method);
- */
-static ILObject *Delegate_ctor(ILExecThread *thread,
-							   ILObject *target,
-							   ILNativeInt method)
+static ILMethod *_GetMethod(ILClass *classInfo, const char *name,
+							ILType *signature)
 {
-	ILClass *classInfo;
-	ILObject *_this;
-
-	/* Allocate space for the delegate object */
-	classInfo = ILMethod_Owner(thread->method);
-	_this = _ILEngineAllocObject(thread, classInfo);
-
-	if(!_this)
-	{
-		return 0;
-	}
-
-	/* Set the delegate's fields */
-	((System_Delegate *)_this)->target = target;
-	((System_Delegate *)_this)->methodInfo = (ILMethod *)method;
-	((System_Delegate *)_this)->closure = 0;
-
-	/* Done */
-	return _this;
+	return (ILMethod *)ILClassNextMemberMatch(classInfo, 0,
+											  IL_META_MEMBERKIND_METHOD,
+											  name, signature);
 }
 
-#ifdef IL_USE_CVM
-/*
- * Parameter information for delegate invocation.
- */
-typedef struct
+static ILField *_GetField(ILClass *classInfo, const char *name)
 {
-	CVMWord *words;
-	ILUInt32 numWords;
+	ILField *field;
 
-} DelegateInvokeParams;
-
-/*
- * Read a double value from a stack position.
- */
-static IL_INLINE ILDouble DelegateReadDouble(CVMWord *stack)
-{
-#ifdef CVM_DOUBLES_ALIGNED_WORD
-	return *((ILDouble *)stack);
-#else
-	ILDouble temp;
-	ILMemCpy(&temp, stack, sizeof(ILDouble));
-	return temp;
-#endif
-}
-
-/*
- * Pack the parameters for a delegate invocation.
- */
-static int PackDelegateInvokeParams(ILExecThread *thread, ILMethod *method,
-					                int isCtor, void *_this, void *userData)
-{
-	DelegateInvokeParams *params = (DelegateInvokeParams *)userData;
-	ILType *signature = ILMethod_Signature(method);
-	CVMWord *stacktop = thread->stackTop;
-	ILType *type;
-	unsigned long numParams;
-	unsigned long paramNum;
-	ILNativeFloat nativeFloat;
-	CVMWord *words;
-	ILUInt32 size;
-
-	/* Push the "this" pointer if necessary */
-	if(ILType_HasThis(signature))
+	field = 0;
+	while((field = (ILField *)ILClassNextMemberByKind(classInfo, (ILMember *)field,
+													  IL_META_MEMBERKIND_FIELD)) != 0)
 	{
-		if(stacktop >= thread->stackLimit)
+		if(!strcmp(ILField_Name(field), name))
 		{
-			_ILExecThreadSetException(thread, _ILSystemException
-				(thread, "System.StackOverflowException"));
-			return 1;
+			return field;
 		}
-		stacktop->ptrValue = _this;
-		++stacktop;
 	}
-
-	/* Push the parameter words */
-	if((stacktop + params->numWords) >= thread->stackLimit)
-	{
-		_ILExecThreadSetException(thread, _ILSystemException
-			(thread, "System.StackOverflowException"));
-		return 1;
-	}
-	/* Expand "float" and "double" parameters, because the frame variables
-	   are in "fixed up" form, rather than native float form */
-	numParams = ILTypeNumParams(signature);
-	words = params->words;
-	for(paramNum = 1; paramNum <= numParams; ++paramNum)
-	{
-		void *ptr;
-
-		type = ILTypeGetParam(signature, paramNum);
-		if(type == ILType_Float32)
-		{
-			nativeFloat = (ILNativeFloat)(*((ILFloat *)words));
-			ptr = (void *)&nativeFloat;
-			size = CVM_WORDS_PER_NATIVE_FLOAT;
-		}
-		else if(type == ILType_Float64)
-		{
-			nativeFloat = (ILNativeFloat)DelegateReadDouble(words);
-			ptr = (void *)&nativeFloat;
-			size = CVM_WORDS_PER_NATIVE_FLOAT;
-		}
-		else
-		{
-			ptr = (void *)words;
-			size = ((ILSizeOfType(thread, type) + sizeof(CVMWord) - 1)
-						/ sizeof(CVMWord));
-		}
-		ILMemCpy(stacktop, ptr, size * sizeof(CVMWord));
-		words += size;
-		stacktop += size;
-	}
-
-	/* Update the stack top */
-	thread->stackTop = stacktop;
 	return 0;
 }
 
-/*
- * public Type Invoke(...);
- */
-static void Delegate_Invoke(ILExecThread *thread,
-							void *result,
-							ILObject *_this)
+static void _ILCoderLoadInt32Constant(ILCoder *coder, ILUInt32 value)
 {
-	ILObject *target;
-	ILMethod *method;
-	DelegateInvokeParams params;
-
-	/* If this is a multicast delegate, then execute "prev" first */
-	if(((System_Delegate *)_this)->prev)
+	if(value < 9)
 	{
-		Delegate_Invoke(thread, result, ((System_Delegate *)_this)->prev);
-		if(_ILExecThreadHasException(thread))
-		{
-			return;
-		}
-	}
-
-	/* Extract the fields from the delegate and validate them */
-	target = ((System_Delegate *)_this)->target;
-	method = ((System_Delegate *)_this)->methodInfo;
-	if(!method)
-	{
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException",
-								(const char *)0);
-		return;
-	}
-
-	/* Locate the start and end of the parameters to "Invoke",
-	   excluding the "this" value that represents the delegate */
-	params.words = thread->frame + 1;
-	params.numWords = _ILGetMethodParamCount(thread, method, 1);
-
-	/* Call the method */
-	_ILCallMethod(thread, method,
-		_ILCallUnpackDirectResult, result,
-		0, target,
-		PackDelegateInvokeParams, &params);
-}
-
-static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
-{	
-	void *array;		
-	ILClass *classInfo;
-	ILObject *obj;
-	ILObject *result = 0;
-	ILType *beginInvokeMethodSignature;
-	ILMethod *beginInvokeMethodInfo, *async_ctor;	
-	CVMWord *stackTop = thread->stackTop;
-	int paramWords, paramCount;
-
-	/* Get the AsyncResult classs */
-	classInfo = ILExecThreadLookupClass
-		(
-			thread,
-			"System.Runtime.Remoting.Messaging.AsyncResult"
-		);
-
-	if (classInfo == 0)
-	{
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);
-
-		return 0;
-	}
-
-	/* Get the constructor for AsyncResult */
-	async_ctor = ILExecThreadLookupMethod
-		(
-			thread,
-			"System.Runtime.Remoting.Messaging.AsyncResult",
-			".ctor",
-			"(ToSystem.Delegate;[oSystem.Object;oSystem.AsyncCallback;oSystem.Object;)V"
-		);
-
-	if (async_ctor == 0)
-	{
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);
-
-		return 0;
-	}
-
-	/* Get the BeginInvoke method for the delegate */
-	beginInvokeMethodInfo = (ILMethod *)ILTypeGetDelegateBeginInvokeMethod
-		(
-			ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)
-		);
-
-	if(!beginInvokeMethodInfo)
-	{
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException",
-			(const char *)0);
-
-		return 0;
-	}
-
-	/* Get the signature for the BeginInvoke method */
-	beginInvokeMethodSignature = ILMethod_Signature(beginInvokeMethodInfo);
-
-	/* The number of paramters for the BeginInvoke method */
-	paramCount = ILTypeNumParams(beginInvokeMethodSignature);
-
-	/* Get the number of CVM words the delegate method requires  */
-	paramWords = _ILGetMethodParamCount
-		(
-			thread,
-			beginInvokeMethodInfo,
-			0
-		);
-
-	/* Pack the parameters into a managed object array */
-	_ILPackCVMStackArgs
-		(
-			thread,
-			 /* stackTop is the part "just below" the IAsyncResult parameter */
-			thread->frame + paramWords - 2,
-			/* 0 is return param */
-			1,
-			/* Number of parameters in BeginInvoke not including the AsyncResult & state */
-			paramCount - 2,
-			/* Can use BeginInvoke signature because the first parameters are the same */
-			beginInvokeMethodSignature,
-			&array
-		); 
-
-	obj = _ILEngineAllocObject(thread, classInfo);
-
-	/* Call AsyncResult constructor */
-	ILExecThreadCall
-		(
-			thread,
-			async_ctor,
-			&result,
-			obj,
-			(System_Delegate *)_this,
-			array /* Delegate method arguments */,
-			(thread->frame + paramWords - 2)->ptrValue /* AsyncCallback */,
-			(thread->frame + paramWords - 1)->ptrValue /* AsyncState */
-		);
-
-	thread->stackTop = stackTop;
-
-	return obj;
-}
-
-static void Delegate_EndInvoke(ILExecThread *thread,
-							void *result,
-							ILObject *_this)
-{	
-	ILObject *retValue;
-	ILObject *array;
-	ILObject **arrayBuffer;
-	ILClass *classInfo;
-	ILType *retType;	
-	ILMethod *endInvokeMethodInfo;
-	ILType *endInvokeMethodSignature;
-	ILMethod *asyncEndInvokeMethodInfo;	
-	CVMWord *stackTop = thread->stackTop;
-	int i, paramWords, paramCount;
-	CVMWord *frame;
-
-	classInfo = GetObjectClass(_this);
-
-	/* Get the "EndInvoke" method */
-	endInvokeMethodInfo = (ILMethod *)ILTypeGetDelegateEndInvokeMethod
-		(
-			ILType_FromClass(GetObjectClassPrivate(_this)->classInfo)
-		);
-
-	if (endInvokeMethodInfo == 0)
-	{
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);		
-
-		return;
-	}
-
-	/* Get the return type of the delegate */
-	retType = ILTypeGetReturn(ILMethod_Signature(endInvokeMethodInfo));
-	
-	endInvokeMethodSignature = ILMethod_Signature(endInvokeMethodInfo);
-
-	/* Number of parameters for the EndInvoke method */
-	paramCount = ILTypeNumParams(endInvokeMethodSignature);
-
-	/* Get the number of CVM words the parameters take up */
-	paramWords = _ILGetMethodParamCount
-		(
-			thread,
-			endInvokeMethodInfo,
-			0
-		);
-
-	/* Get the AsyncResult.EndInvoke method */
-	asyncEndInvokeMethodInfo = ILExecThreadLookupMethod
-		(
-			thread,
-			"System.Runtime.Remoting.Messaging.AsyncResult",
-			"EndInvoke",
-			"(T[oSystem.Object;)oSystem.Object;"
-		);
-
-	if (asyncEndInvokeMethodInfo == 0)
-	{
-		ILExecThreadThrowSystem(thread, "System.MissingMethodException", (const char *)0);		
-
-		return;
-	}
-
-	/* Create an array to store the out params */
-	array = ILExecThreadNew(thread, "[oSystem.Object;", "(Ti)V",
-		(ILVaUInt)paramCount - 1 /* Number of out-params is (number of params) - (1 for AsyncResult) */);
-
-	arrayBuffer = ((ILObject **)ArrayToBuffer(array));
-
-	if (array == 0)
-	{
-		ILExecThreadThrowOutOfMemory(thread);
-
-		return;
-	}
-
-	/* Call AsyncResult.EndInvoke. */
-	ILExecThreadCall
-		(
-			thread,
-			asyncEndInvokeMethodInfo,
-			&retValue,
-			/* IAsyncResult */
-			(thread->frame + paramWords - 1)->ptrValue,
-			/* Array for out-params */
-			array			
-		);
-
-	/*
-	 * Pack "out" values back onto the stack.
-	 */
-
-	/* Skip the "this" pointer */
-	frame = thread->frame + 1;
-
-	for (i = 1; i <= paramCount - 1 /* -1 to skip IAsyncResult */; i++)
-	{
-		ILUInt32 paramSize;
-		ILType *paramType;
-
-		paramType = ILTypeGetParam(endInvokeMethodSignature, i);
-		paramSize = _ILStackWordsForType(thread, paramType);
-		paramType = ILType_Ref(paramType);
-
-		if (ILType_IsPrimitive(paramType) || ILType_IsValueType(paramType))
-		{
-			/* If the param is a value type then unbox directly into the argument */
-			ILExecThreadUnbox(thread, paramType, arrayBuffer[i - 1], frame->ptrValue);
-		}
-		else if (ILType_IsClass(paramType))
-		{
-			/* If the param is a class reference then set the new class reference */
-			*(ILObject **)frame->ptrValue = arrayBuffer[i - 1];
-		}
-		else
-		{
-			/* Don't know how to return this type of out param */
-		}
-
-		frame += paramSize;
-	}
-	
-	/* Set the return value */
-	if (ILTypeIsValue(retType))
-	{
-		ILExecThreadUnbox(thread, retType, retValue, result);
+		ILCoderConstant(coder, IL_OP_LDC_I4_0 + value, 0);
 	}
 	else
 	{
-		*((ILObject **)result) = retValue;
-	}	
+		unsigned char int32Constant[4];
 
-	thread->stackTop = stackTop;
+		IL_WRITE_UINT32(int32Constant, value);
+		ILCoderConstant(coder, IL_OP_LDC_I4, int32Constant);
+	}
 }
 
-#endif /* IL_USE_CVM */
-
-#ifdef IL_USE_JIT
-
-/*
- * public Type Invoke(...);
- */
-static void Delegate_Invoke(ILExecThread *thread,
-							void *result,
-							ILObject *_this)
+static int _ILCoderCreateSimpleArrayType(ILMethod *method,
+										 ILType *elemType,
+										 ILType **arrayType,
+										 ILClass **arrayClass)
 {
-	/* This is a dummy because the real function is generated by the */
-	/* jit coder. */
+	ILType *typeInfo;
+	ILClass *classInfo;	
+	ILImage *image;
+	ILContext *context;
+
+	image = ILProgramItem_Image(method);
+	context = ILImageToContext(image);
+	typeInfo = ILTypeFindOrCreateArray(context, 1, elemType);
+	if(!typeInfo)
+	{
+		return 0;
+	}
+	classInfo = ILClassFromType(image, 0, typeInfo, 0);
+	if(!classInfo)
+	{
+		return 0;
+	}
+	classInfo = ILClassResolve(classInfo);
+	*arrayType = typeInfo;
+	*arrayClass = classInfo;
+	return 1;
 }
 
-static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
-{	
-	/* This is a dummy because the real function is generated by the */
-	/* jit coder. */
-	return 0;
-}
-
-static void Delegate_EndInvoke(ILExecThread *thread,
-							void *result,
-							ILObject *_this)
+static int _ILCoderUnboxValue(ILCoder *coder, ILImage *image, ILType *type,
+							  ILCoderPrefixInfo *prefixInfo)
 {
-	/* This is a dummy because the real function is generated by the */
-	/* jit coder. */
-}
+	ILClass *classInfo;
 
-#endif /* IL_USE_JIT */
-
-#if !defined(HAVE_LIBFFI)
-
-/*
- * Marshal a delegate constructor.
- */
-static void Delegate_ctor_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	*((ILObject **)rvalue) =
-		Delegate_ctor(*((ILExecThread **)(avalue[0])),
-		              *((ILObject **)(avalue[1])),
-		              *((ILNativeInt *)(avalue[2])));
-}
-
-/*
- * Marshal a delegate "Invoke" method for the various return types.
- */
-static void Delegate_Invoke_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	Delegate_Invoke(*((ILExecThread **)(avalue[0])), rvalue,
-		            *((ILObject **)(avalue[1])));
-}
-static void Delegate_Invoke_sbyte_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILInt8 result;
-	Delegate_Invoke(*((ILExecThread **)(avalue[0])), &result,
-		            *((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_Invoke_byte_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILUInt8 result;
-	Delegate_Invoke(*((ILExecThread **)(avalue[0])), &result,
-		            *((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_Invoke_short_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILInt16 result;
-	Delegate_Invoke(*((ILExecThread **)(avalue[0])), &result,
-		            *((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_Invoke_ushort_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILUInt16 result;
-	Delegate_Invoke(*((ILExecThread **)(avalue[0])), &result,
-		            *((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_Invoke_int_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILInt32 result;
-	Delegate_Invoke(*((ILExecThread **)(avalue[0])), &result,
-		            *((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_Invoke_uint_marshal
-	(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILUInt32 result;
-	Delegate_Invoke(*((ILExecThread **)(avalue[0])), &result,
-		            *((ILObject **)(avalue[1])));
-	*((ILNativeUInt *)rvalue) = (ILNativeUInt)result;
-}
-
-#define	Delegate_Invoke_void_marshal			Delegate_Invoke_marshal
-#define	Delegate_Invoke_long_marshal			Delegate_Invoke_marshal
-#define	Delegate_Invoke_ulong_marshal			Delegate_Invoke_marshal
-#define	Delegate_Invoke_float_marshal			Delegate_Invoke_marshal
-#define	Delegate_Invoke_double_marshal			Delegate_Invoke_marshal
-#define	Delegate_Invoke_nativeFloat_marshal		Delegate_Invoke_marshal
-#define	Delegate_Invoke_typedref_marshal		Delegate_Invoke_marshal
-#define	Delegate_Invoke_ref_marshal				Delegate_Invoke_marshal
-#define	Delegate_Invoke_managedValue_marshal	Delegate_Invoke_marshal
-
-/*
-* Marshal a delegate "EndInvoke" method for the various return types.
-*/
-static void Delegate_EndInvoke_marshal
-(void (*fn)(), void *rvalue, void **avalue)
-{
-	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), rvalue,
-		*((ILObject **)(avalue[1])));
-}
-static void Delegate_EndInvoke_sbyte_marshal
-(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILInt8 result;
-	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
-		*((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_EndInvoke_byte_marshal
-(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILUInt8 result;
-	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
-		*((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_EndInvoke_short_marshal
-(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILInt16 result;
-	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
-		*((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_EndInvoke_ushort_marshal
-(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILUInt16 result;
-	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
-		*((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_EndInvoke_int_marshal
-(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILInt32 result;
-	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
-		*((ILObject **)(avalue[1])));
-	*((ILNativeInt *)rvalue) = (ILNativeInt)result;
-}
-static void Delegate_EndInvoke_uint_marshal
-(void (*fn)(), void *rvalue, void **avalue)
-{
-	ILUInt32 result;
-	Delegate_EndInvoke(*((ILExecThread **)(avalue[0])), &result,
-		*((ILObject **)(avalue[1])));
-	*((ILNativeUInt *)rvalue) = (ILNativeUInt)result;
-}
-
-#define	Delegate_EndInvoke_void_marshal			Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_long_marshal			Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_ulong_marshal			Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_float_marshal			Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_double_marshal			Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_nativeFloat_marshal		Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_typedref_marshal		Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_ref_marshal				Delegate_EndInvoke_marshal
-#define	Delegate_EndInvoke_managedValue_marshal	Delegate_EndInvoke_marshal
-
-/*
- * Point all invoke types at the common function (we'll be
- * calling it through the marshalling stub so it doesn't
- * matter what this value is).
- */
-#define	Delegate_Invoke_void					Delegate_Invoke
-#define	Delegate_Invoke_sbyte					Delegate_Invoke
-#define	Delegate_Invoke_byte					Delegate_Invoke
-#define	Delegate_Invoke_short					Delegate_Invoke
-#define	Delegate_Invoke_ushort					Delegate_Invoke
-#define	Delegate_Invoke_int						Delegate_Invoke
-#define	Delegate_Invoke_uint					Delegate_Invoke
-#define	Delegate_Invoke_long					Delegate_Invoke
-#define	Delegate_Invoke_ulong					Delegate_Invoke
-#define	Delegate_Invoke_float					Delegate_Invoke
-#define	Delegate_Invoke_double					Delegate_Invoke
-#define	Delegate_Invoke_nativeFloat				Delegate_Invoke
-#define	Delegate_Invoke_typedref				Delegate_Invoke
-#define	Delegate_Invoke_ref						Delegate_Invoke
-#define	Delegate_Invoke_managedValue			Delegate_Invoke
-
-
-#define	Delegate_EndInvoke_void					Delegate_EndInvoke
-#define	Delegate_EndInvoke_sbyte				Delegate_EndInvoke
-#define	Delegate_EndInvoke_byte					Delegate_EndInvoke
-#define	Delegate_EndInvoke_short				Delegate_EndInvoke
-#define	Delegate_EndInvoke_ushort				Delegate_EndInvoke
-#define	Delegate_EndInvoke_int					Delegate_EndInvoke
-#define	Delegate_EndInvoke_uint					Delegate_EndInvoke
-#define	Delegate_EndInvoke_long					Delegate_EndInvoke
-#define	Delegate_EndInvoke_ulong				Delegate_EndInvoke
-#define	Delegate_EndInvoke_float				Delegate_EndInvoke
-#define	Delegate_EndInvoke_double				Delegate_EndInvoke
-#define	Delegate_EndInvoke_nativeFloat			Delegate_EndInvoke
-#define	Delegate_EndInvoke_typedref				Delegate_EndInvoke
-#define	Delegate_EndInvoke_ref					Delegate_EndInvoke
-#define	Delegate_EndInvoke_managedValue			Delegate_EndInvoke
-
-#else /* HAVE_LIBFFI */
-
-/*
- * Wrap "Delegate_Invoke" for the various return types.
- */
-static void Delegate_Invoke_void(ILExecThread *thread,
-								 ILObject *_this)
-{
-	Delegate_Invoke(thread, (void *)0, _this);
-} 
-#define	Delegate_X_type(x, iltype,type)	\
-static type Delegate_##x##_##iltype(ILExecThread *thread, \
-									 ILObject *_this) \
-{ \
-	type result; \
-	Delegate_##x(thread, &result, _this); \
-	return result; \
-} 
-Delegate_X_type(Invoke, byte, ILUInt8)
-Delegate_X_type(Invoke, sbyte, ILInt8)
-Delegate_X_type(Invoke, short, ILInt16)
-Delegate_X_type(Invoke, ushort, ILUInt16)
-Delegate_X_type(Invoke, int, ILInt32)
-Delegate_X_type(Invoke, uint, ILUInt32)
-Delegate_X_type(Invoke, long, ILInt64)
-Delegate_X_type(Invoke, ulong, ILUInt64)
-Delegate_X_type(Invoke, float, ILFloat)
-Delegate_X_type(Invoke, double, ILDouble)
-Delegate_X_type(Invoke, nativeFloat, ILNativeFloat)
-Delegate_X_type(Invoke, typedref, ILTypedRef)
-Delegate_X_type(Invoke, ref, void *)
-#define	Delegate_Invoke_managedValue			Delegate_Invoke
-
-/*
-* Marshalling stubs for libffi (not required).
-*/
-#define	Delegate_ctor_marshal					0
-#define	Delegate_Invoke_void_marshal			0
-#define	Delegate_Invoke_sbyte_marshal			0
-#define	Delegate_Invoke_byte_marshal			0
-#define	Delegate_Invoke_short_marshal			0
-#define	Delegate_Invoke_ushort_marshal			0
-#define	Delegate_Invoke_int_marshal				0
-#define	Delegate_Invoke_uint_marshal			0
-#define	Delegate_Invoke_long_marshal			0
-#define	Delegate_Invoke_ulong_marshal			0
-#define	Delegate_Invoke_float_marshal			0
-#define	Delegate_Invoke_double_marshal			0
-#define	Delegate_Invoke_nativeFloat_marshal		0
-#define	Delegate_Invoke_typedref_marshal		0
-#define	Delegate_Invoke_ref_marshal				0
-#define	Delegate_Invoke_managedValue_marshal	0
-
-/*
- * "Delegate_EndInvoke" for various return types.
- */
-static void Delegate_EndInvoke_void(ILExecThread *thread,
- ILObject *_this)
-{
-	Delegate_EndInvoke(thread, (void *)0, _this);
-} 
-Delegate_X_type(EndInvoke, byte, ILUInt8)
-Delegate_X_type(EndInvoke, sbyte, ILInt8)
-Delegate_X_type(EndInvoke, short, ILInt16)
-Delegate_X_type(EndInvoke, ushort, ILUInt16)
-Delegate_X_type(EndInvoke, int, ILInt32)
-Delegate_X_type(EndInvoke, uint, ILUInt32)
-Delegate_X_type(EndInvoke, long, ILInt64)
-Delegate_X_type(EndInvoke, ulong, ILUInt64)
-Delegate_X_type(EndInvoke, float, ILFloat)
-Delegate_X_type(EndInvoke, double, ILDouble)
-Delegate_X_type(EndInvoke, nativeFloat, ILNativeFloat)
-Delegate_X_type(EndInvoke, typedref, ILTypedRef)
-Delegate_X_type(EndInvoke, ref, void *)
-#define	Delegate_EndInvoke_managedValue			Delegate_EndInvoke
-
-/*
- * Marshalling stubs for "Delegate_EndInvoke" for libffi (not required).
- */
-#define	Delegate_ctor_marshal						0
-#define	Delegate_EndInvoke_void_marshal				0
-#define	Delegate_EndInvoke_sbyte_marshal			0
-#define	Delegate_EndInvoke_byte_marshal				0
-#define	Delegate_EndInvoke_short_marshal			0
-#define	Delegate_EndInvoke_ushort_marshal			0
-#define	Delegate_EndInvoke_int_marshal				0
-#define	Delegate_EndInvoke_uint_marshal				0
-#define	Delegate_EndInvoke_long_marshal				0
-#define	Delegate_EndInvoke_ulong_marshal			0
-#define	Delegate_EndInvoke_float_marshal			0
-#define	Delegate_EndInvoke_double_marshal			0
-#define	Delegate_EndInvoke_nativeFloat_marshal		0
-#define	Delegate_EndInvoke_typedref_marshal			0
-#define	Delegate_EndInvoke_ref_marshal				0
-#define	Delegate_EndInvoke_managedValue_marshal		0
-
-#endif /* HAVE_LIBFFI */
- 
- /*
-  * Table of functions pointers for each possible return type.
-  */
-typedef struct _tagInternalFuncs
-{
-	void *void_func;
-	void *sbyte_func;
-	void *byte_func;
-	void *short_func;
-	void *ushort_func;
-	void *int_func;
-	void *uint_func;
-	void *long_func;
-	void *ulong_func;
-	void *float_func;
-	void *double_func;
-	void *nativeFloat_func;
-	void *typedref_Func;
-	void *ref_func;
-	void *managedValue_func;
-}
-InternalFuncs;
-
-#define DEFINE_FUNCS_TABLE(prefix)			\
-	static InternalFuncs FuncsFor_Delegate_##prefix =\
-	{										\
-		Delegate_##prefix##_void,					\
-		Delegate_##prefix##_sbyte,					\
-		Delegate_##prefix##_byte,					\
-		Delegate_##prefix##_short,					\
-		Delegate_##prefix##_ushort,					\
-		Delegate_##prefix##_int,						\
-		Delegate_##prefix##_uint,					\
-		Delegate_##prefix##_long,					\
-		Delegate_##prefix##_ulong,					\
-		Delegate_##prefix##_float,					\
-		Delegate_##prefix##_double,					\
-		Delegate_##prefix##_nativeFloat,				\
-		Delegate_##prefix##_typedref,				\
-		Delegate_##prefix##_ref,						\
-		Delegate_##prefix##_managedValue				\
-	};
-
-#define DEFINE_MARSHAL_FUNCS_TABLE(prefix)	\
-	static InternalFuncs MarshalFuncsFor_Delegate_##prefix =\
-	{										\
-		Delegate_##prefix##_void_marshal,			\
-		Delegate_##prefix##_sbyte_marshal,			\
-		Delegate_##prefix##_byte_marshal,			\
-		Delegate_##prefix##_short_marshal,			\
-		Delegate_##prefix##_ushort_marshal,			\
-		Delegate_##prefix##_int_marshal,				\
-		Delegate_##prefix##_uint_marshal,			\
-		Delegate_##prefix##_long_marshal,			\
-		Delegate_##prefix##_ulong_marshal,			\
-		Delegate_##prefix##_float_marshal,			\
-		Delegate_##prefix##_double_marshal,			\
-		Delegate_##prefix##_nativeFloat_marshal,		\
-		Delegate_##prefix##_typedref_marshal,		\
-		Delegate_##prefix##_ref_marshal,				\
-		Delegate_##prefix##_managedValue_marshal		\
-	};
-
-/*
- * Define function table for each return type for Delegate.Invoke.
- */
-DEFINE_FUNCS_TABLE(Invoke)
-
-/*
- * Define marshalling function table for each return type for Delegate.Invoke.
- */
-DEFINE_MARSHAL_FUNCS_TABLE(Invoke)
-
-/*
- * Define function table for each return type for Delegate.EndInvoke.
- */
-DEFINE_FUNCS_TABLE(EndInvoke)
-
-/*
- * Define marshalling function table for each return type for Delegate.EndInvoke.
- */
-DEFINE_MARSHAL_FUNCS_TABLE(EndInvoke)
-
-static int _ILGetInternalDelegateFunc(ILInternalInfo *info, ILType *returnType,
-	InternalFuncs *internalFuncs, InternalFuncs *internalMarshalFuncs)
-{
-	ILType *type;
-
-	type = ILTypeGetEnumType(returnType);
-
+	type = ILTypeGetEnumType(type);
+	classInfo = ILClassFromType(image, 0, type, 0);
+	if(!classInfo)
+	{
+		return 0;
+	}
+	
 	if(ILType_IsPrimitive(type))
 	{
-		/* The delegate returns a primitive type */
+		/*
+		 * Unbox the object to produce a managed pointer
+		 */
+		ILCoderUnbox(coder, classInfo, prefixInfo);
 		switch(ILType_ToElement(type))
 		{
-			case IL_META_ELEMTYPE_VOID:
+			case IL_META_ELEMTYPE_I1:
 			{
-				info->func = internalFuncs->void_func;
-				info->marshal = internalMarshalFuncs->void_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_I1, prefixInfo);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_BOOLEAN:
-			case IL_META_ELEMTYPE_I1:
-			{
-				info->func = internalFuncs->sbyte_func;
-				info->marshal = internalMarshalFuncs->sbyte_func;
-			}
-			break;
-
 			case IL_META_ELEMTYPE_U1:
 			{
-				info->func = internalFuncs->byte_func;
-				info->marshal = internalMarshalFuncs->byte_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_U1, prefixInfo);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_I2:
 			{
-				info->func = internalFuncs->short_func;
-				info->marshal = internalMarshalFuncs->short_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_I2, prefixInfo);
 			}
 			break;
 
-			case IL_META_ELEMTYPE_U2:
 			case IL_META_ELEMTYPE_CHAR:
+			case IL_META_ELEMTYPE_U2:
 			{
-				info->func = internalFuncs->ushort_func;
-				info->marshal = internalMarshalFuncs->ushort_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_U2, prefixInfo);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_I4:
-		#ifdef IL_NATIVE_INT32
-			case IL_META_ELEMTYPE_I:
-		#endif
 			{
-				info->func = internalFuncs->int_func;
-				info->marshal = internalMarshalFuncs->int_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_I4, prefixInfo);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_U4:
-		#ifdef IL_NATIVE_INT32
-			case IL_META_ELEMTYPE_U:
-		#endif
 			{
-				info->func = internalFuncs->uint_func;
-				info->marshal = internalMarshalFuncs->uint_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_U4, prefixInfo);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_I8:
-		#ifdef IL_NATIVE_INT64
-			case IL_META_ELEMTYPE_I:
-		#endif
+			case IL_META_ELEMTYPE_U8:
 			{
-				info->func = internalFuncs->long_func;
-				info->marshal = internalMarshalFuncs->long_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_I8, prefixInfo);
 			}
 			break;
 
-			case IL_META_ELEMTYPE_U8:
-		#ifdef IL_NATIVE_INT64
+			case IL_META_ELEMTYPE_I:
 			case IL_META_ELEMTYPE_U:
-		#endif
 			{
-				info->func = internalFuncs->ulong_func;
-				info->marshal = internalMarshalFuncs->ulong_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_I, prefixInfo);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R4:
 			{
-				info->func = internalFuncs->float_func;
-				info->marshal = internalMarshalFuncs->float_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_R4, prefixInfo);
 			}
 			break;
 
 			case IL_META_ELEMTYPE_R8:
 			{
-				info->func = internalFuncs->double_func;
-				info->marshal = internalMarshalFuncs->double_func;
+				ILCoderPtrAccess(coder, IL_OP_LDIND_R8, prefixInfo);
 			}
 			break;
 
-			case IL_META_ELEMTYPE_R:
+			default:
 			{
-				info->func = internalFuncs->nativeFloat_func;
-				info->marshal = internalMarshalFuncs->nativeFloat_func;
+				/*
+				 * Copy the value type on the stack.
+				 */
+				ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo, prefixInfo);
 			}
-			break;
-
-			case IL_META_ELEMTYPE_TYPEDBYREF:
-			{
-				info->func = internalFuncs->typedref_Func;
-				info->marshal = internalMarshalFuncs->typedref_Func;
-			}
-			break;
-
-			default:	return 0;
 		}
 	}
 	else if(ILType_IsValueType(type))
 	{
-		/* The delegate returns a managed value */
-		info->func = internalFuncs->managedValue_func;
-		info->marshal = internalMarshalFuncs->managedValue_func;
+		/*
+		 * Unbox the object to produce a managed pointer
+		 */
+		ILCoderUnbox(coder, classInfo, prefixInfo);
+		/*
+		 * And copy the value type.
+		 */
+				ILCoderPtrAccessManaged(coder, IL_OP_LDOBJ, classInfo, prefixInfo);
 	}
 	else
 	{
-		/* Everything else is assumed to be a pointer */
-		info->func = internalFuncs->ref_func;
-		info->marshal = internalMarshalFuncs->ref_func;;
+		/*
+		 * Everything else is an object reference.
+		 * 
+		 * So there is nothing to do.
+		 */
 	}
-
 	return 1;
 }
 
+static ILType *CreateDelegateSignature(ILType *invokeSignature, ILImage *image)
+{
+	ILType *signature;
+	ILType *returnType;
+	ILClass *objectClass;
+	ILUInt32 numParams;
+	ILUInt32 param;
+	ILContext *context;
+
+	context = ILImageToContext(image);
+	returnType = ILTypeGetReturn(invokeSignature);
+	/*
+	objectClass = ILClassResolveSystem(image, 0, "Object", "System");
+	if(!objectClass)
+	{
+		return 0;
+	}
+	*/
+	signature = ILTypeCreateMethod(context, returnType);
+	if(!signature)
+	{
+		return 0;
+	}
+	/*
+	if(!ILTypeAddParam(context, signature, ILType_FromClass(objectClass)))
+	{
+		return 0;
+	}
+	*/
+	numParams = ILTypeNumParams(invokeSignature);
+	param = 1;
+	while(param <= numParams)
+	{
+		ILType *paramType;
+
+		paramType = ILTypeGetParam(invokeSignature, param);
+		if(!ILTypeAddParam(context, signature, paramType))
+		{
+			return 0;
+		}
+		++param;
+	}
+	return signature;
+}
+
+static ILStandAloneSig* _ILCoderCreateLocalSignature(ILCoder *coder,
+													 ILImage *image,
+													 ILType **locals,
+													 ILUInt32 numLocals)
+{
+	ILImage *syntheticImage;
+	ILContext *context;
+	ILType *localSig;
+	ILUInt32 local;
+
+	context = ILImageToContext(image);
+	syntheticImage = ILContextGetSynthetic(context);
+	if(!syntheticImage)
+	{
+		return 0;
+	}
+	localSig = ILTypeCreateLocalList(context);
+	if(!localSig)
+	{
+		return 0;
+	}
+	local = 0;
+	while(local < numLocals)
+	{
+		if(!ILTypeAddLocal(context, localSig, locals[local]))
+		{
+			return 0;
+		}
+		++local;
+	}
+	return ILStandAloneSigCreate(syntheticImage, 0, localSig);
+}
+
+static int _ILCoderGenDelegateCtor(ILCoder *coder, ILMethod *method,
+								   unsigned char **start,
+								   ILCoderExceptions *coderExceptions)
+{
+	ILClass *classInfo;
+	ILClass *delegateClassInfo;
+	ILField *targetField;
+	ILField *methodField;
+	ILType *signature;
+	ILCoderPrefixInfo prefixInfo;
+	ILMethodCode code;
+	ILEngineStackItem stack[2];
+
+	classInfo = ILMethod_Owner(method);
+	delegateClassInfo = ILClassResolveSystem(ILProgramItem_Image(method),
+											 0, "Delegate", "System");
+	if(!delegateClassInfo)
+	{
+		/* Ran out of memory trying to create "System.Delegate" */
+		return IL_CODER_END_TOO_BIG;
+	}
+	targetField = _GetField(delegateClassInfo, "target");
+	if(!targetField)
+	{
+		/* Field "target" is missing in the System.Delegate class */
+		return IL_CODER_END_TOO_BIG;
+	}
+	methodField = _GetField(delegateClassInfo, "method");
+	if(!methodField)
+	{
+		/* Field "target" is missing in the System.Delegate class */
+		return IL_CODER_END_TOO_BIG;
+	}
+
+	signature = ILMethod_Signature(method);
+
+	/* Initialize the prefix information */
+	ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
+	ILMemZero(&code, sizeof(ILMethodCode));
+	code.maxStack = 2;
+	
+	if(!ILCoderSetup(coder, start, method, &code, coderExceptions, 0))
+	{
+		return IL_CODER_END_TOO_BIG;
+	}
+
+	/* Load the this pointer on the stack */
+	stack[0].engineType = ILEngineType_O;
+	stack[0].typeInfo = ILType_FromClass(delegateClassInfo);
+	ILCoderLoadArg(coder, 0, stack[0].typeInfo);
+
+	/* Load the target argument on the stack */
+	_ILCoderLoadArgs(coder, &(stack[1]), method, signature, 1, 1);
+	
+	ILCoderStoreField(coder, ILEngineType_O, stack[0].typeInfo,
+					  targetField, ILField_Type(targetField),
+					  stack[1].engineType, &prefixInfo);
+	
+	/* Load the this pointer on the stack */
+	stack[0].engineType = ILEngineType_O;
+	stack[0].typeInfo = ILType_FromClass(delegateClassInfo);
+	ILCoderLoadArg(coder, 0, stack[0].typeInfo);
+
+	/* Load the method pointer argument on the stack */
+	_ILCoderLoadArgs(coder, &(stack[1]), method, signature, 2, 2);
+	
+	ILCoderStoreField(coder, ILEngineType_O, stack[0].typeInfo,
+					  methodField, stack[1].typeInfo,
+					  stack[1].engineType, &prefixInfo);
+	
+	/* And return from this method */
+	ILCoderReturnInsn(coder, ILEngineType_Invalid, ILType_Void);
+
+	/* Mark the end of the method */
+	ILCoderMarkEnd(coder);
+
+	return ILCoderFinish(coder);
+}
+
+static int GenDelegateInvoke(ILCoder *coder, ILMethod *method,
+							 ILType *signature, ILUInt32 numParams,
+							 ILEngineStackItem *stack,
+							 ILField *targetField, ILField *methodField)
+{
+	ILCoderPrefixInfo prefixInfo;
+	ILCoderMethodInfo coderMethodInfo;
+	ILType *returnType;
+	ILType *thisType;
+	
+	/* Initialize the prefix information */
+	ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
+	returnType = ILTypeGetReturn(signature);
+	thisType = ILType_FromClass(ILMethod_Owner(method));
+
+	ILCoderLoadThisField(coder, targetField,
+						 ILField_Type(targetField), &prefixInfo);
+	stack[0].typeInfo = ILField_Type(targetField);
+	stack[0].engineType = _ILTypeToEngineType(stack[0].typeInfo);
+	ILCoderBranch(coder, IL_OP_BRTRUE, 1, ILEngineType_O, ILEngineType_O);
+	/* The stack is empty now */
+	_ILCoderLoadArgs(coder, stack, method, signature, 1, numParams - 1);
+	ILCoderLoadThisField(coder, methodField, ILType_Int, &prefixInfo);
+
+	coderMethodInfo.args = stack;
+	coderMethodInfo.numBaseArgs = numParams - 1;
+	coderMethodInfo.numVarArgs = 0;
+	coderMethodInfo.hasParamArray = 0;
+	coderMethodInfo.tailCall = 0;
+	coderMethodInfo.signature = CreateDelegateSignature(signature,
+														ILProgramItem_Image(method));
+	if(!coderMethodInfo.signature)
+	{
+		return 0;
+	}
+
+	_ILCoderSetReturnType(&(stack[numParams - 1]), returnType);
+	ILCoderCallIndirect(coder, &coderMethodInfo,
+						&(stack[numParams - 1]));
+	if(returnType != ILType_Void)
+	{
+		ILCoderReturnInsn(coder, _ILTypeToEngineType(returnType),
+						  returnType);
+	}
+	else
+	{
+		ILCoderReturnInsn(coder, ILEngineType_Invalid, ILType_Void);
+	}
+	ILCoderLabel(coder, 1);
+	ILCoderLoadThisField(coder, targetField,
+						 ILField_Type(targetField), &prefixInfo);
+	stack[0].typeInfo = ILField_Type(targetField);
+	stack[0].engineType = _ILTypeToEngineType(stack[0].typeInfo);
+	_ILCoderLoadArgs(coder, &(stack[1]), method, signature, 1, numParams - 1);
+	ILCoderLoadThisField(coder, methodField, ILType_Int, &prefixInfo);
+
+	coderMethodInfo.args = stack;
+	coderMethodInfo.numBaseArgs = numParams;
+	coderMethodInfo.numVarArgs = 0;
+	coderMethodInfo.hasParamArray = 0;
+#ifdef IL_USE_CVM
+	coderMethodInfo.tailCall = 1;
+#else /* IL_USE_JIT */
+	/*
+	 * TODO: Make this a tail call if tail calls are fixed in libjit.
+	 */
+	coderMethodInfo.tailCall = 0;
+#endif /* !IL_USE_JIT */
+	coderMethodInfo.signature = signature;
+	
+	_ILCoderSetReturnType(&(stack[numParams]), returnType);
+	ILCoderCallIndirect(coder, &coderMethodInfo, &(stack[numParams]));
+	if(returnType != ILType_Void)
+	{
+		ILCoderReturnInsn(coder, _ILTypeToEngineType(returnType),
+						  returnType);
+	}
+	else
+	{
+		ILCoderReturnInsn(coder, ILEngineType_Invalid, ILType_Void);
+	}
+	return 1;
+}
+
+static int _ILCoderGenDelegateInvoke(ILCoder *coder, ILMethod *method,
+									 unsigned char **start,
+									 ILCoderExceptions *coderExceptions)
+{
+	ILType *signature;
+
+	signature = ILMethod_Signature(method);
+	if(signature)
+	{
+		ILUInt32 numParams;
+
+		numParams = ILTypeNumParams(signature);
+		if(ILType_HasThis(signature))
+		{
+			/* Add the hidden this parameter */
+			++numParams;
+		}
+		{
+			ILClass *delegateClassInfo;
+			ILField *targetField;
+			ILField *methodField;
+			ILMethodCode code;
+			ILEngineStackItem stack[numParams + 3];
+			
+			delegateClassInfo = ILClassResolveSystem(ILProgramItem_Image(method),
+													 0, "Delegate", "System");
+			if(!delegateClassInfo)
+			{
+				/* Ran out of memory trying to create "System.Delegate" */
+				return IL_CODER_END_TOO_BIG;
+			}
+			targetField = _GetField(delegateClassInfo, "target");
+			if(!targetField)
+			{
+				/* Field "target" is missing in the System.Delegate class */
+				return IL_CODER_END_TOO_BIG;
+			}
+			methodField = _GetField(delegateClassInfo, "method");
+			if(!methodField)
+			{
+				/* Field "target" is missing in the System.Delegate class */
+				return IL_CODER_END_TOO_BIG;
+			}
+			ILMemZero(&code, sizeof(ILMethodCode));
+			code.maxStack = numParams + 3;
+			
+			if(!ILCoderSetup(coder, start, method, &code, coderExceptions, 0))
+			{
+				/* The coder setup failed */
+				return IL_CODER_END_TOO_BIG;
+			}
+			if(!GenDelegateInvoke(coder, method, signature, numParams,
+							  stack, targetField, methodField))
+			{
+				return IL_CODER_END_TOO_BIG;
+			}
+
+			/* Mark the end of the method */
+			ILCoderMarkEnd(coder);
+			
+			return ILCoderFinish(coder);
+		}
+	}
+	return IL_CODER_END_TOO_BIG;
+}
+
+static int _ILCoderGenMulticastDelegateInvoke(ILCoder *coder, ILMethod *method,
+											  unsigned char **start,
+											  ILCoderExceptions *coderExceptions)
+{
+	ILType *signature;
+
+	signature = ILMethod_Signature(method);
+	if(signature)
+	{
+		ILUInt32 numParams;
+
+		numParams = ILTypeNumParams(signature);
+		if(ILType_HasThis(signature))
+		{
+			/* Add the hidden this parameter */
+			++numParams;
+		}
+		{
+			ILCoderPrefixInfo prefixInfo;
+			ILCoderMethodInfo coderMethodInfo;
+			ILType *returnType;
+			ILType *thisType;
+			ILClass *multicastDelegateClassInfo;
+			ILClass *delegateClassInfo;
+			ILField *prevField;
+			ILField *targetField;
+			ILField *methodField;
+			ILMethodCode code;
+			ILEngineStackItem stack[numParams + 3];
+			
+			multicastDelegateClassInfo = ILClassResolveSystem(ILProgramItem_Image(method),
+															  0, "MulticastDelegate",
+															  "System");
+			if(!multicastDelegateClassInfo)
+			{
+				/* Ran out of memory trying to create "System.MulticastDelegate" */
+				return IL_CODER_END_TOO_BIG;
+			}
+			prevField = _GetField(multicastDelegateClassInfo, "prev");
+			if(!prevField)
+			{
+				/* Field "prev" is missing in the System.MulticastDelegate class */
+				return IL_CODER_END_TOO_BIG;
+			}
+
+			delegateClassInfo = ILClassResolveSystem(ILProgramItem_Image(method),
+													 0, "Delegate", "System");
+			if(!delegateClassInfo)
+			{
+				/* Ran out of memory trying to create "System.Delegate" */
+				return IL_CODER_END_TOO_BIG;
+			}
+			targetField = _GetField(delegateClassInfo, "target");
+			if(!targetField)
+			{
+				/* Field "target" is missing in the System.Delegate class */
+				return IL_CODER_END_TOO_BIG;
+			}
+			methodField = _GetField(delegateClassInfo, "method");
+			if(!methodField)
+			{
+				/* Field "target" is missing in the System.Delegate class */
+				return IL_CODER_END_TOO_BIG;
+			}
+			returnType = ILTypeGetReturn(signature);
+			thisType = ILType_FromClass(ILMethod_Owner(method));
+			ILMemZero(&code, sizeof(ILMethodCode));
+			code.maxStack = numParams + 3;
+			
+			if(!ILCoderSetup(coder, start, method, &code, coderExceptions, 0))
+			{
+				/* The coder setup failed */
+				return IL_CODER_END_TOO_BIG;
+			}
+
+			ILCoderLoadThisField(coder, prevField,
+								 ILField_Type(prevField), &prefixInfo);
+			ILCoderBranch(coder, IL_OP_BRFALSE, 2, ILEngineType_O,
+						  ILEngineType_O);
+			ILCoderLoadThisField(coder, prevField,
+								 ILField_Type(prevField), &prefixInfo);
+			stack[0].typeInfo = thisType;
+			stack[0].engineType = ILEngineType_O;
+			_ILCoderLoadArgs(coder, &(stack[1]), method, signature, 1, numParams - 1);
+
+			coderMethodInfo.args = stack;
+			coderMethodInfo.numBaseArgs = numParams;
+			coderMethodInfo.numVarArgs = 0;
+			coderMethodInfo.hasParamArray = 0;
+			coderMethodInfo.tailCall = 0;
+			coderMethodInfo.signature = signature;
+
+			_ILCoderSetReturnType(&(stack[numParams]), returnType);
+			ILCoderCallMethod(coder, &coderMethodInfo, &(stack[numParams]),
+							  method);
+			/*
+			 * If the delegate returns a valoe pop the value from the stack.
+			 */
+			if(returnType != ILType_Void)
+			{
+				ILCoderPop(coder, stack[numParams].engineType, returnType);
+			}
+
+			ILCoderLabel(coder, 2);
+			/*
+			 * Now generate the Delegate.Invoke code.
+			 */
+			if(!GenDelegateInvoke(coder, method, signature, numParams,
+							  stack, targetField, methodField))
+			{
+				return IL_CODER_END_TOO_BIG;
+			}
+
+			/* Mark the end of the method */
+			ILCoderMarkEnd(coder);
+			
+			return ILCoderFinish(coder);
+		}
+	}
+	return IL_CODER_END_TOO_BIG;
+}
+
+static int _ILCoderGenDelegateBeginInvoke(ILCoder *coder, ILMethod *method,
+										unsigned char **start,
+										ILCoderExceptions *coderExceptions)
+{
+	ILType *signature;
+
+	signature = ILMethod_Signature(method);
+	if(signature)
+	{
+		ILImage *image;
+		ILType *returnType;
+		ILClass *delegateClass;
+		ILClass *objectClassInfo;
+		ILType *arrayType;
+		ILClass *arrayClass;
+		ILClass *asyncResultClass;
+		ILMethod *asyncResultCtorInfo;
+		ILUInt32 numParams;
+		ILMethodCode code;
+		ILCoderPrefixInfo prefixInfo;
+		ILCoderMethodInfo coderMethodInfo;
+		ILType *locals[2];
+		ILEngineStackItem stack[4];
+
+		image = ILProgramItem_Image(method);
+		delegateClass = ILMethod_Owner(method);
+		returnType = ILTypeGetReturn(signature);
+		numParams = ILTypeNumParams(signature);
+
+		objectClassInfo = ILClassResolveSystem(image, 0, "Object", "System");
+		if(!objectClassInfo)
+		{
+			/* Ran out of memory trying to create "System.Delegate" */
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		asyncResultClass = ILClassResolveSystem(image, 0, "AsyncResult",
+												"System.Runtime.Remoting.Messaging");
+		if(!asyncResultClass)
+		{
+			/* Ran out of memory trying to create "System.Delegate" */
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		/* Get the AsyncResult.BeginInvoke method */
+		asyncResultCtorInfo = _GetMethod(asyncResultClass, ".ctor", 0);
+		if(asyncResultCtorInfo == 0)
+		{
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		if(!_ILCoderCreateSimpleArrayType(method,
+										  ILType_FromClass(objectClassInfo),
+										  &arrayType, &arrayClass))
+		{
+			/* Ran out of memory trying to create "System.Delegate" */
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		ILMemZero(&code, sizeof(ILMethodCode));
+		if(numParams > 2)
+		{
+			/*
+			 * The delegate has arguments so we'll need an array for the
+			 * boxed arguments.
+			 */
+			locals[0] = arrayType;
+			code.localVarSig = _ILCoderCreateLocalSignature(coder, image, locals, 1);
+			if(!code.localVarSig)
+			{
+				/* Ran out of memory trying to create te locals signature */
+				return IL_CODER_END_TOO_BIG;
+			}
+		}
+		code.maxStack = 4;
+
+		ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
+		if(!ILCoderSetup(coder, start, method, &code, coderExceptions, 0))
+		{
+			/* The coder setup failed */
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		if(numParams > 2)
+		{
+			ILUInt32 currentParam;
+			ILUInt32 currentLabel;
+			ILExecThread *thread;
+			
+			thread = ILExecThreadCurrent();
+			/*
+			 * Setup the labels used to handle byref arguments.
+			 */
+			currentLabel = 0;
+
+			/*
+			 * We have arguments so create an array to hold the
+			 * boxed values.
+			 * Load the number of elements for the array to be created on the stack.
+			 */
+			_ILCoderLoadInt32Constant(coder, numParams - 2);
+			/*
+			 * Create the array for the params.
+			 */
+			ILCoderNewArray(coder, arrayType, arrayClass, ILEngineType_I4);
+			/*
+			 * Save the array in the local slot 0
+			 */
+			ILCoderStoreLocal(coder, 0, ILEngineType_O, locals[0]);
+			currentParam = 1;
+			while(currentParam <= (numParams - 2))
+			{
+				ILType *paramType;
+
+				paramType = ILTypeGetParam(signature, currentParam);
+				if(ILType_IsRef(paramType))
+				{
+					ILType *refType;
+					ILClass *refClassInfo;
+					int refTypeIsValue;
+					
+					refType = ILType_Ref(paramType);
+					refClassInfo = ILClassFromType(image, 0, refType, 0);
+					if(!refClassInfo)
+					{
+						return IL_CODER_END_TOO_BIG;
+					}
+					refTypeIsValue = ILTypeIsValue(refType);
+					/*
+					 * Load the argument on the stack.
+					 */
+					_ILCoderLoadArgs(coder, stack, method, signature,
+									 currentParam, currentParam);
+					ILCoderBranch(coder, IL_OP_BRFALSE, currentLabel + 1,
+								  ILEngineType_O, ILEngineType_O);
+					/*
+					 * Load the array and the index on the stack for the
+					 * store to the array.
+					 */
+					ILCoderLoadLocal(coder, 0, locals[0]);
+					_ILCoderLoadInt32Constant(coder, currentParam - 1);
+					if(refTypeIsValue)
+					{
+						/*
+						 * Load the managed pointer on the stack.
+						 */
+						_ILCoderLoadArgs(coder, &stack[2], method, signature,
+										 currentParam, currentParam);
+						/*
+						 * And box the value the pointer references.
+						 */
+						if(!_ILCoderBoxPtr(_ILExecThreadProcess(thread),
+										   refType, refClassInfo, 0))
+						{
+							return IL_CODER_END_TOO_BIG;
+						}
+					}
+					else
+					{
+						/*
+						 * Load the object reference from the pointer.
+						 */
+						_ILCoderLoadArgs(coder, &stack[2], method, signature,
+										 currentParam, currentParam);
+						/*
+						 * And get the referenced object.
+						 */
+						ILCoderPtrAccess(coder, IL_OP_LDIND_REF, &prefixInfo);
+					}
+					/* 
+					 * Store the pointer on the stack in the array.
+					 */
+					ILCoderArrayAccess(coder, IL_OP_STELEM_REF,
+									   ILEngineType_I4,
+									   ILType_FromClass(objectClassInfo),
+									   &prefixInfo);
+					ILCoderBranch(coder, IL_OP_BR, currentLabel + 2,
+								  ILEngineType_O, ILEngineType_O);
+					ILCoderLabel(coder, currentLabel + 1);
+					/*
+					 * Handle the case where the ref pointer is null.
+					 */
+					/*
+					 * Load the array and the index on the stack for the
+					 * store to the array.
+					 */
+					ILCoderLoadLocal(coder, 0, locals[0]);
+					_ILCoderLoadInt32Constant(coder, currentParam - 1);
+					if(refTypeIsValue)
+					{
+						/*
+						 * TODO: Create a 0 boxed value
+						 */
+						ILCoderConstant(coder, IL_OP_LDNULL, 0);
+					}
+					else
+					{
+						/*
+						 * Load a null reference and store it in the array.
+						 */
+						ILCoderConstant(coder, IL_OP_LDNULL, 0);
+					}
+					ILCoderArrayAccess(coder, IL_OP_STELEM_REF,
+									   ILEngineType_I4,
+									   ILType_FromClass(objectClassInfo),
+									   &prefixInfo);
+					ILCoderLabel(coder, currentLabel + 2);
+					currentLabel += 2;
+				}
+				else
+				{
+					/*
+					 * Load the array and the index on the stack for the
+					 * store to the array.
+					 */
+					ILCoderLoadLocal(coder, 0, locals[0]);
+					_ILCoderLoadInt32Constant(coder, currentParam - 1);
+					if(ILTypeIsValue(paramType))
+					{
+						ILClass *paramClassInfo;
+						ILExecThread *thread;
+
+						thread = ILExecThreadCurrent();
+						paramClassInfo = ILClassFromType(image, 0, paramType, 0);
+						if(!paramClassInfo)
+						{
+							return IL_CODER_END_TOO_BIG;
+						}
+						/*
+						 * Get the address of the argument.
+						 */
+						ILCoderAddrOfArg(coder, currentParam);
+						
+						/*
+						 * And box the value the pointer references.
+						 */
+						if(!_ILCoderBoxPtr(_ILExecThreadProcess(thread),
+										   paramType, paramClassInfo, 0))
+						{
+							return IL_CODER_END_TOO_BIG;
+						}
+					}
+					else
+					{
+						/*
+						 * Load the argument on the stack.
+						 */
+						_ILCoderLoadArgs(coder, &stack[2], method, signature,
+										 currentParam, currentParam);
+					}
+					ILCoderArrayAccess(coder, IL_OP_STELEM_REF, ILEngineType_I4,
+									   ILType_FromClass(objectClassInfo),
+									   &prefixInfo);
+				}
+				++currentParam;
+			}
+		}
+
+		/*
+		 * Create the AsyncResult object. 
+		 */
+		/*
+		 * The current delegate object.
+		 */
+		_ILCoderLoadArgs(coder, stack, method, signature, 0, 0);
+		/*
+		 * The array with the arguments
+		 */
+		if(numParams > 2)
+		{
+			ILCoderLoadLocal(coder, 0, locals[0]);
+		}
+		else
+		{
+			/*
+			 * No arguments so the array to hold the values is not needed.
+			 */
+			ILCoderConstant(coder, IL_OP_LDNULL, 0);
+		}
+		stack[1].typeInfo = arrayType;
+		stack[1].engineType = ILEngineType_O;
+		/*
+		 * The callback and the state object.
+		 */
+		_ILCoderLoadArgs(coder, &stack[2], method, signature, numParams - 1, numParams);
+
+		coderMethodInfo.args = stack;
+		coderMethodInfo.numBaseArgs = 4;
+		coderMethodInfo.numVarArgs = 0;
+		coderMethodInfo.hasParamArray = 0;
+		coderMethodInfo.tailCall = 0;
+		coderMethodInfo.signature = ILMethod_Signature(asyncResultCtorInfo);
+
+		ILCoderCallCtor(coder, &coderMethodInfo, asyncResultCtorInfo);
+		/*
+		 * Return the AsyncResult to the caller.
+		 */
+		ILCoderReturnInsn(coder, _ILTypeToEngineType(returnType),
+						  returnType);
+		/* Mark the end of the method */
+		ILCoderMarkEnd(coder);
+
+		return ILCoderFinish(coder);
+	}
+	return IL_CODER_END_TOO_BIG;
+}
+
+static int _ILCoderGenDelegateEndInvoke(ILCoder *coder, ILMethod *method,
+										unsigned char **start,
+										ILCoderExceptions *coderExceptions)
+{
+	ILType *signature;
+
+	signature = ILMethod_Signature(method);
+	if(signature)
+	{
+		ILImage *image;
+		ILClass *delegateClass;
+		ILType *arrayType;
+		ILClass *arrayClass;
+		ILClass *objectClassInfo;
+		ILType *returnType;
+		ILClass *returnClass;
+		ILClass *asyncResultClass;
+		ILMethod *asyncEndInvokeMethodInfo;
+		ILMethod *invokeMethodInfo;
+		ILType *invokeSignature;
+		ILUInt32 numParams;
+		ILMethodCode code;
+		ILType *locals[2];
+
+		image = ILProgramItem_Image(method);
+		numParams = ILTypeNumParams(signature);
+		returnType = ILTypeGetReturn(signature);
+		delegateClass = ILMethod_Owner(method);
+		ILMemZero(&code, sizeof(ILMethodCode));
+		objectClassInfo = ILClassResolveSystem(image, 0, "Object", "System");
+		if(!objectClassInfo)
+		{
+			/* Ran out of memory trying to create "System.Delegate" */
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		asyncResultClass = ILClassResolveSystem(image, 0, "AsyncResult",
+												"System.Runtime.Remoting.Messaging");
+		if(!asyncResultClass)
+		{
+			/* Ran out of memory trying to create "System.Delegate" */
+			return IL_CODER_END_TOO_BIG;
+		}
+		/* Get the AsyncResult.EndInvoke method */
+		asyncEndInvokeMethodInfo = _GetMethod(asyncResultClass, "EndInvoke", 0);
+		if(asyncEndInvokeMethodInfo == 0)
+		{
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		returnClass = ILClassFromType(image, 0, returnType, 0);
+		if(!returnClass)
+		{
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		invokeMethodInfo = _GetMethod(delegateClass, "Invoke", 0);
+		if(!invokeMethodInfo)
+		{
+			return IL_CODER_END_TOO_BIG;
+		}
+		invokeSignature = ILMethod_Signature(invokeMethodInfo);
+
+		if(!_ILCoderCreateSimpleArrayType(method,
+										  ILType_FromClass(objectClassInfo),
+										  &arrayType, &arrayClass))
+		{
+			/* Ran out of memory trying to create "System.Delegate" */
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		locals[0] = arrayType;
+		if(numParams > 1 && returnType != ILType_Void)
+		{
+			locals[1] = ILType_FromClass(objectClassInfo);
+			code.localVarSig = _ILCoderCreateLocalSignature(coder, image, locals, 2);
+		}
+		else
+		{
+			code.localVarSig = _ILCoderCreateLocalSignature(coder, image, locals, 1);
+		}
+		if(!code.localVarSig)
+		{
+			/* Ran out of memory trying to create te locals signature */
+			return IL_CODER_END_TOO_BIG;
+		}
+
+		{
+			ILCoderPrefixInfo prefixInfo;
+			ILCoderMethodInfo coderMethodInfo;
+			ILEngineStackItem stack[3];
+
+			ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
+			code.maxStack = 3;
+			if(!ILCoderSetup(coder, start, method, &code, coderExceptions, 0))
+			{
+				/* The coder setup failed */
+				return IL_CODER_END_TOO_BIG;
+			}
+			
+			if(numParams > 1)
+			{
+				/*
+				 * We have byref arguments so create an array to hold the
+				 * boxed byref values.
+				 * Load the number of elements for the array to be created on the stack.
+				 */
+				_ILCoderLoadInt32Constant(coder, numParams - 1);
+				/*
+				 * Create the array for the out params.
+				 */
+				ILCoderNewArray(coder, arrayType, arrayClass, ILEngineType_I4);
+			}
+			else
+			{
+				/*
+				 * No ref arguments so the array to hold the values is not needed.
+				 */
+				ILCoderConstant(coder, IL_OP_LDNULL, 0);
+			}
+			/*
+			 * Save the array in the local slot 0
+			 */
+			ILCoderStoreLocal(coder, 0, ILEngineType_O, locals[0]);
+			
+			/*
+			 * Call the IAsyncResult.EndInvoke method.
+			 */
+			_ILCoderLoadArgs(coder, stack, method, signature,
+							 numParams, numParams);
+			ILCoderLoadLocal(coder, 0, locals[0]);
+			stack[1].typeInfo = arrayType;
+			stack[1].engineType = ILEngineType_O;
+			_ILCoderSetReturnType(&stack[2], returnType);
+
+			coderMethodInfo.args = stack;
+			coderMethodInfo.numBaseArgs = 2;
+			coderMethodInfo.numVarArgs = 0;
+			coderMethodInfo.hasParamArray = 0;
+			coderMethodInfo.tailCall = 0;
+			coderMethodInfo.signature = ILMethod_Signature(asyncEndInvokeMethodInfo);
+
+			ILCoderCallMethod(coder, &coderMethodInfo, &(stack[2]),
+							  asyncEndInvokeMethodInfo);
+
+			if(returnType == ILType_Void)
+			{
+				/*
+				 * Pop the object returned from the stack.
+				 */
+				ILCoderPop(coder, ILEngineType_O, ILType_Invalid);
+			}
+			if(numParams > 1)
+			{
+				ILUInt32 paramCount;
+				ILUInt32 paramNum;
+				ILUInt32 currentParam;
+
+				if(returnType != ILType_Void)
+				{
+					/*
+					 * Save the object with the return value in the local slot 1
+					 */
+					ILCoderStoreLocal(coder, 1, ILEngineType_O, locals[1]);
+				}				
+				/*
+				 * Copy the ref values.
+				 */
+				paramCount = ILTypeNumParams(invokeSignature);
+				paramNum = 1;
+				currentParam = 0;
+				while(paramNum <= paramCount)
+				{
+					ILType *paramType;
+
+					paramType = ILTypeGetParam(invokeSignature, paramNum);
+					if(ILType_IsRef(paramType))
+					{
+						ILType *refType;
+						ILClass *refClass;
+
+						refType = ILType_Ref(paramType);
+						refType = ILTypeGetEnumType(refType);
+						refClass = ILClassFromType(image, 0, refType, 0);
+						if(!refClass)
+						{
+							return IL_CODER_END_TOO_BIG;
+						}
+
+						/*
+						 * Load the ref address for this argument on the stack
+						 * for the store to this addtess.
+						 */
+						_ILCoderLoadArgs(coder, stack, method, signature,
+										 currentParam + 1, currentParam + 1);
+						/*
+						 * Load the array on the stack.
+						 */
+						ILCoderLoadLocal(coder, 0, locals[0]);
+						/*
+						 * Load the index on the stack.
+						 */
+						_ILCoderLoadInt32Constant(coder, currentParam);
+						/*
+						 * And get the object from the array.
+						 */
+						ILCoderArrayAccess(coder, IL_OP_LDELEM_REF,
+										   ILEngineType_I4,
+										   ILType_FromClass(objectClassInfo),
+										   &prefixInfo);
+						/*
+						 * Cast the class to the expected class and throw an
+						 * exception if that's not possible.
+						 */
+						ILCoderCastClass(coder, refClass, 1, &prefixInfo);
+						if(ILType_IsPrimitive(refType))
+						{
+							/*
+							 * Unbox the object to produce a managed pointer
+							 */
+							ILCoderUnbox(coder, refClass, &prefixInfo);
+							switch(ILType_ToElement(refType))
+							{
+								case IL_META_ELEMTYPE_I1:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_I1,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I1,
+													 &prefixInfo);
+								}
+								break;
+								
+								case IL_META_ELEMTYPE_BOOLEAN:
+								case IL_META_ELEMTYPE_U1:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_U1,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I1,
+													 &prefixInfo);
+								}
+								break;
+
+								case IL_META_ELEMTYPE_I2:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_I2,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I2,
+													 &prefixInfo);
+								}
+								break;
+
+								case IL_META_ELEMTYPE_CHAR:
+								case IL_META_ELEMTYPE_U2:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_U2,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I2,
+													 &prefixInfo);
+								}
+								break;
+
+								case IL_META_ELEMTYPE_I4:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_I4,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I4,
+													 &prefixInfo);
+								}
+								break;
+
+								case IL_META_ELEMTYPE_U4:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_U4,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I4,
+													 &prefixInfo);
+								}
+								break;
+								
+								case IL_META_ELEMTYPE_I8:
+								case IL_META_ELEMTYPE_U8:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_I8,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I8,
+													 &prefixInfo);
+								}
+								break;
+
+								case IL_META_ELEMTYPE_I:
+								case IL_META_ELEMTYPE_U:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_I,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_I,
+													 &prefixInfo);
+								}
+								break;
+
+								case IL_META_ELEMTYPE_R4:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_R4,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_R4,
+													 &prefixInfo);
+								}
+								break;
+
+								case IL_META_ELEMTYPE_R8:
+								{
+									ILCoderPtrAccess(coder, IL_OP_LDIND_R8,
+													 &prefixInfo);
+									ILCoderPtrAccess(coder, IL_OP_STIND_R8,
+													 &prefixInfo);
+								}
+								break;
+
+								default:
+								{
+									/*
+									 * Copy the value type.
+									 */
+									ILCoderCopyObject(coder, ILEngineType_M,
+													  ILEngineType_M, refClass);
+								}
+							}
+						}
+						else if(ILType_IsValueType(refType))
+						{
+							/*
+							 * Unbox the object to produce a managed pointer
+							 */
+							ILCoderUnbox(coder, refClass, &prefixInfo);
+							/*
+							 * And copy the value type.
+							 */
+							ILCoderCopyObject(coder, ILEngineType_M,
+											  ILEngineType_M, refClass);
+						}
+						else
+						{
+							/*
+							 * Everything else is an object reference.
+							 */
+							ILCoderPtrAccess(coder, IL_OP_STIND_REF,
+											 &prefixInfo);
+						}
+						++ currentParam;
+					}
+					++paramNum;
+				}
+				if(returnType != ILType_Void)
+				{
+					/*
+					 * Reload the return value on the stack.
+					 */
+					ILCoderLoadLocal(coder, 1, locals[1]);
+				}
+			}
+			if(returnType != ILType_Void)
+			{
+				/*
+				 * Get the return value.
+				 * If the value returned is a value type we have to unbox the
+				 * value prior to returning it.
+				 */
+				ILCoderCastClass(coder, returnClass, 1, &prefixInfo);
+				if(!_ILCoderUnboxValue(coder, image, returnType, &prefixInfo))
+				{
+					return IL_CODER_END_TOO_BIG;
+				}
+				ILCoderReturnInsn(coder, _ILTypeToEngineType(returnType),
+								  returnType);
+			}
+			else
+			{
+				ILCoderReturnInsn(coder, ILEngineType_Invalid, ILType_Void);
+			}
+			/* Mark the end of the method */
+			ILCoderMarkEnd(coder);
+			
+			return ILCoderFinish(coder);
+		}
+	}
+	return IL_CODER_END_TOO_BIG;
+}
+
+#ifdef IL_USE_JIT
+
+static ILObject *Delegate_BeginInvoke(ILExecThread *thread, ILObject *_this)
+{	
+	/* This is a dummy because the real function is generated by the */
+	/* jit coder. */
+	return 0;
+}
+
+#endif /* IL_USE_JIT */
+ 
 int _ILGetInternalDelegate(ILMethod *method, int *isCtor,
 						   ILInternalInfo *info)
 {
@@ -1119,31 +1500,38 @@ int _ILGetInternalDelegate(ILMethod *method, int *isCtor,
 		if(_ILLookupTypeMatch(type, "(ToSystem.Object;j)V"))
 		{
 			*isCtor = 1;
-			info->func = (void *)Delegate_ctor;
-			info->marshal = (void *)Delegate_ctor_marshal;
+			info->un.gen = _ILCoderGenDelegateCtor;
+			info->flags = _IL_INTERNAL_GENCODE;
 			return 1;
 		}
 	}
 	else if(!strcmp(name, "Invoke") && ILType_HasThis(type))
 	{
 		/* This is the delegate invocation method */
+		ILClass *parent;
 		*isCtor = 0;
 
-		return _ILGetInternalDelegateFunc
-			(
-				info,
-				ILTypeGetReturn(type),
-				&FuncsFor_Delegate_Invoke,
-				&MarshalFuncsFor_Delegate_Invoke
-			);
+		parent = ILClass_ParentClass(classInfo);
+		name = ILClass_Name(parent);
+		if(!strcmp(name, "MulticastDelegate"))
+		{
+			info->un.gen = _ILCoderGenMulticastDelegateInvoke;
+			info->flags = _IL_INTERNAL_GENCODE;
+			return 1;
+		}
+		if(!strcmp(name, "Delegate"))
+		{
+			info->un.gen = _ILCoderGenDelegateInvoke;
+			info->flags = _IL_INTERNAL_GENCODE;
+			return 1;
+		}
 	}
 	else if(!strcmp(name, "BeginInvoke"))
 	{
 		*isCtor = 0;
 
-		info->func = (void *)Delegate_BeginInvoke;
-		info->marshal = (void *)0;
-
+		info->un.gen = (void *)_ILCoderGenDelegateBeginInvoke;
+		info->flags = _IL_INTERNAL_GENCODE;
 		return 1;
 	}
 	else if(!strcmp(name, "EndInvoke"))
@@ -1151,13 +1539,9 @@ int _ILGetInternalDelegate(ILMethod *method, int *isCtor,
 		/* This is the delegate invocation method */
 		*isCtor = 0;
 		
-		return _ILGetInternalDelegateFunc
-			(
-				info,
-				ILTypeGetReturn(type),
-				&FuncsFor_Delegate_EndInvoke,
-				&MarshalFuncsFor_Delegate_EndInvoke
-			);
+		info->un.gen = (void *)_ILCoderGenDelegateEndInvoke;
+		info->flags = _IL_INTERNAL_GENCODE;
+		return 1;
 	}
 
 	return 0;

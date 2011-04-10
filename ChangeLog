@@ -1,3 +1,8 @@
+2011-04-10  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/lib_delegate.c (CreateDelegateSignature): Remove the unused
+	objectClass variable.
+
 2011-04-09  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/Makefile.am: Add coder.c and coder.h to the sources.

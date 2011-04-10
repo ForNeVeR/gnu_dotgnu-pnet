@@ -343,7 +343,6 @@ static ILType *CreateDelegateSignature(ILType *invokeSignature, ILImage *image)
 {
 	ILType *signature;
 	ILType *returnType;
-	ILClass *objectClass;
 	ILUInt32 numParams;
 	ILUInt32 param;
 	ILContext *context;

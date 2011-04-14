@@ -392,9 +392,6 @@ ILUInt32 _ILPackCVMStackArgs(ILExecThread *thread, CVMWord *stacktop,
 		{
 			if(ILType_IsPrimitive(paramType))
 			{
-				int x;
-
-				x = ILType_ToElement(paramType);
 				/* Box a primitive value after aligning it properly */
 				switch(ILType_ToElement(paramType))
 				{

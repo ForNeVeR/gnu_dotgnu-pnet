@@ -126,7 +126,6 @@ static void CVMCoder_OutputExceptionTable(ILCoder *_coder,
 	ILCVMUnwind *unwind;
 	ILCVMLabel *startLabel;
 	ILCVMLabel *endLabel;
-	int parent;
 	int index;
 
 	if(exceptions->numBlocks == 0)
@@ -162,7 +161,6 @@ static void CVMCoder_OutputExceptionTable(ILCoder *_coder,
 	cvmUnwind[0].exceptionSlot = -1;
 	cvmUnwind[0].un.tryBlock.firstHandler = -1;
 
-	parent = 0;
 	index = 0;
 	while(index < exceptions->numBlocks)
 	{

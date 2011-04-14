@@ -420,7 +420,6 @@ static int _ILCoderGenDelegateCtor(ILCoder *coder, ILMethod *method,
 								   unsigned char **start,
 								   ILCoderExceptions *coderExceptions)
 {
-	ILClass *classInfo;
 	ILClass *delegateClassInfo;
 	ILField *targetField;
 	ILField *methodField;
@@ -429,7 +428,6 @@ static int _ILCoderGenDelegateCtor(ILCoder *coder, ILMethod *method,
 	ILMethodCode code;
 	ILEngineStackItem stack[2];
 
-	classInfo = ILMethod_Owner(method);
 	delegateClassInfo = ILClassResolveSystem(ILProgramItem_Image(method),
 											 0, "Delegate", "System");
 	if(!delegateClassInfo)
@@ -503,12 +501,10 @@ static int GenDelegateInvoke(ILCoder *coder, ILMethod *method,
 	ILCoderPrefixInfo prefixInfo;
 	ILCoderMethodInfo coderMethodInfo;
 	ILType *returnType;
-	ILType *thisType;
 	
 	/* Initialize the prefix information */
 	ILMemZero(&prefixInfo, sizeof(ILCoderPrefixInfo));
 	returnType = ILTypeGetReturn(signature);
-	thisType = ILType_FromClass(ILMethod_Owner(method));
 
 	ILCoderLoadThisField(coder, targetField,
 						 ILField_Type(targetField), &prefixInfo);
@@ -778,7 +774,6 @@ static int _ILCoderGenDelegateBeginInvoke(ILCoder *coder, ILMethod *method,
 	{
 		ILImage *image;
 		ILType *returnType;
-		ILClass *delegateClass;
 		ILClass *objectClassInfo;
 		ILType *arrayType;
 		ILClass *arrayClass;
@@ -792,7 +787,6 @@ static int _ILCoderGenDelegateBeginInvoke(ILCoder *coder, ILMethod *method,
 		ILEngineStackItem stack[4];
 
 		image = ILProgramItem_Image(method);
-		delegateClass = ILMethod_Owner(method);
 		returnType = ILTypeGetReturn(signature);
 		numParams = ILTypeNumParams(signature);
 

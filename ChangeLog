@@ -10,6 +10,9 @@
 	(GenDelegateInvoke): Remove unused variable thisType.
 	(_ILCoderGenDelegateBeginInvoke): Remove unused variable delegateClass.
 
+	* support/list.c (ILSinglelyLinkedListFind): Remove unused variable prev.
+	(ILSinglelyLinkedListReverseFind): likewise
+
 2011-04-10  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/lib_delegate.c (CreateDelegateSignature): Remove the unused

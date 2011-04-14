@@ -135,11 +135,10 @@ static void **ILSinglelyLinkedListFind(ILList *_list, void *data)
 {
 	int index;
 	ILSinglelyLinkedList *list;
-	ILSinglelyLinkedListEntry *entry, *prev;
+	ILSinglelyLinkedListEntry *entry;
 
 	list = (ILSinglelyLinkedList *)_list;
 
-	prev = 0;
 	entry = list->first;
 
 	index = 0;
@@ -152,7 +151,6 @@ static void **ILSinglelyLinkedListFind(ILList *_list, void *data)
 		}
 
 		index++;
-		prev = entry;
 		entry = entry->next;
 	}
 
@@ -164,11 +162,10 @@ static void **ILSinglelyLinkedListReverseFind(ILList *_list, void *data)
 	int index;
 	void **found;
 	ILSinglelyLinkedList *list;
-	ILSinglelyLinkedListEntry *entry, *prev;
+	ILSinglelyLinkedListEntry *entry;
 
 	list = (ILSinglelyLinkedList *)_list;
 
-	prev = 0;
 	entry = list->first;
 
 	index = 0;
@@ -182,7 +179,6 @@ static void **ILSinglelyLinkedListReverseFind(ILList *_list, void *data)
 		}
 
 		index++;
-		prev = entry;
 		entry = entry->next;
 	}
 

@@ -35,13 +35,6 @@ extern	"C" {
 #endif
 
 /*
- * Some error codes used during verification
- */
-#define IL_VERIFY_OK			0
-#define IL_VERIFY_BRANCH_ERR	1
-#define IL_VERIFY_TYPE_ERR		2
-
-/*
  * Temporary memory allocator.
  */
 typedef struct
@@ -642,352 +635,6 @@ static int IsSubClass(ILType *type, ILClass *classInfo)
 	}
 }
 
-static int
-NestExceptionBlocks(ILCoderExceptionBlock *block,
-					ILCoderExceptionBlock *prevEB,
-					ILCoderExceptionBlock *firstNestedEB,
-					ILCoderExceptionBlock **firstEB)
-{
-	ILCoderExceptionBlock *lastNestedEB;
-	ILCoderExceptionBlock *nextEB;
-
-	block->nested = firstNestedEB;
-	block->parent = firstNestedEB->parent;
-	firstNestedEB->parent = block;
-	lastNestedEB = firstNestedEB;
-	nextEB = firstNestedEB->nextNested;
-	while(nextEB)
-	{
-		if(block->endOffset <= nextEB->startOffset)
-		{
-			/*
-			 * The next block is not nested in the current block.
-			 */
-			break;
-		}
-		if(block->endOffset >= nextEB->endOffset)
-		{
-			/*
-			 * The next block is nested in the current block too.
-			 */
-			nextEB->parent = block;
-			lastNestedEB = nextEB;
-		}
-		else
-		{
-			/* Partially overlapping blocks are not allowed */
-			return 0;
-		}
-		nextEB = nextEB->nextNested;
-	}
-	block->nextNested = lastNestedEB->nextNested;
-	lastNestedEB->nextNested = 0;
-	if(prevEB)
-	{
-		prevEB->nextNested = block;
-	}
-	else
-	{
-		if(block->parent)
-		{
-			nextEB = block->parent;
-			nextEB->nested = block;
-		}
-		else
-		{
-			nextEB = *firstEB;
-			*firstEB = block;
-		}
-	}
-	return 1;
-}
-
-static int
-InsertExceptionBlock(ILCoderExceptions *coderExceptions,
-					 ILCoderExceptionBlock *block)
-{
-	ILCoderExceptionBlock *prevEB;
-	ILCoderExceptionBlock *checkEB;
-
-	prevEB = 0;
-	checkEB = coderExceptions->firstBlock;
-	while(checkEB)
-	{
-		if(block->endOffset <= checkEB->startOffset)
-		{
-			/* The current block is before the check block */
-			if(prevEB)
-			{
-				block->nextNested = prevEB->nextNested;
-				prevEB->nextNested = block;
-				block->parent = prevEB->parent;
-			}
-			else
-			{
-				if(checkEB->parent)
-				{
-					checkEB = checkEB->parent;
-					block->nextNested = checkEB->nested;
-					checkEB->nested = block;
-					block->parent = checkEB;
-				}
-				else
-				{
-					block->nextNested = coderExceptions->firstBlock;
-					coderExceptions->firstBlock = block;
-				}
-			}
-			break;
-		}
-		else if(block->startOffset >= checkEB->endOffset)
-		{
-			/*
-			 * The current block starts after the check block.
-			 */
-			if(checkEB->nextNested)
-			{
-				prevEB = checkEB;
-				checkEB = checkEB->nextNested;
-			}
-			else
-			{
-				checkEB->nextNested = block;
-				block->parent = checkEB->parent;
-				break;
-			}
-		}
-		else if(block->startOffset <= checkEB->startOffset &&
-				block->endOffset >= checkEB->endOffset)
-		{
-			/*
-			 * The current block encloses the check block.
-			 */
-			if(!NestExceptionBlocks(block, prevEB, checkEB,
-									&(coderExceptions->firstBlock)))
-			{
-				return 0;
-			}
-			break;
-		}
-		else if(block->startOffset >= checkEB->startOffset &&
-				block->endOffset <= checkEB->endOffset)
-		{
-			/*
-			 * The current try block is nested in the check try block.
-			 */
-			if(checkEB->nested)
-			{
-				prevEB = 0;
-				checkEB = checkEB->nested;
-			}
-			else
-			{
-				checkEB->nested = block;
-				block->parent = checkEB;
-				break;
-			}
-		}
-		else
-		{
-			/*
-			 * Partially overlapping blocks are not allowed.
-			 */
-			return 0;
-		}
-	}
-	return 1;
-}
-
-static ILCoderExceptionBlock *
-FindOrAddTryBlock(ILCoderExceptions *coderExceptions,
-				  ILUInt32 tryStart, ILUInt32 tryEnd)
-{
-	ILCoderExceptionBlock *block;
-	ILUInt32 current;
-	
-	current = 0;
-	while(current < coderExceptions->numBlocks)
-	{
-		block = &(coderExceptions->blocks[current]);
-		if((block->startOffset == tryStart) && (block->endOffset == tryEnd) &&
-			(block->flags == IL_CODER_HANDLER_TYPE_TRY))
-		{
-			return block;
-		}
-		++current;
-	}
-	/* If we get here no matching try block was found */
-	block = &(coderExceptions->blocks[coderExceptions->numBlocks++]);
-	block->flags = IL_CODER_HANDLER_TYPE_TRY;
-	block->startOffset = tryStart;
-	block->endOffset = tryEnd;
-	block->un.tryBlock.handlerBlock = 0;
-	block->parent = 0;
-	block->nested = 0;
-	block->nextNested = 0;
-
-	/*
-	 * Now insert the new try block at it's place in the exception block
-	 * structure
-	 */
-	if(!coderExceptions->firstBlock)
-	{
-		coderExceptions->firstBlock = block;
-	}
-	else
-	{
-		if(!InsertExceptionBlock(coderExceptions, block))
-		{
-			--coderExceptions->numBlocks;
-			return 0;
-		}
-	}
-	return block;
-}
-
-static void
-AddHandlerBlock(ILCoderExceptionBlock *tryBlock, ILCoderExceptionBlock *handler)
-{
-	if(!tryBlock->un.tryBlock.handlerBlock)
-	{
-		tryBlock->un.tryBlock.handlerBlock = handler;
-	}
-	else
-	{
-		ILCoderExceptionBlock *nextHandler;
-
-		nextHandler = tryBlock->un.tryBlock.handlerBlock;
-		while(nextHandler)
-		{
-			if(!nextHandler->un.handlerBlock.nextHandler)
-			{
-				nextHandler->un.handlerBlock.nextHandler = handler;
-				break;
-			}
-			nextHandler = nextHandler->un.handlerBlock.nextHandler;
-		}
-	}
-}
-
-static int
-AddExceptionBlock(ILCoderExceptions *coderExceptions,
-				  ILMethod *method, ILException *exception)
-{
-	ILCoderExceptionBlock *tryBlock;
-	ILCoderExceptionBlock *handler;
-	ILUInt32 startOffset;
-	ILUInt32 endOffset;
-
-	startOffset = exception->tryOffset;
-	endOffset = exception->tryOffset + exception->tryLength;
-	if(endOffset < startOffset)
-	{
-		return IL_VERIFY_BRANCH_ERR;
-	}
-	/*
-	 * Find the try block for this exception handler.
-	 */
-	tryBlock = FindOrAddTryBlock(coderExceptions, startOffset, endOffset);
-	if(!tryBlock)
-	{
-		return IL_VERIFY_BRANCH_ERR;
-	}
-
-	startOffset = exception->handlerOffset;
-	endOffset = exception->handlerOffset + exception->handlerLength;
-	if(endOffset < startOffset)
-	{
-		return IL_VERIFY_BRANCH_ERR;
-	}
-
-	/*
-	 * Allocate a new handler block.
-	 */
-	handler = &(coderExceptions->blocks[coderExceptions->numBlocks++]);
-	handler->startOffset = startOffset;
-	handler->endOffset = endOffset;
-	handler->parent = 0;
-	handler->nested = 0;
-	handler->nextNested = 0;
-	handler->startLabel = 0;
-	handler->handlerLabel = 0;
-	if(exception->flags & (IL_META_EXCEPTION_FINALLY | IL_META_EXCEPTION_FAULT))
-	{
-		/*
-		 * A finally or fault handler.
-		 */
-		if(exception->flags & IL_META_EXCEPTION_FINALLY)
-		{
-			handler->flags = IL_CODER_HANDLER_TYPE_FINALLY;
-		}
-		else
-		{
-			handler->flags = IL_CODER_HANDLER_TYPE_FAULT;
-		}
-		handler->un.handlerBlock.nextHandler = 0;
-		handler->un.handlerBlock.filterBlock = 0;
-		handler->un.handlerBlock.exceptionClass = 0;
-		handler->un.handlerBlock.tryBlock = tryBlock;;
-	}
-	else
-	{
-		handler->un.handlerBlock.nextHandler = 0;
-		handler->un.handlerBlock.tryBlock = tryBlock;;
-		if(exception->flags & IL_META_EXCEPTION_FILTER)
-		{
-			/*
-			 * A catch block with filter.
-			 */
-			ILCoderExceptionBlock *filterBlock;
-
-			filterBlock = &(coderExceptions->blocks[coderExceptions->numBlocks++]);
-			filterBlock->flags = IL_CODER_HANDLER_TYPE_FILTER;
-			filterBlock->startOffset = exception->extraArg;
-			filterBlock->endOffset = exception->handlerOffset;
-			filterBlock->parent = 0;
-			filterBlock->nested = 0;
-			filterBlock->nextNested = 0;
-			filterBlock->startLabel = 0;
-			filterBlock->handlerLabel = 0;
-			if(!InsertExceptionBlock(coderExceptions, filterBlock))
-			{
-				return IL_VERIFY_BRANCH_ERR;
-			}
-			handler->flags = IL_CODER_HANDLER_TYPE_FILTEREDCATCH;
-			handler->un.handlerBlock.filterBlock = filterBlock;
-			handler->un.handlerBlock.exceptionClass = 0;
-		}
-		else
-		{
-			/*
-			 * A catch block.
-			 */
-			ILClass *classInfo;
-			ILProgramItem *item;
-
-			handler->flags = IL_CODER_HANDLER_TYPE_CATCH;
-			handler->un.handlerBlock.filterBlock = 0;
-
-			/* Validate the class token */
-			item = ((ILProgramItem *)ILImageTokenInfo(ILProgramItem_Image(method),
-													  exception->extraArg));
-			classInfo = ILProgramItemToClass(item);
-			if(!classInfo ||
-			   !ILClassAccessible(classInfo, ILMethod_Owner(method)))
-			{
-				return IL_VERIFY_TYPE_ERR;
-			}
-			handler->un.handlerBlock.exceptionClass = classInfo;
-		}
-	}
-	if(!InsertExceptionBlock(coderExceptions, handler))
-	{
-		return IL_VERIFY_BRANCH_ERR;
-	}
-	AddHandlerBlock(tryBlock, handler);
-	return IL_VERIFY_OK;
-}
-
 /*
  * Push the appropriate synchronization object for a synchronized method.
  */
@@ -1181,15 +828,16 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 		exception = exceptions;
 		while(exception)
 		{
-			switch(AddExceptionBlock(&coderExceptions, method, exception))
+			switch(_ILCoderAddExceptionBlock(&coderExceptions, method,
+											 exception))
 			{
-				case IL_VERIFY_BRANCH_ERR:
+				case IL_CODER_BRANCH_ERR:
 				{
 					VERIFY_BRANCH_ERROR();
 				}
 				break;
 
-				case IL_VERIFY_TYPE_ERR:
+				case IL_CODER_TYPE_ERR:
 				{
 					VERIFY_TYPE_ERROR();
 				}
@@ -1246,15 +894,16 @@ int _ILVerify(ILCoder *coder, unsigned char **start, ILMethod *method,
 			tempException.ptrUserData = 0;
 			tempException.next = 0;
 
-			switch(AddExceptionBlock(&coderExceptions, method, &tempException))
+			switch(_ILCoderAddExceptionBlock(&coderExceptions, method,
+											 &tempException))
 			{
-				case IL_VERIFY_BRANCH_ERR:
+				case IL_CODER_BRANCH_ERR:
 				{
 					VERIFY_BRANCH_ERROR();
 				}
 				break;
 
-				case IL_VERIFY_TYPE_ERR:
+				case IL_CODER_TYPE_ERR:
 				{
 					VERIFY_TYPE_ERROR();
 				}
@@ -1691,7 +1340,7 @@ restart:
 	 */
 	if(isSynchronized)
 	{
-		coderException = FindExceptionBlock(&coderExceptions, code->codeLen);
+		coderException = _ILCoderFindExceptionBlock(&coderExceptions, code->codeLen);
 		/*
 		 * This check is for catching bugs.
 		 */

@@ -21,54 +21,6 @@
 #if defined(IL_VERIFY_GLOBALS)
 
 /*
- * Find the most nested exception block where an offset is located.
- * Returns NULL if no such exception block could be found.
- */
-static ILCoderExceptionBlock *FindExceptionBlock(ILCoderExceptions *coderExceptions,
-												 ILUInt32 offset)
-{
-	ILCoderExceptionBlock *block;
-	ILCoderExceptionBlock *prevEB;
-
-	prevEB = 0;
-	block = coderExceptions->firstBlock;
-	while(block)
-	{
-		if(offset < block->startOffset)
-		{
-			break;
-		}
-		else if(offset >= block->endOffset)
-		{
-			block = block->nextNested;
-		}
-		else
-		{
-			prevEB = block;
-			block = block->nested;
-		}
-	}
-	return prevEB;
-}
-
-/*
- * Determine if an offset is inside an exception handler's "try" range.
- */
-static IL_INLINE int InsideExceptionBlock(ILException *exception,
-										  ILUInt32 offset)
-{
-	if(offset >= exception->tryOffset &&
-	   offset < (exception->tryOffset + exception->tryLength))
-	{
-		return 1;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-/*
  * Determine the most nested catch block where the offset is in..
  */
 static IL_INLINE ILCoderExceptionBlock *
@@ -76,7 +28,7 @@ InsideExceptionHandler(ILCoderExceptions *coderExceptions, ILUInt32 offset)
 {
 	ILCoderExceptionBlock *block;
 
-	block = FindExceptionBlock(coderExceptions, offset);
+	block = _ILCoderFindExceptionBlock(coderExceptions, offset);
 	while(block)
 	{
 		if(block->flags & IL_CODER_HANDLER_TYPE_CATCH)
@@ -88,51 +40,8 @@ InsideExceptionHandler(ILCoderExceptions *coderExceptions, ILUInt32 offset)
 	return 0;
 }
 
-/*
- * Emit code to throw a system-level exception.
- */
-static void _ThrowSystem(ILCoder *coder, ILMethod *method, int hasExceptions,
-						 const char *name, const char *namespace)
-{
-	ILClass *classInfo;
-	ILMethod *ctor;
-	ILCoderMethodInfo callInfo;
-
-	/* Find the no-argument constructor for the class */
-	classInfo = ILClassResolveSystem(ILProgramItem_Image(method), 0,
-								     name, namespace);
-	if(!classInfo)
-	{
-		return;
-	}
-	ctor = 0;
-	while((ctor = (ILMethod *)ILClassNextMemberByKind
-			(classInfo, (ILMember *)ctor, IL_META_MEMBERKIND_METHOD)) != 0)
-	{
-		if(ILMethod_IsConstructor(ctor) &&
-		   ILTypeNumParams(ILMethod_Signature(ctor)) == 0)
-		{
-			break;
-		}
-	}
-	if(!ctor)
-	{
-		return;
-	}
-
-	/* Invoke the constructor */
-	callInfo.args = 0;
-	callInfo.numBaseArgs = 0;
-	callInfo.numVarArgs = 0;
-	callInfo.hasParamArray = 0;
-	ILCoderCallCtor(coder, &callInfo, ctor);
-
-	/* Set the stack trace & throw the object */
-	ILCoderSetStackTrace(coder);
-	ILCoderThrow(coder, hasExceptions);
-}
 #define	ThrowSystem(namespace,name)	\
-			_ThrowSystem(coder, method, (exceptions != 0), (name), (namespace))
+			_ILCoderThrowSystem(coder, method, (name), (namespace))
 
 #elif defined(IL_VERIFY_LOCALS)
 
@@ -203,7 +112,7 @@ case IL_OP_ENDFINALLY:
 	/* End the current "finally" or "fault" clause */
 	if(stackSize == 0)
 	{
-		coderException = FindExceptionBlock(&coderExceptions, offset);
+		coderException = _ILCoderFindExceptionBlock(&coderExceptions, offset);
 		if(!coderException ||
 		   ((coderException->flags & IL_CODER_HANDLER_TYPE_FINALLY) == 0))
 		{
@@ -230,7 +139,7 @@ case IL_OP_PREFIX + IL_PREFIX_OP_ENDFILTER:
 	 */
 	if(stackSize == 1)
 	{
-		coderException = FindExceptionBlock(&coderExceptions, offset);
+		coderException = _ILCoderFindExceptionBlock(&coderExceptions, offset);
 		if(!coderException ||
 		   (coderException->flags != IL_CODER_HANDLER_TYPE_FILTER))
 		{
@@ -264,7 +173,7 @@ processLeave:
 	}
 
 	/* Call any applicable "finally" handlers, but not "fault" handlers */
-	coderException = FindExceptionBlock(&coderExceptions, offset);
+	coderException = _ILCoderFindExceptionBlock(&coderExceptions, offset);
 	while(coderException != 0)
 	{
 		/*

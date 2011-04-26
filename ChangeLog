@@ -1,3 +1,26 @@
+2011-04-26  Klaus Treichel  <ktreichel@web.de>
+
+	* engine/coder.c (NestExceptionBlocks): Move from verify.c to here.
+	(InsertExceptionBlock): likewise
+	(FindOrAddTryBlock): likewise
+	(AddHandlerBlock): likewise
+	(_ILCoderAddExceptionBlock): Move AddExceptionBlock from verify.c to
+	here.
+	(_ILCoderFindExceptionBlock): Move FindExceptionBlock from verify_except.c
+	to here.
+	(_ILCoderThrowSystem): Move _ThrowSystem from verify_except.c to here.
+
+	* engine/coder.h: Move definitiona of IL_VERIFY_* returncodes from
+	verify.c and change the prefix to IL_CODER_.
+	Add prototypes for the moved _ILCoder functions.
+
+	* engine/verify.c: Move exception related functions to coder.c and adjust
+	their usages to call the moved functions.
+
+	* engine/verify_except.c (FindExceptionBlock): Move  to coder.c.
+	(_ThrowSystem): Move to coder.c
+	Adjust usages of the moved functions.
+
 2011-04-14  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/cvm_call.c (_ILPackCVMStackArgs): Remove unused variable x.

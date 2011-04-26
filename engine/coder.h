@@ -26,6 +26,13 @@ extern	"C" {
 #endif
 
 /*
+ * Some error codes used during verification
+ */
+#define IL_CODER_OK				0
+#define IL_CODER_BRANCH_ERR		1
+#define IL_CODER_TYPE_ERR		2
+
+/*
  * Get the type of a parameter to the current method.
  * Returns 0 if the parameter number is invalid.
  */
@@ -60,6 +67,31 @@ int _ILCoderBoxValue(ILExecProcess *process, ILEngineType valueType,
  */
 int _ILCoderBoxPtr(ILExecProcess *process, ILType *typeInfo, 
 				   ILClass *boxClass, ILUInt32 pos);
+
+/*
+ * Add an IL exception block to the coder exception blocks.
+ * Returns IL_VERIFY_OK on success or IL_VERIFY_BRANCH_ERR if something is
+ * wrong with the offsets for example start > end or the block oberlaps
+ * with an existing block so that the block is neither completely nested
+ * in the block or surrounds the exicting block or vice versa.
+ */
+int _ILCoderAddExceptionBlock(ILCoderExceptions *coderExceptions,
+							  ILMethod *method, ILException *exception);
+
+/*
+ * Find the most nested exception block where an offset is located.
+ * Returns NULL if no such exception block could be found.
+ */
+ILCoderExceptionBlock *_ILCoderFindExceptionBlock(ILCoderExceptions *coderExceptions,
+												  ILUInt32 offset);
+
+/*
+ * Emit code to throw a system-level exception.
+ * Returns IL_CODER_OK on success or IL_CODER_TYPE_ERR if the exception
+ * or it's constructor could not be resolved.
+ */
+int _ILCoderThrowSystem(ILCoder *coder, ILMethod *method,
+						const char *name, const char *namespace);
 
 #ifdef	__cplusplus
 };

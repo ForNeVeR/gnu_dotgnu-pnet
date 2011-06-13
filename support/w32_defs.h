@@ -26,6 +26,11 @@ extern	"C" {
 #endif
 
 /*
+ * We need the thread identifier in this implementation.
+ */
+#define IL_THREAD_NEED_IDENTIFIER 1
+
+/*
  * Types that are needed elsewhere.
  */
 typedef CRITICAL_SECTION	_ILCriticalSection;

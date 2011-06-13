@@ -554,11 +554,10 @@ int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
 	else if(_ILThreadIsSelf(thread))
 	{
 		/* Mark the thread as suspended */
-		threadState.split.pub &= ~ IL_TS_SUSPEND_REQUESTED;
+		threadState.split.pub &= ~IL_TS_SUSPEND_REQUESTED;
 		threadState.split.pub |= (IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
 		ILInterlockedStoreU2(&(thread->state.split.pub),
 							 threadState.split.pub);
-		thread->resumeRequested = 0;
 
 		/* Unlock the thread object prior to suspending */
 		_ILCriticalSectionLeave(&(thread->lock));
@@ -575,7 +574,6 @@ int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
 		threadState.split.pub |= IL_TS_SUSPENDED;
 		ILInterlockedStoreU2(&(thread->state.split.pub),
 							 threadState.split.pub);
-		thread->resumeRequested = 0;
 
 		/* Put the thread to sleep temporarily */
 		_ILThreadSuspendOther(thread);
@@ -586,6 +584,12 @@ int ILThreadSuspendRequest(ILThread *thread, int requestOnly)
 			_ILCriticalSectionLeave(&(thread->lock));
 			return IL_SUSPEND_OK;
 		}
+
+		/* Mark the thread  suspend itself */
+		threadState.split.pub &= ~IL_TS_SUSPENDED;
+		threadState.split.pub |= IL_TS_SUSPEND_REQUESTED;
+		ILInterlockedStoreU2(&(thread->state.split.pub),
+							 threadState.split.pub);
 
 		/* Notify the thread that we want it to suspend itself */
 		thread->suspendRequested = 1;
@@ -645,6 +649,11 @@ void ILThreadResume(ILThread *thread)
 		threadState.split.pub &= ~IL_TS_SUSPEND_REQUESTED;
 		ILInterlockedStoreU2(&(thread->state.split.pub),
 							 threadState.split.pub);
+		thread->suspendRequested = 0;
+		/*
+		 * TODO: Notify the thread that requested the suspend becaue it might be
+		 * waiting for the ack.
+		 */
 	}
 
 	/* Unlock the thread object */
@@ -977,7 +986,6 @@ int ILThreadJoin(ILThread *thread, ILUInt32 ms)
 					threadState.split.pub |= (IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
 					ILInterlockedStoreU2(&(thread->state.split.pub),
 										 threadState.split.pub);
-					thread->resumeRequested = 0;
 
 					/* Remove ourselves from the foreign thread's join queue */
 					_ILWakeupQueueRemove(&(thread->joinQueue), &(self->wakeup));
@@ -1184,11 +1192,10 @@ int _ILThreadLeaveWaitState(ILThread *thread, int result)
 		{
 			threadState.split.pub &= ~IL_TS_SUSPEND_REQUESTED;
 			threadState.split.pub |= (IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
-			thread->resumeRequested = 0;
 
 			ILInterlockedStoreU2(&(thread->state.split.pub),
 								 threadState.split.pub);
-		
+
 			/* Unlock the thread object prior to suspending */
 			_ILCriticalSectionLeave(&(thread->lock));
 
@@ -1389,16 +1396,17 @@ void _ILThreadSuspendRequest(ILThread *thread)
 	_ILCriticalSectionEnter(&(thread->lock));
 
 	threadState = ILInterlockedLoadU2(&(thread->state.split.pub));
-	/* Clear the "suspendRequested" and "resumeRequested" flags */
+	/* Clear the "suspendRequested" flag and set the suspended flags */
+	threadState &= ~IL_TS_SUSPEND_REQUESTED;
 	threadState |= (IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
 	ILInterlockedStoreU2(&(thread->state.split.pub), threadState);
 	thread->suspendRequested = 0;
-	thread->resumeRequested = 0;
+
+	/* This implies a memory barrier */
+	_ILCriticalSectionLeave(&(thread->lock));
 
 	/* Signal the thread that wanted to make us suspend that we are */
 	_ILSemaphorePost(&(thread->suspendAck));
-
-	_ILCriticalSectionLeave(&(thread->lock));
 
 	/* Suspend the current thread until we receive a resume signal */
 	_ILThreadSuspendSelf(thread);

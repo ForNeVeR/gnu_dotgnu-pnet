@@ -229,6 +229,7 @@ void _ILThreadSuspendUntilResumed(ILThread *thread)
 		sigsuspend(&_suspendSet);
 	}
 	while(!(thread->resumeRequested));
+	thread->resumeRequested = 0;
 }
 
 /*
@@ -922,12 +923,13 @@ void _ILThreadInitHandleSelf(ILThread *thread)
 {
 	/* Set the thread handle and identifier for the thread */
 	thread->handle = pthread_self();
-	thread->identifier = thread->handle;
+#ifdef GC_DARWIN_THREADS
+	thread->identifier = pthread_mach_thread_np(thread->handle);
+#endif
 }
 
 void _ILThreadDestroyHandleSelf(ILThread *thread)
 {
-	/* there is nothing to do with pthreads. */
 }
 
 void _ILThreadInitSystem(ILThread *mainThread)
@@ -946,10 +948,16 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	sigdelset(&(action.sa_mask), SIGTERM);
 	sigdelset(&(action.sa_mask), SIGABRT);
 
+	action.sa_flags = SA_RESTART;
+	action.sa_handler = SuspendSignal;
+	sigaction(IL_SIG_SUSPEND, &action, (struct sigaction *)0);
+
 	/*
 	 * Abort signal - used to signal a thread abort.
 	 * SA_RESTART must not be set.
 	 */
+	action.sa_flags = 0;
+	sigemptyset(&(action.sa_mask));
 	action.sa_handler = AbortSignal;
 	sigaction(IL_SIG_ABORT, &action, (struct sigaction *)0);
 
@@ -960,9 +968,10 @@ void _ILThreadInitSystem(ILThread *mainThread)
 	action.sa_handler = InterruptSignal;
 	sigaction(IL_SIG_INTERRUPT, &action, (struct sigaction *)0);
 
-	action.sa_flags = SA_RESTART;
-	action.sa_handler = SuspendSignal;
-	sigaction(IL_SIG_SUSPEND, &action, (struct sigaction *)0);
+	/*
+	 * Resume signal - used to resume a suspended thread.
+	 * SA_RESTART must not be set.
+	 */
 	action.sa_handler = ResumeSignal;
 	sigaction(IL_SIG_RESUME, &action, (struct sigaction *)0);
 
@@ -1018,8 +1027,9 @@ void _ILThreadInitSystem(ILThread *mainThread)
 
 	/* Set the thread handle and identifier for the main thread */
 	mainThread->handle = pthread_self();
-	mainThread->identifier = mainThread->handle;
-
+#ifdef GC_DARWIN_THREADS
+	mainThread->identifier = pthread_mach_thread_np(mainThread->handle);
+#endif
 	/* Initialize the atomic operations */
 	ILInterlockedInit();
 }
@@ -1044,7 +1054,9 @@ static void *ThreadStart(void *arg)
 
 	/* Store the thread identifier into the object */
 	thread->handle = pthread_self();
-	thread->identifier = thread->handle;
+#ifdef GC_DARWIN_THREADS
+	thread->identifier = pthread_mach_thread_np(thread->handle);
+#endif
 
 #if defined(USE_COMPILER_TLS)
 	/* Store the thread at the thread local storage */
@@ -1076,6 +1088,10 @@ static void *ThreadStart(void *arg)
 	/* Run the thread */
 	_ILThreadRun(thread);
 
+#ifdef GC_DARWIN_THREADS
+	thread->identifier = 0;
+#endif
+	
 	/* The thread has exited back through its start function */
 	return 0;
 }
@@ -1085,8 +1101,6 @@ int _ILThreadCreateSystem(ILThread *thread)
 	if(pthread_create((pthread_t *)&(thread->handle), (pthread_attr_t *)0,
 					  ThreadStart, (void *)thread) == 0)
 	{
-		/* Under pthreads, the thread identifier is the same as the handle */
-		thread->identifier = thread->handle;
 		return 1;
 	}
 	else

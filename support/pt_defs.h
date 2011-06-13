@@ -27,6 +27,10 @@
 #ifdef HAVE_SETJMP_H
 #include <setjmp.h>
 #endif
+#ifdef GC_DARWIN_THREADS
+#include <mach/mach.h>
+#include <mach/thread_act.h>
+#endif
 
 #ifdef	__cplusplus
 extern	"C" {
@@ -136,7 +140,10 @@ typedef pthread_mutex_t		_ILMutex;
 typedef pthread_mutex_t		_ILCondMutex;
 typedef pthread_cond_t		_ILCondVar;
 typedef pthread_t			_ILThreadHandle;
-typedef pthread_t			_ILThreadIdentifier;
+#ifdef GC_DARWIN_THREADS
+#define IL_THREAD_NEED_IDENTIFIER 1
+typedef mach_port_t			_ILThreadIdentifier;
+#endif
 typedef sem_t				_ILSemaphore;
 #ifdef IL_HAVE_RWLOCKS
 typedef pthread_rwlock_t	_ILRWLock;
@@ -228,6 +235,21 @@ typedef struct
 #endif
 
 /*
+ * Primitive semaphore operations.
+ */
+#define _ILSemaphoreCreate(sem)		(sem_init((sem), 0, 0))
+#define _ILSemaphoreDestroy(sem)	(sem_destroy((sem)))
+#define _ILSemaphoreWait(sem) \
+	do { \
+		while(sem_wait((sem)) == -1 && errno == EINTR) \
+		{ \
+			continue; \
+		} \
+	} while(0)
+#define _ILSemaphorePost(sem)		(sem_post((sem)))
+int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count);
+
+/*
  * Semaphore which allows to release multiple or all waiters.
  * The semantic for posix and windows semaphores is the same and the
  * implementation follows this semantics.
@@ -263,24 +285,50 @@ typedef struct
  * Suspend and resume threads.  Note: these are the primitive
  * versions, which are not "suspend-safe".
  */
+#ifdef GC_DARWIN_THREADS
 #define	_ILThreadSuspendOther(thread)	\
 			do { \
-				pthread_kill((thread)->handle, IL_SIG_SUSPEND); \
-				_ILSemaphoreWait(&((thread)->suspendAck)); \
+				thread_suspend((thread)->identifier); \
+			} while (0)
+#define	_ILThreadResumeOther(thread)	\
+			do { \
+				thread_resume((thread)->identifier); \
 			} while (0)
 #define	_ILThreadSuspendSelf(thread)	\
 			do { \
 				_ILThreadSuspendUntilResumed((thread)); \
-				sem_post(&((thread)->resumeAck)); \
+				_ILSemaphorePost(&((thread)->resumeAck)); \
+			} while (0)
+#define	_ILThreadResumeSelf(thread)	\
+			do { \
+				(thread)->resumeRequested = 1; \
+				pthread_kill((thread)->handle, IL_SIG_RESUME); \
+				_ILSemaphoreWait(&((thread)->resumeAck)); \
+			} while (0)
+#else
+#define	_ILThreadSuspendOther(thread)	\
+			do { \
+				pthread_kill((thread)->handle, IL_SIG_SUSPEND); \
+				_ILSemaphoreWait(&((thread)->suspendAck)); \
 			} while (0)
 #define	_ILThreadResumeOther(thread)	\
 			do { \
 				(thread)->resumeRequested = 1; \
 				pthread_kill((thread)->handle, IL_SIG_RESUME); \
 				_ILSemaphoreWait(&((thread)->resumeAck)); \
-				(thread)->resumeRequested = 0; \
 			} while (0)
-#define	_ILThreadResumeSelf(thread)		_ILThreadResumeOther((thread))
+#endif
+#define	_ILThreadSuspendSelf(thread)	\
+			do { \
+				_ILThreadSuspendUntilResumed((thread)); \
+				_ILSemaphorePost(&((thread)->resumeAck)); \
+			} while (0)
+#define	_ILThreadResumeSelf(thread)	\
+			do { \
+				(thread)->resumeRequested = 1; \
+				pthread_kill((thread)->handle, IL_SIG_RESUME); \
+				_ILSemaphoreWait(&((thread)->resumeAck)); \
+			} while (0)
 
 /*
  * Suspend the current thread until it is resumed.
@@ -388,21 +436,6 @@ int _ILCondMutexTimedLockUnsafe(_ILCondMutex *mutex, ILUInt32 ms);
 #define	_ILRWLockWriteLockUnsafe(rwlock)	(_ILMutexLockUnsafe((rwlock)))
 #define	_ILRWLockUnlockUnsafe(rwlock)		(_ILMutexUnlockUnsafe((rwlock)))
 #endif
-
-/*
- * Primitive semaphore operations.
- */
-#define	_ILSemaphoreCreate(sem)		(sem_init((sem), 0, 0))
-#define	_ILSemaphoreDestroy(sem)	(sem_destroy((sem)))
-#define	_ILSemaphoreWait(sem)		\
-	do { \
-		while(sem_wait((sem)) == -1 && errno == EINTR) \
-		{ \
-			continue; \
-		} \
-	} while(0)
-#define	_ILSemaphorePost(sem)		(sem_post((sem)))
-int _ILSemaphorePostMultiple(_ILSemaphore *sem, ILUInt32 count);
 
 /*
  * Primitive condition variable operations.

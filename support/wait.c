@@ -123,7 +123,6 @@ int _ILLeaveWait(ILThread *thread, int result)
 			threadState.split.pub &= ~(IL_TS_SUSPEND_REQUESTED | IL_TS_INTERRUPTED);
 			threadState.split.pub |= (IL_TS_SUSPENDED | IL_TS_SUSPENDED_SELF);
 			threadState.split.priv &= ~IL_TS_WAIT_SLEEP_JOIN;
-			thread->resumeRequested = 0;
 
 			ILInterlockedStoreU4(&(thread->state.comb), threadState.comb);
 

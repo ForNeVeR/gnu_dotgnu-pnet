@@ -195,7 +195,12 @@ struct _tagILThread
 {
 	_ILCriticalSection				lock;
 	_ILThreadHandle		volatile	handle;
+#ifdef IL_THREAD_NEED_IDENTIFIER
+	/*
+	 * Implementation specific native identification of the thread.
+	 */
 	_ILThreadIdentifier	volatile	identifier;
+#endif
 	_ILThreadState					state;
 	ILInt32							useCount;
 	unsigned char		volatile	resumeRequested;

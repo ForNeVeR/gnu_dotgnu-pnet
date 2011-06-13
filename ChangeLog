@@ -1,3 +1,34 @@
+2011-06-13  Klaus Treichel  <ktreichel@web.de>
+
+	* support/pt_defs.c (_ILThreadSuspendUntinResumed): Clear resumeRequested
+	on exit.
+	(_ILThreadInitHandleSelf): Set identifier to the native mach thread
+	on Darwin.
+	(_ILThreadInitSystem): Mask all signals during handling of an interrupt,
+	abort and resume signal.
+	Set identifier of the main thread to the native mach thread on Darwin.
+	(ThreadStart): Set identifier to the native mach thread on Darwin.
+
+	* support/pt_defs.h: (_ILThreadSuspendOther, _ILThreadResumeOther): Use
+	thread_suspend and thread_resume on darwin.
+	(_ILThreadResumeSelf): Don't clear resumeRequested.
+
+	* support/thr_defs.h (struct _tagILThread): Add member identifier only if
+	requeted by the backend.
+
+	* support/thread.c (ILThreadSuspendRequest): Don't clear resumeRequested.
+	Reset flags to IL_TS_SUSPEND_REQUESTED again if the thread has to
+	suspend itself.
+	(ILThreadResume): Clear suspendRequested if a thread is resumed before it
+	had time to suspend itself.
+	(ILThreadJoin): Don't clear resumeRequested.
+	(_ILThreadLeaveWaitState): Don't clear resumeRequested.
+
+	* support/w32_defs.h: Notify thr_defs.h that the thread identifier is
+	needed for this backend.
+
+	* support/wait.c (_ILLeaveWait):  Don't clear resumeRequested.
+
 2011-04-26  Klaus Treichel  <ktreichel@web.de>
 
 	* engine/coder.c (NestExceptionBlocks): Move from verify.c to here.

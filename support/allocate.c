@@ -255,9 +255,7 @@ unsigned long ILPageMapSize(void)
  * may not exist on some variants of Unix.
  */
 #ifndef MAP_ANON
-    #ifndef MAP_ANONYMOUS
-        #define MAP_ANON        0
-    #else
+    #ifdef MAP_ANONYMOUS
         #define MAP_ANON        MAP_ANONYMOUS
     #endif
 #endif
@@ -274,6 +272,20 @@ static void PageInit(void)
 {
 #ifndef IL_MEMUSAGE_DEBUG
 	void *addr;
+#ifdef MAP_ANON
+	addr = mmap((void *)0, ILPageAllocSize(),
+				PROT_READ | PROT_WRITE | PROT_EXEC,
+				MAP_PRIVATE | MAP_ANON, -1, 0);
+	if(addr == (void *)(-1))
+	{
+		zero_fd = -1;
+	}
+	else
+	{
+		munmap(addr, ILPageAllocSize());
+		zero_fd = 0;
+	}
+#else /* !MAP_ANON */
 	zero_fd = open("/dev/zero", O_RDWR, 0);
 	if(zero_fd != -1)
 	{
@@ -284,7 +296,7 @@ static void PageInit(void)
 		   is actually live and working on this platform */
 		addr = mmap((void *)0, ILPageAllocSize(),
 				    PROT_READ | PROT_WRITE | PROT_EXEC,
-				    MAP_SHARED | MAP_ANON, zero_fd, 0);
+				    MAP_SHARED, zero_fd, 0);
 		if(addr == (void *)(-1))
 		{
 			close(zero_fd);
@@ -295,6 +307,7 @@ static void PageInit(void)
 			munmap(addr, ILPageAllocSize());
 		}
 	}
+#endif /* !MAP_ANON */
 #endif
 }
 
@@ -311,9 +324,15 @@ void *ILPageAlloc(unsigned long size)
 	/* Determine if we can should mmap or calloc */
 	if(zero_fd != -1)
 	{
+	#ifdef MAP_ANON
 		void *addr = mmap((void *)0, size,
 						  PROT_READ | PROT_WRITE | PROT_EXEC,
-						  MAP_SHARED | MAP_ANON, zero_fd, 0);
+						  MAP_PRIVATE | MAP_ANON, -1, 0);
+	#else
+		void *addr = mmap((void *)0, size,
+						  PROT_READ | PROT_WRITE | PROT_EXEC,
+						  MAP_SHARED, zero_fd, 0);
+	#endif
 		if(addr == (void *)(-1))
 		{
 			/* The allocation failed */

@@ -1,3 +1,8 @@
+2011-06-15  Klaus Treichel  <ktreichel@web.de>
+
+	* support/allocate.c (PageInit, ILPageAlloc): Use a constant -1 file
+	descriptor if MAP_ANON (or MAP_ANONYMOUS) is defined.
+
 2011-06-13  Klaus Treichel  <ktreichel@web.de>
 
 	* support/pt_defs.c (_ILThreadSuspendUntinResumed): Clear resumeRequested

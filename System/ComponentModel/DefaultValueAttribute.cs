@@ -99,7 +99,7 @@ public sealed class DefaultValueAttribute : Attribute
 				DefaultValueAttribute other = (obj as DefaultValueAttribute);
 				if(other != null)
 				{
-					return obj.Equals(other.obj);
+					return this.obj.Equals(other.obj);
 				}
 				else
 				{

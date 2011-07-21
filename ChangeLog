@@ -1,3 +1,9 @@
+2011-07-21  Heiko Weiss  <heiko.weiss@de.trumpf.com>
+	
+	* System/ComponentModel/DefaultValueAttribute.cs: fixed
+	public override bool Equals(Object obj).
+	Fix by Amatius (ptah), thx.
+
 2011-02-28  Klaus Treichel  <ktreichel@web.de>
 
 	* configure.in: Add $(EXEEXT) to the executables in CSANT_FLAGS.

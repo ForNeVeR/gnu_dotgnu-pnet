@@ -1,0 +1,8 @@
+git clone git://git.savannah.gnu.org/dotgnu-pnet/cscctest.git
+git clone git://git.savannah.gnu.org/dotgnu-pnet/libCrayons.git
+git clone git://git.savannah.gnu.org/dotgnu-pnet/libjit.git
+git clone git://git.savannah.gnu.org/dotgnu-pnet/ml-pnet.git
+git clone git://git.savannah.gnu.org/dotgnu-pnet/pnet.git
+git clone git://git.savannah.gnu.org/dotgnu-pnet/pnetC.git
+git clone git://git.savannah.gnu.org/dotgnu-pnet/pnetlib.git
+git clone git://git.savannah.gnu.org/dotgnu-pnet/treecc.git

@@ -1,24 +1,24 @@
-[submodule "cscctest"]
-	path = cscctest
-	url = ../dotgnu-pnet/cscctest.git
-[submodule "libCrayons"]
-	path = libCrayons
-	url = ../dotgnu-pnet/libCrayons.git
-[submodule "libjit"]
-	path = libjit
-	url = ../dotgnu-pnet/libjit.git
-[submodule "ml-pnet"]
-	path = ml-pnet
-	url = ../dotgnu-pnet/ml-pnet.git
-[submodule "pnet"]
-	path = pnet
-	url = ../dotgnu-pnet/pnet.git
 [submodule "pnetC"]
-	path = pnetC
-	url = ../dotgnu-pnet/pnetC.git
+path=pnetC
+url = git://git.savannah.gnu.org/dotgnu-pnet/pnetC.git
 [submodule "pnetlib"]
-	path = pnetlib
-	url = ../dotgnu-pnet/pnetlib.git
+path=pnetlib
+url = git://git.savannah.gnu.org/dotgnu-pnet/pnetlib.git
+[submodule "cscctest"]
+path=cscctest
+url = git://git.savannah.gnu.org/dotgnu-pnet/cscctest.git
 [submodule "treecc"]
-	path = treecc
-	url = ../dotgnu-pnet/treecc.git
+path=treecc
+url = git://git.savannah.gnu.org/dotgnu-pnet/treecc.git
+[submodule "libjit"]
+path=libjit
+url = git://git.savannah.gnu.org/dotgnu-pnet/libjit.git
+[submodule "pnet"]
+path=pnet
+url = git://git.savannah.gnu.org/dotgnu-pnet/pnet.git
+[submodule "libCrayons"]
+path=libCrayons
+url = git://git.savannah.gnu.org/dotgnu-pnet/libCrayons.git
+[submodule "ml-pnet"]
+path=ml-pnet
+url = git://git.savannah.gnu.org/dotgnu-pnet/ml-pnet.git

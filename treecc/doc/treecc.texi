@@ -26,11 +26,11 @@ Copyright @copyright{} 2001 Southern Storm Software, Pty Ltd
 
 @vskip 50pt
 
-@center{Rhys Weatherley}
+@center Rhys Weatherley
 
 @vskip 50pt
-@center{Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd}
-@center{Copyright @copyright{} 2003 Free Software Foundation, Inc.}
+@center Copyright @copyright{} 2001, 2002 Southern Storm Software, Pty Ltd
+@center Copyright @copyright{} 2003 Free Software Foundation, Inc.
 @end titlepage
 
 @c -----------------------------------------------------------------------
@@ -691,7 +691,7 @@ declaration features present in that language.
 @end table
 
 When the output language is C, treecc creates a struct-based type
-called @samp{NAME} that contains the fields for @samp{NAME} and 
+called @samp{NAME} that contains the fields for @samp{NAME} and
 all of its ancestor classes.  The type also contains some house-keeping
 fields that are used internally by the generated code.  The following
 is an example:
@@ -758,7 +758,7 @@ const Element
 
 The grammar used by treecc is slightly ambiguous.  The last example above
 declares a parameter called @samp{Element}, that has type @samp{const}.
-The programmer probably intended to declare an anonymous parameter with type 
+The programmer probably intended to declare an anonymous parameter with type
 @samp{const Element} instead.
 
 This ambiguity is unavoidable given that treecc is not fully
@@ -2442,23 +2442,23 @@ class YYNODESTATE
     return @@@@state
   end
 
-  def intialize 
-     @@@@state = self 
+  def intialize
+     @@@@state = self
    end
 
-  def currFilename 
+  def currFilename
      return nil
   end
 
-  def currLinenum 
-     return 0 
+  def currLinenum
+     return 0
   end
 end
 
 class Expression
   protected
   attr_reader :kind
-  public 
+  public
 
   attr_accessor :Linenum, :Filename
 
@@ -2602,7 +2602,7 @@ becomes:
 
 @example
 
-class JavaType 
+class JavaType
   JT_BYTE = 0
   JT_SHORT = 1
   JT_CHAR = 2
@@ -2615,7 +2615,7 @@ end
 
 @end example
 
-@c 
+@c
 Virtual operations are converted into public methods on the Ruby
 node classes.
 
@@ -2630,7 +2630,7 @@ becomes:
 
 @example
 class InferType
-    def InferType.infer_type(expression e)   
+    def InferType.infer_type(expression e)
         ...
     end
 end

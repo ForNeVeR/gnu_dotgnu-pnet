@@ -18,6 +18,7 @@ For now, could only be build in a Unix-compatible environment, tested on Ubuntu
 
 ```console
 # apt-get install automake bison flex texinfo
+$ cd treecc
 $ ./auto_gen.sh
 $ ./configure
 $ make all
